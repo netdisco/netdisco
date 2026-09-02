@@ -36,10 +36,15 @@ my %node_result_class = (
 # the one-row-or-none shape the template already expects. wireless is
 # has_many and arrives as an arrayref already, so it needs no such wrapping.
 sub _stitch_nodes {
-    my ($schema, $device_ip, $rows, $nodes_name, $ips_name, $node_order, $extra_prefetch) = @_;
+    my ($schema, $device_ip, $rows, $nodes_name, $ips_name, $node_order,
+        $extra_prefetch, $only_ports) = @_;
+
+    my %cond = (switch => $device_ip);
+    $cond{port} = { -in => $only_ports }
+      if $only_ports and scalar @$only_ports;
 
     my $node_rs = $schema->resultset($node_result_class{$nodes_name})
-      ->search({ switch => $device_ip }, {
+      ->search(\%cond, {
         order_by => $node_order,
         prefetch => [ $ips_name, @{ $extra_prefetch || [] } ],
       });
@@ -217,7 +222,7 @@ get '/ajax/content/device/ports' => require_login sub {
 
     # row.stitched_nodes is read even when c_nodes is off, to find the
     # neighbor's MAC for the Neighbors column, so the stitch has to run for
-    # either.
+    # either. It is scoped differently for the two, see the call below.
     if (param('c_nodes') or param('c_neighbors')) {
         # Fetched separately and joined by port name below, not prefetched.
         # One prefetch of ports to nodes to IPs returns the product of the
@@ -273,10 +278,19 @@ get '/ajax/content/device/ports' => require_login sub {
     my @results = $set->all;
 
     # fetch and attach nodes by port name; see _stitch_nodes for why this
-    # replaced a prefetch
+    # replaced a prefetch.
+    #
+    # c_neighbors is checked by default in config.yml and c_nodes is not, so
+    # the neighbors branch is the shipped default view. It reads node data
+    # only for a port carrying a remote_ip, to name that neighbor's MAC, so
+    # it asks for those ports and not the device: fetching them all costs
+    # 669 ms on a 2166 port device, for rows nothing on the page reads.
+    my @neighbor_ports = (not param('c_nodes'))
+      ? (map { $_->port } grep { $_->remote_ip } @results) : ();
+
     _stitch_nodes(schema(vars->{'tenant'}), $device->ip, \@results,
-      $nodes_name, $ips_name, \@node_order, \@extra_prefetch)
-      if (param('c_nodes') or param('c_neighbors'));
+      $nodes_name, $ips_name, \@node_order, \@extra_prefetch, \@neighbor_ports)
+      if param('c_nodes') or (param('c_neighbors') and scalar @neighbor_ports);
 
     # filter for tagged vlan using existing agg query,
     # which is better than join inflation

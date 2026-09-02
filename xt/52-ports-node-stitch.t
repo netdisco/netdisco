@@ -69,8 +69,29 @@ SKIP: {
     # 3. The accessor trap: nothing may be attached under a relationship name.
     ok !exists $stitched[0]->{active_nodes},
       'stitched rows are not attached under the has_many accessor name';
-    ok !App::Netdisco::DB::Result::DevicePort->can('stitched_nodes'),
-      'stitched_nodes is not a method, so Template Toolkit reaches the hash key';
+
+    # 4. A port filter restricts the fetch to the ports named. The default
+    #    Ports view has c_neighbors checked and c_nodes not, and reads node
+    #    data only for a port carrying a remote_ip, so the route passes that
+    #    short list instead of fetching every node on the device.
+    my ($one_port) = grep { scalar @{ $stitched_macs_by_port{$_} } }
+                     sort keys %stitched_macs_by_port;
+
+    my @filtered = $base->all;
+    App::Netdisco::Web::Plugin::Device::Ports::_stitch_nodes(
+      $schema, $device->ip, \@filtered, 'active_nodes', 'ips', [], [], [$one_port]);
+
+    is_deeply [ map  { $_->port }
+                grep { scalar @{ $_->{stitched_nodes} } } @filtered ],
+      [ $one_port ],
+      'a port filter fetches nodes only for the ports named';
 }
+
+# Needs no database, so it stays outside the SKIP block: this is the load
+# bearing check of the whole task, and inside the block CI would skip it and
+# still report PASS.
+require App::Netdisco::DB::Result::DevicePort;
+ok !App::Netdisco::DB::Result::DevicePort->can('stitched_nodes'),
+  'stitched_nodes is not a method, so Template Toolkit reaches the hash key';
 
 done_testing;
