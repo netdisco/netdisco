@@ -104,6 +104,12 @@ neighbour-discovery icons that depend on C<get_column> are left as a gap.
 C<nodes>, C<ips> and C<mac_format_call> are, as in production, the names of
 the row accessors the template should call, not the data itself.
 
+C<params.c_ssid> is enabled and one row carries two C<ssid> entries, so the
+SSID cell's C<FOREACH> renders a comma separated list rather than a single
+value. A row with only one SSID would still pass on an unfixed template that
+reads C<row.ssid.ssid> directly, so this fixture is deliberately shaped to
+need the loop.
+
 =item C<layouts/main.tt>
 
 A logged-in session reaches the search bar, the account menu, and (with a
@@ -213,7 +219,7 @@ sub stash_for {
       params => {
         c_admin => 1, c_port => 1, c_name => 1, c_pvid => 1, c_tags => 1,
         c_power => 1, c_vmember => 1, c_nodes => 1, c_neighbors => 1,
-        p_fold_dotzero => 1,
+        c_ssid => 1, p_fold_dotzero => 1,
       },
       settings => {
         portctl_topology => 1,
@@ -231,12 +237,15 @@ sub stash_for {
         'Gi1/9' => { vlan_count => 3, vlan_set => [ 10, 20 ] },
       },
       results => [
-        # up port carrying a tag, a LAG membership, and admin-edit permission
+        # up port carrying a tag, a LAG membership, admin-edit permission,
+        # and several SSIDs, so the comma separated list renders rather than
+        # a single value
         { port => 'Gi1/1', up_admin => 'up', up => 'up', stp => 'forwarding',
           slave_of => 1, port_acl_service => 1, port_acl_name => 1,
           port_acl_pvid => 1, filtered_tags => ['core'],
           client_nodes => [ { active => 0,
-            net_mac => { as_string => 'aa:bb:cc:00:01:01' } } ] },
+            net_mac => { as_string => 'aa:bb:cc:00:01:01' } } ],
+          ssid => [ { ssid => 'CORP' }, { ssid => 'GUEST' } ] },
         # administratively disabled port
         { port => 'Gi1/2', up_admin => 'down', port_acl_service => 1 },
         # up port with a spanning-tree block and few enough VLANs to name them
