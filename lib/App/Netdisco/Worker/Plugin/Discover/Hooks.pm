@@ -24,14 +24,19 @@ register_worker({ phase => 'late' }, sub {
     next if acl_matches( $job->device, $no );
     next unless acl_matches_only( $job->device, $only);
 
-    if (vars->{'new_device'} and $conf->{'event'} eq 'new_device') {
-      $count += queue_hook('new_device', $conf);
-      debug sprintf ' [%s] hooks - %s queued', 'new_device', $job->device;
-    }
-
     if ($conf->{'event'} eq 'discover') {
       $count += queue_hook('discover', $conf);
       debug sprintf ' [%s] hooks - %s queued', 'discover', $job->device;
+    }
+
+    if (vars->{'device_changed'} and $conf->{'event'} eq 'updated_device') {
+      $count += queue_hook('updated_device', $conf);
+      debug sprintf ' [%s] hooks - %s queued', 'updated_device', $job->device;
+    }
+
+    if (vars->{'new_device'} and $conf->{'event'} eq 'new_device') {
+      $count += queue_hook('new_device', $conf);
+      debug sprintf ' [%s] hooks - %s queued', 'new_device', $job->device;
     }
   }
 

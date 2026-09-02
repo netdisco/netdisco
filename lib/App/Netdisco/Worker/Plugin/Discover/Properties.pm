@@ -212,6 +212,34 @@ register_worker({ phase => 'early', driver => 'snmp',
   # support for new_device Hook
   vars->{'new_device'} = 1 if not $device->in_storage;
 
+  # support for updated_device Hook - detect meaningful DEVICE-LEVEL changes
+  {
+    my $ignore = (setting('updated_device_hook_ignored_fields') || {})->{'device'} || [];
+    my %ignore_field = map {($_ => 1)} @$ignore;
+    my %dirty = $device->get_dirty_columns;
+    # DBIC's dirty flag latches true on the first set_column() that differs
+    # and is never cleared by a later set_column() call, even one that lands
+    # back on the original value (model/vendor are set multiple times per
+    # job via the enterprise/product lookup fallbacks above) - so also
+    # require the final value to actually differ from what was loaded.
+    # Uses the same $orig_device lookup cache as the field_protection feature.
+    my @changed = sort grep {
+        not $ignore_field{$_}
+        and (defined $orig_device->{$_} ? $orig_device->{$_} : '') ne
+            (defined $dirty{$_}         ? $dirty{$_}         : '')
+    } keys %dirty;
+
+    if (scalar @changed) {
+        vars->{'device_changed'} = 1;
+        foreach my $field (@changed) {
+            debug sprintf ' [%s] hooks - device field %s changed: "%s" -> "%s"',
+              $device->ip, $field,
+              (defined $orig_device->{$field} ? $orig_device->{$field} : ''),
+              (defined $dirty{$field} ? $dirty{$field} : '');
+        }
+    }
+  }
+
   schema('netdisco')->txn_do(sub {
     if ($device->serial and setting('delete_duplicate_serials')) {
         my $gone = schema('netdisco')->resultset('Device')->search({
@@ -245,7 +273,7 @@ register_worker({ phase => 'early', driver => 'snmp',
 });
 
 register_worker({ phase => 'early', driver => 'snmp',
-    title => 'cancel if no valid interfaces found'}, sub {
+    title => 'cancel if no valid interfaces found; cache ports'}, sub {
   my ($job, $workerconf) = @_;
 
   my $device = $job->device;
@@ -270,13 +298,14 @@ register_worker({ phase => 'early', driver => 'snmp',
   # OK if any non-digit in values
   return $pass if scalar grep {$_ !~ m/^[0-9]+$/} values %$interfaces;
 
-  # gather ports
-  my $device_ports = {map {($_->port => $_)}
-                          $device->ports(undef, {prefetch => 'properties'})->all};
+  # cache the device ports to save hitting the database for many single rows
+  vars->{'device_ports'} = { map {($_->port => $_)}
+                                 $device->ports(undef, {prefetch => 'properties'})->reset->all };
+
   # OK if no ports
-  return $pass if 0 == scalar keys %$device_ports;
+  return $pass if 0 == scalar keys %{ vars->{'device_ports'} };
   # OK if any interface value is a port name
-  foreach my $port (keys %$device_ports) {
+  foreach my $port (keys %{ vars->{'device_ports'} }) {
       return $pass if scalar grep {$port eq $_} values %$interfaces;
   }
 
@@ -493,13 +522,10 @@ register_worker({ phase => 'early', driver => 'snmp',
           next unless acl_matches_only($device->ip, $protect->{$field});
 
           my $good = $good_test{$field};
-
-          my %old_vals = map {($_->{'port'} => $_->{$field})}
-            $device->ports->search(undef, {columns => ['port', $field]})->hri->all;
-
-          my $old_good = scalar grep {$good->($old_vals{$_}, $_)} keys %old_vals;
-          my $new_good = scalar grep {$good->($deviceports{$_}->{$field}, $_)}
-                                 keys %deviceports;
+          my $old_good = scalar grep { $good->($_->$field, $_->port) }
+                                     values %{ vars->{'device_ports'} };
+          my $new_good = scalar grep { $good->($deviceports{$_}->{$field}, $_) }
+                                     keys %deviceports;
 
           if ($old_good and not $new_good) {
               warning sprintf
@@ -508,8 +534,9 @@ register_worker({ phase => 'early', driver => 'snmp',
                 $device->ip, ($label{$field} || $field), $old_good, $field;
 
               foreach my $port (keys %deviceports) {
-                  $deviceports{$port}->{$field} = $old_vals{$port}
-                    if exists $old_vals{$port};
+                  $deviceports{$port}->{$field} = vars->{'device_ports'}->{$port}->$field
+                    if exists vars->{'device_ports'}->{$port}
+                       and vars->{'device_ports'}->{$port}->can($field);
               }
           }
       }
@@ -580,6 +607,49 @@ register_worker({ phase => 'early', driver => 'snmp',
   # update num_ports
   $device->num_ports( scalar values %deviceports );
 
+  # support for updated_device Hook - detect meaningful PORT-LEVEL changes
+  unless (vars->{'device_changed'}) {
+    my $ignore = (setting('updated_device_hook_ignored_fields') || {})->{'device_port'} || [];
+    my %ignore_field = map {($_ => 1)} @$ignore;
+
+    # boolean columns: ->hri bypasses DBIC's column handling, so an
+    # existing row's true/false comes back as the driver's raw "1"/"0"
+    # while our freshly built %deviceports uses the literal 'true'/'false'
+    # strings - normalize both before comparing so this isn't a false positive
+    my $normalize_bool = sub {
+      my $val = shift;
+      return (defined $val and grep {$val eq $_} qw/1 t true/) ? 1 : 0;
+    };
+
+    if (join("\0", sort {$a cmp $b} keys %{ vars->{'device_ports'} }) ne join("\0", sort keys %deviceports)) {
+        vars->{'device_changed'} = 1;
+        debug sprintf ' [%s] hooks - port set changed: had [%s], now [%s]',
+          $device->ip, (join ', ', sort {$a cmp $b} keys %{ vars->{'device_ports'} }),
+                       (join ', ', sort {$a cmp $b} keys %deviceports);
+    }
+    else {
+        my $ports_rsrc = schema('netdisco')->resultset('DevicePort')->result_source;
+        PORTDIFF: foreach my $port (sort {$a cmp $b} keys %deviceports) {
+            my $old = vars->{'device_ports'}->{$port};
+            my $new = $deviceports{$port};
+            foreach my $field (sort {$a cmp $b} keys %$new) {
+                next if $ignore_field{$field};
+                my $oldval = (defined $old->$field   ? $old->$field   : '');
+                my $newval = (defined $new->{$field} ? $new->{$field} : '');
+                if ($ports_rsrc->column_info($field)->{'data_type'} =~ m/bool/i) {
+                    $oldval = $normalize_bool->($oldval);
+                    $newval = $normalize_bool->($newval);
+                }
+                next if $oldval eq $newval;
+                vars->{'device_changed'} = 1;
+                debug sprintf ' [%s] hooks - port %s field %s changed: "%s" -> "%s"',
+                  $device->ip, $port, $field, $oldval, $newval;
+                last PORTDIFF;
+            }
+        }
+    }
+  }
+
   # support for Hooks
   vars->{'hook_data'}->{'ports'} = [values %deviceports];
 
@@ -587,11 +657,9 @@ register_worker({ phase => 'early', driver => 'snmp',
     my $coder = JSON::PP->new->utf8(0)->allow_nonref(1)->allow_unknown(1);
 
     # backup the custom_fields
-    my %fields = map  {($_->{port} => $coder->decode(Encode::encode('UTF-8',$_->{custom_fields} || '{}')))}
-                 grep {exists $deviceports{$_->{port}}}
-                      $device->ports
-                             ->search(undef, {columns => [qw/port custom_fields/]})
-                             ->hri->all;
+    my %fields = map  {($_->port => $coder->decode(Encode::encode('UTF-8',$_->custom_fields || '{}')))}
+                 grep {exists $deviceports{$_->port}}
+                      values %{ vars->{'device_ports'} };
 
     my %ok_fields = map {$_ => 1}
                     grep {defined}

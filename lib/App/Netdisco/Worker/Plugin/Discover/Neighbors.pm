@@ -122,8 +122,8 @@ sub store_neighbors {
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return (); # already checked!
 
-  # first allow any manually configured topology to be set
-  # and do this before we cache the rows in vars->{'device_ports'}
+  # first allow any manually configured topology to be set;
+  # this will also bust the cache in vars->{'device_ports'}
   set_manual_topology($device);
 
   if (!defined $snmp->has_topo) {
@@ -139,9 +139,8 @@ sub store_neighbors {
   my $c_cap      = $snmp->c_cap;
 
   # cache the device ports to save hitting the database for many single rows
-  vars->{'device_ports'} =
-    { map {($_->port => $_)} $device->ports->reset->all };
-  my $device_ports = vars->{'device_ports'};
+  my $device_ports = vars->{'device_ports'}
+    || { map {($_->port => $_)} $device->ports->all };
 
   # v4 and v6 neighbor tables
   my $c_ip = ($snmp->c_ip || {});
@@ -414,6 +413,10 @@ sub set_manual_topology {
         };
     }
   });
+
+  # bust the cache after updating manual topology.
+  vars->{'device_ports'} = { map {($_->port => $_)}
+                                 $device->ports(undef, {prefetch => 'properties'})->reset->all };
 }
 
 true;
