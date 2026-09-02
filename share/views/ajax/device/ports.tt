@@ -382,7 +382,12 @@
       [% END %]
 
       [% IF params.c_nodes OR params.c_neighbors %]
-      <td[% IF params.c_nodes %] data-search="[% row.nodes_search | html_entity %]"[% END %]>
+      [%# data-search replaces this <td>'s whole search text, so it is only
+          worth emitting where the node markup it stands in for is actually
+          gone: the same over-threshold test the collapse below applies. A
+          port under the threshold keeps its own rendered text and needs no
+          shadow. %]
+      <td[% IF params.c_nodes AND row.stitched_nodes AND row.stitched_nodes.size > settings.devport_nodes_collapse_threshold %] data-search="[% row.nodes_search | html_entity %]"[% END %]>
         [% SET neighbor_mac = '' %]
         [% IF row.remote_ip %]
           [% FOREACH _n IN row.stitched_nodes %]

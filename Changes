@@ -5,7 +5,8 @@
   * the Ports tab connected-nodes view fetches nodes in a second query rather
     than one join, which it renders about twice as fast
   * the Ports tab connected-nodes cell now carries a search shadow built in
-    SQL, so the table filter still finds a node by MAC, IP or DNS name
+    SQL, so the table filter still finds a node by MAC, IP, DNS name, VLAN,
+    SSID or NetBIOS name, and a neighbor by its inventory string
 
   [BUG FIXES]
 

@@ -106,11 +106,12 @@ sub _shadow_active_fragment {
 }
 
 # Builds the DataTables search shadow: one string per port carrying every
-# node's mac, ip and dns text, so the filter can still find a node whose row
-# markup is deferred out of the DOM (Task 4) or simply never rendered this
-# request. Built in one Postgres statement, not by concatenating the fetched
-# node rows in Perl, which costs 126 ms on a 229 port device and 1014 ms on
-# a 2166 port one, more than the render it exists to save.
+# node's mac, ip, dns and vlan text, plus ssid and netbios when asked for, so
+# the filter can still find a node whose row markup is deferred out of the
+# DOM (Task 4) or simply never rendered this request. Built in one Postgres
+# statement, not by concatenating the fetched node rows in Perl, which costs
+# 126 ms on a 229 port device and 1014 ms on a 2166 port one, more than the
+# render it exists to save.
 #
 # Split out from the route, like _stitch_nodes, so
 # xt/53-ports-search-shadow.t can call it directly: the route is
@@ -120,19 +121,49 @@ sub _shadow_active_fragment {
 # which joins foreign.active => self.active: an archived node gets archived
 # IPs and an active node gets active ones. Getting that condition wrong
 # shows archived IPs against active nodes in the filter but not on screen.
+#
+# vlan is a plain node column, always cheap, so it is always in the shadow:
+# ports.tt:475 shows it with no n_* guard. ssid and netbios come from
+# node_wireless and node_nbt, both of Node's relations keyed on mac alone
+# (no active condition, unlike ips), so their laterals join on mac only,
+# matching what those relations actually select. Each is joined only when
+# its own template guard (n_ssid, n_netbios) is on: a field the cell does
+# not render does not need to be findable, and the join has a real cost
+# (measured: +2.9 MB on the largest archived device in the profiling
+# database for all three fields together).
 sub _attach_search_shadow {
-    my ($schema, $device_ip, $rows, $active_fragment) = @_;
+    my ($schema, $device_ip, $rows, $active_fragment, $want_ssid, $want_netbios) = @_;
+
+    my ($ssid_select, $ssid_join) = ('', '');
+    if ($want_ssid) {
+        $ssid_select = q{ || ' ' || COALESCE(w.txt, '')};
+        $ssid_join = q{
+          LEFT JOIN LATERAL (
+            SELECT string_agg(ssid, ' ') AS txt
+              FROM node_wireless WHERE mac = n.mac) w ON true};
+    }
+
+    my ($netbios_select, $netbios_join) = ('', '');
+    if ($want_netbios) {
+        $netbios_select = q{ || ' ' || COALESCE(b.txt, '')};
+        $netbios_join = q{
+          LEFT JOIN LATERAL (
+            SELECT string_agg(COALESCE(nbname, '') || ' ' || COALESCE(domain, ''), ' ') AS txt
+              FROM node_nbt WHERE mac = n.mac) b ON true};
+    }
 
     my $sql = sprintf(q{
         SELECT n.port,
-               string_agg(n.mac::text || ' ' || COALESCE(i.txt, ''), ' ') AS s
+               string_agg(n.mac::text || ' ' || COALESCE(n.vlan, '') || ' '
+                 || COALESCE(i.txt, '')%s%s, ' ') AS s
           FROM node n
           LEFT JOIN LATERAL (
             SELECT string_agg(ip::text || ' ' || COALESCE(dns, ''), ' ') AS txt
               FROM node_ip WHERE mac = n.mac AND active = n.active) i ON true
+          %s%s
          WHERE n.switch = ? %s
          GROUP BY n.port
-    }, $active_fragment);
+    }, $ssid_select, $netbios_select, $ssid_join, $netbios_join, $active_fragment);
 
     my $shadow = $schema->storage->dbh_do(sub {
       my (undef, $dbh) = @_;
@@ -150,21 +181,36 @@ sub _attach_search_shadow {
 # Left alone, a port's own neighbor identity (its discovered device, IP and
 # remote port name) would stop being findable the moment c_nodes is also on,
 # which is the plan's own measurement query (c_nodes and c_neighbors both
-# on). remote_ip, remote_port and remote_dns are real device_port columns
-# (remote_dns via the with_properties join the route always applies), so
-# they are safe to read regardless of any param. neighbor_ip and
-# neighbor_dns come from a +select added only under c_neighbors, so they are
-# read only then: DBIC's get_column dies for a column that was never
-# selected.
+# on). remote_ip, remote_port, remote_dns, remote_id and remote_type are
+# real device_port columns (remote_dns via the with_properties join the
+# route always applies), so they are safe to read regardless of any param.
+# remote_type is rendered at ports.tt:438 with no n_detailed_inventory
+# guard, so it is appended unconditionally like the others rather than
+# gated on that flag. neighbor_ip and neighbor_dns come from a +select
+# added only under c_neighbors, so they are read only then: DBIC's
+# get_column dies for a column that was never selected.
+#
+# remote_inventory is different: it is a method, not a column
+# (DevicePort.pm's remote_os_ver/remote_serial/remote_vendor/remote_model
+# via get_column), and those columns are selected only by
+# with_remote_inventory, which the route applies only under n_inventory.
+# Calling it when that flag is off dies the same way neighbor_ip would, so
+# it is guarded on $want_inventory the same way the template guards its own
+# rendering of it at ports.tt:417 and :444.
 sub _augment_neighbor_search {
-    my ($rows, $want_neighbors) = @_;
+    my ($rows, $want_neighbors, $want_inventory) = @_;
 
     for my $row (@$rows) {
         my @extra = grep { defined and length }
-          ($row->remote_ip, $row->remote_port, $row->remote_dns);
+          ($row->remote_ip, $row->remote_port, $row->remote_dns,
+           $row->remote_id, $row->remote_type);
         push @extra, grep { defined and length }
           ($row->get_column('neighbor_ip'), $row->get_column('neighbor_dns'))
           if $want_neighbors;
+        if ($want_inventory) {
+            my $inventory = $row->remote_inventory;
+            push @extra, $inventory if defined $inventory and length $inventory;
+        }
 
         next unless @extra;
         $row->{nodes_search} = join ' ', grep { length } ($row->{nodes_search}, @extra);
@@ -401,8 +447,10 @@ get '/ajax/content/device/ports' => require_login sub {
     # building this for the neighbors-only view would be pure waste.
     if (param('c_nodes')) {
         _attach_search_shadow(schema(vars->{'tenant'}), $device->ip, \@results,
-          _shadow_active_fragment($nodes_name));
-        _augment_neighbor_search(\@results, scalar param('c_neighbors'));
+          _shadow_active_fragment($nodes_name),
+          scalar param('n_ssid'), scalar param('n_netbios'));
+        _augment_neighbor_search(\@results, scalar param('c_neighbors'),
+          scalar param('n_inventory'));
     }
 
     # filter for tagged vlan using existing agg query,
