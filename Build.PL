@@ -133,7 +133,7 @@ App::Netdisco::Builder->new(
   },
   test_requires => {
     'Test::More' => '1.302083',
-    'Test::Compile' => '0',
+    'Test::Compile' => '3.3.3',
     'Test::File::ShareDir::Dist' => '0',
   },
   script_files => [
