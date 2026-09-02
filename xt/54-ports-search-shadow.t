@@ -7,7 +7,7 @@
 # and netbios when asked for, whether or not the port's own markup is
 # rendered this request.
 #
-# Same database SKIP pattern as xt/52-ports-node-stitch.t.
+# Same database SKIP pattern as xt/53-ports-node-stitch.t.
 
 use strict;
 use warnings;

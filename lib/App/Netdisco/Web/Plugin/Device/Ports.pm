@@ -25,7 +25,7 @@ my %node_result_class = (
 );
 
 # Fetches nodes for one device and groups them by port name. Split out from
-# the route so xt/52-ports-node-stitch.t can call it directly: the route is
+# the route so xt/53-ports-node-stitch.t can call it directly: the route is
 # require_login and the xt suite has no session to drive it through.
 #
 # HashRefInflator returns plain hashrefs, which changes how Template Toolkit
@@ -114,7 +114,7 @@ sub _shadow_active_fragment {
 # render it exists to save.
 #
 # Split out from the route, like _stitch_nodes, so
-# xt/53-ports-search-shadow.t can call it directly: the route is
+# xt/54-ports-search-shadow.t can call it directly: the route is
 # require_login and xt has no session to drive it through.
 #
 # The lateral join's "active = n.active" mirrors Node's ips relationship,
