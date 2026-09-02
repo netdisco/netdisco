@@ -382,7 +382,7 @@
       [% END %]
 
       [% IF params.c_nodes OR params.c_neighbors %]
-      <td>
+      <td[% IF params.c_nodes %] data-search="[% row.nodes_search | html_entity %]"[% END %]>
         [% SET neighbor_mac = '' %]
         [% IF row.remote_ip %]
           [% FOREACH _n IN row.stitched_nodes %]

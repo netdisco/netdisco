@@ -105,7 +105,10 @@ C<mac_format_call> is, as in production, the name of the row method the
 template should call, not the data itself. C<nodes> and C<ips> are still
 passed for site-local template compatibility, but the connected-nodes markup
 now reads C<stitched_nodes> and C<stitched_ips> directly, so the one row that
-carries a node keys its data there rather than under the C<nodes> value.
+carries a node keys its data there rather than under the C<nodes> value. That
+same row also carries C<nodes_search>, the DataTables search shadow, so the
+cell's C<data-search> attribute has real text rather than pinning an empty
+string that would guard nothing.
 
 C<params.c_ssid> is enabled and one row carries two C<ssid> entries, so the
 SSID cell's C<FOREACH> renders a comma separated list rather than a single
@@ -248,6 +251,7 @@ sub stash_for {
           port_acl_pvid => 1, filtered_tags => ['core'],
           stitched_nodes => [ { active => 0,
             net_mac => { as_string => 'aa:bb:cc:00:01:01' } } ],
+          nodes_search => 'aa:bb:cc:00:01:01 192.0.2.10 host.example.com',
           ssid => [ { ssid => 'CORP' }, { ssid => 'GUEST' } ] },
         # administratively disabled port
         { port => 'Gi1/2', up_admin => 'down', port_acl_service => 1 },

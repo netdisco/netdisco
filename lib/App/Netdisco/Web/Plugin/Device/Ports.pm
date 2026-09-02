@@ -93,6 +93,85 @@ sub _node_fetch_scope {
     return \@neighbor_ports;
 }
 
+# n_archived swaps $nodes_name from active_nodes to nodes, and the nodes
+# relationship is the whole table, active rows included, not the archived
+# half. A search shadow built with active = 0 for that view would drop the
+# active nodes back out, so a MAC visible on screen would stop being
+# findable by the filter. Derived from $nodes_name, the same value that
+# picks the result class in %node_result_class above, so the SQL fragment
+# and the class mapping cannot drift apart from each other.
+sub _shadow_active_fragment {
+    my ($nodes_name) = @_;
+    return $nodes_name =~ m/^active/ ? 'AND n.active' : '';
+}
+
+# Builds the DataTables search shadow: one string per port carrying every
+# node's mac, ip and dns text, so the filter can still find a node whose row
+# markup is deferred out of the DOM (Task 4) or simply never rendered this
+# request. Built in one Postgres statement, not by concatenating the fetched
+# node rows in Perl, which costs 126 ms on a 229 port device and 1014 ms on
+# a 2166 port one, more than the render it exists to save.
+#
+# Split out from the route, like _stitch_nodes, so
+# xt/53-ports-search-shadow.t can call it directly: the route is
+# require_login and xt has no session to drive it through.
+#
+# The lateral join's "active = n.active" mirrors Node's ips relationship,
+# which joins foreign.active => self.active: an archived node gets archived
+# IPs and an active node gets active ones. Getting that condition wrong
+# shows archived IPs against active nodes in the filter but not on screen.
+sub _attach_search_shadow {
+    my ($schema, $device_ip, $rows, $active_fragment) = @_;
+
+    my $sql = sprintf(q{
+        SELECT n.port,
+               string_agg(n.mac::text || ' ' || COALESCE(i.txt, ''), ' ') AS s
+          FROM node n
+          LEFT JOIN LATERAL (
+            SELECT string_agg(ip::text || ' ' || COALESCE(dns, ''), ' ') AS txt
+              FROM node_ip WHERE mac = n.mac AND active = n.active) i ON true
+         WHERE n.switch = ? %s
+         GROUP BY n.port
+    }, $active_fragment);
+
+    my $shadow = $schema->storage->dbh_do(sub {
+      my (undef, $dbh) = @_;
+      $dbh->selectall_arrayref($sql, undef, $device_ip);
+    });
+
+    my %shadow_by_port = map {; $_->[0] => ($_->[1] || '') } @$shadow;
+    $_->{nodes_search} = ($shadow_by_port{ $_->port } || '') for @$rows;
+    return;
+}
+
+# The nodes cell and the neighbors cell are the same <td> in ports.tt (the
+# block guarded by "params.c_nodes OR params.c_neighbors"), and data-search
+# on a <td> replaces that cell's whole search text rather than adding to it.
+# Left alone, a port's own neighbor identity (its discovered device, IP and
+# remote port name) would stop being findable the moment c_nodes is also on,
+# which is the plan's own measurement query (c_nodes and c_neighbors both
+# on). remote_ip, remote_port and remote_dns are real device_port columns
+# (remote_dns via the with_properties join the route always applies), so
+# they are safe to read regardless of any param. neighbor_ip and
+# neighbor_dns come from a +select added only under c_neighbors, so they are
+# read only then: DBIC's get_column dies for a column that was never
+# selected.
+sub _augment_neighbor_search {
+    my ($rows, $want_neighbors) = @_;
+
+    for my $row (@$rows) {
+        my @extra = grep { defined and length }
+          ($row->remote_ip, $row->remote_port, $row->remote_dns);
+        push @extra, grep { defined and length }
+          ($row->get_column('neighbor_ip'), $row->get_column('neighbor_dns'))
+          if $want_neighbors;
+
+        next unless @extra;
+        $row->{nodes_search} = join ' ', grep { length } ($row->{nodes_search}, @extra);
+    }
+    return;
+}
+
 # device ports with a description (er, name) matching
 get '/ajax/content/device/ports' => require_login sub {
     my $q = param('q');
@@ -313,6 +392,18 @@ get '/ajax/content/device/ports' => require_login sub {
     _stitch_nodes(schema(vars->{'tenant'}), $device->ip, \@results,
       $nodes_name, $ips_name, \@node_order, \@extra_prefetch, $node_fetch_scope)
       if defined $node_fetch_scope;
+
+    # Search shadow for the nodes cell, so DataTables can still find a node
+    # this response never renders (Task 4 defers it, or an earlier version of
+    # this route already left it out of the DOM). Gated on c_nodes alone, not
+    # c_neighbors like the stitch above: the nodes cell only renders under
+    # c_nodes, and ports.tt only emits data-search when c_nodes is on, so
+    # building this for the neighbors-only view would be pure waste.
+    if (param('c_nodes')) {
+        _attach_search_shadow(schema(vars->{'tenant'}), $device->ip, \@results,
+          _shadow_active_fragment($nodes_name));
+        _augment_neighbor_search(\@results, scalar param('c_neighbors'));
+    }
 
     # filter for tagged vlan using existing agg query,
     # which is better than join inflation
