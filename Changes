@@ -1,3 +1,10 @@
+2.106001 - tbd
+
+  [BUG FIXES]
+
+  * the Ports tab SSID column showed one SSID on a port that has several
+  * the Ports CSV export omitted the SSID value, shifting every later column
+
 2.106000 - 2026-09-02
 
   [NEW FEATURES]

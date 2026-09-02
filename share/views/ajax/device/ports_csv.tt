@@ -140,6 +140,15 @@
     [% END %]
   [% END %]
 
+  [% IF params.c_ssid %]
+    [% SET ssidlist = '' %]
+    [% FOREACH s IN row.ssid %]
+      [% SET ssidlist = ssidlist _ ',' IF NOT loop.first %]
+      [% SET ssidlist = ssidlist _ s.ssid %]
+    [% END %]
+    [% myport.push(ssidlist) %]
+  [% END %]
+
   [% IF params.c_nac_summary %]
     [% myport.push( row.pae_authconfig_port_control ) %]
     [% myport.push( row.pae_authconfig_state ) %]

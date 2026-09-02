@@ -338,7 +338,7 @@
       [% END %]
 
       [% IF params.c_ssid %]
-      <td>[% row.ssid.ssid | html_entity %]</td>
+      <td>[% FOREACH s IN row.ssid %][% s.ssid | html_entity %][% ', ' UNLESS loop.last %][% END %]</td>
       [% END %]
 
       [% IF params.c_nac_summary %]
