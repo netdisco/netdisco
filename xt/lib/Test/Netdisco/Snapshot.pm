@@ -104,21 +104,16 @@ neighbour-discovery icons that depend on C<get_column> are left as a gap.
 C<mac_format_call> is, as in production, the name of the row method the
 template should call, not the data itself. C<nodes> and C<ips> are still
 passed for site-local template compatibility, but the connected-nodes markup
-now reads C<stitched_nodes> and C<stitched_ips> directly, so the two rows
-that carry nodes key their data there rather than under the C<nodes> value.
-Both also carry C<nodes_search>, the DataTables search shadow, so the cell's
-C<data-search> attribute has real text rather than pinning an empty string
-that would guard nothing. C<settings.devport_nodes_collapse_threshold> is set
-explicitly to 1 so the two rows land on opposite sides of it: C<Gi1/1> has
-two stitched nodes and gets C<data-search>, C<Gi1/3> has one and does not,
-covering the gate at C<ports.tt:390> in both directions. Left undef, every
-node count would compare true against it and only one branch would render.
+reads C<stitched_nodes> and C<stitched_ips>, so the two rows carrying nodes
+key their data there. Both also carry C<nodes_search>, the DataTables search
+shadow, so C<data-search> has real text rather than an empty string that
+would guard nothing. C<settings.devport_nodes_collapse_threshold> is set to 1
+so the two rows land on opposite sides of it and the C<data-search> gate is
+covered in both directions.
 
-C<params.c_ssid> is enabled and one row carries two C<ssid> entries, so the
-SSID cell's C<FOREACH> renders a comma separated list rather than a single
-value. A row with only one SSID would still pass on an unfixed template that
-reads C<row.ssid.ssid> directly, so this fixture is deliberately shaped to
-need the loop.
+C<params.c_ssid> is enabled and one row carries two C<ssid> entries: with one
+each, the SSID cell would pass just as well on a template that reads
+C<row.ssid.ssid> directly instead of looping.
 
 =item C<layouts/main.tt>
 
@@ -235,9 +230,9 @@ sub stash_for {
         portctl_topology => 1,
         devport_vlan_limit => 10,
         devport_vlans_collapse_threshold => 2,
-        # explicit rather than left undef: an undef threshold makes every
-        # node count compare true, so both branches of the data-search gate
-        # in ports.tt would exercise only the "over threshold" side
+        # explicit rather than undef: an undef threshold compares true against
+        # every node count, so both fixtures would take the over-threshold
+        # branch of the data-search gate
         devport_nodes_collapse_threshold => 1,
       },
       # production passes the row accessor names here, not the data itself
@@ -251,11 +246,9 @@ sub stash_for {
         'Gi1/9' => { vlan_count => 3, vlan_set => [ 10, 20 ] },
       },
       results => [
-        # up port carrying a tag, a LAG membership, admin-edit permission,
-        # and several SSIDs, so the comma separated list renders rather than
-        # a single value. Two stitched_nodes puts it over the collapse
-        # threshold of 1 set above, so this is the "data-search present"
-        # branch of the gate at ports.tt:390.
+        # several SSIDs, so the comma separated list renders rather than a
+        # single value, and two stitched_nodes to take the over-threshold
+        # branch of the data-search gate
         { port => 'Gi1/1', up_admin => 'up', up => 'up', stp => 'forwarding',
           slave_of => 1, port_acl_service => 1, port_acl_name => 1,
           port_acl_pvid => 1, filtered_tags => ['core'],
@@ -267,10 +260,8 @@ sub stash_for {
           ssid => [ { ssid => 'CORP' }, { ssid => 'GUEST' } ] },
         # administratively disabled port
         { port => 'Gi1/2', up_admin => 'down', port_acl_service => 1 },
-        # up port with a spanning-tree block and few enough VLANs to name
-        # them. One stitched_node keeps it at (not over) the collapse
-        # threshold of 1, so this is the "no data-search" branch of the same
-        # gate: its own rendered node text stays the cell's search text.
+        # one stitched_node keeps this at, not over, the threshold, so it
+        # takes the other branch and keeps its own rendered node text
         { port => 'Gi1/3', up_admin => 'up', up => 'up', stp => 'blocking',
           stitched_nodes => [ { active => 1,
             net_mac => { as_string => 'aa:bb:cc:00:03:01' } } ],

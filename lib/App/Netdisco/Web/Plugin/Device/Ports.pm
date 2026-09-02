@@ -14,9 +14,8 @@ use DBIx::Class::ResultClass::HashRefInflator;
 
 register_device_tab({ tag => 'ports', label => 'Ports', provides_csv => 1 });
 
-# $nodes_name (see below) names a has_many relation, but the node source it
-# reads from differs by name. Kept as a hash, not a chain of regex tests,
-# because a fifth combination should be a new row here, not a new branch.
+# $nodes_name names a has_many relation, but the source it reads from is a
+# different name again.
 my %node_result_class = (
     nodes                 => 'Node',
     active_nodes          => 'Virtual::ActiveNode',
@@ -25,16 +24,13 @@ my %node_result_class = (
 );
 
 # Fetches nodes for one device and groups them by port name. Split out from
-# the route so xt/53-ports-node-stitch.t can call it directly: the route is
-# require_login and the xt suite has no session to drive it through.
+# the route so xt can call it without a session, the route being require_login.
 #
-# HashRefInflator returns plain hashrefs, which changes how Template Toolkit
-# reads two of the relations it wants to walk: manufacturer (belongs_to) and
-# netbios (might_have) come back as a single hashref rather than a blessed
-# row, and TT's FOREACH over a bare hashref iterates its key/value pairs
-# instead of treating it as one item. Wrapping each in an arrayref restores
-# the one-row-or-none shape the template already expects. wireless is
-# has_many and arrives as an arrayref already, so it needs no such wrapping.
+# HashRefInflator returns plain hashrefs, and Template Toolkit's FOREACH over
+# a bare hashref iterates its key/value pairs instead of treating it as one
+# item, so manufacturer (belongs_to) and netbios (might_have) are wrapped in
+# an arrayref to restore the one-row-or-none shape the template expects.
+# wireless is has_many and arrives as an arrayref already.
 sub _stitch_nodes {
     my ($schema, $device_ip, $rows, $nodes_name, $ips_name, $node_order,
         $extra_prefetch, $only_ports) = @_;
@@ -59,29 +55,23 @@ sub _stitch_nodes {
         push @{ $nodes_by_port{ $node->{port} } }, $node;
     }
 
-    # attached here rather than by the caller, so a test calling this
-    # function exercises the same key the template reads instead of agreeing
-    # with its own copy of the attach line.
+    # attached here rather than by the caller, so a test exercises the same
+    # key the template reads.
     $_->{stitched_nodes} = ($nodes_by_port{ $_->port } || []) for @$rows;
     return;
 }
 
 # Decides whether to fetch nodes for this view, and how widely, as the
 # $only_ports argument to _stitch_nodes. Kept free of param() so xt can pin
-# the decision without a session: the route is require_login and the xt
-# suite has no session to drive it through, so the route's own condition had
-# no automated coverage until this was pulled out.
+# the decision without a session.
 #
-# c_neighbors is checked by default in config.yml and c_nodes is not, so the
-# neighbors-only branch is the shipped default view. It reads node data only
-# for a port carrying a remote_ip, to name that neighbor's MAC, so fetching
-# every port's nodes there costs 669 ms on a 2166 port device for rows
-# nothing on the page reads; fetching nothing when no port has a remote_ip
-# is the fix for that, not an incidental case.
+# The neighbors-only branch is the shipped default, c_neighbors being checked
+# in config.yml and c_nodes not. It reads node data only to name the MAC
+# behind a port's remote_ip, so it fetches nothing when no port carries one,
+# and only those ports when some do.
 #
-# Returns undef to mean do not fetch at all, or an arrayref to pass as
-# $only_ports: empty means the whole device, non-empty scopes the fetch to
-# those ports.
+# Returns undef to fetch nothing, or an arrayref for $only_ports: empty means
+# the whole device, non-empty scopes the fetch to those ports.
 sub _node_fetch_scope {
     my ($want_nodes, $want_neighbors, $rows) = @_;
 
@@ -93,13 +83,10 @@ sub _node_fetch_scope {
     return \@neighbor_ports;
 }
 
-# n_archived swaps $nodes_name from active_nodes to nodes, and the nodes
-# relationship is the whole table, active rows included, not the archived
-# half. A search shadow built with active = 0 for that view would drop the
-# active nodes back out, so a MAC visible on screen would stop being
-# findable by the filter. Derived from $nodes_name, the same value that
-# picks the result class in %node_result_class above, so the SQL fragment
-# and the class mapping cannot drift apart from each other.
+# n_archived swaps $nodes_name to nodes, which is the whole table rather than
+# the archived half, so a shadow built with active = 0 there would drop the
+# active nodes back out and a MAC visible on screen would stop being findable.
+# Derived from $nodes_name so this and %node_result_class cannot drift apart.
 sub _shadow_active_fragment {
     my ($nodes_name) = @_;
     return $nodes_name =~ m/^active/ ? 'AND n.active' : '';
@@ -107,30 +94,19 @@ sub _shadow_active_fragment {
 
 # Builds the DataTables search shadow: one string per port carrying every
 # node's mac, ip, dns and vlan text, plus ssid and netbios when asked for, so
-# the filter can still find a node whose row markup is deferred out of the
-# DOM (Task 4) or simply never rendered this request. Built in one Postgres
-# statement, not by concatenating the fetched node rows in Perl, which costs
-# 126 ms on a 229 port device and 1014 ms on a 2166 port one, more than the
-# render it exists to save.
+# the filter can find a node whose markup this response does not render.
+# Built in one statement rather than by concatenating the fetched rows in
+# Perl, which costs more than the render it exists to save.
 #
-# Split out from the route, like _stitch_nodes, so
-# xt/54-ports-search-shadow.t can call it directly: the route is
-# require_login and xt has no session to drive it through.
+# The node_ip lateral's "active = n.active" mirrors Node's ips relationship,
+# which joins foreign.active => self.active, so an archived node gets archived
+# IPs. Get it wrong and the filter matches archived IPs that are not on
+# screen. node_wireless and node_nbt are keyed on mac alone, with no active
+# condition, so their laterals match that instead.
 #
-# The lateral join's "active = n.active" mirrors Node's ips relationship,
-# which joins foreign.active => self.active: an archived node gets archived
-# IPs and an active node gets active ones. Getting that condition wrong
-# shows archived IPs against active nodes in the filter but not on screen.
-#
-# vlan is a plain node column, always cheap, so it is always in the shadow:
-# ports.tt:475 shows it with no n_* guard. ssid and netbios come from
-# node_wireless and node_nbt, both of Node's relations keyed on mac alone
-# (no active condition, unlike ips), so their laterals join on mac only,
-# matching what those relations actually select. Each is joined only when
-# its own template guard (n_ssid, n_netbios) is on: a field the cell does
-# not render does not need to be findable, and the join has a real cost
-# (measured: +2.9 MB on the largest archived device in the profiling
-# database for all three fields together).
+# vlan has no n_* guard in the template and is always included. ssid and
+# netbios are joined only under their own guards: a field the cell does not
+# render need not be findable, and each join has a real cost.
 sub _attach_search_shadow {
     my ($schema, $device_ip, $rows, $active_fragment, $want_ssid, $want_netbios) = @_;
 
@@ -143,12 +119,11 @@ sub _attach_search_shadow {
               FROM node_wireless WHERE mac = n.mac) w ON true};
     }
 
-    # nbuser is a logged-in user, not the machine's own NetBIOS hostname,
-    # so nbname doesn't cover it; nbt.ip isn't always one of the node's own
-    # IPs, so the node_ip lateral doesn't always cover it either.
-    # Deliberately not carrying the '[No User]' fallback ports.tt renders
-    # for an absent nbuser: nobody filters for that, and it would match
-    # every node with no NetBIOS user.
+    # nbuser is a logged-in user rather than the machine's own NetBIOS
+    # hostname, so nbname does not cover it, and nbt.ip is not always one of
+    # the node's own IPs, so the node_ip lateral does not either. The
+    # '[No User]' fallback the template renders is left out: it would match
+    # every node that has no NetBIOS user.
     my ($netbios_select, $netbios_join) = ('', '');
     if ($want_netbios) {
         $netbios_select = q{ || ' ' || COALESCE(b.txt, '')};
@@ -182,28 +157,19 @@ sub _attach_search_shadow {
     return;
 }
 
-# The nodes cell and the neighbors cell are the same <td> in ports.tt (the
-# block guarded by "params.c_nodes OR params.c_neighbors"), and data-search
-# on a <td> replaces that cell's whole search text rather than adding to it.
-# Left alone, a port's own neighbor identity (its discovered device, IP and
-# remote port name) would stop being findable the moment c_nodes is also on,
-# which is the plan's own measurement query (c_nodes and c_neighbors both
-# on). remote_ip, remote_port, remote_dns, remote_id and remote_type are
-# real device_port columns (remote_dns via the with_properties join the
-# route always applies), so they are safe to read regardless of any param.
-# remote_type is rendered at ports.tt:438 with no n_detailed_inventory
-# guard, so it is appended unconditionally like the others rather than
-# gated on that flag. neighbor_ip and neighbor_dns come from a +select
-# added only under c_neighbors, so they are read only then: DBIC's
-# get_column dies for a column that was never selected.
+# The nodes cell and the neighbors cell are one <td>, and data-search on a
+# <td> replaces that cell's whole search text rather than adding to it, so a
+# port's own neighbor identity has to be appended or it stops being findable
+# once c_nodes is on.
 #
-# remote_inventory is different: it is a method, not a column
-# (DevicePort.pm's remote_os_ver/remote_serial/remote_vendor/remote_model
-# via get_column), and those columns are selected only by
-# with_remote_inventory, which the route applies only under n_inventory.
-# Calling it when that flag is off dies the same way neighbor_ip would, so
-# it is guarded on $want_inventory the same way the template guards its own
-# rendering of it at ports.tt:417 and :444.
+# remote_ip, remote_port, remote_dns, remote_id and remote_type are
+# device_port columns (remote_dns via the with_properties join the route
+# always applies) and are safe to read whatever the params say. neighbor_ip
+# and neighbor_dns come from a +select added only under c_neighbors, and
+# get_column dies for a column that was never selected. remote_inventory is a
+# method, not a column: it reads columns only with_remote_inventory selects,
+# which the route applies only under n_inventory, so it dies the same way
+# unless guarded on that flag.
 sub _augment_neighbor_search {
     my ($rows, $want_neighbors, $want_inventory) = @_;
 
@@ -372,22 +338,20 @@ get '/ajax/content/device/ports' => require_login sub {
                    : param('n_ip4') ? 'ip4s'
                    : 'ip6s');
 
-    # Ordering terms for the node query below, never for $set: see
-    # DevicePort's order_by_port_name for why the port key has to lead there,
-    # and _stitch_nodes for why these are qualified against the node source
-    # instead.
+    # Ordering terms for the node query below, never for $set: they are
+    # qualified against the node source. See DevicePort's order_by_port_name
+    # for why the port key has to lead there.
     my @node_order = ();
     my @extra_prefetch = ();
 
-    # row.stitched_nodes is read even when c_nodes is off, to find the
-    # neighbor's MAC for the Neighbors column, so the stitch has to run for
-    # either. It is scoped differently for the two, see the call below.
+    # the Neighbors column reads stitched_nodes too, to name the MAC behind
+    # remote_ip, so the stitch runs for either flag. _node_fetch_scope scopes
+    # the two differently.
     if (param('c_nodes') or param('c_neighbors')) {
-        # Fetched separately and joined by port name below, not prefetched.
-        # One prefetch of ports to nodes to IPs returns the product of the
-        # three and DBIC inflates every row of it: 598 ms on a 229 port
-        # device where the SQL behind it is 16 ms. A second has_many branch
-        # multiplies it again, which is what c_ssid used to do.
+        # Fetched separately and joined by port name below, not prefetched:
+        # one prefetch of ports to nodes to IPs returns the product of the
+        # three and DBIC inflates every row of it, and a second has_many
+        # branch multiplies it again.
         @node_order = (
           \qq{regexp_replace(COALESCE(me.vlan, '0'), '[^0-9]*' ,'0') :: integer},
           'me.mac',
@@ -428,17 +392,14 @@ get '/ajax/content/device/ports' => require_login sub {
     # Ordered in the database rather than after the fetch. The order is
     # portsort.js's, which is the one the browser shows, so this replaces a
     # sort_port pass whose result the browser overwrote anyway. @node_order
-    # does not belong here any more: it is qualified for the node source, not
-    # for $set, which has its own mac and vlan columns that would silently
-    # take over the ordering instead.
+    # must not be added here: $set has its own mac and vlan columns and would
+    # silently order by those instead.
     $set = $set->order_by_port_name();
 
     # run query
     my @results = $set->all;
 
-    # fetch and attach nodes by port name; see _stitch_nodes for why this
-    # replaced a prefetch, and _node_fetch_scope for what decides whether and
-    # how widely to fetch.
+    # fetch and attach nodes by port name, rather than prefetching them
     my $node_fetch_scope = _node_fetch_scope(
       scalar param('c_nodes'), scalar param('c_neighbors'), \@results);
 
@@ -446,12 +407,9 @@ get '/ajax/content/device/ports' => require_login sub {
       $nodes_name, $ips_name, \@node_order, \@extra_prefetch, $node_fetch_scope)
       if defined $node_fetch_scope;
 
-    # Search shadow for the nodes cell, so DataTables can still find a node
-    # this response never renders (Task 4 defers it, or an earlier version of
-    # this route already left it out of the DOM). Gated on c_nodes alone, not
-    # c_neighbors like the stitch above: the nodes cell only renders under
-    # c_nodes, and ports.tt only emits data-search when c_nodes is on, so
-    # building this for the neighbors-only view would be pure waste.
+    # Gated on c_nodes alone, not c_neighbors like the stitch above: the
+    # template emits data-search only under c_nodes, so the neighbors-only
+    # view would build this for nothing.
     if (param('c_nodes')) {
         _attach_search_shadow(schema(vars->{'tenant'}), $device->ip, \@results,
           _shadow_active_fragment($nodes_name),

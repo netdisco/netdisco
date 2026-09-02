@@ -1,13 +1,10 @@
 #!/usr/bin/env perl
 
-# The CSV header is built by looping settings.port_columns, whose ELSE branch
-# pushes any column's label. The body pushes values from a hand written IF per
-# column. Nothing ties the two lists together, so a column with a header and no
-# body branch shifts every later column up one position and mislabels the data
-# without any error. c_ssid was exactly that for as long as the column existed.
-#
-# This asserts the two lists have the same length with every column enabled,
-# which covers all 26 columns rather than the one that was broken.
+# The CSV header loops settings.port_columns; the body pushes values from a
+# hand written IF per column. Nothing ties the two lists together, so a column
+# with a header and no body branch shifts every later column up one position
+# and mislabels the data with no error anywhere. This asserts the two lists
+# are the same length with every column enabled.
 
 use strict;
 use warnings;
@@ -18,11 +15,8 @@ use YAML::XS ();
 use lib 'xt/lib';
 use Test::Netdisco::Snapshot 'render_template';
 
-# port_columns is normally built by lib/App/Netdisco/Web.pm:234-248 from
-# settings.sidebar_defaults.device_ports. Rebuilding it here from the shipped
-# config, rather than hardcoding a column list, is what makes this test catch
-# a future column added with no matching CSV branch: the defect this test
-# guards against.
+# Rebuilt from the shipped config the way Web.pm builds it, rather than
+# hardcoded, so a column added later with no CSV branch is caught here.
 my $config = YAML::XS::LoadFile('share/config.yml');
 my $device_ports = $config->{sidebar_defaults}->{device_ports};
 my @port_columns =
@@ -33,8 +27,8 @@ my @port_columns =
 my @COLUMNS = grep { $_ ne 'c_admin' && $_ ne 'c_links' }
   map { $_->{name} } @port_columns;
 
-# One port row with every field the CSV body reads, so no branch short circuits
-# on undef and silently pushes nothing.
+# Every field the CSV body reads, so no branch short circuits on undef and
+# silently pushes nothing.
 my $row = {
   port => 'GigabitEthernet0/1', descr => 'uplink', up => 'up', up_admin => 'up',
   type => 'ethernetCsmacd', ifindex => 1, lastchange_stamp => '2026-01-01 00:00:00',
@@ -65,10 +59,8 @@ is $error, undef, 'template renders without error';
 
 my @lines = grep { length } split /\r?\n/, $csv;
 
-# A naive comma count would miscount the c_ssid field, whose value is itself a
-# comma-joined list and so arrives CSV-quoted (containing a literal comma that
-# is not a field separator). Parsing with Text::CSV, the way any real
-# consumer of this export would, counts fields rather than commas.
+# Counting commas would miscount the c_ssid field, whose value is itself a
+# comma-joined list and so arrives quoted. Text::CSV counts fields.
 my $parser = Text::CSV->new({ binary => 1 });
 $parser->parse($lines[0]) or die 'failed to parse header line: ' . $parser->error_diag;
 my @headers = $parser->fields;

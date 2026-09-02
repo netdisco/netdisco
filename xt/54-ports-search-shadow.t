@@ -1,11 +1,9 @@
 #!/usr/bin/env perl
 
-# Task 4 defers a port's node markup out of the DOM once it has more nodes
-# than settings.devport_nodes_collapse_threshold, so the DataTables filter
-# needs something else to search: a shadow string, built by Postgres, that
-# carries every node's mac, ip, dns and vlan text for that port, plus ssid
-# and netbios when asked for, whether or not the port's own markup is
-# rendered this request.
+# The Ports tab gives a port's nodes cell a search shadow: a string built by
+# Postgres carrying every node's mac, ip, dns and vlan text for that port,
+# plus ssid and netbios when asked for. It is what the DataTables filter
+# matches when the cell's own node markup is not rendered.
 #
 # Same database SKIP pattern as xt/53-ports-node-stitch.t.
 
@@ -30,11 +28,8 @@ SKIP: {
 
     require App::Netdisco::Web::Plugin::Device::Ports;
 
-    # A port over the collapse threshold (20, config.yml's default), with at
-    # least one of its nodes carrying an IP, so both assertions below have
-    # something real to match. Joined to node_ip rather than counting node
-    # alone, or the IP assertion could be vacuous on a port whose nodes carry
-    # no IPs at all.
+    # Joined to node_ip rather than counting node alone: on a port whose
+    # nodes carry no IPs, the IP assertion below would pass vacuously.
     my ($switch, $port) = $schema->storage->dbh_do(sub {
       my (undef, $dbh) = @_;
       $dbh->selectrow_array(q{
@@ -83,18 +78,14 @@ SKIP: {
       'every port has a shadow, including ports with no nodes';
 }
 
-# node.vlan has no n_* guard in ports.tt (it is always shown), so it is
-# always in the shadow. No want_ssid/want_netbios needed to see it.
+# vlan has no n_* guard in the template, so it is always in the shadow.
 SKIP: {
     skip "no usable netdisco database: $why", 1 if not $schema;
 
-    # length(vlan) >= 3 avoids a false pass: a one- or two-digit vlan like
-    # "1" is a substring of nearly any mac or IP text already in the shadow,
-    # so an early version of this assertion passed against the unmodified
-    # pre-fix _attach_search_shadow, which never selected vlan at all.
-    # Caught by running it against that code and seeing it pass when it
-    # should not have; narrowing to a 3+ digit vlan and requiring it match
-    # as its own whitespace-delimited token made it fail there as expected.
+    # length(vlan) >= 3 avoids a false pass: a one- or two-digit vlan is a
+    # substring of nearly any mac or IP text already in the shadow, so the
+    # assertion would hold even if vlan were never selected. Matching it as
+    # its own whitespace-delimited token is part of the same guard.
     my ($vlan_switch, $vlan_port, $a_vlan) = $schema->storage->dbh_do(sub {
       my (undef, $dbh) = @_;
       $dbh->selectrow_array(q{
@@ -124,16 +115,13 @@ SKIP: {
       'the shadow carries a node VLAN as its own token, which has no n_* guard';
 }
 
-# SSID comes from node_wireless, keyed on mac alone (Node's wireless
-# relation carries no active condition), and its lateral join in
-# _attach_search_shadow is only added when want_ssid is true, mirroring
-# ports.tt's own n_ssid guard.
+# SSID comes from node_wireless, keyed on mac alone, and its lateral is joined
+# only when want_ssid is true, mirroring the template's n_ssid guard.
 SKIP: {
     skip "no usable netdisco database: $why", 2 if not $schema;
 
-    # ssid !~ '\s' keeps the fixture to a single-token SSID: the shadow
-    # joins fields with a bare space, so a multi-word SSID like "Guest Wifi"
-    # would never satisfy a whitespace-anchored match on its own.
+    # single-token SSID only: the shadow joins fields with a bare space, so a
+    # multi-word SSID cannot satisfy a whitespace-anchored match.
     my ($ssid_switch, $ssid_port, $an_ssid) = $schema->storage->dbh_do(sub {
       my (undef, $dbh) = @_;
       $dbh->selectrow_array(q{
@@ -170,22 +158,16 @@ SKIP: {
       'the shadow does not carry the SSID when n_ssid is off, the conditional join is worth having';
 }
 
-# NetBIOS comes from node_nbt, also keyed on mac alone (Node's netbios
-# relation carries no active condition), joined only when want_netbios is
-# true, mirroring ports.tt's n_netbios guard.
+# NetBIOS comes from node_nbt, also keyed on mac alone, joined only when
+# want_netbios is true, mirroring the template's n_netbios guard.
 SKIP: {
     skip "no usable netdisco database: $why", 7 if not $schema;
 
-    # nbuser and ip render at ports.tt under the same n_netbios block as
-    # nbname/domain (nbt.nbuser@nbt.ip), so all four need a fixture row that
-    # carries all of them, or the nbuser/ip assertions below would be
-    # vacuous. Two more filters guard against a false pass: nbuser often
-    # equals nbname exactly (a machine logged in as itself), which would
-    # pass the nbuser assertion even if nbuser were never added to the
-    # shadow, and nbt.ip is frequently one of the node's own IPs, already
-    # covered by the existing node_ip lateral, which would do the same to
-    # the ip assertion. Both were caught this way against real data before
-    # the fixture query below was narrowed.
+    # All four fields render under the one n_netbios block, so the fixture
+    # row must carry all four. Two exclusions avoid a false pass: nbuser
+    # equal to nbname would hold even if nbuser were never added to the
+    # shadow, and an nbt.ip already among the node's own IPs is covered by
+    # the node_ip lateral regardless.
     my ($nbt_switch, $nbt_port, $an_nbname, $a_domain, $a_nbuser, $an_ip) =
       $schema->storage->dbh_do(sub {
         my (undef, $dbh) = @_;
@@ -238,16 +220,13 @@ SKIP: {
       'the shadow does not carry the NetBIOS-reported IP when n_netbios is off';
 }
 
-# Needs no database, so it stays outside the SKIP block, the same reasoning
-# as xt/52's equivalent check: inside the block CI would skip it and still
-# report PASS, and this is the one guard CI can actually run.
+# Outside the SKIP block deliberately: inside it, CI would skip this and still
+# report PASS.
 require App::Netdisco::DB::Result::DevicePort;
 ok !App::Netdisco::DB::Result::DevicePort->can('nodes_search'),
   'nodes_search is not a method, so Template Toolkit reaches the hash key';
 
-# _shadow_active_fragment picks the SQL fragment from $nodes_name alone, the
-# same value that picks the result class in Ports.pm's %node_result_class,
-# so it needs no database either.
+# _shadow_active_fragment reads $nodes_name alone, so it needs no database.
 require App::Netdisco::Web::Plugin::Device::Ports;
 
 is App::Netdisco::Web::Plugin::Device::Ports::_shadow_active_fragment('active_nodes'),
@@ -260,9 +239,8 @@ is App::Netdisco::Web::Plugin::Device::Ports::_shadow_active_fragment('nodes_wit
   '', 'nodes_with_age gets no fragment either';
 
 # _augment_neighbor_search keeps a port's own neighbor identity findable once
-# c_nodes is also on: the neighbors cell and the nodes cell are the same <td>
-# in ports.tt, and data-search on a <td> replaces its whole search text. A
-# fake row only needs the accessors the function reads; no database involved.
+# c_nodes is on, the two cells being one <td> whose search text data-search
+# replaces wholesale. A fake row only needs the accessors it reads.
 {
     package Fake::NeighborRow;
     sub new { my ($class, %args) = @_; return bless { %args }, $class }
@@ -275,8 +253,6 @@ is App::Netdisco::Web::Plugin::Device::Ports::_shadow_active_fragment('nodes_wit
     sub get_column       { my ($self, $col) = @_; return $self->{$col} }
 }
 
-# 1. c_neighbors on, a discovered neighbor with an alias: both the
-#    device_port columns and the neighbor_alias columns are appended.
 my $aliased = Fake::NeighborRow->new(
     remote_ip => '10.0.0.9', remote_port => 'Gi0/1', remote_dns => 'switch-a',
     neighbor_ip => '10.0.0.9', neighbor_dns => 'switch-a.example.com',
@@ -288,9 +264,8 @@ like $aliased->{nodes_search}, qr/switch-a\.example\.com/,
 like $aliased->{nodes_search}, qr/\Qaa:bb:cc:dd:ee:ff\E/,
   'the existing shadow text is kept, not replaced';
 
-# 2. c_neighbors off: neighbor_ip/neighbor_dns are never read (the +select
-#    that would supply them is not in the query), only the always-safe
-#    device_port columns are appended.
+# With c_neighbors off the +select supplying neighbor_ip/neighbor_dns is not
+# in the query, so they must not be read at all.
 my $unaliased = Fake::NeighborRow->new(
     remote_ip => '10.0.0.9', remote_port => 'Gi0/1', remote_dns => 'switch-a',
     nodes_search => '',
@@ -301,15 +276,13 @@ like $unaliased->{nodes_search}, qr/switch-a/,
 unlike $unaliased->{nodes_search}, qr/example\.com/,
   'neighbor_ip/neighbor_dns are never read when c_neighbors is off';
 
-# 3. No neighbor data at all: the existing shadow text is left alone.
 my $plain = Fake::NeighborRow->new(nodes_search => 'untouched');
 App::Netdisco::Web::Plugin::Device::Ports::_augment_neighbor_search([$plain], 1, 0);
 is $plain->{nodes_search}, 'untouched',
   'a port with no neighbor data keeps its shadow text unchanged';
 
-# 4. remote_id and remote_type are real device_port columns, so they are
-#    appended unconditionally (ports.tt:438 renders remote_type for a
-#    WAP/phone with no n_detailed_inventory guard at all).
+# remote_id and remote_type are device_port columns, appended unconditionally:
+# the template renders remote_type with no n_detailed_inventory guard.
 my $identified = Fake::NeighborRow->new(
     remote_ip => '10.0.0.9', remote_id => 'chassis-42', remote_type => 'wap-model-x',
     nodes_search => '',
@@ -320,13 +293,11 @@ like $identified->{nodes_search}, qr/chassis-42/,
 like $identified->{nodes_search}, qr/wap-model-x/,
   'remote_type is appended unconditionally';
 
-# 5. remote_inventory is a method, not a column: DevicePort.pm synthesizes
-#    it from remote_os_ver/remote_serial/remote_vendor/remote_model, columns
-#    selected only by with_remote_inventory, which the route applies only
-#    under n_inventory. A row whose remote_inventory dies if called proves
-#    the guard actually prevents the call, not merely skips the append; a
-#    plain unlike/skip assertion here would pass just as well on a broken
-#    implementation that reads the column and gets undef.
+# remote_inventory is a method reading columns only with_remote_inventory
+# selects, which the route applies only under n_inventory. The fake row dies
+# if it is called, so this proves the guard prevents the call rather than
+# merely skipping the append: an unlike assertion would also pass on an
+# implementation that read the column and got undef.
 {
     package Fake::NeighborRowInventoryDies;
     sub new { my ($class, %args) = @_; return bless { %args }, $class }
