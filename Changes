@@ -14,6 +14,8 @@
 
   * the Ports tab SSID column showed one SSID on a port that has several
   * the Ports CSV export omitted the SSID value, shifting every later column
+  * the Ports tab connected-nodes list could leave a div unclosed when both
+    node IP columns were turned off, nesting the rest of the page inside it
 
 2.106000 - 2026-09-02
 
