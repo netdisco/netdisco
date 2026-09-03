@@ -3,15 +3,19 @@
   [ENHANCEMENTS]
 
   * the Ports tab connected-nodes view fetches nodes in a second query rather
-    than one join, which it renders about twice as fast
+    than one join
   * the Ports tab connected-nodes cell now carries a search shadow built in
     SQL, so the table filter still finds a node by MAC, IP, DNS name, VLAN,
     SSID, NetBIOS name, NetBIOS user or vendor, and a neighbor by its
     inventory string. the MAC is matched both as stored and in whichever
-    format the sidebar is set to display
+    format the sidebar is set to display. the shadow does not carry a
+    node's age, so filtering the table on age text such as "2 days 3
+    hours" no longer matches
   * the Ports tab connected-nodes list no longer fetches a port's nodes
     until its collapsed count is opened, on the ports over the collapse
-    threshold that make up most of a busy device's node markup
+    threshold that make up most of a busy device's node markup. until then,
+    the node text is not in the page, so browser find-in-page and copying
+    the table will not see it
 
   [BUG FIXES]
 
@@ -19,6 +23,9 @@
   * the Ports CSV export omitted the SSID value, shifting every later column
   * the Ports tab connected-nodes list could leave a div unclosed when both
     node IP columns were turned off, nesting the rest of the page inside it
+  * GET /api/v1/object/device/{ip}/port/{port}/ssid now returns a JSON
+    array instead of a single object, matching a port having more than
+    one SSID
 
 2.106000 - 2026-09-02
 

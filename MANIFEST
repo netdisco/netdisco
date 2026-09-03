@@ -708,6 +708,10 @@ xt/48-htmx-form-attributes.t
 xt/49-netmap-position-key.t
 xt/50-config-override.t
 xt/51-updated-device-hook.t
+xt/52-ports-csv-arity.t
+xt/53-ports-node-stitch.t
+xt/54-ports-search-shadow.t
+xt/55-ports-deferred-nodes.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/netmap-autosave.test.js

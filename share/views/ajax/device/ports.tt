@@ -381,8 +381,7 @@
 
       [% END %]
 
-      [% IF params.c_nodes OR params.c_neighbors %]
-      [%# Every c_nodes cell, not just the ones whose node list is collapsed.
+      [% IF params.c_nodes OR params.c_neighbors %][%# Every c_nodes cell, not just the ones whose node list is collapsed.
           DataTables reads tbody tr:first-child alone to decide whether a
           column takes its filter text from data-search, and applies that
           decision to the whole column: emit the attribute on some rows only

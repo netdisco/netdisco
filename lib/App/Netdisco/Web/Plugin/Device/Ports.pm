@@ -72,7 +72,9 @@ sub _stitch_nodes {
 # and only those ports when some do.
 #
 # Returns undef to fetch nothing, or an arrayref for $only_ports: empty means
-# the whole device, non-empty scopes the fetch to those ports.
+# the whole device, non-empty scopes the fetch to those ports. The c_nodes
+# branch's empty arrayref only reaches the CSV export as written: the HTML
+# path narrows it again via _threshold_scope before any fetch runs.
 sub _node_fetch_scope {
     my ($want_nodes, $want_neighbors, $rows) = @_;
 
@@ -454,9 +456,10 @@ get '/ajax/content/device/ports' => require_login sub {
     # against the node source, never $set: see DevicePort's
     # order_by_port_name for why the port key has to lead there. Fetched
     # separately and joined by port name below, not prefetched: one prefetch
-    # of ports to nodes to IPs returns the product of the three and DBIC
-    # inflates every row of it, and a second has_many branch multiplies it
-    # again.
+    # of ports to nodes to IPs returns the product of all three and DBIC
+    # inflates every row of it. _stitch_nodes still prefetches IPs and
+    # wireless together off the node, which reintroduces that product, but
+    # scoped to one node's own rows rather than every port's.
     my ($nodes_name, $ips_name, $node_order, $extra_prefetch)
       = _node_display_options();
 
@@ -657,6 +660,10 @@ get '/ajax/content/device/ports' => require_login sub {
     if (request->is_ajax) {
         template 'ajax/device/ports.tt', {
           results => \@results,
+          # kept for site-local template overrides that may still read
+          # row.$nodes or row.$ips: site-local template compatibility is
+          # a project commitment, even though the shipped template no
+          # longer reads them itself
           nodes => $nodes_name,
           ips   => $ips_name,
           device => $device,
@@ -692,7 +699,6 @@ get '/ajax/content/device/port/nodes' => require_login sub {
 
     template 'ajax/device/port_nodes.tt', {
       row => $row, device => $device,
-      nodes => $nodes_name, ips => $ips_name,
     }, { layout => 'noop' };
 };
 
