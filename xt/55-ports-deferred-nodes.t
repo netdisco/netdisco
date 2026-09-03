@@ -33,4 +33,14 @@ my ($div) = $html =~ m/(<div class="nd_collapsing[^>]*>)/;
 like $div, qr/hx-get=/,     'hx-get is on the div, not inherited';
 like $div, qr/hx-headers=/, 'hx-headers is on the div, not inherited';
 
+# The regexes above match on the route path alone and would still pass if
+# the n_*/mac_format suffix were silently dropped: _deferred_node_params
+# builds that string in Perl, but the template just interpolates it
+# unfiltered, relying on AUTO_FILTER to html-escape it in the attribute.
+$stash->{deferred_node_params} = '&n_dns=1&mac_format=cisco';
+my ($html2, $error2) = render_template('ajax/device/ports.tt', $stash);
+is $error2, undef, 'renders with deferred_node_params set' or diag $error2;
+like $html2, qr/hx-get="[^"]*&amp;n_dns=1&amp;mac_format=cisco"/,
+  'deferred_node_params lands in hx-get, html-escaped';
+
 done_testing;

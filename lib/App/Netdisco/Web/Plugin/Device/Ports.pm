@@ -277,13 +277,38 @@ sub _count_nodes_by_port {
 # Carries the display options that change how a node row renders, built once
 # here rather than in the template, so the deferred fetch draws the same
 # markup the eager path would have. mac_format feeds mac_format_call in
-# Web.pm, which every node's MAC is rendered through.
+# Web.pm, which every node's MAC is rendered through. Kept free of param()
+# so xt can pin the querystring without a session.
 sub _deferred_node_params {
-    my $qs = join '', map { param($_) ? "&$_=1" : () }
-      qw/n_ip4 n_ip6 n_dns n_age n_ssid n_vendor n_netbios n_archived/;
-    $qs .= '&mac_format=' . uri_escape(param('mac_format'))
-      if param('mac_format');
+    my ($n_ip4, $n_ip6, $n_dns, $n_age, $n_ssid, $n_vendor, $n_netbios,
+        $n_archived, $mac_format) = @_;
+
+    my $qs = '';
+    $qs .= '&n_ip4=1' if $n_ip4;
+    $qs .= '&n_ip6=1' if $n_ip6;
+    $qs .= '&n_dns=1' if $n_dns;
+    $qs .= '&n_age=1' if $n_age;
+    $qs .= '&n_ssid=1' if $n_ssid;
+    $qs .= '&n_vendor=1' if $n_vendor;
+    $qs .= '&n_netbios=1' if $n_netbios;
+    $qs .= '&n_archived=1' if $n_archived;
+    $qs .= '&mac_format=' . uri_escape($mac_format) if $mac_format;
     return $qs;
+}
+
+# Ports at or under the threshold get their own row fetched; a port over it
+# still gets one when it might carry a neighbor's own MAC, since the
+# Neighbors column reads stitched_nodes for that regardless of the node
+# list's own threshold, but only under c_neighbors: that carve-out is what
+# makes neighbor_mac renderable at all, and stitching every node of an
+# over-threshold trunk port just to throw the render away is expensive on
+# exactly the ports a core switch has the most of. Kept free of param() and
+# setting() so xt can pin the decision without a session.
+sub _threshold_scope {
+    my ($threshold, $want_neighbors, $count_by_port, $rows) = @_;
+    return [ map { $_->port }
+      grep { ($count_by_port->{ $_->port } || 0) <= $threshold
+             or ($want_neighbors and $_->remote_ip) } @$rows ];
 }
 
 # device ports with a description (er, name) matching
@@ -482,20 +507,21 @@ get '/ajax/content/device/ports' => require_login sub {
         if (param('c_nodes') and request->is_ajax) {
             my $count_by_port = _count_nodes_by_port(schema(vars->{'tenant'}),
               $device->ip, \@results, _shadow_active_fragment($nodes_name));
-            my $threshold = setting('devport_nodes_collapse_threshold');
 
             # Ports over the threshold render a count and an empty div that
             # fetches its own rows; fetching them here would build markup
-            # that netdisco.css hides on arrival. A port that names the
-            # neighbor's own MAC is kept regardless of its count: the
-            # Neighbors column reads stitched_nodes for that whether or not
-            # this port's own node list collapses.
-            $only_ports = [ map { $_->port }
-              grep { ($count_by_port->{ $_->port } || 0) <= $threshold
-                     or $_->remote_ip } @results ];
+            # that netdisco.css hides on arrival.
+            $only_ports = _threshold_scope(
+              setting('devport_nodes_collapse_threshold'),
+              scalar param('c_neighbors'), $count_by_port, \@results);
             $skip_stitch = 1 unless scalar @$only_ports;
 
-            $deferred_node_params = _deferred_node_params();
+            $deferred_node_params = _deferred_node_params(
+              scalar param('n_ip4'), scalar param('n_ip6'),
+              scalar param('n_dns'), scalar param('n_age'),
+              scalar param('n_ssid'), scalar param('n_vendor'),
+              scalar param('n_netbios'), scalar param('n_archived'),
+              scalar param('mac_format'));
         }
 
         _stitch_nodes(schema(vars->{'tenant'}), $device->ip, \@results,

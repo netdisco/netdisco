@@ -108,8 +108,9 @@ my @rows_some_neighbors = (
     Fake::PortRow->new(port => 'Gi1/3', remote_ip => '10.0.0.3'),
 );
 
-# Both flags on is the case that matters: the c_nodes block reads every port's
-# nodes, so a scoped fetch there would blank some.
+# c_nodes on returns [], meaning no restriction from this function: the route
+# narrows that further itself (by node count, in _threshold_scope), which
+# _node_fetch_scope has no part in and this file does not need to see.
 is_deeply App::Netdisco::Web::Plugin::Device::Ports::_node_fetch_scope(
   1, 0, \@rows_no_neighbors), [],
   'c_nodes on, c_neighbors off fetches the whole device';
