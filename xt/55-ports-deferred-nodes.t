@@ -67,11 +67,22 @@ for my $mac_format (undef, '') {
       . ' mac_format is omitted, not emitted empty';
 }
 
+# Every option carried when true, not just the ones the calls above happen
+# to set truthy: one all-true call, checked in a loop over all eight, so a
+# regression in any single option's line is caught rather than assumed
+# covered by a different assertion's incidental truthy value.
+my $qs_all = App::Netdisco::Web::Plugin::Device::Ports::_deferred_node_params(
+  1, 1, 1, 1, 1, 1, 1, 1, 'IEEE');
+for my $option (qw/n_ip4 n_ip6 n_dns n_age n_ssid n_vendor n_netbios n_archived/) {
+    like $qs_all, qr/&\Q$option\E=1/, "$option on is carried";
+}
+
 # Truthiness as Perl itself defines it, not as HTML checkboxes happen to
 # submit it: 'on' and 'off' are both non-empty strings, so both are true;
 # only '0', '', and undef are false. The deferred fetch has to agree with
-# every other truthiness check in this file (param() results are used the
-# same bare way throughout), or its markup stops matching the eager path's.
+# every other truthiness check in Ports.pm's route handler, where param()
+# results are used the same bare way, or its markup stops matching the
+# eager path's.
 my $qs_truthy = App::Netdisco::Web::Plugin::Device::Ports::_deferred_node_params(
   'on', 0, 1, '', 'off', '0', undef, 1, undef);
 like   $qs_truthy, qr/&n_ip4=1/,     'a truthy string ("on") is carried';
