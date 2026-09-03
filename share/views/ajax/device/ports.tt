@@ -521,8 +521,8 @@
             [% IF node.stitched_ips.size AND node.stitched_ips.size > settings.devport_ips_collapse_threshold %]
             </div>
             [% END %]
-            </div>
           [% END %]
+          </div>
           [% IF params.n_netbios %]
             [% FOREACH nbt IN node.netbios %]
             [% '<br/>' IF NOT loop.first %]

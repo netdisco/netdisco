@@ -113,6 +113,12 @@ wrapper, and it gives the C<data-search> check in
 F<xt/54-ports-search-shadow.t> a row of each kind, the attribute itself being
 unconditional.
 
+C<params.n_ip4> and C<params.n_ip6> are both enabled, as they ship in
+F<share/config.yml>, so every stitched node's C<stitched_ips> renders.
+C<settings.devport_ips_collapse_threshold> is set to 1 so, within the row
+already over the node threshold, its two nodes also land on opposite sides
+of the IP threshold.
+
 C<params.c_ssid> is enabled and one row carries two C<ssid> entries: with one
 each, the SSID cell would pass just as well on a template that reads
 C<row.ssid.ssid> directly instead of looping.
@@ -226,7 +232,7 @@ sub stash_for {
       params => {
         c_admin => 1, c_port => 1, c_name => 1, c_pvid => 1, c_tags => 1,
         c_power => 1, c_vmember => 1, c_nodes => 1, c_neighbors => 1,
-        c_ssid => 1, p_fold_dotzero => 1,
+        c_ssid => 1, p_fold_dotzero => 1, n_ip4 => 1, n_ip6 => 1,
       },
       settings => {
         portctl_topology => 1,
@@ -235,6 +241,9 @@ sub stash_for {
         # explicit rather than undef: an undef threshold compares true against
         # every node count, so both fixtures would render the collapse wrapper
         devport_nodes_collapse_threshold => 1,
+        # same reasoning as devport_nodes_collapse_threshold above, applied to
+        # the per-node IP list
+        devport_ips_collapse_threshold => 1,
       },
       # production passes the row accessor names here, not the data itself
       nodes => 'client_nodes',
@@ -254,9 +263,15 @@ sub stash_for {
           slave_of => 1, port_acl_service => 1, port_acl_name => 1,
           port_acl_pvid => 1, filtered_tags => ['core'],
           stitched_nodes => [ { active => 0,
-              net_mac => { as_string => 'aa:bb:cc:00:01:01' } },
+              net_mac => { as_string => 'aa:bb:cc:00:01:01' },
+              stitched_ips => [ { ip => '192.0.2.11', active => 1,
+                dns => 'host11.example.com' } ] },
             { active => 1,
-              net_mac => { as_string => 'aa:bb:cc:00:01:02' } } ],
+              net_mac => { as_string => 'aa:bb:cc:00:01:02' },
+              stitched_ips => [ { ip => '192.0.2.12', active => 1,
+                  dns => 'host12.example.com' },
+                { ip => '192.0.2.13', active => 1,
+                  dns => 'host13.example.com' } ] } ],
           nodes_search => 'aa:bb:cc:00:01:01 192.0.2.10 host.example.com',
           ssid => [ { ssid => 'CORP' }, { ssid => 'GUEST' } ] },
         # administratively disabled port
@@ -265,7 +280,9 @@ sub stash_for {
         # node markup renders uncollapsed
         { port => 'Gi1/3', up_admin => 'up', up => 'up', stp => 'blocking',
           stitched_nodes => [ { active => 1,
-            net_mac => { as_string => 'aa:bb:cc:00:03:01' } } ],
+            net_mac => { as_string => 'aa:bb:cc:00:03:01' },
+            stitched_ips => [ { ip => '192.0.2.30', active => 1,
+              dns => 'host3.example.com' } ] } ],
           nodes_search => 'aa:bb:cc:00:03:01 192.0.2.30 host3.example.com' },
         # error-disabled port, also on the non-dot-zero subinterface fold
         { port => 'Gi1/4', up_admin => 'up', up => 'down',
