@@ -454,85 +454,21 @@
           [% END %]
         [% END %]
         [% IF params.c_nodes %]
-        [% IF row.stitched_nodes AND row.stitched_nodes.size > settings.devport_nodes_collapse_threshold %]
+        [% IF row.node_count > settings.devport_nodes_collapse_threshold %]
         <div class="nd_nodes-total">
-          <strong>[% row.stitched_nodes.size %] nodes</strong>
+          <strong>[% row.node_count %] nodes</strong>
           <span class="nd_collapse-vlans">
             Show <div class="nd_arrow-up-down-left-down fas fa-square-plus"></div>&nbsp;
           </span>
         </div>
-        <div class="nd_collapsing nd_collapse-pre-hidden">
-        [% END %]
-        [% FOREACH node IN row.stitched_nodes %]
-          [% SET _node_is_neighbor = 0 %]
-          [% FOREACH _nip IN node.stitched_ips; _node_is_neighbor = 1 IF _nip.ip == row.remote_ip; END %]
-          [% NEXT IF _node_is_neighbor %]
-          <div class="nd_div-closer[% ' nd_div-closer-last' IF loop.last %]">
-          [% '<br/>' IF (row.remote_ip OR row.is_uplink) OR NOT loop.first %]
-          [% '<i class="fas fa-book" title="Archived node (inactive)"></i>&nbsp; ' IF NOT node.active %]
-          <i class="fas fa-laptop" title="Client"></i>&nbsp;
-          <a href="[% search_node | none %]&q=[% node.net_mac.$mac_format_call | uri %]">
-            [% node.net_mac.$mac_format_call | html_entity %]</a>
-          [% IF (node.vlan > 0) && (node.vlan != row.vlan) %]
-            (on vlan [% node.vlan | html_entity %])
-          [% END %]            
-          [% IF params.n_ssid AND node.wireless AND node.wireless.size %]
-            (SSID: [% FOREACH wlan IN node.wireless %]
-              <a href="[%+ uri_for('/report/portssid') %]?ssid=[% wlan.ssid | uri %]">[% wlan.ssid | html_entity %]</a>
-            [% END %])
-          [% END %]
-          [% IF params.n_vendor AND node.manufacturer.defined %]
-            ([% FOREACH manufacturer IN node.manufacturer %]<a href="[%+ uri_for('/report/nodevendor') %]?vendor=[% manufacturer.abbrev | uri %]">[% manufacturer.abbrev | html_entity %]</a>[% END %])
-          [% END %]
-          [% ' (' _ node.time_last_age _ ')' IF params.n_age %]
-          [% IF params.n_ip4 OR params.n_ip6 %]
-            [% IF node.stitched_ips.size AND node.stitched_ips.size > settings.devport_ips_collapse_threshold %]
-            <div class="nd_nodes-total">
-              &nbsp;&nbsp;<strong>[% node.stitched_ips.size %] IPs</strong>
-              <span class="nd_collapse-vlans">
-                Show <div class="nd_arrow-up-down-left-down fas fa-square-plus"></div>&nbsp;
-              </span>
-            </div>
-            <div class="nd_collapsing nd_collapse-pre-hidden">
-            [% END %]
-            [% FOREACH ip IN node.stitched_ips %]
-            [% IF loop.first %]
-              [% IF (node.stitched_ips.size) > settings.devport_ips_collapse_threshold %]
-                &nbsp;
-              [% ELSE %]
-                <br/>&nbsp;
-              [% END %]
-            [% ELSE %]
-              <br/>&nbsp;
-            [% END %]
-            [% '<i class="fas fa-book" title="Archived node (inactive)"></i>&nbsp; ' IF NOT ip.active %]
-            [% SET dns = ip.dns %]
-            [% IF dns %]
-              [% IF params.n_dns %]
-                <a href="[% search_node | none %]&q=[% dns | uri %]" title="[% ip.ip | html_entity %]">[% dns | html_entity %]</a>
-                <a href="[% search_node | none %]&q=[% ip.ip | uri %]" title="[% dns | html_entity %]">([% ip.ip | html_entity %])</a>
-              [% ELSE %]
-                <a href="[% search_node | none %]&q=[% ip.ip | uri %]" title="[% ip.ip | html_entity %]">[% dns | html_entity %]</a>
-              [% END %]
-            [% ELSE %]
-              <a href="[% search_node | none %]&q=[% ip.ip | uri %]">[% ip.ip | html_entity %]</a>
-            [% END %]
-            [% END %]
-            [% IF node.stitched_ips.size AND node.stitched_ips.size > settings.devport_ips_collapse_threshold %]
-            </div>
-            [% END %]
-          [% END %]
-          </div>
-          [% IF params.n_netbios %]
-            [% FOREACH nbt IN node.netbios %]
-            [% '<br/>' IF NOT loop.first %]
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\<a href="[% uri_for('/report/netbios') | none %]?domain=[% nbt.domain | uri %]" title="Nodes in this Domain">[% nbt.domain | html_entity %]</a>\<a href="[% search_node | none %]&q=[% nbt.nbname | uri %]">[% nbt.nbname | html_entity %]</a>
-            <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[% nbt.nbuser || '[No User]' | html_entity %]@<a href="[% search_node | none %]&q=[% nbt.ip | uri %]">[% nbt.ip | html_entity %]</a>
-            [% END %]
-          [% END %]
-        [% END %]
-        [% IF row.stitched_nodes AND row.stitched_nodes.size > settings.devport_nodes_collapse_threshold %]
-        </div>
+        <div class="nd_collapsing nd_collapse-pre-hidden"
+             hx-get="[% uri_for('/ajax/content/device/port/nodes') %]?q=[% device.ip | uri %]&amp;port=[% row.port | uri %][% deferred_node_params %]"
+             hx-trigger="click once from:previous .nd_collapse-vlans"
+             hx-target="this"
+             hx-swap="innerHTML"
+             hx-headers='{"X-Requested-With": "XMLHttpRequest"}'></div>
+        [% ELSE %]
+        [% INCLUDE 'ajax/device/port_nodes.tt' %]
         [% END %]
         [% END %]
         [% IF params.c_admin AND settings.portctl_topology AND row.port_acl_service %]

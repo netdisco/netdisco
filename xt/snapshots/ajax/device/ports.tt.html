@@ -87,30 +87,12 @@
             Show <div class="nd_arrow-up-down-left-down fas fa-square-plus"></div>&nbsp;
           </span>
         </div>
-        <div class="nd_collapsing nd_collapse-pre-hidden">
-          <div class="nd_div-closer"><i class="fas fa-book" title="Archived node (inactive)"></i>&nbsp; 
-          <i class="fas fa-laptop" title="Client"></i>&nbsp;
-          <a href="&q=aa%3Abb%3Acc%3A00%3A01%3A01">aa:bb:cc:00:01:01</a>            
-                <br/>&nbsp;
-                <a href="&q=192.0.2.11" title="192.0.2.11">host11.example.com</a>
-          </div>
-          <div class="nd_div-closer nd_div-closer-last"><br/>
-          <i class="fas fa-laptop" title="Client"></i>&nbsp;
-          <a href="&q=aa%3Abb%3Acc%3A00%3A01%3A02">aa:bb:cc:00:01:02</a>            
-            <div class="nd_nodes-total">
-              &nbsp;&nbsp;<strong>2 IPs</strong>
-              <span class="nd_collapse-vlans">
-                Show <div class="nd_arrow-up-down-left-down fas fa-square-plus"></div>&nbsp;
-              </span>
-            </div>
-            <div class="nd_collapsing nd_collapse-pre-hidden">
-                &nbsp;
-                <a href="&q=192.0.2.12" title="192.0.2.12">host12.example.com</a>
-              <br/>&nbsp;
-                <a href="&q=192.0.2.13" title="192.0.2.13">host13.example.com</a>
-            </div>
-          </div>
-        </div>
+        <div class="nd_collapsing nd_collapse-pre-hidden"
+             hx-get="?q=&amp;port=Gi1%2F1"
+             hx-trigger="click once from:previous .nd_collapse-vlans"
+             hx-target="this"
+             hx-swap="innerHTML"
+             hx-headers='{"X-Requested-With": "XMLHttpRequest"}'></div>
         <a class="nd_log-icon"
           href="?dev1=&port1=Gi1%2F1">
           <i class="fas fa-link text-warning"
@@ -247,12 +229,12 @@
 
       
       <td data-search="aa:bb:cc:00:03:01 192.0.2.30 host3.example.com">
-          <div class="nd_div-closer nd_div-closer-last">
-          <i class="fas fa-laptop" title="Client"></i>&nbsp;
-          <a href="&q=aa%3Abb%3Acc%3A00%3A03%3A01">aa:bb:cc:00:03:01</a>            
-                <br/>&nbsp;
-                <a href="&q=192.0.2.30" title="192.0.2.30">host3.example.com</a>
-          </div>
+  <div class="nd_div-closer nd_div-closer-last">
+  <i class="fas fa-laptop" title="Client"></i>&nbsp;
+  <a href="&q=aa%3Abb%3Acc%3A00%3A03%3A01">aa:bb:cc:00:03:01</a>            
+        <br/>&nbsp;
+        <a href="&q=192.0.2.30" title="192.0.2.30">host3.example.com</a>
+  </div>
       </td>
 
 

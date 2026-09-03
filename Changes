@@ -9,6 +9,9 @@
     SSID, NetBIOS name, NetBIOS user or vendor, and a neighbor by its
     inventory string. the MAC is matched both as stored and in whichever
     format the sidebar is set to display
+  * the Ports tab connected-nodes list no longer fetches a port's nodes
+    until its collapsed count is opened, on the ports over the collapse
+    threshold that make up most of a busy device's node markup
 
   [BUG FIXES]
 

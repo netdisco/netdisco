@@ -107,21 +107,29 @@ passed for site-local template compatibility, but the connected-nodes markup
 reads C<stitched_nodes> and C<stitched_ips>, so the two rows carrying nodes
 key their data there. Both also carry C<nodes_search>, the DataTables search
 shadow, so C<data-search> has real text rather than an empty string that
-would guard nothing. C<settings.devport_nodes_collapse_threshold> is set to 1
-so the two rows land on opposite sides of it: that drives the collapse
-wrapper, and it gives the C<data-search> check in
-F<xt/54-ports-search-shadow.t> a row of each kind, the attribute itself being
-unconditional.
+would guard nothing. C<node_count> and C<settings.devport_nodes_collapse_threshold>
+are set so the two rows land on opposite sides of the threshold: Gi1/1 takes
+the deferred stub branch and Gi1/3 the C<INCLUDE> branch, which gives the
+C<data-search> check in F<xt/54-ports-search-shadow.t> a row of each kind, the
+attribute itself being unconditional. Gi1/3's C<stitched_nodes> is what the
+C<INCLUDE> renders here; the fixture below for C<port_nodes.tt> itself is what
+covers that template's own remaining branches, Gi1/1's node data having moved
+there along with them.
 
 C<params.n_ip4> and C<params.n_ip6> are both enabled, as they ship in
-F<share/config.yml>, so every stitched node's C<stitched_ips> renders.
-C<settings.devport_ips_collapse_threshold> is set to 1 so, within the row
-already over the node threshold, its two nodes also land on opposite sides
-of the IP threshold.
+F<share/config.yml>, so Gi1/3's stitched node's C<stitched_ips> renders.
 
 C<params.c_ssid> is enabled and one row carries two C<ssid> entries: with one
 each, the SSID cell would pass just as well on a template that reads
 C<row.ssid.ssid> directly instead of looping.
+
+=item C<ajax/device/port_nodes.tt>
+
+Rendered two ways: nested inside the C<ports.tt> snapshot above via
+C<INCLUDE> for the under-threshold row, and standalone here for the rest of
+this template's branches. C<row> carries the two C<stitched_nodes> moved out
+of C<ports.tt>'s own fixture, one archived and one with two C<stitched_ips>,
+so the archived-node icon and the per-node IP-collapse wrapper both render.
 
 =item C<layouts/main.tt>
 
@@ -261,7 +269,7 @@ sub stash_for {
         # collapse threshold
         { port => 'Gi1/1', up_admin => 'up', up => 'up', stp => 'forwarding',
           slave_of => 1, port_acl_service => 1, port_acl_name => 1,
-          port_acl_pvid => 1, filtered_tags => ['core'],
+          port_acl_pvid => 1, filtered_tags => ['core'], node_count => 2,
           stitched_nodes => [ { active => 0,
               net_mac => { as_string => 'aa:bb:cc:00:01:01' },
               stitched_ips => [ { ip => '192.0.2.11', active => 1,
@@ -279,6 +287,7 @@ sub stash_for {
         # one stitched_node keeps this at, not over, the threshold, so its
         # node markup renders uncollapsed
         { port => 'Gi1/3', up_admin => 'up', up => 'up', stp => 'blocking',
+          node_count => 1,
           stitched_nodes => [ { active => 1,
             net_mac => { as_string => 'aa:bb:cc:00:03:01' },
             stitched_ips => [ { ip => '192.0.2.30', active => 1,
@@ -300,6 +309,29 @@ sub stash_for {
         { port => 'Gi1/10', up_admin => 'up', up => 'up',
           has_subinterface_group => 1, has_only_dot_zero_subinterface => 1 },
       ],
+    };
+  }
+
+  if ($view eq 'ajax/device/port_nodes.tt') {
+    return {
+      params => { n_ip4 => 1, n_ip6 => 1, n_dns => 1 },
+      settings => { devport_ips_collapse_threshold => 1 },
+      mac_format_call => 'as_string',
+      # Gi1/1's own two nodes, moved here from ports.tt.html's fixture: this
+      # is the row ports.tt now renders as a deferred stub, so the IP-collapse
+      # wrapper and the archived-node icon live in this snapshot instead.
+      row => { port => 'Gi1/1',
+        stitched_nodes => [ { active => 0,
+            net_mac => { as_string => 'aa:bb:cc:00:01:01' },
+            stitched_ips => [ { ip => '192.0.2.11', active => 1,
+              dns => 'host11.example.com' } ] },
+          { active => 1,
+            net_mac => { as_string => 'aa:bb:cc:00:01:02' },
+            stitched_ips => [ { ip => '192.0.2.12', active => 1,
+                dns => 'host12.example.com' },
+              { ip => '192.0.2.13', active => 1,
+                  dns => 'host13.example.com' } ] } ],
+      },
     };
   }
 
