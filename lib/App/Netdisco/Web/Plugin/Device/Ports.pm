@@ -104,11 +104,12 @@ sub _shadow_active_fragment {
 # screen. node_wireless and node_nbt are keyed on mac alone, with no active
 # condition, so their laterals match that instead.
 #
-# vlan has no n_* guard in the template and is always included. ssid and
-# netbios are joined only under their own guards: a field the cell does not
+# vlan has no n_* guard in the template and is always included. ssid, netbios
+# and vendor are joined only under their own guards: a field the cell does not
 # render need not be findable, and each join has a real cost.
 sub _attach_search_shadow {
-    my ($schema, $device_ip, $rows, $active_fragment, $want_ssid, $want_netbios) = @_;
+    my ($schema, $device_ip, $rows, $active_fragment, $want_ssid, $want_netbios,
+        $mac_format, $want_vendor) = @_;
 
     my ($ssid_select, $ssid_join) = ('', '');
     if ($want_ssid) {
@@ -134,18 +135,48 @@ sub _attach_search_shadow {
               FROM node_nbt WHERE mac = n.mac) b ON true};
     }
 
+    # manufacturer is belongs_to on the node's oui, so at most one row and a
+    # plain LEFT JOIN rather than a lateral. abbrev, not company, because
+    # abbrev is what the cell renders.
+    my ($vendor_select, $vendor_join) = ('', '');
+    if ($want_vendor) {
+        $vendor_select = q{ || ' ' || COALESCE(m.abbrev, '')};
+        $vendor_join = q{
+          LEFT JOIN manufacturer m ON m.base = n.oui};
+    }
+
+    # The cell renders the MAC through mac_format_call, so on any setting but
+    # IEEE the string on screen is not the one Postgres stores and a filter on
+    # the visible MAC would miss. The displayed form is carried beside the
+    # canonical one rather than instead of it, so a pasted IEEE address keeps
+    # working whatever the setting. IEEE needs no entry here: it is exactly
+    # what mac::text already gives. Kept in step with NetAddr::MAC's as_cisco,
+    # as_microsoft and as_sun, which is what the template calls.
+    my %mac_as = (
+        cisco     => q{regexp_replace(replace(n.mac::text, ':', ''),
+                         '(.{4})(.{4})(.{4})', '\1.\2.\3')},
+        microsoft => q{replace(n.mac::text, ':', '-')},
+        sun       => q{replace(regexp_replace(n.mac::text,
+                         '(^|:)0([0-9a-f])', '\1\2', 'g'), ':', '-')},
+    );
+    my $mac_select = '';
+    if ($mac_format and my $expr = $mac_as{ lc $mac_format }) {
+        $mac_select = qq{ || ' ' || $expr};
+    }
+
     my $sql = sprintf(q{
         SELECT n.port,
                string_agg(n.mac::text || ' ' || COALESCE(n.vlan, '') || ' '
-                 || COALESCE(i.txt, '')%s%s, ' ') AS s
+                 || COALESCE(i.txt, '')%s%s%s%s, ' ') AS s
           FROM node n
           LEFT JOIN LATERAL (
             SELECT string_agg(ip::text || ' ' || COALESCE(dns, ''), ' ') AS txt
               FROM node_ip WHERE mac = n.mac AND active = n.active) i ON true
-          %s%s
+          %s%s%s
          WHERE n.switch = ? %s
          GROUP BY n.port
-    }, $ssid_select, $netbios_select, $ssid_join, $netbios_join, $active_fragment);
+    }, $ssid_select, $netbios_select, $vendor_select, $mac_select,
+       $ssid_join, $netbios_join, $vendor_join, $active_fragment);
 
     my $shadow = $schema->storage->dbh_do(sub {
       my (undef, $dbh) = @_;
@@ -413,7 +444,8 @@ get '/ajax/content/device/ports' => require_login sub {
     if (param('c_nodes')) {
         _attach_search_shadow(schema(vars->{'tenant'}), $device->ip, \@results,
           _shadow_active_fragment($nodes_name),
-          scalar param('n_ssid'), scalar param('n_netbios'));
+          scalar param('n_ssid'), scalar param('n_netbios'),
+          scalar param('mac_format'), scalar param('n_vendor'));
         _augment_neighbor_search(\@results, scalar param('c_neighbors'),
           scalar param('n_inventory'));
     }

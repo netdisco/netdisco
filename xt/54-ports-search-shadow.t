@@ -11,6 +11,7 @@ use strict;
 use warnings;
 
 use Test::More 0.88;
+use NetAddr::MAC ();
 use lib 'xt/lib';
 use Test::Netdisco::Snapshot 'render_template';
 
@@ -331,6 +332,91 @@ my $inventoried = Fake::NeighborRow->new(
 App::Netdisco::Web::Plugin::Device::Ports::_augment_neighbor_search([$inventoried], 0, 1);
 like $inventoried->{nodes_search}, qr/WS-C3560/,
   'the inventory string is appended when n_inventory is on';
+
+# The nodes cell renders manufacturer.abbrev under n_vendor, and the shadow
+# replaces that cell's search text wholesale, so the abbrev has to be in it or
+# a vendor stops being findable on any port. Its own fixture, deliberately: the
+# node needs an oui that joins manufacturer, which the fixtures above do not ask
+# for.
+SKIP: {
+    skip "no usable netdisco database: $why", 2 if not $schema;
+
+    my ($v_switch, $v_port, $an_abbrev) = $schema->storage->dbh_do(sub {
+      my (undef, $dbh) = @_;
+      $dbh->selectrow_array(q{
+          SELECT n.switch, n.port, m.abbrev
+            FROM node n
+            JOIN manufacturer m ON m.base = n.oui
+           WHERE n.active AND length(m.abbrev) > 2
+           LIMIT 1
+      });
+    });
+
+    skip 'no active node in this database has a manufacturer', 2
+      if not defined $v_switch;
+
+    my $v_device = $schema->resultset('Device')->find($v_switch);
+    my ($v_row) = grep { $_->port eq $v_port }
+      $v_device->ports->with_properties->order_by_port_name->all;
+
+    skip 'port lookup for the vendor fixture came back empty', 2 if not $v_row;
+
+    App::Netdisco::Web::Plugin::Device::Ports::_attach_search_shadow(
+      $schema, $v_device->ip, [$v_row],
+      App::Netdisco::Web::Plugin::Device::Ports::_shadow_active_fragment('active_nodes'),
+      0, 0, '', 1);
+    like $v_row->{nodes_search}, qr/(?:^|\s)\Q$an_abbrev\E(?:\s|$)/,
+      'the shadow carries the manufacturer abbreviation when n_vendor is on';
+
+    App::Netdisco::Web::Plugin::Device::Ports::_attach_search_shadow(
+      $schema, $v_device->ip, [$v_row],
+      App::Netdisco::Web::Plugin::Device::Ports::_shadow_active_fragment('active_nodes'),
+      0, 0, '', 0);
+    unlike $v_row->{nodes_search}, qr/(?:^|\s)\Q$an_abbrev\E(?:\s|$)/,
+      'the shadow leaves the vendor out when n_vendor is off, the join is worth having';
+}
+
+# The cell renders the MAC through mac_format_call, so on any setting but IEEE
+# the string on screen is not the one Postgres stores. The shadow has to carry
+# the displayed form or a user who has picked Cisco cannot filter on the MAC
+# they can see. IEEE needs nothing extra: it is what mac::text already gives.
+SKIP: {
+    skip "no usable netdisco database: $why", 3 if not $schema;
+
+    my ($m_switch, $m_port, $a_mac) = $schema->storage->dbh_do(sub {
+      my (undef, $dbh) = @_;
+      $dbh->selectrow_array(q{
+          SELECT switch, port, mac::text FROM node WHERE active LIMIT 1
+      });
+    });
+
+    skip 'no active node in this database', 3 if not defined $m_switch;
+
+    my $m_device = $schema->resultset('Device')->find($m_switch);
+    my ($m_row) = grep { $_->port eq $m_port }
+      $m_device->ports->with_properties->order_by_port_name->all;
+
+    skip 'port lookup for the mac_format fixture came back empty', 3 if not $m_row;
+
+    my $cisco = NetAddr::MAC->new(mac => $a_mac)->as_cisco;
+    my $sun   = NetAddr::MAC->new(mac => $a_mac)->as_sun;
+
+    App::Netdisco::Web::Plugin::Device::Ports::_attach_search_shadow(
+      $schema, $m_device->ip, [$m_row],
+      App::Netdisco::Web::Plugin::Device::Ports::_shadow_active_fragment('active_nodes'),
+      0, 0, 'Cisco', 0);
+    like $m_row->{nodes_search}, qr/(?:^|\s)\Q$cisco\E(?:\s|$)/,
+      'the shadow carries the Cisco form when that is the chosen mac_format';
+    like $m_row->{nodes_search}, qr/(?:^|\s)\Q$a_mac\E(?:\s|$)/,
+      'and still carries the canonical form beside it';
+
+    App::Netdisco::Web::Plugin::Device::Ports::_attach_search_shadow(
+      $schema, $m_device->ip, [$m_row],
+      App::Netdisco::Web::Plugin::Device::Ports::_shadow_active_fragment('active_nodes'),
+      0, 0, 'Sun', 0);
+    like $m_row->{nodes_search}, qr/(?:^|\s)\Q$sun\E(?:\s|$)/,
+      'and the Sun form, whose octets lose their leading zeros';
+}
 
 # The shadow is only reachable if DataTables sources the column's filter text
 # from data-search, and it decides that from tbody tr:first-child alone, for the

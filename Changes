@@ -6,8 +6,9 @@
     than one join, which it renders about twice as fast
   * the Ports tab connected-nodes cell now carries a search shadow built in
     SQL, so the table filter still finds a node by MAC, IP, DNS name, VLAN,
-    SSID, NetBIOS name or NetBIOS user, and a neighbor by its inventory
-    string
+    SSID, NetBIOS name, NetBIOS user or vendor, and a neighbor by its
+    inventory string. the MAC is matched both as stored and in whichever
+    format the sidebar is set to display
 
   [BUG FIXES]
 
