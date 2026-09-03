@@ -108,8 +108,10 @@ reads C<stitched_nodes> and C<stitched_ips>, so the two rows carrying nodes
 key their data there. Both also carry C<nodes_search>, the DataTables search
 shadow, so C<data-search> has real text rather than an empty string that
 would guard nothing. C<settings.devport_nodes_collapse_threshold> is set to 1
-so the two rows land on opposite sides of it and the C<data-search> gate is
-covered in both directions.
+so the two rows land on opposite sides of it: that drives the collapse
+wrapper, and it gives the C<data-search> check in
+F<xt/54-ports-search-shadow.t> a row of each kind, the attribute itself being
+unconditional.
 
 C<params.c_ssid> is enabled and one row carries two C<ssid> entries: with one
 each, the SSID cell would pass just as well on a template that reads
@@ -231,8 +233,7 @@ sub stash_for {
         devport_vlan_limit => 10,
         devport_vlans_collapse_threshold => 2,
         # explicit rather than undef: an undef threshold compares true against
-        # every node count, so both fixtures would take the over-threshold
-        # branch of the data-search gate
+        # every node count, so both fixtures would render the collapse wrapper
         devport_nodes_collapse_threshold => 1,
       },
       # production passes the row accessor names here, not the data itself
@@ -247,8 +248,8 @@ sub stash_for {
       },
       results => [
         # several SSIDs, so the comma separated list renders rather than a
-        # single value, and two stitched_nodes to take the over-threshold
-        # branch of the data-search gate
+        # single value, and two stitched_nodes to put this row over the
+        # collapse threshold
         { port => 'Gi1/1', up_admin => 'up', up => 'up', stp => 'forwarding',
           slave_of => 1, port_acl_service => 1, port_acl_name => 1,
           port_acl_pvid => 1, filtered_tags => ['core'],
@@ -260,8 +261,8 @@ sub stash_for {
           ssid => [ { ssid => 'CORP' }, { ssid => 'GUEST' } ] },
         # administratively disabled port
         { port => 'Gi1/2', up_admin => 'down', port_acl_service => 1 },
-        # one stitched_node keeps this at, not over, the threshold, so it
-        # takes the other branch and keeps its own rendered node text
+        # one stitched_node keeps this at, not over, the threshold, so its
+        # node markup renders uncollapsed
         { port => 'Gi1/3', up_admin => 'up', up => 'up', stp => 'blocking',
           stitched_nodes => [ { active => 1,
             net_mac => { as_string => 'aa:bb:cc:00:03:01' } } ],

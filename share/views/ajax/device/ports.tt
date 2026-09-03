@@ -382,11 +382,13 @@
       [% END %]
 
       [% IF params.c_nodes OR params.c_neighbors %]
-      [%# data-search replaces this cell's whole search text rather than
-          adding to it, so it is set only where the shadow is a complete
-          substitute. Under the collapse threshold the cell's own rendered
-          text is left to speak for itself. %]
-      <td[% IF params.c_nodes AND row.stitched_nodes AND row.stitched_nodes.size > settings.devport_nodes_collapse_threshold %] data-search="[% row.nodes_search | html_entity %]"[% END %]>
+      [%# Every c_nodes cell, not just the ones whose node list is collapsed.
+          DataTables reads tbody tr:first-child alone to decide whether a
+          column takes its filter text from data-search, and applies that
+          decision to the whole column: emit the attribute on some rows only
+          and either every row is ignored, or, if the first row does carry it,
+          the rows without it filter on nothing. %]
+      <td[% IF params.c_nodes %] data-search="[% row.nodes_search | html_entity %]"[% END %]>
         [% SET neighbor_mac = '' %]
         [% IF row.remote_ip %]
           [% FOREACH _n IN row.stitched_nodes %]
