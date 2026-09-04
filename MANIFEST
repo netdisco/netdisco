@@ -404,6 +404,7 @@ share/public/javascripts/jstree/themes/proton/style.css
 share/public/javascripts/jstree/themes/proton/style.min.css
 share/public/javascripts/jstree/themes/proton/throbber.gif
 share/public/javascripts/moment.min.js
+share/public/javascripts/netdisco-deferred-nodes.js
 share/public/javascripts/netdisco.js
 share/public/javascripts/netdisco_portcontrol.js
 share/public/javascripts/portsort.js
@@ -576,6 +577,7 @@ share/views/ajax/device/addresses_csv.tt
 share/views/ajax/device/details.tt
 share/views/ajax/device/modules.tt
 share/views/ajax/device/netmap.tt
+share/views/ajax/device/port_nodes.tt
 share/views/ajax/device/ports.tt
 share/views/ajax/device/ports_csv.tt
 share/views/ajax/device/snmp.tt
@@ -709,8 +711,13 @@ xt/49-netmap-position-key.t
 xt/50-config-override.t
 xt/51-updated-device-hook.t
 xt/52-token-acl-auth.t
+xt/53-ports-csv-arity.t
+xt/54-ports-node-stitch.t
+xt/55-ports-search-shadow.t
+xt/56-ports-deferred-nodes.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
+xt/js/deferred-nodes.test.js
 xt/js/netmap-autosave.test.js
 xt/js/netmap-legend.test.js
 xt/js/netmap-loading.test.js

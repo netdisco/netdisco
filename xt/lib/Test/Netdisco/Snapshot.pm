@@ -101,8 +101,35 @@ plain hashrefs; C<row.get_column> and C<row.has_column_loaded> are
 DBIx::Class::Row methods this harness does not model, so one row supplies
 C<has_column_loaded> as a coderef to reach the "port is free" branch, and the
 neighbour-discovery icons that depend on C<get_column> are left as a gap.
-C<nodes>, C<ips> and C<mac_format_call> are, as in production, the names of
-the row accessors the template should call, not the data itself.
+C<mac_format_call> is, as in production, the name of the row method the
+template should call, not the data itself. C<nodes> and C<ips> are still
+passed for site-local template compatibility, but the connected-nodes markup
+reads C<stitched_nodes> and C<stitched_ips>, so the two rows carrying nodes
+key their data there. Both also carry C<nodes_search>, the DataTables search
+shadow, so C<data-search> has real text rather than an empty string that
+would guard nothing. C<node_count> and C<settings.devport_nodes_collapse_threshold>
+are set so the two rows land on opposite sides of the threshold: Gi1/1 takes
+the deferred stub branch and Gi1/3 the C<INCLUDE> branch, which gives the
+C<data-search> check in F<xt/55-ports-search-shadow.t> a row of each kind, the
+attribute itself being unconditional. Gi1/3's C<stitched_nodes> is what the
+C<INCLUDE> renders here; the fixture below for C<port_nodes.tt> itself is what
+covers that template's own remaining branches, Gi1/1's node data having moved
+there along with them.
+
+C<params.n_ip4> and C<params.n_ip6> are both enabled, as they ship in
+F<share/config.yml>, so Gi1/3's stitched node's C<stitched_ips> renders.
+
+C<params.c_ssid> is enabled and one row carries two C<ssid> entries: with one
+each, the SSID cell would pass just as well on a template that reads
+C<row.ssid.ssid> directly instead of looping.
+
+=item C<ajax/device/port_nodes.tt>
+
+Rendered two ways: nested inside the C<ports.tt> snapshot above via
+C<INCLUDE> for the under-threshold row, and standalone here for the rest of
+this template's branches. C<row> carries the two C<stitched_nodes> moved out
+of C<ports.tt>'s own fixture, one archived and one with two C<stitched_ips>,
+so the archived-node icon and the per-node IP-collapse wrapper both render.
 
 =item C<layouts/main.tt>
 
@@ -213,12 +240,18 @@ sub stash_for {
       params => {
         c_admin => 1, c_port => 1, c_name => 1, c_pvid => 1, c_tags => 1,
         c_power => 1, c_vmember => 1, c_nodes => 1, c_neighbors => 1,
-        p_fold_dotzero => 1,
+        c_ssid => 1, p_fold_dotzero => 1, n_ip4 => 1, n_ip6 => 1,
       },
       settings => {
         portctl_topology => 1,
         devport_vlan_limit => 10,
         devport_vlans_collapse_threshold => 2,
+        # explicit rather than undef: an undef threshold compares true against
+        # every node count, so both fixtures would render the collapse wrapper
+        devport_nodes_collapse_threshold => 1,
+        # same reasoning as devport_nodes_collapse_threshold above, applied to
+        # the per-node IP list
+        devport_ips_collapse_threshold => 1,
       },
       # production passes the row accessor names here, not the data itself
       nodes => 'client_nodes',
@@ -231,16 +264,35 @@ sub stash_for {
         'Gi1/9' => { vlan_count => 3, vlan_set => [ 10, 20 ] },
       },
       results => [
-        # up port carrying a tag, a LAG membership, and admin-edit permission
+        # several SSIDs, so the comma separated list renders rather than a
+        # single value, and two stitched_nodes to put this row over the
+        # collapse threshold
         { port => 'Gi1/1', up_admin => 'up', up => 'up', stp => 'forwarding',
           slave_of => 1, port_acl_service => 1, port_acl_name => 1,
-          port_acl_pvid => 1, filtered_tags => ['core'],
-          client_nodes => [ { active => 0,
-            net_mac => { as_string => 'aa:bb:cc:00:01:01' } } ] },
+          port_acl_pvid => 1, filtered_tags => ['core'], node_count => 2,
+          stitched_nodes => [ { active => 0,
+              net_mac => { as_string => 'aa:bb:cc:00:01:01' },
+              stitched_ips => [ { ip => '192.0.2.11', active => 1,
+                dns => 'host11.example.com' } ] },
+            { active => 1,
+              net_mac => { as_string => 'aa:bb:cc:00:01:02' },
+              stitched_ips => [ { ip => '192.0.2.12', active => 1,
+                  dns => 'host12.example.com' },
+                { ip => '192.0.2.13', active => 1,
+                  dns => 'host13.example.com' } ] } ],
+          nodes_search => 'aa:bb:cc:00:01:01 192.0.2.10 host.example.com',
+          ssid => [ { ssid => 'CORP' }, { ssid => 'GUEST' } ] },
         # administratively disabled port
         { port => 'Gi1/2', up_admin => 'down', port_acl_service => 1 },
-        # up port with a spanning-tree block and few enough VLANs to name them
-        { port => 'Gi1/3', up_admin => 'up', up => 'up', stp => 'blocking' },
+        # one stitched_node keeps this at, not over, the threshold, so its
+        # node markup renders uncollapsed
+        { port => 'Gi1/3', up_admin => 'up', up => 'up', stp => 'blocking',
+          node_count => 1,
+          stitched_nodes => [ { active => 1,
+            net_mac => { as_string => 'aa:bb:cc:00:03:01' },
+            stitched_ips => [ { ip => '192.0.2.30', active => 1,
+              dns => 'host3.example.com' } ] } ],
+          nodes_search => 'aa:bb:cc:00:03:01 192.0.2.30 host3.example.com' },
         # error-disabled port, also on the non-dot-zero subinterface fold
         { port => 'Gi1/4', up_admin => 'up', up => 'down',
           error_disable_cause => 'err-disable', has_subinterface_group => 1,
@@ -257,6 +309,29 @@ sub stash_for {
         { port => 'Gi1/10', up_admin => 'up', up => 'up',
           has_subinterface_group => 1, has_only_dot_zero_subinterface => 1 },
       ],
+    };
+  }
+
+  if ($view eq 'ajax/device/port_nodes.tt') {
+    return {
+      params => { n_ip4 => 1, n_ip6 => 1, n_dns => 1 },
+      settings => { devport_ips_collapse_threshold => 1 },
+      mac_format_call => 'as_string',
+      # Gi1/1's own two nodes, moved here from ports.tt.html's fixture: this
+      # is the row ports.tt now renders as a deferred stub, so the IP-collapse
+      # wrapper and the archived-node icon live in this snapshot instead.
+      row => { port => 'Gi1/1',
+        stitched_nodes => [ { active => 0,
+            net_mac => { as_string => 'aa:bb:cc:00:01:01' },
+            stitched_ips => [ { ip => '192.0.2.11', active => 1,
+              dns => 'host11.example.com' } ] },
+          { active => 1,
+            net_mac => { as_string => 'aa:bb:cc:00:01:02' },
+            stitched_ips => [ { ip => '192.0.2.12', active => 1,
+                dns => 'host12.example.com' },
+              { ip => '192.0.2.13', active => 1,
+                  dns => 'host13.example.com' } ] } ],
+      },
     };
   }
 
