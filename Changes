@@ -1,4 +1,4 @@
-2.107001 - tbd
+2.108000 - tbd
 
   [ENHANCEMENTS]
 
@@ -21,6 +21,7 @@
   * the Ports CSV export omitted the SSID value, shifting every later column
   * GET /api/v1/object/device/{ip}/port/{port}/ssid returned only one SSID
     for a port that has several, and now answers with a list
+  * checksitelocal named the wrong release for the do_search deprecation
 
 2.107000 - 2026-09-04
 
