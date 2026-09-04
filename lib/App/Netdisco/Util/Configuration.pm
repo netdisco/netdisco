@@ -32,7 +32,8 @@ sub refresh_managed_acl {
     # backup the acl unless it has already been backed up,
     # so we can refresh from an update to the managed ACL, but not overwrite orig
     if (exists config->{'host_groups'}->{$name->acl_name}
-        and not exists config->{'host_groups_shadow'}->{$name->acl_name) {
+        and not exists config->{'host_groups_shadow'}->{$name->acl_name}) {
+
         config->{'host_groups_shadow'}->{$name->acl_name}
           = dclone (config->{'host_groups_shadow'}->{$name->acl_name} || {});
     }
