@@ -1300,6 +1300,13 @@ ul ul, ul ol, ol ol, ol ul {
   margin-top: -14px;
 }
 
+/* The pull-up above closes the gap between one node block and the next. The
+   first block in a collapsed list has the "N nodes" header above it instead,
+   so there it lands on the Show and Hide control and takes the click. */
+.nd_collapsing > .nd_div-closer:first-child {
+  margin-top: 0;
+}
+
 @-moz-document url-prefix() {
   .nd_div-closer-last {
     margin-bottom: 14px;
