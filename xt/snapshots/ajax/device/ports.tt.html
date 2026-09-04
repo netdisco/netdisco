@@ -86,12 +86,12 @@
             Show <div class="nd_arrow-up-down-left-down fas fa-square-plus"></div>&nbsp;
           </span>
         </div>
-        <div class="nd_collapsing nd_collapse-pre-hidden"
+        <div class="nd_collapsing nd_collapse-pre-hidden nd_nodes-deferred"
              hx-get="?q=&amp;port=Gi1%2F1"
              hx-trigger="click once from:previous .nd_collapse-vlans"
              hx-target="this"
              hx-swap="innerHTML"
-             hx-headers='{"X-Requested-With": "XMLHttpRequest"}'></div>
+             hx-headers='{"X-Requested-With": "XMLHttpRequest"}'><span class="htmx-indicator"><i class="fas fa-spinner fa-spin"></i> Waiting for results...</span></div>
         <a class="nd_log-icon"
           href="?dev1=&port1=Gi1%2F1">
           <i class="fas fa-link text-warning"

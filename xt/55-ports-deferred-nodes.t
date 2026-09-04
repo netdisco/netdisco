@@ -32,6 +32,13 @@ like $html, qr/hx-headers='\{"X-Requested-With": "XMLHttpRequest"\}'/,
 like $html, qr/hx-target="this"/, 'it swaps into itself';
 like $html, qr/hx-trigger="[^"]*once[^"]*"/, 'it fetches once, not per click';
 
+# The spinner sits inside the swap region, so a successful load replaces it and
+# the failure handler has to write it back for a retry to show one.
+like $html, qr/class="[^"]*\bnd_nodes-deferred\b[^"]*"/,
+  'the deferred block carries the class the failure handler keys on';
+like $html, qr/<span class="htmx-indicator"><i class="fas fa-spinner fa-spin"><\/i> Waiting for results\.\.\.<\/span>/,
+  'the deferred block ships a spinner as its initial content';
+
 # Every attribute on the element itself. htmx 4.0 makes inheritance explicit,
 # so an attribute inherited from a parent will not survive that upgrade.
 my ($div) = $html =~ m/(<div class="nd_collapsing[^>]*>)/;
