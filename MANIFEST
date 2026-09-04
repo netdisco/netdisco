@@ -404,6 +404,7 @@ share/public/javascripts/jstree/themes/proton/style.css
 share/public/javascripts/jstree/themes/proton/style.min.css
 share/public/javascripts/jstree/themes/proton/throbber.gif
 share/public/javascripts/moment.min.js
+share/public/javascripts/netdisco-deferred-nodes.js
 share/public/javascripts/netdisco.js
 share/public/javascripts/netdisco_portcontrol.js
 share/public/javascripts/portsort.js
@@ -714,6 +715,7 @@ xt/54-ports-search-shadow.t
 xt/55-ports-deferred-nodes.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
+xt/js/deferred-nodes.test.js
 xt/js/netmap-autosave.test.js
 xt/js/netmap-legend.test.js
 xt/js/netmap-loading.test.js

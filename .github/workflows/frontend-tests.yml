@@ -83,3 +83,16 @@ jobs:
       # Same naming rule as the jobs above: name the file, never a glob.
       - name: The map is posted once per settle and once per drag
         run: node --test xt/js/netmap-autosave.test.js
+
+  deferred-nodes:
+    name: deferred node list recovery
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: A failed deferred node fetch can be retried
+        run: node --test xt/js/deferred-nodes.test.js
