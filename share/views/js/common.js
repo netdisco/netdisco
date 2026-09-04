@@ -11,7 +11,7 @@
         .show();
     }
     else {
-      $('#nd_csv-download').hide();
+      hideWithTooltip('#nd_csv-download');
     }
   }
 

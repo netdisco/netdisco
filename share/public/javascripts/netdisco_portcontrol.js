@@ -103,7 +103,7 @@ $(document).ready(function() {
     }
   });
   $('.tab-content').on('mouseleave', '.nd_editable-cell', function() {
-    $(this).children('.nd_hand-icon').hide();
+    hideWithTooltip($(this).children('.nd_hand-icon'));
     if (! $(this).is(':focus')) {
       $(this).children('.nd_edit-icon').hide(); // ports
       $(this).siblings('td').find('.nd_device-details-edit').hide(); // details

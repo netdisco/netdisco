@@ -24,6 +24,8 @@
   * checksitelocal named the wrong release for the do_search deprecation
   * #1667 the Show all Ports tooltip stayed on screen, at the top left of the
     window, after clicking the bin to clear the ports filter
+  * a tooltip could be left on screen the same way when the sidebar, the CSV
+    download link or a port control icon was hidden
 
 2.107000 - 2026-09-04
 

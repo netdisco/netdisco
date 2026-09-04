@@ -177,8 +177,8 @@ function retitleTooltip(element, title) {
 // then anchors it to a zero sized rectangle at the window origin. Linux
 // Chromium and Firefox both fire it, which is why #1667 only ever reproduced
 // on a Mac and why leaving this to the mouseleave handler below is not enough.
-function hideWithTooltip(selector) {
-  var elements = $(selector);
+function hideWithTooltip(target) {
+  var elements = $(target);
   elements.find('[rel=tooltip]').addBack('[rel=tooltip]').each(function () {
     var instance = bootstrap.Tooltip.getInstance(this);
     if (instance) { instance.dispose(); }
@@ -189,7 +189,7 @@ function hideWithTooltip(selector) {
 $(document).ready(function() {
   // sidebar form fields should change colour and have bin/copy icon
   $('.nd_field-copy-icon').hide();
-  $('.nd_field-clear-icon').hide();
+  hideWithTooltip('.nd_field-clear-icon');
 
   // activate typeahead on the main search box, for device names only
   // the backend has already filtered, and jQuery UI does no client-side
