@@ -15,6 +15,8 @@
 
   [BUG FIXES]
 
+  * the Show and Hide control on a port's connected-node list could not be
+    clicked, because the first node in the list was drawn on top of it
   * the Ports tab SSID column showed one SSID on a port that has several
   * the Ports CSV export omitted the SSID value, shifting every later column
   * GET /api/v1/object/device/{ip}/port/{port}/ssid returned only one SSID
