@@ -462,7 +462,7 @@
         </div>
         <div class="nd_collapsing nd_collapse-pre-hidden nd_nodes-deferred"
              hx-get="[% uri_for('/ajax/content/device/port/nodes') %]?q=[% device.ip | uri %]&amp;port=[% row.port | uri %][% deferred_node_params %]"
-             hx-trigger="click once from:previous .nd_collapse-vlans"
+             hx-trigger="none"
              hx-target="this"
              hx-swap="innerHTML"
              hx-headers='{"X-Requested-With": "XMLHttpRequest"}'><span class="htmx-indicator"><i class="fas fa-spinner fa-spin"></i> Waiting for results...</span></div>

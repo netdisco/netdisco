@@ -30,7 +30,10 @@ like $html, qr/hx-get="[^"]*\/ajax\/content\/device\/port\/nodes[^"]*"/,
 like $html, qr/hx-headers='\{"X-Requested-With": "XMLHttpRequest"\}'/,
   'the deferred block sends the XHR header';
 like $html, qr/hx-target="this"/, 'it swaps into itself';
-like $html, qr/hx-trigger="[^"]*once[^"]*"/, 'it fetches once, not per click';
+# htmx binds a trigger once, to the rows in the DOM at the time, and DataTables
+# holds only the current page, so a trigger here would bind on page one alone.
+like $html, qr/hx-trigger="none"/,
+  'htmx owns the request but not the trigger, which is delegated';
 
 # The spinner sits inside the swap region, so a successful load replaces it and
 # the failure handler has to write it back for a retry to show one.

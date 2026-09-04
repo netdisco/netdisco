@@ -13,8 +13,12 @@ const path = require('node:path');
 const listeners = {};
 const ajaxCalls = [];
 
+const capture = {};
 globalThis.document = {
-  addEventListener(name, fn) { listeners[name] = fn; },
+  addEventListener(name, fn, useCapture) {
+    listeners[name] = fn;
+    capture[name] = useCapture === true;
+  },
 };
 globalThis.window = {
   htmx: { ajax(verb, url, opts) { ajaxCalls.push({ verb, url, opts }); } },
@@ -26,7 +30,7 @@ require(path.join(__dirname, '..', '..',
 function makeBox(attrs) {
   const classes = new Set(['nd_collapsing', 'nd_nodes-deferred']);
   const box = {
-    innerHTML: '',
+    innerHTML: '<span class="htmx-indicator"></span>',
     classList: {
       contains: (c) => classes.has(c),
       add: (c) => classes.add(c),
@@ -34,13 +38,31 @@ function makeBox(attrs) {
     getAttribute: (name) => (attrs || {})[name],
     matches: (sel) => sel === '.nd_nodes-deferred',
     closest: (sel) => (sel === '.nd_nodes-deferred' ? box : null),
+    // the handler decides "already loaded" by the indicator being swapped away
+    querySelector: (sel) =>
+      (sel === '.htmx-indicator' && /htmx-indicator/.test(box.innerHTML) ? {} : null),
   };
   return box;
+}
+
+// A Show click reaches the box through the row, not through the box itself:
+// the opener is inside .nd_nodes-total and the box is that div's next sibling.
+function makeOpener(box) {
+  const total = { nextElementSibling: box };
+  const opener = { closest: (sel) => (sel === '.nd_nodes-total' ? total : null) };
+  return { closest: (sel) => (sel === '.nd_nodes-retry' ? null : opener) };
 }
 
 beforeEach(() => { ajaxCalls.length = 0; });
 
 describe('registration', () => {
+  // The collapser rewrites the opener's innerHTML in its own click handler, so a
+  // bubbling listener receives a click on the plus icon already orphaned from
+  // the document, and closest() then finds nothing. Capture runs first.
+  test('deferredNodes__the_click_listener__is_registered_on_capture', () => {
+    assert.equal(capture.click, true);
+  });
+
   test('deferredNodes__loaded__listens_for_both_htmx_failure_events', () => {
     assert.deepStrictEqual(
       Object.keys(listeners).sort(),
@@ -104,6 +126,33 @@ describe('retry', () => {
     const link = { closest: (sel) => (sel === '.nd_nodes-retry' ? link : box) };
     listeners.click({ target: link, preventDefault() {} });
     assert.equal(ajaxCalls.length, 0);
+  });
+
+  test('deferredNodes__clicking_show_on_an_unloaded_box__fetches_it', () => {
+    const box = makeBox({ 'hx-get': '/x' });
+    listeners.click({ target: makeOpener(box), preventDefault() {} });
+    assert.equal(ajaxCalls.length, 1);
+    assert.equal(ajaxCalls[0].opts.source, box);
+  });
+
+  // htmx binds a trigger once, to the rows in the DOM at the time, and
+  // DataTables holds only the current page. Delegation is what makes a box on
+  // any other page work at all, so the click must not need the box itself.
+  test('deferredNodes__clicking_show_twice__fetches_only_once', () => {
+    const box = makeBox({ 'hx-get': '/x' });
+    const opener = makeOpener(box);
+    listeners.click({ target: opener, preventDefault() {} });
+    box.innerHTML = '<div>a node</div>';
+    listeners.click({ target: opener, preventDefault() {} });
+    assert.equal(ajaxCalls.length, 1, 'a loaded box must not refetch on reopen');
+  });
+
+  test('deferredNodes__reopening_a_box_that_failed__tries_again', () => {
+    const box = makeBox({ 'hx-get': '/x' });
+    listeners['htmx:responseError']({ target: box });
+    listeners.click({ target: makeOpener(box), preventDefault() {} });
+    assert.equal(ajaxCalls.length, 1);
+    assert.doesNotMatch(box.innerHTML, /nd_nodes-retry/);
   });
 
   test('deferredNodes__clicking_anything_else__issues_no_request', () => {
