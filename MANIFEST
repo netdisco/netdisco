@@ -715,6 +715,7 @@ xt/53-ports-csv-arity.t
 xt/54-ports-node-stitch.t
 xt/55-ports-search-shadow.t
 xt/56-ports-deferred-nodes.t
+xt/57-route-cache-ajax.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/deferred-nodes.test.js
