@@ -4,7 +4,8 @@ use Dancer ':syntax';
 use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
-use App::Netdisco::Util::SiteLocal qw/ site_local_paths scan_site_local /;
+use App::Netdisco::Util::SiteLocal
+  qw/ site_local_paths scan_site_local scan_shadowed_files /;
 
 register_worker({ phase => 'main' }, sub {
   my @paths = site_local_paths();
@@ -13,7 +14,8 @@ register_worker({ phase => 'main' }, sub {
       return Status->done('No site-local template paths are configured.');
   }
 
-  my @findings = scan_site_local({ paths => \@paths });
+  my @findings = ( scan_shadowed_files({ paths => \@paths }),
+                   scan_site_local({ paths => \@paths }) );
 
   if (! scalar @findings) {
       return Status->done(sprintf 'Checked %d path%s, nothing to report.',
@@ -27,8 +29,14 @@ register_worker({ phase => 'main' }, sub {
   # same reason.
   print "\n";
   foreach my $finding (@findings) {
-      printf "%s line %d\n", $finding->{path}, $finding->{line};
-      printf "  %s\n", $finding->{excerpt};
+      # a file finding has no line to cite
+      if (($finding->{kind} || '') eq 'file') {
+          printf "%s\n", $finding->{path};
+      }
+      else {
+          printf "%s line %d\n", $finding->{path}, $finding->{line};
+          printf "  %s\n", $finding->{excerpt};
+      }
       printf "  since %s: %s\n\n",
         $finding->{release}, $finding->{advice};
   }

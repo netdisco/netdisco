@@ -30,6 +30,7 @@ use App::Netdisco::Util::Web qw/
   request_is_api_search
 /;
 use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
+use App::Netdisco::Util::SiteLocal qw/scan_shadowed_files site_local_paths/;
 
 BEGIN {
   no warnings 'redefine';
@@ -214,6 +215,13 @@ if (setting('template_paths') and ref [] eq ref setting('template_paths')) {
     }
     unshift @{ config->{engines}->{netdisco_template_toolkit}->{INCLUDE_PATH} },
       @{setting('template_paths')};
+}
+
+# here rather than earlier because template_paths is only resolved above
+foreach my $finding (scan_shadowed_files({ paths => [ site_local_paths() ] })) {
+    warning sprintf
+      '%s predates %s and its tab will render empty. Run "netdisco-do checksitelocal".',
+      $finding->{path}, $finding->{release};
 }
 
 # load cookie key from database

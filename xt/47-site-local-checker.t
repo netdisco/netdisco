@@ -13,7 +13,7 @@ use File::Spec::Functions 'catfile';
 use App::Netdisco;
 use Dancer qw/:moose :script !pass/;
 
-use App::Netdisco::Util::SiteLocal 'scan_site_local';
+use App::Netdisco::Util::SiteLocal qw/scan_site_local scan_shadowed_files/;
 
 # Build the tree each subtest needs rather than checking fixtures in. Real
 # site-local files belong to the sites that wrote them and carry their own
@@ -179,18 +179,60 @@ subtest 'scan_site_local__path_does_not_exist__returns_nothing_and_lives' => sub
 subtest 'site_local_rules__called__describes_every_rule_the_scan_applies' => sub {
     my @rules = App::Netdisco::Util::SiteLocal::site_local_rules();
 
-    is scalar @rules, 4, 'four rules ship in this release';
+    is scalar @rules, 5, 'five rules ship in this release';
     is_deeply [ sort map { $_->{name} } @rules ],
-      [ 'do-search', 'he-js', 'history-js', 'natural-js' ],
-      'named as the report cites them';
+      [ 'do-search', 'he-js', 'history-js', 'natural-js', 'tab-page-shadow' ],
+      'named as the report cites them, file rules included';
     ok !(grep { !length($_->{advice} || '') } @rules),
       'and every rule carries remediation advice';
 };
 
 # The paths come from settings rather than from the caller, so the action and
-# PR 2's startup check cannot drift apart. site_local_files is off by default,
+# the web application's startup check cannot drift apart. site_local_files is off by default,
 # and when it is off the nd-site-local directories are not scanned even if they
 # exist, because the app is not reading them either.
+# This is the rule warned about at startup, so a false positive is noise on
+# every worker boot at every site. Hence the two clean cases below.
+
+subtest 'scan_shadowed_files__tab_page_copy_without_hx_get__reports_the_empty_pane' => sub {
+    my $tree = site_local_tree(
+      'device.tt' => qq{<form id="ports_form" method="get" action="/device">\n</form>\n});
+
+    my @findings = scan_shadowed_files({ paths => ["$tree"] });
+
+    is scalar @findings, 1, 'one finding for the shadowed tab page';
+    is $findings[0]{rule}, 'tab-page-shadow', 'named the rule';
+    is $findings[0]{kind}, 'file', 'reported as a file rule, so it carries no line';
+    ok !exists $findings[0]{line}, 'and really has no line to cite';
+    like $findings[0]{advice}, qr/hx-get/, 'advice names the attribute to add';
+};
+
+subtest 'scan_shadowed_files__tab_page_copy_carrying_hx_get__reports_nothing' => sub {
+    my $tree = site_local_tree(
+      'device.tt' => qq{<form id="ports_form" hx-get="/ajax/content/device/ports">\n</form>\n});
+
+    is scalar scan_shadowed_files({ paths => ["$tree"] }), 0,
+      'a copy that adopted the transport is not a finding';
+};
+
+subtest 'scan_shadowed_files__no_tab_page_shadowed__reports_nothing' => sub {
+    my $tree = site_local_tree('ajax/report/custom.tt' => qq{<div>hi</div>\n});
+
+    is scalar scan_shadowed_files({ paths => ["$tree"] }), 0,
+      'silence is the normal case, and this runs at every worker startup';
+};
+
+subtest 'scan_shadowed_files__every_tab_page__is_checked' => sub {
+    my $tree = site_local_tree(
+      map {; $_ => qq{<form method="get">\n</form>\n} } qw/device.tt search.tt report.tt/);
+
+    my @findings = scan_shadowed_files({ paths => ["$tree"] });
+
+    is scalar @findings, 3, 'device, search and report are all tab pages';
+    is_deeply [map {; $_->{path} =~ m{([^/]+)$}; $1 } @findings],
+      [qw/device.tt report.tt search.tt/], 'sorted by path';
+};
+
 subtest 'site_local_paths__site_local_files_off__returns_only_template_paths' => sub {
     my $home = File::Temp->newdir();
     local $ENV{NETDISCO_HOME} = "$home";

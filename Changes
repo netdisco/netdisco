@@ -2,6 +2,9 @@
 
   [ENHANCEMENTS]
 
+  * checksitelocal reports a site-local device.tt, search.tt or report.tt
+    copied before the htmx tab transport, and the web app warns about one at
+    startup because that tab renders an empty pane and says nothing
   * the Ports tab with Connected Nodes shown is several times faster to load
     on a device with many nodes
   * a connected-node list longer than the collapse threshold now loads when

@@ -6,11 +6,12 @@ use warnings;
 use File::Find ();
 
 use Dancer ':syntax';
-use Path::Class 'dir';
+use Path::Class qw/dir file/;
 
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/ scan_site_local site_local_rules site_local_paths /;
+our @EXPORT_OK = qw/ scan_site_local scan_shadowed_files
+                     site_local_rules site_local_paths /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
@@ -81,6 +82,80 @@ my @RULES = (
   },
 );
 
+# Rules that fault what a file does NOT contain, so a finding has no line.
+#
+# This is the only rule the web application warns about at startup. A shadowed
+# tab page renders an empty pane and reports nothing anywhere, while the
+# others leave the application serving pages and do_search prints its own
+# console notice.
+my @FILE_RULES = (
+  {
+    name     => 'tab-page-shadow',
+    release  => '2.105006',
+    paths    => [qw/ device.tt search.tt report.tt /],
+    requires => qr/\bhx-get\b/,
+    advice   => 'this copy predates the htmx tab transport, so its sidebar '
+              . 'form never fetches the pane and the tab renders empty. Copy '
+              . 'the hx-get, hx-target, hx-headers and hx-indicator attributes '
+              . 'from the shipped template of the same name.',
+  },
+);
+
+=head2 scan_shadowed_files( \%args )
+
+Returns a finding for each file under C<< $args{paths} >> that shadows one of
+one of the shipped tab pages without carrying what that page needs.
+
+A finding is a hashref with keys C<kind> (always C<file>), C<path>, C<rule>,
+C<release> and C<advice>. There is no C<line>: the fault is an absence, so
+there is no line to point at.
+
+Bounded on purpose. This opens at most one file per shipped tab page per
+configured path, because L<App::Netdisco::Web> runs it at every worker startup,
+where C<scan_site_local>'s walk of the whole tree would not be welcome.
+
+=cut
+
+sub scan_shadowed_files {
+  my $args = shift || {};
+  my @paths = @{ $args->{paths} || [] };
+  my @findings = ();
+
+  foreach my $rule (@FILE_RULES) {
+      foreach my $relative (@{ $rule->{paths} }) {
+          foreach my $path (@paths) {
+              next unless defined $path and length $path;
+              my $shadow = file($path, $relative)->stringify;
+              next unless -f $shadow;
+              next if _file_contains($shadow, $rule->{requires});
+              push @findings, {
+                kind    => 'file',
+                path    => $shadow,
+                rule    => $rule->{name},
+                release => $rule->{release},
+                advice  => $rule->{advice},
+              };
+          }
+      }
+  }
+
+  # sort returns undef in scalar context, not a count
+  my @sorted = sort { $a->{path} cmp $b->{path} } @findings;
+  return @sorted;
+}
+
+sub _file_contains {
+  my ($file, $pattern) = @_;
+  open my $fh, '<', $file or return 0;
+  while (my $line = <$fh>) {
+      next unless $line =~ $pattern;
+      close $fh;
+      return 1;
+  }
+  close $fh;
+  return 0;
+}
+
 =head2 site_local_rules
 
 Returns the rule table as a list of hashrefs with keys C<name>, C<release> and
@@ -90,7 +165,7 @@ C<advice>. Lists what is checked without scanning anything.
 
 sub site_local_rules {
   return map {; +{ name => $_->{name}, release => $_->{release},
-                   advice => $_->{advice} } } @RULES;
+                   advice => $_->{advice} } } (@RULES, @FILE_RULES);
 }
 
 =head2 site_local_paths
