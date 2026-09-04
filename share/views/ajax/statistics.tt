@@ -51,7 +51,7 @@
           <tbody>
             <tr>
               <th><b><a href="http://netdisco.org" target="_blank">App::Netdisco</a></b></th>
-              <th>[% stats.netdisco_ver | html_entity %]</th>
+              <th>[% netdisco_version || (stats.netdisco_ver _ " (from DB)") | html_entity %]</th>
             </tr>
             <tr>
               <th><a href="https://github.com/netdisco/snmp-info" target="_blank">SNMP::Info</a></th>

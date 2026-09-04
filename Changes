@@ -1,3 +1,15 @@
+2.106000 - 2026-09-02
+
+  [NEW FEATURES]
+
+  * #1642 new updated_device Hook event when notable device or port properties change
+
+  [ENHANCEMENTS]
+
+  * #1660 update DB ACL rules after a device renumber
+  * move from Test::Compile to Test::Compile::Internal as former is deprecated
+  * add basic CLAUDE.md
+
 2.105006 - 2026-09-01
 
   [ENHANCEMENTS]

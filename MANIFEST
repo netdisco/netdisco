@@ -706,6 +706,7 @@ xt/47-site-local-checker.t
 xt/48-htmx-form-attributes.t
 xt/49-netmap-position-key.t
 xt/50-config-override.t
+xt/51-updated-device-hook.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/netmap-autosave.test.js
