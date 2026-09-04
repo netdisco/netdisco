@@ -96,3 +96,16 @@ jobs:
 
       - name: A failed deferred node fetch can be retried
         run: node --test xt/js/deferred-nodes.test.js
+
+  tooltip-dismissal:
+    name: tooltip dismissal on hide
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Hiding an element dismisses its tooltip
+        run: node --test xt/js/tooltip-dismissal.test.js

@@ -722,6 +722,7 @@ xt/js/netmap-autosave.test.js
 xt/js/netmap-legend.test.js
 xt/js/netmap-loading.test.js
 xt/js/portsort.test.js
+xt/js/tooltip-dismissal.test.js
 xt/js/view-templates.test.js
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFive.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFour.pm

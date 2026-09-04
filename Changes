@@ -22,6 +22,8 @@
   * GET /api/v1/object/device/{ip}/port/{port}/ssid returned only one SSID
     for a port that has several, and now answers with a list
   * checksitelocal named the wrong release for the do_search deprecation
+  * #1667 the Show all Ports tooltip stayed on screen, at the top left of the
+    window, after clicking the bin to clear the ports filter
 
 2.107000 - 2026-09-04
 

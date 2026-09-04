@@ -15,7 +15,7 @@ function nd_submit (form_selector) {
 // with the htmx path, which does not call do_search.
 function nd_apply_sidebar (tab) {
   if (has_sidebar[tab] == 0) {
-    $('.nd_sidebar, #nd_sidebar-toggle-img-out').hide();
+    hideWithTooltip('.nd_sidebar, #nd_sidebar-toggle-img-out');
     $('.content').css('margin-right', '10px');
   }
   else {
@@ -127,7 +127,7 @@ function device_form_state(e) {
   if (e.prop('value') == "") {
     e.parent(".clearfix").removeClass('success');
     var id = '#' + e.attr('name') + '_clear_btn';
-    $(id).hide();
+    hideWithTooltip(id);
 
     // if form has no field val, clear strikethough
     if (with_val == 0) {
@@ -168,6 +168,22 @@ function retitleTooltip(element, title) {
   $(element).attr('data-bs-title', title);
   var instance = bootstrap.Tooltip.getInstance($(element)[0]);
   if (instance) { instance.dispose(); }
+}
+
+// Hide an element that may be showing a tooltip, and any tooltip-carrying
+// element inside it. Bootstrap dismisses a tip when the pointer leaves its
+// trigger, but macOS Chrome fires no boundary event when the trigger is hidden
+// under a pointer that has not moved, so nothing dismisses the tip and popper
+// then anchors it to a zero sized rectangle at the window origin. Linux
+// Chromium and Firefox both fire it, which is why #1667 only ever reproduced
+// on a Mac and why leaving this to the mouseleave handler below is not enough.
+function hideWithTooltip(selector) {
+  var elements = $(selector);
+  elements.find('[rel=tooltip]').addBack('[rel=tooltip]').each(function () {
+    var instance = bootstrap.Tooltip.getInstance(this);
+    if (instance) { instance.dispose(); }
+  });
+  elements.hide();
 }
 
 $(document).ready(function() {
