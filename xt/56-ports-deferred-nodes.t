@@ -9,7 +9,7 @@ use Test::Netdisco::Snapshot qw/render_template stash_for/;
 
 # Needs no database and no session: _deferred_node_params is free of
 # param(), so this and the assertions below that call it directly belong
-# outside any SKIP block, alongside xt/53's own param-free checks.
+# outside any SKIP block, alongside xt/54's own param-free checks.
 require App::Netdisco::Web::Plugin::Device::Ports;
 
 # The committed snapshot cannot guard this: it leaves uri_for unstubbed, so

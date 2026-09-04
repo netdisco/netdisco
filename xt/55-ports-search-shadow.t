@@ -5,7 +5,7 @@
 # plus ssid and netbios when asked for. It is what the DataTables filter
 # matches when the cell's own node markup is not rendered.
 #
-# Same database SKIP pattern as xt/53-ports-node-stitch.t.
+# Same database SKIP pattern as xt/54-ports-node-stitch.t.
 
 use strict;
 use warnings;

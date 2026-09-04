@@ -162,13 +162,12 @@ post '/login' => sub {
 
             my $body = try { from_json(request->body) } catch { {} };
             my $want_permanent = $body->{permanent} && setting('allow_permanent_tokens');
-            my $allowed_ips    = (ref $body->{allowed_ips} eq ref [])
-                                   ? $body->{allowed_ips} : undef;
+            my $token_acl      = $body->{token_acl};
 
             $user->update({
               token_from      => time,
               token_no_expire => ($want_permanent ? \"true" : \"false"),
-              ($allowed_ips ? (token_allowed_ips => $allowed_ips) : ()),
+              ($token_acl ? (token_acl => $token_acl) : ()),
               ($provider->validate_api_token($user->token)
                 ? () : (token => \'md5(random()::text)')),
             })->discard_changes();
@@ -176,8 +175,8 @@ post '/login' => sub {
             return to_json {
               api_key   => $user->token,
               permanent => ($user->token_no_expire ? \1 : \0),
-              ($user->token_allowed_ips
-                ? (allowed_ips => $user->token_allowed_ips) : ()),
+              ($user->token_acl
+                ? (token_acl => $user->token_acl) : ()),
             };
         }
 

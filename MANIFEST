@@ -552,6 +552,7 @@ share/schema_versions/App-Netdisco-DB-95-96-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-96-97-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-97-98-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-98-99-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-99-100-PostgreSQL.sql
 share/views/admintask.tt
 share/views/ajax/admintask/acleditor.tt
 share/views/ajax/admintask/aclmanager.tt
@@ -709,10 +710,11 @@ xt/48-htmx-form-attributes.t
 xt/49-netmap-position-key.t
 xt/50-config-override.t
 xt/51-updated-device-hook.t
-xt/52-ports-csv-arity.t
-xt/53-ports-node-stitch.t
-xt/54-ports-search-shadow.t
-xt/55-ports-deferred-nodes.t
+xt/52-token-acl-auth.t
+xt/53-ports-csv-arity.t
+xt/54-ports-node-stitch.t
+xt/55-ports-search-shadow.t
+xt/56-ports-deferred-nodes.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/deferred-nodes.test.js

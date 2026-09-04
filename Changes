@@ -1,4 +1,4 @@
-2.106001 - tbd
+2.107001 - tbd
 
   [ENHANCEMENTS]
 
@@ -19,6 +19,17 @@
   * the Ports CSV export omitted the SSID value, shifting every later column
   * GET /api/v1/object/device/{ip}/port/{port}/ssid returned only one SSID
     for a port that has several, and now answers with a list
+
+2.107000 - 2026-09-04
+
+  [NEW FEATURES]
+
+  * #1651 change user's API token allowed IPs from a list to a managed ACL
+
+  [ENHANCEMENTS]
+
+  * #1650 statistics panel's Netdisco version comes from app source
+  * #1663 improve debug on undiscoverable neighbor
 
 2.106000 - 2026-09-02
 

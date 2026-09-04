@@ -110,7 +110,7 @@ shadow, so C<data-search> has real text rather than an empty string that
 would guard nothing. C<node_count> and C<settings.devport_nodes_collapse_threshold>
 are set so the two rows land on opposite sides of the threshold: Gi1/1 takes
 the deferred stub branch and Gi1/3 the C<INCLUDE> branch, which gives the
-C<data-search> check in F<xt/54-ports-search-shadow.t> a row of each kind, the
+C<data-search> check in F<xt/55-ports-search-shadow.t> a row of each kind, the
 attribute itself being unconditional. Gi1/3's C<stitched_nodes> is what the
 C<INCLUDE> renders here; the fixture below for C<port_nodes.tt> itself is what
 covers that template's own remaining branches, Gi1/1's node data having moved
