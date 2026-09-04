@@ -1,3 +1,9 @@
+2.107001 - tbd
+
+  [BUG FIXES]
+
+  * checksitelocal named the wrong release for the do_search deprecation
+
 2.107000 - 2026-09-04
 
   [NEW FEATURES]

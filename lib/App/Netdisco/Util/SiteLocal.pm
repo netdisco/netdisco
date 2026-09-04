@@ -68,7 +68,7 @@ my @RULES = (
   },
   {
     name    => 'do-search',
-    release => '2.105005',
+    release => '2.105006',
     # The only rule here whose subject still works: do_search forwards to htmx
     # rather than throwing, so a site that ignores this keeps loading its tab.
     # Reported anyway, because the console notice only reaches whoever opens
