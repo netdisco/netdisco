@@ -1,3 +1,14 @@
+2.107000 - 2026-09-04
+
+  [NEW FEATURES]
+
+  * #1651 change user's API token allowed IPs from a list to a managed ACL
+
+  [ENHANCEMENTS]
+
+  * #1650 statistics panel's Netdisco version comes from app source
+  * #1663 improve debug on undiscoverable neighbor
+
 2.106000 - 2026-09-02
 
   [NEW FEATURES]
