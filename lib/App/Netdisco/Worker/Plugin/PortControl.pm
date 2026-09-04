@@ -5,6 +5,7 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Transport::SNMP;
+use App::Netdisco::Util::Configuration 'load_acls_from_database';
 use App::Netdisco::Util::Port ':all';
 
 register_worker({ phase => 'check' }, sub {
@@ -24,7 +25,7 @@ register_worker({ phase => 'check' }, sub {
 
   return Status->error('Missing status (-e).') unless defined $job->subaction;
 
-  sync_portctl_roles();
+  load_acls_from_database('portctl_by_role');
   return Status->error("Permission denied to change port status")
     unless port_acl_service(vars->{'port'}, $device, $job->username);
 

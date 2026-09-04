@@ -16,58 +16,49 @@ our @EXPORT_OK = qw/
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
-=head1 refresh_acl_from_database( $name )
+=head1 refresh_acl_from_database( $name, $where )
 
 Given an AccessControlListName result with prefetched C<mappings>, creates
-the corresponding C<hosts_groups> ACL in configuration.
-
-If the ACL name already exists in C<host_groups>, the existing ACL is copied
-to C<host_groups_shadow>, unless it exists in C<host_groups_shadow> already.
+the corresponding C<$where> ACL in configuration.
 
 =cut
 
 sub refresh_managed_acl {
-    my $name = shift;
-
-    # backup the acl unless it has already been backed up,
-    # so we can refresh from an update to the managed ACL, but not overwrite orig
-    if (exists config->{'host_groups'}->{$name->acl_name}
-        and not exists config->{'host_groups_shadow'}->{$name->acl_name) {
-        config->{'host_groups_shadow'}->{$name->acl_name}
-          = dclone (config->{'host_groups_shadow'}->{$name->acl_name} || {});
-    }
+    my ($name, $where) = @_;
+    die "missing correct param to refresh_managed_acl"
+        unless (ref $name ne ref q{}) and $where
+            and exists setting($where) and (ref {} eq ref setting($where));
 
     foreach my $map (sort {$a->id <=> $b->id} $name->mappings->all) {
         # take every left and optionally right acl (if host_host or host_port) and
         # synthesize them into little host groups
         foreach my $acl ($map->left_acl, $map->right_acl) {
             my $group = 'synthesized_group_'. $acl->id;
-            config->{'host_groups'}->{$group} = $acl->rules;
+            config->{$where}->{$group} = $acl->rules;
             last if $name->acl_type eq 'host';
         }
 
         # store in host groups with acl name
         # make a top level group which is list of group: refs (if host)
         if ($name->acl_type eq 'host') {
-            push @{ config->{'host_groups'}->{$name->acl_name} },
+            push @{ config->{$where}->{$name->acl_name} },
               ('group:synthesized_group_'. $map->left_acl->id);
         }
         # OR hash of group: to group: refs (if host_host or host_port)
         else {
-            config->{'host_groups'}->{$name->acl_name}
+            config->{$where}->{$name->acl_name}
               ->{'group:synthesized_group_'. $map->left_acl->id}
               = ('group:synthesized_group_'. $map->right_acl->id);
         }
     }
 }
 
-=head1 load_acls_from_database
+sub _reload_db_acls_to {
+    my $where = shift;
+    die "missing correct param to refresh_managed_acl"
+        unless $where and exists setting($where) and (ref {} eq ref setting($where));
+    my $where_shadow = $where .'_shadow';
 
-Loads all the managed ACLs into C<host_groups>.
-
-=cut
-
-sub load_acls_from_database {
     # because this is always called when Netdisco loads, it might happen during tests
     # or other circs when there's no database. exit if so.
     {
@@ -83,12 +74,29 @@ sub load_acls_from_database {
         return unless schema(vars->{'tenant'})->get_db_version;
     }
 
+    # reset current config by loading everything from shadow
+    config->{$where} = dclone( config->{$where_shadow} || {} );
+
     my @names = schema(vars->{'tenant'})->resultset('AccessControlListName')
       ->search(undef, { prefetch => { mappings => [qw/left_acl right_acl/] } })->all;
 
     # for each named acl
-    refresh_managed_acl($_) for @names;
+    refresh_managed_acl($_, $where) for @names;
 }
+
+=head1 load_acls_from_database( @where )
+
+Loads managed ACLs from the database and merges them into the config at
+C<@where>. This should only be done lazily and close to the
+time of use, to be efficient and also to get the latest ACL settings.
+
+If there exists an entry in C<@where> config from C<deployment.yml>
+with the same name as a database role, then the database role overwrites
+it. If such a role is removed, then a backup of the original is restored.
+
+=cut
+
+sub load_acls_from_database { _reload_db_acls_to($_) for @_ }
 
 =head1 CONFIGURATION OVERRIDE
 

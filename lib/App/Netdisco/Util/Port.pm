@@ -10,7 +10,6 @@ use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  sync_portctl_roles
   port_acl_service port_acl_pvid port_acl_name
   get_port get_iid get_powerid
   is_vlan_subinterface port_has_phone port_has_wap
@@ -30,44 +29,6 @@ There are no default exports, however the C<:all> tag will export all
 subroutines.
 
 =head1 EXPORT_OK
-
-=head2 sync_portctl_roles()
-
-Loads Port Control Roles from the database and merges them into the
-C<portctl_role> config. This should only be done lazily and near to the
-time of use, to be efficient and also to get latest ACL settings.
-
-If there exists an entry in C<portctl_role> config from C<deployment.yml>
-with the same name as a database role, then the database role overwrites
-it. If such a role is removed, then a backup of the original is restored.
-
-=cut
-
-sub sync_portctl_roles {
-  my @db_roles = schema(vars->{'tenant'})
-    ->resultset('AccessControlListName')->host_port_acl_names;
-  config->{'portctl_by_role'} = {};
-
-  foreach my $role (sort {$a cmp $b} keys %{ setting('portctl_by_role_shadow') }) {
-      config->{'portctl_by_role'}->{$role}
-        = (setting('portctl_by_role_shadow')->{$role} || '!group:__ANY__');
-  }
-
-  foreach my $role (@db_roles) {
-      my @rows = schema(vars->{'tenant'})->resultset('AccessControlListMap')
-        ->search({ acl_name => $role },
-                 { prefetch => [qw/left_acl right_acl/], order_by => 'me.id' })->all;
-
-      config->{'portctl_by_role'}->{$role} = {};
-      foreach my $pair (@rows) {
-          # convert LHS device ACLs to named groups
-          my $group = 'synthesized_group_'. $pair->left_acl->id;
-          config->{'host_groups'}->{$group} = $pair->left_acl->rules;
-          config->{'portctl_by_role'}->{$role}->{'group:'. $group}
-            = $pair->right_acl->rules;
-      }
-  }
-}
 
 =head2 port_acl_by_role_check( $port, $device?, $user? )
 

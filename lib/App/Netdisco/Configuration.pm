@@ -242,8 +242,10 @@ config->{'bulkwalk_off'} = true
 config->{'port_control_reasons'} =
   config->{'port_control_reasons'} || config->{'system_port_control_reasons'};
 
-# for managing database portctl_roles
+# for managing database managed acls
 
+config->{'host_groups_shadow'}
+  = dclone (setting('host_groups') || {});
 config->{'portctl_by_role_shadow'}
   = dclone (setting('portctl_by_role') || {});
 

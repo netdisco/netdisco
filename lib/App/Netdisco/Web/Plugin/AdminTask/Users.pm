@@ -7,7 +7,7 @@ use Dancer::Plugin::Auth::Extensible;
 use Dancer::Plugin::Passphrase;
 
 use App::Netdisco::Web::Plugin;
-use App::Netdisco::Util::Port 'sync_portctl_roles';
+use App::Netdisco::Util::Configuration 'load_acls_from_database';
 use List::MoreUtils 'uniq';
 use Digest::MD5 ();
 
@@ -167,11 +167,9 @@ get '/ajax/content/admin/users' => require_role admin => sub {
 
     return unless scalar @results;
 
-    sync_portctl_roles();
+    load_acls_from_database('portctl_by_role');
     my @port_control_roles = keys %{ setting('portctl_by_role') || {} };
-    push @port_control_roles,
-      schema(vars->{'tenant'})->resultset('AccessControlListName')->host_port_acl_names;
-
+    load_acls_from_database('host_groups');
     my @host_group_acls =
       schema(vars->{'tenant'})->resultset('AccessControlListName')->host_acl_names;
 

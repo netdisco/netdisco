@@ -5,6 +5,7 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Util::Port ':all';
+use App::Netdisco::Util::Configuration 'load_acls_from_database';
 
 register_worker({ phase => 'check' }, sub {
   my ($job, $workerconf) = @_;
@@ -23,7 +24,7 @@ register_worker({ phase => 'check' }, sub {
 
   return Status->error('Missing vlan (-e).') unless defined $job->subaction;
 
-  sync_portctl_roles();
+  load_acls_from_database('portctl_by_role');
   return Status->error("Permission denied to alter native vlan")
     unless port_acl_pvid(vars->{'port'}, $device, $job->username);
 
