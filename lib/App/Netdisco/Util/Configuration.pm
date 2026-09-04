@@ -21,22 +21,10 @@ our %EXPORT_TAGS = (all => \@EXPORT_OK);
 Given an AccessControlListName result with prefetched C<mappings>, creates
 the corresponding C<hosts_groups> ACL in configuration.
 
-If the ACL name already exists in C<host_groups>, the existing ACL is copied
-to C<host_groups_shadow>, unless it exists in C<host_groups_shadow> already.
-
 =cut
 
 sub refresh_managed_acl {
     my $name = shift;
-
-    # backup the acl unless it has already been backed up,
-    # so we can refresh from an update to the managed ACL, but not overwrite orig
-    if (exists config->{'host_groups'}->{$name->acl_name}
-        and not exists config->{'host_groups_shadow'}->{$name->acl_name}) {
-
-        config->{'host_groups_shadow'}->{$name->acl_name}
-          = dclone (config->{'host_groups_shadow'}->{$name->acl_name} || {});
-    }
 
     foreach my $map (sort {$a->id <=> $b->id} $name->mappings->all) {
         # take every left and optionally right acl (if host_host or host_port) and
