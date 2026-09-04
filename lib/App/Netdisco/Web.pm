@@ -611,7 +611,10 @@ any '/t/*/**' => sub {
     forward (join '/', '', @$path, (request->path =~ m{/$} ? '' : ()));
 };
 
-any qr{.*} => sub {
+# /ajax/ is excluded so a non-XHR request to one falls through to no route at
+# all. Dancer caches the route it matched, keyed on the path alone, so letting
+# this one answer would make that path 404 for every later XHR.
+any qr{^(?!/ajax/).*} => sub {
     var('notfound' => true);
     status 'not_found';
     template 'index', {}, { layout => 'main' };
