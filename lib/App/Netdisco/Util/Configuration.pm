@@ -1,16 +1,83 @@
 package App::Netdisco::Util::Configuration;
 
 use Dancer qw/:syntax :script/;
+use Dancer::Plugin::DBIC 'schema';
 
 use Hash::Merge::Simple;
+use Storable 'dclone';
 use Try::Tiny;
 
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
+  refresh_managed_acl
+  load_acls_from_database
   parse_params_to_config
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
+
+=head1 refresh_acl_from_database( $name )
+
+Given an AccessControlListName result with prefetched C<mappings>, creates
+the corresponding C<hosts_groups> ACL in configuration.
+
+=cut
+
+sub refresh_managed_acl {
+    my $name = shift;
+
+    foreach my $map (sort {$a->id <=> $b->id} $name->mappings->all) {
+        # take every left and optionally right acl (if host_host or host_port) and
+        # synthesize them into little host groups
+        foreach my $acl ($map->left_acl, $map->right_acl) {
+            my $group = 'synthesized_group_'. $acl->id;
+            config->{'host_groups'}->{$group} = $acl->rules;
+            last if $name->acl_type eq 'host';
+        }
+
+        # store in host groups with acl name
+        # make a top level group which is list of group: refs (if host)
+        if ($name->acl_type eq 'host') {
+            push @{ config->{'host_groups'}->{$name->acl_name} },
+              ('group:synthesized_group_'. $map->left_acl->id);
+        }
+        # OR hash of group: to group: refs (if host_host or host_port)
+        else {
+            config->{'host_groups'}->{$name->acl_name}
+              ->{'group:synthesized_group_'. $map->left_acl->id}
+              = ('group:synthesized_group_'. $map->right_acl->id);
+        }
+    }
+}
+
+=head1 load_acls_from_database
+
+Loads all the managed ACLs into C<host_groups>.
+
+=cut
+
+sub load_acls_from_database {
+    # because this is always called when Netdisco loads, it might happen during tests
+    # or other circs when there's no database. exit if so.
+    {
+        # Temporarily intercept warnings within this block
+        local $SIG{__WARN__} = sub {
+            my $warning = shift;
+            # Silence only the unversioned schema warning
+            return if $warning =~ /Your DB is currently unversioned/;
+            # Pass all other warnings through
+            warn $warning;
+        };
+
+        return unless schema(vars->{'tenant'})->get_db_version;
+    }
+
+    my @names = schema(vars->{'tenant'})->resultset('AccessControlListName')
+      ->search(undef, { prefetch => { mappings => [qw/left_acl right_acl/] } })->all;
+
+    # for each named acl
+    refresh_managed_acl($_) for @names;
+}
 
 =head1 CONFIGURATION OVERRIDE
 

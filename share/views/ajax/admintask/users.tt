@@ -16,7 +16,7 @@
       <th class="nd_center-cell">Username</th>
       <th class="nd_center-cell">Password</th>
       <th class="nd_center-cell">Auth Method</th>
-      <th class="nd_center-cell">Allowed IPs</th>
+      <th class="nd_center-cell">Token ACL</th>
       <th class="nd_center-cell">Port Control</th>
       <th class="nd_center-cell">Administrator</th>
       <th class="nd_center-cell">Created</th>
@@ -28,15 +28,15 @@
   <tbody>
     <tr>
       <td class="nd_center-cell"><input class="form-control" data-form="add" name="fullname" type="text"></td>
-      <td class="nd_center-middle-cell"><input class="col-md-2 form-control" data-form="add" name="username" type="text"></td>
+      <td class="nd_center-middle-cell"><input class="form-control" data-form="add" name="username" type="text"></td>
       [% IF settings.no_auth %]
       <td class="nd_center-cell text-muted">Bypassed</td>
       [% ELSE %]
-      <td class="nd_center-cell"><input class="col-md-1 form-control nd_pw_field" data-form="add" name="password" type="password"></td>
+      <td class="nd_center-cell"><input class="form-control nd_pw_field" data-form="add" name="password" type="password"></td>
       [% END %]
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="col-md-2 form-select nd_auth_method" data-form="add" name="auth_method">
+          <select class="form-select nd_auth_method" data-form="add" name="auth_method">
             [% IF demo_site OR NOT settings.no_auth %]<option value="" selected>Netdisco Password</option>[% END %]
             [% IF demo_site OR has_ldap %]<option value="ldap">LDAP</option>[% END %]
             [% IF demo_site OR has_radius %]<option value="radius">RADIUS</option>[% END %]
@@ -46,11 +46,11 @@
         </div>
       </td>
       <td class="nd_center-cell">
-        <input class="col-md-2 form-control nd_allowed_ips_field" data-form="add" name="token_allowed_ips" type="text" placeholder="192.0.2.0/28, 2001:db8::/64" disabled>
+        <a class="btn" href="[% uri_for('/admin/aclmanager') | none %]"><i class="fas fa-list-ul fa-lg fa-border"></i>Edit ACLs</a>
       </td>
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="col-md-2 form-select" data-form="add" name="port_control">
+          <select class="form-select" data-form="add" name="port_control">
             <option value="" selected>Off</option>
             <option value="_global_">Enabled (any port)</option>
             [% FOREACH role IN port_control_roles %]
@@ -62,7 +62,7 @@
       <td class="nd_center-cell"><input data-form="add" type="checkbox" name="admin"></td>
       <td class="nd_center-cell"></td>
       <td class="nd_center-cell"></td>
-      <td class="nd_center-cell"><input class="col-md-2 form-control" data-form="add" name="note" type="text"></td>
+      <td class="nd_center-cell"><input class="form-control" data-form="add" name="note" type="text"></td>
       <td nowrap class="nd_center-cell">
         <button class="btn btn-sm nd_adminbutton" name="add" type="submit"><i class="fas fa-circle-plus"></i> Add</button>
       </td>
@@ -90,6 +90,11 @@
           value="********"
           [% END %]
           >
+        [% IF row.token_auth_only %]
+        <button class="btn btn-sm nd_tokenbutton" data-username="[% row.username | html_entity %]" type="button" title="Generate new API token">
+          <i class="fas fa-key"></i> <i class="fas fa-arrows-rotate"></i>
+        </button>
+        [% END %]
         <small class="nd_token_hint text-muted"
           [% IF NOT row.token_auth_only %]
           style="display: none"
@@ -101,17 +106,11 @@
           <span class="nd_token-hint-value">no token</span>
           [% END %]
         </small>
-        [% IF row.token_auth_only %]
-        <br />
-        <button class="btn btn-sm nd_tokenbutton" data-username="[% row.username | html_entity %]" type="button" title="Generate new API token">
-          <i class="fas fa-key"></i> <i class="fas fa-arrows-rotate"></i>
-        </button>
-        [% END %]
       </td>
       [% END %]
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="col-md-2 form-select nd_auth_method" data-form="update" name="auth_method">
+          <select class="form-select nd_auth_method" data-form="update" name="auth_method">
             [% IF demo_site OR NOT settings.no_auth %]<option[% ' selected' IF NOT row.token_auth_only AND NOT row.ldap AND NOT row.radius AND NOT row.tacacs %] value="">Netdisco Password</option>[% END %]
             [% IF demo_site OR has_ldap OR row.ldap %]<option[% ' selected' IF row.ldap %] value="ldap">LDAP</option>[% END %]
             [% IF demo_site OR has_radius OR row.radius %]<option[% ' selected' IF row.radius %] value="radius">RADIUS</option>[% END %]
@@ -121,13 +120,22 @@
         </div>
       </td>
       <td class="nd_center-cell">
-        <input class="col-md-2 form-control nd_allowed_ips_field" data-form="update" name="token_allowed_ips" type="text"
-          value="[% row.token_allowed_ips.join(', ') IF row.token_allowed_ips %]"
-          [% IF NOT row.token_auth_only %]disabled[% END %] placeholder="192.0.2.0/28, 2001:db8::/64">
+        [% IF host_group_acls.size > 0 %]
+        <div class="form-group">
+          <select class="form-select nd_allowed_ips_field" data-form="update" name="token_acl" [% IF NOT row.token_auth_only %]disabled[% END %]>
+            <option[% ' selected' IF NOT row.token_acl %] value="">None</option>
+            [% FOREACH acl IN host_group_acls %]
+            <option[% ' selected' IF row.token_acl AND row.token_acl == acl %] value="[% acl | html_entity %]">ACL: [% acl | html_entity %]</option>
+            [% END %]
+          </select>
+        </div>
+        [% ELSE %]
+        <a class="btn" href="[% uri_for('/admin/aclmanager') | none %]"><i class="fas fa-list-ul fa-lg fa-border"></i>Create ACL</a>
+        [% END %]
       </td>
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="col-md-2 form-select" data-form="update" name="port_control">
+          <select class="form-select" data-form="update" name="port_control">
             <option[% ' selected' IF NOT row.port_control %] value="">Off</option>
             <option[% ' selected' IF row.port_control AND row.portctl_role == "" %] value="_global_">Enabled (any port)</option>
             [% FOREACH role IN port_control_roles %]
@@ -142,7 +150,7 @@
       <td class="nd_center-cell">[% row.created   | html_entity %]</td>
       <td class="nd_center-cell">[% row.last_seen | html_entity %]</td>
       <td class="nd_center-cell">
-        <input class="col-md-2 form-control" data-form="update" name="note" type="text" value="[% row.note | html_entity %]">
+        <input class="form-control" data-form="update" name="note" type="text" value="[% row.note | html_entity %]">
       </td>
 
       <td nowrap class="nd_center-cell">

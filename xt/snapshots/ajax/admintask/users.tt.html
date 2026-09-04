@@ -7,7 +7,7 @@
       <th class="nd_center-cell">Username</th>
       <th class="nd_center-cell">Password</th>
       <th class="nd_center-cell">Auth Method</th>
-      <th class="nd_center-cell">Allowed IPs</th>
+      <th class="nd_center-cell">Token ACL</th>
       <th class="nd_center-cell">Port Control</th>
       <th class="nd_center-cell">Administrator</th>
       <th class="nd_center-cell">Created</th>
@@ -19,20 +19,20 @@
   <tbody>
     <tr>
       <td class="nd_center-cell"><input class="form-control" data-form="add" name="fullname" type="text"></td>
-      <td class="nd_center-middle-cell"><input class="col-md-2 form-control" data-form="add" name="username" type="text"></td>
-      <td class="nd_center-cell"><input class="col-md-1 form-control nd_pw_field" data-form="add" name="password" type="password"></td>
+      <td class="nd_center-middle-cell"><input class="form-control" data-form="add" name="username" type="text"></td>
+      <td class="nd_center-cell"><input class="form-control nd_pw_field" data-form="add" name="password" type="password"></td>
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="col-md-2 form-select nd_auth_method" data-form="add" name="auth_method"><option value="" selected>Netdisco Password</option><option value="ldap">LDAP</option><option value="radius">RADIUS</option><option value="tacacs">TACACS</option><option value="permanent_token">Permanent Token</option>
+          <select class="form-select nd_auth_method" data-form="add" name="auth_method"><option value="" selected>Netdisco Password</option><option value="ldap">LDAP</option><option value="radius">RADIUS</option><option value="tacacs">TACACS</option><option value="permanent_token">Permanent Token</option>
           </select>
         </div>
       </td>
       <td class="nd_center-cell">
-        <input class="col-md-2 form-control nd_allowed_ips_field" data-form="add" name="token_allowed_ips" type="text" placeholder="192.0.2.0/28, 2001:db8::/64" disabled>
+        <a class="btn" href=""><i class="fas fa-list-ul fa-lg fa-border"></i>Edit ACLs</a>
       </td>
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="col-md-2 form-select" data-form="add" name="port_control">
+          <select class="form-select" data-form="add" name="port_control">
             <option value="" selected>Off</option>
             <option value="_global_">Enabled (any port)</option>
           </select>
@@ -41,7 +41,7 @@
       <td class="nd_center-cell"><input data-form="add" type="checkbox" name="admin"></td>
       <td class="nd_center-cell"></td>
       <td class="nd_center-cell"></td>
-      <td class="nd_center-cell"><input class="col-md-2 form-control" data-form="add" name="note" type="text"></td>
+      <td class="nd_center-cell"><input class="form-control" data-form="add" name="note" type="text"></td>
       <td nowrap class="nd_center-cell">
         <button class="btn btn-sm nd_adminbutton" name="add" type="submit"><i class="fas fa-circle-plus"></i> Add</button>
       </td>
