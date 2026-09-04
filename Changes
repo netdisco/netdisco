@@ -31,6 +31,10 @@
     download link or a port control icon was hidden
   * a page fragment could 404 for the rest of a web worker's life after one
     request to its URL from outside the application
+  * behind_proxy, which no deployment needs to set, made the client address
+    read as the whole X-Forwarded-For chain where more than one proxy stood in
+    front of the web server, so an API token restricted by an ACL was refused
+    and every login failed to log
 
 2.107000 - 2026-09-04
 

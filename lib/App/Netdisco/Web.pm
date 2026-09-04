@@ -60,6 +60,19 @@ BEGIN {
       )->throw;
   };
 
+  # behind_proxy is documented as a setting nobody needs, since
+  # Plack::Middleware::ReverseProxy is always in the stack, but a site that
+  # sets it makes Dancer answer with the X-Forwarded-For header verbatim, and
+  # more than one proxy makes that a chain rather than an address. Take the
+  # last element, as ReverseProxy does: anything left of it is client supplied.
+  *Dancer::Request::address = sub {
+      my $self = shift;
+      return $self->env->{REMOTE_ADDR} unless setting('behind_proxy');
+      my $forwarded = $self->forwarded_for_address;
+      my ($client) = (defined $forwarded ? ($forwarded =~ m/([^,\s]+)\s*$/) : ());
+      return ($client || $self->env->{REMOTE_ADDR});
+  };
+
   # to insert /t/$tenant if set
   # which is fine for building links, but not fine for
   # comparison to request->path, because when is_forward() the

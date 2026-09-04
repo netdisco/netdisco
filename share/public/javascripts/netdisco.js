@@ -30,9 +30,9 @@ function nd_apply_sidebar (tab) {
 }
 
 // Nothing shipped calls this. It is here for site-local copies of
-// share/views/js/common.js, which call it from their own submit handlers.
-// htmx.ajax() rather than nd_submit(), which would re-enter the caller's own
-// submit handler and recurse.
+// share/views/js/common.js, which call it from their own submit handlers. It
+// forwards with htmx.ajax() rather than nd_submit(), which would re-enter the
+// caller's own submit handler and recurse.
 function do_search (event, tab) {
   event.preventDefault();
   nd_apply_sidebar(tab);
