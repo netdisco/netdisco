@@ -124,10 +124,13 @@ function device_form_state(e) {
   var with_text = $.grep(form_inputs.not('select'),
                           function(n,i) {return($(n).val() != "")}).length;
 
+  // by id rather than a selector built from DOM text, which $() may read as
+  // markup
+  var clear_btn = document.getElementById(e.attr('name') + '_clear_btn');
+
   if (e.prop('value') == "") {
     e.parent(".clearfix").removeClass('success');
-    var id = '#' + e.attr('name') + '_clear_btn';
-    hideWithTooltip(id);
+    hideWithTooltip(clear_btn);
 
     // if form has no field val, clear strikethough
     if (with_val == 0) {
@@ -141,8 +144,7 @@ function device_form_state(e) {
   }
   else {
     e.parent(".clearfix").addClass('success');
-    var id = '#' + e.attr('name') + '_clear_btn';
-    $(id).show();
+    $(clear_btn).show();
 
     // if form still has any field val, set strikethough
     if (e.parents('form[action$="/search"]').length > 0 && with_val != 0) {
