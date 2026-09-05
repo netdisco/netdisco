@@ -2043,3 +2043,12 @@ td.nd_nowrap {
 .htmx-request.htmx-indicator {
   display: block;
 }
+/* netdisco.js holds both of these until a swapped pane stops changing. Hidden
+   rather than display:none, because a table measures its column widths while
+   this is on. */
+.nd_indicator-held.htmx-indicator {
+  display: block;
+}
+.nd_pane-settling {
+  visibility: hidden;
+}

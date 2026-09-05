@@ -17,6 +17,9 @@
     startup because that tab renders an empty pane and says nothing
   * the navbar Reports and Admin submenus open from the keyboard as well as the
     pointer, so their entries can be reached without a mouse
+  * the loading indicator now stays up until a tab is ready to use, instead of
+    coming down when the server answered and leaving an unsorted, unpaged table
+    on screen while the browser worked through it
 
   [BUG FIXES]
 

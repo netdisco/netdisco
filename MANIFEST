@@ -721,6 +721,7 @@ xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/deferred-nodes.test.js
 xt/js/netmap-autosave.test.js
+xt/js/pane-settling.test.js
 xt/js/netmap-legend.test.js
 xt/js/netmap-loading.test.js
 xt/js/portsort.test.js

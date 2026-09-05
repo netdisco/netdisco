@@ -211,6 +211,46 @@ window.addEventListener('keydown', function (event) {
   bootstrap.Dropdown.getOrCreateInstance(toggle).hide();
 }, true);
 
+// htmx takes the indicator down when the response arrives, but the fragment's
+// own script builds its table from a ready callback afterwards, so the raw
+// full-length table would paint with no indicator until that finishes.
+//
+// Quiet DOM rather than a table library's own event, so this outlives the move
+// off jQuery. Quiet is not enough on its own: the build has gaps of several
+// hundred milliseconds where nothing changes because the thread is busy
+// computing, and revealing in one of those shows a table that is still moving.
+// A frame that took far longer than a frame should is the evidence of that, so
+// both conditions have to hold, twice running.
+//
+// The deadline is an escape hatch for a pane that never goes quiet rather than
+// a budget: it starts at the swap, so it covers only the browser's own work,
+// never the fetch.
+function holdUntilSettled(pane, indicator) {
+  if (!pane || !indicator) return;
+  pane.classList.add('nd_pane-settling');
+  indicator.classList.add('nd_indicator-held');
+
+  var SMOOTH_FRAME = 50; // ms; a 60Hz frame is 16, and a busy one runs to 800
+  var settledFrames = 0;
+  var mutated = false;
+  var previousFrame = null;
+  var deadline = Date.now() + 60000;
+  var watcher = new MutationObserver(function () { mutated = true });
+  watcher.observe(pane, { childList: true, subtree: true, attributes: true });
+
+  requestAnimationFrame(function frame(now) {
+    var smooth = (previousFrame !== null) && ((now - previousFrame) < SMOOTH_FRAME);
+    previousFrame = now;
+    settledFrames = (smooth && !mutated) ? (settledFrames + 1) : 0;
+    mutated = false;
+
+    if (settledFrames < 2 && Date.now() < deadline) { requestAnimationFrame(frame); return }
+    watcher.disconnect();
+    pane.classList.remove('nd_pane-settling');
+    indicator.classList.remove('nd_indicator-held');
+  });
+}
+
 $(document).ready(function() {
   // sidebar form fields should change colour and have bin/copy icon
   $('.nd_field-copy-icon').hide();
@@ -489,6 +529,7 @@ $(document).ready(function() {
         '<div class="col-md-2 alert alert-info">No matching records.</div>';
       return;
     }
+    holdUntilSettled(target, document.getElementById(tab + '_indicator'));
     $('div.content > div.tab-content table.nd_floatinghead').floatThead({
       top: 40
       ,position: 'fixed'
