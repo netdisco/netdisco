@@ -2,9 +2,6 @@
 
   [ENHANCEMENTS]
 
-  * checksitelocal reports a site-local device.tt, search.tt or report.tt
-    copied before the htmx tab transport, and the web app warns about one at
-    startup because that tab renders an empty pane and says nothing
   * the Ports tab with Connected Nodes shown is several times faster to load
     on a device with many nodes
   * a connected-node list longer than the collapse threshold now loads when
@@ -15,6 +12,9 @@
     the plain colon-separated form, so a MAC pasted from elsewhere is found
     whichever format the sidebar is showing. it no longer matches a node's age
     text such as "2 days 3 hours"
+  * checksitelocal reports a site-local device.tt, search.tt or report.tt
+    copied before the htmx tab transport, and the web app warns about one at
+    startup because that tab renders an empty pane and says nothing
   * the navbar Reports and Admin submenus open from the keyboard as well as the
     pointer, so their entries can be reached without a mouse
 
