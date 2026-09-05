@@ -462,7 +462,14 @@ a:hover, a:focus {
   margin-top: 0;
   margin-left: var(--bs-dropdown-spacer);
 }
-.dropend:hover > .dropdown-menu {
+/* Keyboard as well as pointer: the category anchors carry no data-bs-toggle
+   (see above), so focus arriving on one is all there is to open a submenu.
+   Not :focus-visible, tidier though that would be, because Bootstrap moves
+   focus between items with a script call, which Chromium does not treat as
+   visible focus: the menu would hide in the same recalc that focuses an item
+   inside it. A pointer click leaves focus behind, so netdisco.js blurs it. */
+.dropend:hover > .dropdown-menu,
+.dropend:focus-within > .dropdown-menu {
   display: block;
 }
 

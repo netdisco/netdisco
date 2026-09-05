@@ -188,6 +188,29 @@ function hideWithTooltip(target) {
   elements.hide();
 }
 
+// A pointer click focuses the category, which :focus-within then holds open
+// after the pointer has left. detail is 0 for a keyboard-generated click, which
+// must not close what it just opened.
+document.addEventListener('click', function (event) {
+  var category = event.target.closest('li.dropend > a.dropdown-toggle');
+  if (category && event.detail > 0) { category.blur() }
+});
+
+// Bootstrap's own Escape handler builds a Dropdown from the nested list, finds
+// no toggle beside it and throws, leaving the menu open. On window rather than
+// document because Bootstrap registers its delegated handlers as capture
+// listeners on document and loads first, so nothing there can precede them.
+window.addEventListener('keydown', function (event) {
+  if (event.key !== 'Escape') { return }
+  if (!event.target.closest('li.dropend > .dropdown-menu')) { return }
+  event.stopPropagation();
+  var toggle = event.target.closest('.nav-item.dropdown');
+  toggle = toggle && toggle.querySelector(':scope > .dropdown-toggle');
+  if (!toggle) { return }
+  toggle.focus();
+  bootstrap.Dropdown.getOrCreateInstance(toggle).hide();
+}, true);
+
 $(document).ready(function() {
   // sidebar form fields should change colour and have bin/copy icon
   $('.nd_field-copy-icon').hide();

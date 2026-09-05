@@ -15,6 +15,8 @@
     the plain colon-separated form, so a MAC pasted from elsewhere is found
     whichever format the sidebar is showing. it no longer matches a node's age
     text such as "2 days 3 hours"
+  * the navbar Reports and Admin submenus open from the keyboard as well as the
+    pointer, so their entries can be reached without a mouse
 
   [BUG FIXES]
 
