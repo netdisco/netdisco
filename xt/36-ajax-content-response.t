@@ -106,9 +106,9 @@ subtest 'ajaxDataRoutes__answering_with_a_value__set_their_own_content_type' => 
     # Dancer::Plugin::Ajax's own `before` hook stamps text/xml on every ajax
     # response unless the route overrides it, and netdisco configures no
     # plugins.Ajax.content_type. That is harmless for a route whose body is
-    # empty or whose caller does not sniff: do_search reads response.text()
-    # from fetch(), and every jQuery caller in share/views/js either passes
-    # dataType or hits a route that sets a type. It is not harmless for a
+    # empty or whose caller does not sniff: do_search forwards through
+    # htmx.ajax(), and every jQuery caller in share/public/javascripts either
+    # passes dataType or hits a route that sets a type. It is not harmless for a
     # /ajax/data/ route, whose whole purpose is to answer with a value that a
     # caller parses. Measured in a browser: an empty body under text/xml
     # resolves done() normally, a non-empty non-XML body raises parsererror

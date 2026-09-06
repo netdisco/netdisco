@@ -1,6 +1,14 @@
 [% PROCESS 'externallinks.tt' -%]
 <table id="dp-data-table" class="table table-bordered table-striped" width="100%" cellspacing="0"
-  data-nd-table='{"columnDefs":[{"sortable":false,"targets":0},{"searchable":false,"targets":0},{"type":"portsort","targets":["portsort"]}],"order":[[1,"asc"]],"initComplete":"portsCollapse"}'>
+  data-nd-table='{
+  "columnDefs": [
+    {"sortable":false,"targets":0},
+    {"searchable":false,"targets":0},
+    {"type":"portsort","targets":["portsort"]}
+  ],
+  "order": [[1,"asc"]],
+  "initComplete": "portsCollapse"
+}'>
   <thead>
     <tr>
       <th></th>

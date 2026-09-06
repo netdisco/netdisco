@@ -404,11 +404,12 @@ share/public/javascripts/jstree/themes/proton/style.css
 share/public/javascripts/jstree/themes/proton/style.min.css
 share/public/javascripts/jstree/themes/proton/throbber.gif
 share/public/javascripts/moment.min.js
+share/public/javascripts/netdisco-admin.js
 share/public/javascripts/netdisco-deferred-nodes.js
 share/public/javascripts/netdisco-netmap.js
+share/public/javascripts/netdisco-portcontrol.js
 share/public/javascripts/netdisco-tables.js
 share/public/javascripts/netdisco.js
-share/public/javascripts/netdisco_portcontrol.js
 share/public/javascripts/portsort.js
 share/public/javascripts/toastr.js
 share/public/javascripts/versionsort.js
@@ -573,7 +574,6 @@ share/views/ajax/admintask/undiscoveredneighbors_csv.tt
 share/views/ajax/admintask/userlog.tt
 share/views/ajax/admintask/users.tt
 share/views/ajax/admintask/users_csv.tt
-share/views/ajax/datatabledefaults.tt
 share/views/ajax/device/addresses.tt
 share/views/ajax/device/addresses_csv.tt
 share/views/ajax/device/details.tt
@@ -715,11 +715,13 @@ xt/58-behind-proxy-address.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/deferred-nodes.test.js
+xt/js/error-reporter.test.js
 xt/js/netmap-autosave.test.js
 xt/js/pane-settling.test.js
 xt/js/netmap-legend.test.js
 xt/js/netmap-loading.test.js
 xt/js/no-fragment-scripts.test.js
+xt/js/page-registry.test.js
 xt/js/portsort.test.js
 xt/js/tables-registry.test.js
 xt/js/tooltip-dismissal.test.js

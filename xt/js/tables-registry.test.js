@@ -1,7 +1,7 @@
-// Guards the registry and the initializer in netdisco-tables.js. The
-// renderers used to be 155 inline closures in fragment templates, outside
-// CodeQL and outside any test; each is now a named function, and each name a
-// fragment can ask for is asserted to exist here.
+// Guards the registry and the initializer in netdisco-tables.js. Renderers
+// are named functions here rather than inline closures in fragment
+// templates, which keeps them inside CodeQL's reach and inside test
+// coverage; each name a fragment can ask for is asserted to exist here.
 
 const test = require('node:test');
 const assert = require('node:assert');
@@ -46,13 +46,17 @@ function load({ built = [] } = {}) {
     },
     // Mirrors the real datetime() for the shape this file exercises: a
     // callable returned directly, blanking null/empty, formatting a display
-    // value through the given format. Does not mirror it for 'sort'/'type':
-    // the vendored function returns a parsed moment object for 'sort' and the
-    // registered type name for 'type', used for correct column sorting; this
-    // mock returns the raw value for both, which no assertion here depends on.
+    // value through the given format, and returning the raw input unchanged
+    // for every type, including display, when it fails to parse (matched
+    // here by not looking like a date at all). Does not mirror it for
+    // 'sort'/'type' on a value that does parse: the vendored function
+    // returns a parsed moment object for 'sort' and the registered type name
+    // for 'type', used for correct column sorting; this mock returns the raw
+    // value for both, which no assertion here depends on.
     datetime: function (format) {
       return function (data, type) {
         if (data == null || data === '') return '';
+        if (!/^\d{4}-\d{2}-\d{2}/.test(String(data))) return data;
         if (type === 'sort' || type === 'type') return data;
         return moment(data).format(format);
       };
@@ -63,6 +67,18 @@ function load({ built = [] } = {}) {
   const moment = (d) => ({ format: () => 'M:' + d });
   const fn = new Function('DataTable', 'document', 'window', 'moment', source + '\nreturn ndTables;');
   return fn(DataTable, document, window, moment);
+}
+
+// Shared by both fragment-scanning tests below. An IF/ELSE/END pair wrapping
+// optional JSON is stripped to its tag markers alone, always yielding the
+// branch that is present in the source; a bare expression standing in for a
+// scalar value is replaced with a neutral literal. Only the surrounding JSON
+// shape is read here, never the runtime value, so which branch or literal
+// does not matter.
+function stripDirectives(text) {
+  return text
+    .replace(/\[%\s*(?:IF|ELSIF|ELSE|END)\b[^%]*%\]/gi, '')
+    .replace(/\[%[^%]*?%\]/g, '0');
 }
 
 const URLS = { device: '/device', device_ports: '/device?tab=ports', search_device: '/search?tab=device', search_node: '/search?tab=node', search: '/search', report_moduleinventory: '/report/moduleinventory', report_nodevendor: '/report/nodevendor', report_portssid: '/report/portssid', report_netbios: '/report/netbios', uri_base: '' };
@@ -111,6 +127,16 @@ test('renderers__dateTime__formats_through_moment_and_blanks_null', () => {
   const r = load().renderers.dateTime({}, URLS);
   assert.strictEqual(r('2026-09-04T10:00:00', 'display', {}), 'M:2026-09-04T10:00:00');
   assert.strictEqual(r(null, 'display', {}), '');
+});
+
+// The vendored parser returns an unparseable value unchanged, for every type
+// including display, and DataTables writes a display value straight to
+// innerHTML; escaping only the pass-through case keeps a value that did
+// format from being escaped a second time.
+test('renderers__dateTime__an_unparseable_value__renders_escaped_for_display', () => {
+  const r = load().renderers.dateTime({}, URLS);
+  assert.strictEqual(r('<b>', 'display', {}), '&lt;b&gt;');
+  assert.strictEqual(r('<b>', 'sort', {}), '<b>');
 });
 
 test('renderers__devicePortsLink__builds_the_ports_link_from_row_keys', () => {
@@ -178,8 +204,8 @@ test('renderers__devicePortsLinkNamed__suffix_data__shows_the_cell_rather_than_a
 // factory: the dispatch key "name" (here "devicePortsLinkNamed") and the
 // row-key argument "name" would otherwise collide inside the same JSON
 // object, as deviceLabel's own doc comment explains.
-test('renderers__devicePortsLinkNamed__label_nested__renders_through_resolve', () => {
-  const fn = load().resolve({
+test('renderers__devicePortsLinkNamed__label_nested__renders_through_resolveRenderer', () => {
+  const fn = load().resolveRenderer({
     name: 'devicePortsLinkNamed', q: 'switch', f: 'data', flags: 'c_nodes=on',
     label: { dns: 'dns', name: 'name', ip: 'switch' }, suffix: 'data',
   }, URLS, {});
@@ -506,11 +532,11 @@ test('renderers__deviceName__prefers_dns_then_name_then_ip', () => {
 // the args object, so its own dispatch key ("name": "deviceName") must not
 // shadow deviceLabel's row-key argument of the same name.
 // No tier named, so deviceLabel takes the full dns/name/ip fallback; before
-// resolve() stripped its own dispatch key, args.name here was the string
-// "deviceName" rather than unset, which this path reads as the row key
-// "deviceName" instead of falling through to "name".
-test('resolve__an_object_spec__does_not_leak_its_own_dispatch_name_into_args', () => {
-  const fn = load().resolve({ name: 'deviceName' }, URLS, {});
+// resolveRenderer() stripped its own dispatch key, args.name here was the
+// string "deviceName" rather than unset, which this path reads as the row
+// key "deviceName" instead of falling through to "name".
+test('resolveRenderer__an_object_spec__does_not_leak_its_own_dispatch_name_into_args', () => {
+  const fn = load().resolveRenderer({ name: 'deviceName' }, URLS, {});
   assert.strictEqual(fn(null, 'display', { ip: '10.0.0.1', name: 'sw1' }), 'sw1');
 });
 
@@ -518,7 +544,7 @@ test('resolve__an_object_spec__does_not_leak_its_own_dispatch_name_into_args', (
 // else read from the same spec nests them under "label" instead, the shape
 // searchDeviceLink already uses.
 test('renderers__deviceName__label__nests_dns_name_ip_to_avoid_the_dispatch_key', () => {
-  const fn = load().resolve({ name: 'deviceName', label: { dns: 'device.dns', name: 'device.name', ip: 'ip' } }, URLS, {});
+  const fn = load().resolveRenderer({ name: 'deviceName', label: { dns: 'device.dns', name: 'device.name', ip: 'ip' } }, URLS, {});
   assert.strictEqual(fn(null, 'display', { ip: '10.0.0.1', device: { dns: '', name: 'sw1' } }), 'sw1');
 });
 
@@ -542,15 +568,28 @@ test('renderers__age__shows_the_text_and_sorts_by_the_stamp', () => {
   assert.strictEqual(r(null, 'display', {}), 'Never');
 });
 
-test('resolve__a_string__is_a_renderer_with_no_args', () => {
+test('resolveRenderer__a_string__is_a_renderer_with_no_args', () => {
   const t = load();
-  const r = t.resolve('escape', URLS, {});
+  const r = t.resolveRenderer('escape', URLS, {});
   assert.strictEqual(r('x', 'display', {}), 'x');
 });
 
-test('resolve__an_unknown_name__throws_naming_it', () => {
+test('resolveRenderer__an_unknown_name__throws_naming_it', () => {
   const t = load();
-  assert.throws(() => t.resolve('nope', URLS, {}), /nope/);
+  assert.throws(() => t.resolveRenderer('nope', URLS, {}), /nope/);
+});
+
+// A callback named where a column wants a renderer (or the reverse) is a
+// fragment author's mistake in which JSON key it went under; naming the
+// mistake in the error is the whole point of keeping two registries.
+test('resolveRenderer__a_callback_name__throws_naming_it_as_a_callback', () => {
+  const t = load();
+  assert.throws(() => t.resolveRenderer('portsCollapse', URLS, {}), /"portsCollapse" is a callback, not a renderer/);
+});
+
+test('resolveCallback__a_renderer_name__throws_naming_it_as_a_renderer', () => {
+  const t = load();
+  assert.throws(() => t.resolveCallback('escape', URLS, {}), /"escape" is a renderer, not a callback/);
 });
 
 test('build__merges_the_defaults_and_resolves_render_names', () => {
@@ -663,17 +702,6 @@ test('fragments__every_render_and_callback_name__is_in_the_registry', () => {
   const VIEWS = path.join(ROOT, 'share', 'views', 'ajax');
   const names = new Set();
 
-  // An IF/ELSE/END pair wrapping optional JSON is stripped to its tag
-  // markers alone, always yielding the branch that is present in the
-  // source; a bare expression standing in for a scalar value is replaced
-  // with a neutral literal. Only the surrounding JSON shape is read here,
-  // never the runtime value, so which branch or literal does not matter.
-  function stripDirectives(text) {
-    return text
-      .replace(/\[%\s*(?:IF|ELSIF|ELSE|END)\b[^%]*%\]/gi, '')
-      .replace(/\[%[^%]*?%\]/g, '0');
-  }
-
   function collectSpecName(spec) {
     if (typeof spec === 'string') names.add(spec);
     else if (spec && typeof spec === 'object' && typeof spec.name === 'string') names.add(spec.name);
@@ -683,7 +711,7 @@ test('fragments__every_render_and_callback_name__is_in_the_registry', () => {
     const full = path.join(dir, e.name);
     if (e.isDirectory()) return walk(full);
     const text = fs.readFileSync(full, 'utf8');
-    for (const m of text.matchAll(/data-nd-table='([\s\S]*?)'/g)) {
+    for (const m of text.matchAll(/data-nd-table='((?:[^'[]|\[(?!%)|\[%[\s\S]*?%\])*)'/g)) {
       var spec;
       try { spec = JSON.parse(stripDirectives(m[1])) }
       catch (err) { throw new Error(full + ': data-nd-table does not parse as JSON: ' + err.message) }
@@ -696,4 +724,61 @@ test('fragments__every_render_and_callback_name__is_in_the_registry', () => {
   walk(VIEWS);
   const missing = [...names].filter((n) => !(n in t.renderers) && !(n in t.callbacks));
   assert.deepStrictEqual(missing, []);
+});
+
+// A renderer that needs a URL throws at resolve time naming the missing
+// data-nd-urls key, but only if the fragment is exercised: this drives every
+// fragment's own render, drawCallback and initComplete specs through the
+// registry with the fragment's own data-nd-urls, so a fragment that forgot a
+// key fails here rather than when a viewer opens the tab. Run twice, once per
+// data-nd-admin value, because subnetLink only requires "uri_base" for an
+// admin viewer.
+//
+// <table ...> is matched as one block, pairing each data-nd-urls with the
+// data-nd-table beside it, because four fragments carry two tables and a
+// bare pair of attribute regexes run separately over the whole file would
+// pair the first table's urls with the second table's spec.
+test('fragments__every_table__supplies_the_url_keys_its_renderers_need', () => {
+  const t = load();
+  const VIEWS = path.join(ROOT, 'share', 'views', 'ajax');
+  const tables = [];
+
+  const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).forEach((e) => {
+    const full = path.join(dir, e.name);
+    if (e.isDirectory()) return walk(full);
+    const text = fs.readFileSync(full, 'utf8');
+    for (const m of text.matchAll(/<table\b[\s\S]*?>/g)) {
+      const block = stripDirectives(m[0]);
+      const tableMatch = /data-nd-table='((?:[^'[]|\[(?!%)|\[%[\s\S]*?%\])*)'/.exec(block);
+      if (!tableMatch) continue;
+      const urlsMatch = /data-nd-urls='((?:[^'[]|\[(?!%)|\[%[\s\S]*?%\])*)'/.exec(block);
+      var spec, urls;
+      try { spec = JSON.parse(tableMatch[1]) }
+      catch (err) { throw new Error(full + ': data-nd-table does not parse as JSON: ' + err.message) }
+      try { urls = urlsMatch ? JSON.parse(urlsMatch[1]) : {} }
+      catch (err) { throw new Error(full + ': data-nd-urls does not parse as JSON: ' + err.message) }
+      const specs = [];
+      (spec.columns || []).forEach((col) => { if (col.render) specs.push({ spec: col.render, kind: 'renderer' }) });
+      (spec.columnDefs || []).forEach((def) => { if (def.render) specs.push({ spec: def.render, kind: 'renderer' }) });
+      if (spec.drawCallback) specs.push({ spec: spec.drawCallback, kind: 'callback' });
+      if (spec.initComplete) specs.push({ spec: spec.initComplete, kind: 'callback' });
+      tables.push({ file: full, urls: urls, specs: specs });
+    }
+  });
+  walk(VIEWS);
+  assert.ok(tables.length > 0, 'the scan found at least one table');
+
+  ['0', '1'].forEach((ndAdmin) => {
+    tables.forEach(({ file, urls, specs }) => {
+      specs.forEach(({ spec, kind }) => {
+        const table = { dataset: { ndAdmin: ndAdmin } };
+        const resolveFn = (kind === 'renderer') ? t.resolveRenderer : t.resolveCallback;
+        try {
+          resolveFn(spec, urls, table);
+        } catch (err) {
+          assert.fail(file + ' (data-nd-admin=' + ndAdmin + '): ' + err.message);
+        }
+      });
+    });
+  });
 });

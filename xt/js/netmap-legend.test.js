@@ -85,7 +85,7 @@ describe('netmap legend containment', () => {
 
   test('legendRow__built_from_a_color_key__carries_the_full_label_as_a_title', () => {
     const js = read('share', 'public', 'javascripts', 'netdisco-netmap.js');
-    const block = js.match(/var legend = document\.getElementById\('nd2_netmap-legend'\);[\s\S]{0,900}?\n    \}/);
+    const block = js.match(/const legend = document\.getElementById\('nd2_netmap-legend'\);[\s\S]{0,1100}?\n    \}/);
     assert.ok(block, 'netmap.js must carry the legend building block');
     assert.match(
       block[0],

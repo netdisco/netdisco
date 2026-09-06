@@ -233,7 +233,7 @@ if (setting('template_paths') and ref [] eq ref setting('template_paths')) {
 # here rather than earlier because template_paths is only resolved above
 foreach my $finding (scan_shadowed_files({ paths => [ site_local_paths() ] })) {
     warning sprintf
-      '%s predates %s and its tab will render empty. Run "netdisco-do checksitelocal".',
+      '%s predates %s. Run "netdisco-do checksitelocal" for details.',
       $finding->{path}, $finding->{release};
 }
 

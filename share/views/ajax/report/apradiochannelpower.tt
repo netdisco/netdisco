@@ -1,6 +1,21 @@
 <table id="data-table" class="table table-bordered table-hover" width="100%" cellspacing="0"
   data-nd-urls='{"device_ports":"[% device_ports | html_entity %]","device":"[% uri_for('/device') | html_entity %]"}'
-  data-nd-table='{"serverSide":true,"ajax":"[% uri_for("/ajax/content/report/apradiochannelpower/data") | html_entity %]","order":[[0,"asc"]],"columns":[{"data":"ip","visible":false},{"data":"dns","visible":false},{"data":"device_name","visible":false},{"data":"port","type":"portsort","render":{"name":"devicePortsLink","q":"ip","f":"data"}},{"data":"port_name","render":"escape"},{"data":"descr","render":"escape"},{"data":"channel","className":"nd_center-cell","render":"raw"},{"data":"power","className":"nd_center-cell","render":"powerPair"}],"drawCallback":{"name":"groupDeviceRows","colspan":5,"nameKey":"device_name","toggleOrder":true}}'>
+  data-nd-table='{
+  "serverSide": true,
+  "ajax": "[% uri_for("/ajax/content/report/apradiochannelpower/data") | html_entity %]",
+  "order": [[0,"asc"]],
+  "columns": [
+    {"data":"ip","visible":false},
+    {"data":"dns","visible":false},
+    {"data":"device_name","visible":false},
+    {"data":"port","type":"portsort","render":{"name":"devicePortsLink","q":"ip","f":"data"}},
+    {"data":"port_name","render":"escape"},
+    {"data":"descr","render":"escape"},
+    {"data":"channel","className":"nd_center-cell","render":"raw"},
+    {"data":"power","className":"nd_center-cell","render":"powerPair"}
+  ],
+  "drawCallback": {"name":"groupDeviceRows","colspan":5,"nameKey":"device_name","toggleOrder":true}
+}'>
   <thead>
     <tr>
       <th>IP</th>

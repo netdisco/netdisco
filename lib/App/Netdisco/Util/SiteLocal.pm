@@ -21,7 +21,7 @@ App::Netdisco::Util::SiteLocal - find site-local files broken by shipped changes
 =head1 DESCRIPTION
 
 Site-local templates override shipped ones by relative path, so they keep
-calling APIs that later releases removed. Two of the three removals below fail
+calling APIs that later releases removed. Most of the removals below fail
 silently in the browser, which is why this exists: nothing else reports them.
 
 Detection only. This module never writes to a file and never logs.
@@ -80,14 +80,48 @@ my @RULES = (
              . 'and hx-indicator attributes that share/views/device.tt uses, '
              . 'then drop the do_search call from the submit handler.',
   },
+  {
+    name    => 'datatabledefaults-include',
+    release => '2.108000',
+    pattern => qr/INCLUDE\s+['"]ajax\/datatabledefaults\.tt['"]/,
+    advice  => 'ajax/datatabledefaults.tt was removed. Delete the INCLUDE and '
+             . 'move the table options into the data-nd-table attribute, as '
+             . 'share/views/ajax/device/ports.tt now does.',
+  },
+  {
+    name    => 'has-sidebar-global',
+    release => '2.108000',
+    pattern => qr/has_sidebar\s*\[/,
+    advice  => 'the has_sidebar global was removed. The sidebar visibility '
+             . 'marker is now a hidden input carrying data-nd-has-sidebar '
+             . 'for the tab and a 0 or 1 value, as '
+             . 'share/views/sidebar/report/portlog.tt shows.',
+  },
+  {
+    name    => 'page-script-include',
+    release => '2.108000',
+    pattern => qr/INCLUDE\s+['"]js\//,
+    advice  => 'share/views/js/ was removed. The page scripts now live in '
+             . 'share/public/javascripts/netdisco.js and a template must not '
+             . 'include a script; re-copy the template from this release.',
+  },
+  {
+    name    => 'portcontrol-js-renamed',
+    release => '2.108000',
+    pattern => qr/netdisco_portcontrol\.js/,
+    advice  => 'netdisco_portcontrol.js was renamed netdisco-portcontrol.js '
+             . 'and a reference to the old name 404s. Update the script tag '
+             . 'to the new file name.',
+  },
 );
 
 # Rules that fault what a file does NOT contain, so a finding has no line.
 #
-# This is the only rule the web application warns about at startup. A shadowed
-# tab page renders an empty pane and reports nothing anywhere, while the
-# others leave the application serving pages and do_search prints its own
-# console notice.
+# Both rules here are also what the web application warns about at startup,
+# since scan_shadowed_files runs every FILE_RULE unfiltered. A shadowed tab
+# page or layout reports nothing anywhere else the browser shows, while the
+# @RULES above leave the application serving pages and do_search prints its
+# own console notice.
 my @FILE_RULES = (
   {
     name     => 'tab-page-shadow',
@@ -98,6 +132,18 @@ my @FILE_RULES = (
               . 'form never fetches the pane and the tab renders empty. Copy '
               . 'the hx-get, hx-target, hx-headers and hx-indicator attributes '
               . 'from the shipped template of the same name.',
+  },
+  {
+    name     => 'layout-shadow',
+    release  => '2.108000',
+    paths    => ['layouts/main.tt'],
+    requires => qr/data-nd-uri-base/,
+    advice   => 'this copy predates data-nd-uri-base and the other body '
+              . 'attributes that carry the page JavaScript settings, so '
+              . 'netdisco.js throws reading them and every page is dead. '
+              . 'Re-copy layouts/main.tt from this release and re-apply the '
+              . 'local branding: it now carries those settings as body '
+              . 'attributes and loads the scripts at the end of the body.',
   },
 );
 

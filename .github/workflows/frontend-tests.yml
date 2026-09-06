@@ -148,3 +148,29 @@ jobs:
 
       - name: Every renderer and callback a fragment names exists
         run: node --test xt/js/tables-registry.test.js
+
+  error-reporter:
+    name: global script error reporter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: A script error or a failed swap reaches the console and the user
+        run: node --test xt/js/error-reporter.test.js
+
+  page-registry:
+    name: page registry and admin split
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: netdisco-admin.js registers with ndPages and carries no admin code left in netdisco.js
+        run: node --test xt/js/page-registry.test.js

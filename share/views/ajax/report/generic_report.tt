@@ -1,5 +1,10 @@
 <table id="rg-data-table" class="table table-bordered table-sm table-striped" width="100%" cellspacing="0"
-  data-nd-table='{"order":[][% IF is_custom_report %],"customReport":true[% END %]}'>
+  data-nd-table='{
+  "order": []
+  [% IF is_custom_report %]
+  ,"customReport": true
+  [% END %]
+}'>
   <thead>
     <tr>
       [% FOREACH hdr IN headings %]

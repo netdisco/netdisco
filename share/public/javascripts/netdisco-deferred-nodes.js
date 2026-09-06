@@ -4,30 +4,57 @@
 (function () {
   'use strict';
 
-  var BOX = '.nd_nodes-deferred';
-  var INDICATOR = '<span class="htmx-indicator">' +
-    '<i class="fas fa-spinner fa-spin"></i> Waiting for results...</span>';
+  const BOX = '.nd_nodes-deferred';
+  const INDICATOR =
+    '<span class="htmx-indicator">' + '<i class="fas fa-spinner fa-spin"></i> Waiting for results...</span>';
 
+  /**
+   * Replaces a deferred connected-nodes box's content with a failure message and a
+   * retry link.
+   * @param {Element} box the .nd_nodes-deferred element whose content is replaced
+   * @returns {void}
+   */
   function showFailure(box) {
-    box.innerHTML = INDICATOR +
+    // every part is a literal, none of it is data
+    // eslint-disable-next-line no-unsanitized/property
+    box.innerHTML =
+      INDICATOR +
       '<span class="text-danger">' +
       '<i class="fas fa-triangle-exclamation"></i>&nbsp; Could not load nodes. ' +
       '<a href="#" class="nd_nodes-retry">Retry</a></span>';
   }
 
+  /**
+   * Shows the failure message on a deferred connected-nodes box when its htmx request
+   * errors, ignoring the event when it did not originate from such a box.
+   * @param {Event} evt the htmx:responseError or htmx:sendError event
+   * @returns {void}
+   */
   function onFailure(evt) {
-    var box = evt.target;
+    const box = /** @type {Element|null} */ (evt.target);
     if (box && box.matches && box.matches(BOX)) {
       showFailure(box);
     }
   }
 
-  // A loaded box has had the indicator swapped away. A failed one has it back,
-  // alongside the message, so reopening a box that failed tries again.
+  /**
+   * Fetches a deferred connected-nodes box's content over htmx, unless it is already
+   * loading or has already loaded. A loaded box has had the indicator swapped away; a
+   * failed one has it back, alongside the failure message, so reopening a box that
+   * failed tries again.
+   * @param {Element} box the .nd_nodes-deferred element to load
+   * @returns {void}
+   */
   function load(box) {
-    if (box.classList.contains('htmx-request')) { return; }
-    if (!box.querySelector('.htmx-indicator')) { return; }
+    if (box.classList.contains('htmx-request')) {
+      return;
+    }
+    if (!box.querySelector('.htmx-indicator')) {
+      return;
+    }
 
+    // every part is a literal, none of it is data
+    // eslint-disable-next-line no-unsanitized/property
     box.innerHTML = INDICATOR;
 
     // The box carries hx-trigger="none" because htmx binds its triggers once,
@@ -42,23 +69,40 @@
   document.addEventListener('htmx:responseError', onFailure);
   document.addEventListener('htmx:sendError', onFailure);
 
-  // Capture, not bubble. The collapser rewrites the opener's innerHTML on its
-  // own click handler, so by the time a bubbling listener runs, a click on the
-  // plus icon has been orphaned from the document and closest() finds nothing.
-  document.addEventListener('click', function (evt) {
-    var link = evt.target.closest('.nd_nodes-retry');
-    if (link) {
-      evt.preventDefault();
-      var failed = link.closest(BOX);
-      if (failed) { load(failed); }
-      return;
-    }
+  document.addEventListener(
+    'click',
+    /**
+     * Loads a deferred connected-nodes box on a retry-link or collapse-toggle click.
+     * Bound on capture, not bubble, because the collapser rewrites the opener's
+     * innerHTML in its own click handler, so by the time a bubbling listener would
+     * run, a click on the plus icon has been orphaned from the document and
+     * closest() finds nothing.
+     * @param {MouseEvent} evt the click event
+     * @returns {void}
+     */
+    function (evt) {
+      const target = /** @type {Element} */ (evt.target);
+      const link = target.closest('.nd_nodes-retry');
+      if (link) {
+        evt.preventDefault();
+        const failed = link.closest(BOX);
+        if (failed) {
+          load(failed);
+        }
+        return;
+      }
 
-    var opener = evt.target.closest('.nd_collapse-vlans');
-    if (!opener) { return; }
+      const opener = target.closest('.nd_collapse-vlans');
+      if (!opener) {
+        return;
+      }
 
-    var total = opener.closest('.nd_nodes-total');
-    var box = total && total.nextElementSibling;
-    if (box && box.matches && box.matches(BOX)) { load(box); }
-  }, true);
-}());
+      const total = opener.closest('.nd_nodes-total');
+      const box = total && total.nextElementSibling;
+      if (box && box.matches && box.matches(BOX)) {
+        load(box);
+      }
+    },
+    true
+  );
+})();

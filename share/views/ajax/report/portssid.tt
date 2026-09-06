@@ -3,7 +3,26 @@
 <table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0"
   data-nd-data="#nd-results-report-portssid-bydevice"
   data-nd-urls='{"device_ports":"[% device_ports | html_entity %]"}'
-  data-nd-table='{"deferRender":true,"columns":[{"data":"ip","render":{"name":"devicePortsLinkNamed","q":"data","f":"port.port","flags":"c_nodes=on&n_ssid=on","label":{"dns":"device.dns","name":"device.name","ip":"ip"},"suffix":"port.port"}},{"data":"broadcast","render":"yesNo"},{"data":"device.model","render":"escape"},{"data":"ssid","searchable":false,"orderable":false,"render":"escape"},{"data":"device.vendor","render":"escape"}]}'>
+  data-nd-table='{
+  "deferRender": true,
+  "columns": [
+    {
+      "data": "ip",
+      "render": {
+        "name": "devicePortsLinkNamed",
+        "q": "data",
+        "f": "port.port",
+        "flags": "c_nodes=on&n_ssid=on",
+        "label": {"dns":"device.dns","name":"device.name","ip":"ip"},
+        "suffix": "port.port"
+      }
+    },
+    {"data":"broadcast","render":"yesNo"},
+    {"data":"device.model","render":"escape"},
+    {"data":"ssid","searchable":false,"orderable":false,"render":"escape"},
+    {"data":"device.vendor","render":"escape"}
+  ]
+}'>
   <thead>
     <tr>
       <th>Device (Port)</th>
@@ -19,7 +38,15 @@
 <table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0"
   data-nd-data="#nd-results-report-portssid-bysid"
   data-nd-urls='{"report_portssid":"[% uri_for('/report/portssid') | html_entity %]"}'
-  data-nd-table='{"deferRender":true,"order":[[2,"desc"]],"columns":[{"data":"ssid","render":{"name":"reportLink","report":"report_portssid","param":"ssid"}},{"data":"broadcast","render":"yesNo"},{"data":"count","searchable":false,"render":"number"}]}'>
+  data-nd-table='{
+  "deferRender": true,
+  "order": [[2,"desc"]],
+  "columns": [
+    {"data":"ssid","render":{"name":"reportLink","report":"report_portssid","param":"ssid"}},
+    {"data":"broadcast","render":"yesNo"},
+    {"data":"count","searchable":false,"render":"number"}
+  ]
+}'>
   <thead>
     <tr>
       <th class="nd_center-cell">SSID</th>

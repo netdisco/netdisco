@@ -35,18 +35,23 @@ const repoRoot = path.join(__dirname, '..', '..');
 const viewJsDir = path.join(repoRoot, 'share', 'views', 'js');
 const codeqlConfigPath = path.join(repoRoot, '.github', 'codeql', 'codeql-config.yml');
 
+// .github/ is not in MANIFEST, so the config is absent from a CPAN tarball.
+// Skip rather than pass in that case: a passed assertion that never read the
+// file would hide a real regression on a checkout where the file exists.
+const skipWithoutConfig = !fs.existsSync(codeqlConfigPath)
+  && 'no .github/codeql/codeql-config.yml (expected outside a git checkout)';
+
 // The conversion this guard watched for is finished: every template under
 // share/views/js/ went static, the directory is gone, and the exclusion it
 // needed is gone with it. This is what stays behind to say so.
-test('viewJsDirectory__after_the_conversion__no_longer_exists_or_needs_excluding', () => {
+test('viewJsDirectory__after_the_conversion__no_longer_exists', () => {
   assert.ok(!fs.existsSync(viewJsDir), `${viewJsDir} still exists; it was to be removed once its templates went static`);
+});
 
-  // .github/ is not in MANIFEST, so the config is absent from a CPAN tarball.
-  // Matched against paths-ignore entries only, not comment prose: another
-  // entry's comment can legitimately still say where its own fixtures come from.
-  if (fs.existsSync(codeqlConfigPath)) {
-    const config = fs.readFileSync(codeqlConfigPath, 'utf8');
-    assert.doesNotMatch(config, /^\s*-\s*share\/views/m,
-      'codeql-config.yml still excludes a share/views path, but the directory it excluded is gone');
-  }
+// Matched against paths-ignore entries only, not comment prose: another
+// entry's comment can legitimately still say where its own fixtures come from.
+test('codeqlConfig__after_the_conversion__no_longer_excludes_a_removed_directory', { skip: skipWithoutConfig }, () => {
+  const config = fs.readFileSync(codeqlConfigPath, 'utf8');
+  assert.doesNotMatch(config, /^\s*-\s*share\/views/m,
+    'codeql-config.yml still excludes a share/views path, but the directory it excluded is gone');
 });
