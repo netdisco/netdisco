@@ -430,13 +430,22 @@ jobs:
           docker build --tag registry.digitalocean.com/netdisco-demo-webonly/demo:latest .
 
       - name: Log in to DigitalOcean Container Registry with short-lived credentials
-        run: doctl registry login --expiry-seconds 1200
+        run: |
+          doctl registry login --expiry-seconds 1200
 
       - name: Push image to DigitalOcean Container Registry
-        run: docker push registry.digitalocean.com/netdisco-demo-webonly/demo:latest
+        run: |
+          docker push registry.digitalocean.com/netdisco-demo-webonly/demo:latest
+          sleep 30
+
+      - name: Run DigitalOcean Container Registry garbage collection
+        continue-on-error: true
+        run: |
+          doctl registry garbage-collection start netdisco-demo-webonly --force
 
       - name: Logout from DigitalOcean
-        run: docker logout
+        run: |
+          docker logout
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3.24

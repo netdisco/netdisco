@@ -1,4 +1,4 @@
-2.108001 - tbd
+2.108002 - tbd
 
   [ENHANCEMENTS]
 
@@ -17,6 +17,13 @@
   * the Module Inventory, NetBIOS and Node Vendor reports now honor every
     filter when more than one is given; the second and later were dropped by
     the table's data request
+
+2.108001 - 2026-09-06
+
+  [ENHANCEMENTS]
+
+  * significant reduction in container image size after refactoring Dockerfiles
+  * run garbage collection on DigitalOcean container registry after demo release
 
 2.108000 - 2026-09-05
 
