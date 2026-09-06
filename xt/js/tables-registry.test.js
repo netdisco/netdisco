@@ -311,6 +311,28 @@ test('build__initComplete__resolves_a_named_callback', () => {
   assert.strictEqual(typeof built[0].config.initComplete, 'function');
 });
 
+test('build__defaults_false__reaches_DataTables_with_none_of_the_shared_keys', () => {
+  const built = [];
+  load({ built }).build({ id: 'x', dataset: { ndTable: '{"defaults":false,"paging":false}', ndUrls: '{}' }, ownerDocument: { getElementById: () => null } });
+  const config = built[0].config;
+  assert.strictEqual(config.processing, undefined);
+  assert.strictEqual(config.dom, undefined);
+  assert.strictEqual(config.language, undefined);
+  assert.strictEqual(config.stateSave, undefined);
+  assert.strictEqual(config.defaults, undefined, 'the flag itself is consumed, not passed through');
+  assert.strictEqual(config.paging, false, 'the table\'s own options still apply');
+});
+
+test('build__without_defaults_false__still_gets_the_shared_options', () => {
+  const built = [];
+  load({ built }).build({ id: 'x', dataset: { ndTable: '{}', ndUrls: '{}' }, ownerDocument: { getElementById: () => null } });
+  const config = built[0].config;
+  assert.strictEqual(config.processing, true);
+  assert.strictEqual(config.stateSave, true);
+  assert.strictEqual(typeof config.dom, 'string');
+  assert.strictEqual(typeof config.language, 'object');
+});
+
 // Every name a fragment can ask for must exist. Reads the templates rather
 // than a list kept here, so a fragment naming a renderer that was never
 // written fails this test rather than a user's page.

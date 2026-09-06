@@ -368,11 +368,14 @@ var ndTables = (function () {
   function build(table) {
     var spec = JSON.parse(table.dataset.ndTable || '{}');
     var urls = JSON.parse(table.dataset.ndUrls || '{}');
-    var config = defaults(table, spec);
+    // "defaults":false opts a table out of every shared option, for a table
+    // whose old script never included datatabledefaults.tt either.
+    var config = (spec.defaults === false) ? {} : defaults(table, spec);
     // Each spec key replaces its default wholesale, not merged one level
     // deep, so a fragment setting "language" drops every default string, not
-    // just the ones it names.
-    Object.keys(spec).forEach(function (k) { if (k !== 'customReport') config[k] = spec[k] });
+    // just the ones it names. "customReport" and "defaults" are consumed
+    // here rather than passed through: DataTables never sees either.
+    Object.keys(spec).forEach(function (k) { if (k !== 'customReport' && k !== 'defaults') config[k] = spec[k] });
     (config.columns || []).forEach(function (col) {
       if (col.render) col.render = resolve(col.render, urls, table);
     });

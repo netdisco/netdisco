@@ -9,7 +9,8 @@
 </div>
 [% END %]
 
-<table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0">
+<table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0"
+  data-nd-table='{"columnDefs":[{"targets":[2,3,4,5,6,7,8,9,10],"searchable":false},{"targets":[0,1,2,3,4,5,6,7,8,9,10],"orderable":false}]}'>
   <thead>
     <tr>
       <th class="nd_center-cell">Full Name</th>
@@ -85,7 +86,7 @@
       <td class="nd_center-middle-cell">
         <input class="col-md-1 form-control nd_pw_field" data-form="update" name="password" type="password"
           [% IF row.token_auth_only %]
-          style="display: none" disabled
+          hidden disabled
           [% ELSE %]
           value="********"
           [% END %]
@@ -97,7 +98,7 @@
         [% END %]
         <small class="nd_token_hint text-muted"
           [% IF NOT row.token_auth_only %]
-          style="display: none"
+          hidden
           [% END %]
           >
           [% IF row.token_hint %]
@@ -206,84 +207,3 @@
     </div>
   </div>
 </div>
-
-<script>
-$(document).ready(function() {
-  function toggleTokenFields(select) {
-    var row  = $(select).closest('tr');
-    var pw   = row.find('.nd_pw_field');
-    var cell = pw.closest('td');
-    var hint = row.find('.nd_token_hint');
-    var ips  = row.find('.nd_allowed_ips_field');
-    var btn  = row.find('.nd_tokenbutton');
-    if ($(select).val() === 'permanent_token') {
-      pw.hide().val('').prop('disabled', true);
-      cell.addClass('nd_center-middle-cell');
-      cell.removeClass('nd_center-cell');
-      hint.show();
-      btn.show();
-      ips.prop('disabled', false);
-    } else {
-      pw.show().prop('disabled', false).attr('placeholder', '');
-      cell.addClass('nd_center-cell');
-      cell.removeClass('nd_center-middle-cell');
-      hint.hide();
-      btn.hide();
-      ips.val('').prop('disabled', true);
-    }
-  }
-  $('.nd_auth_method').each(function() { toggleTokenFields(this); });
-  $(document).on('change', '.nd_auth_method', function() { toggleTokenFields(this); });
-
-  $('#nd_token-copy').on('click', function() {
-    navigator.clipboard.writeText($('#nd_token-value').val());
-    $(this).html('<i class="fas fa-check"></i> Copied');
-  });
-
-  // Called by admintask.js when the server returns a data-nd-api-key span
-  window.nd_show_api_token = function(apiKey) {
-    $('#nd_token-value').val(apiKey);
-    $('#nd_token-copy').html('<i class="fas fa-copy"></i> Copy');
-    // Name the form rather than building its id from task.tag. This fragment
-    // is only ever rendered by the ajax route in Users.pm, which passes no task
-    // in its stash, so task.tag was always empty here and the selector was
-    // always '#_form', which matches nothing. The tag is 'users' either way:
-    // this template is registered for that one admin task.
-    $('#nd_token-reveal').one('hidden.bs.modal', function() {
-      nd_submit('#users_form');
-    });
-    $('#nd_token-reveal').modal('show');
-  };
-
-  $(document).on('click', '.nd_tokenbutton', function() {
-    var username  = $(this).data('username');
-    var hint = $(this).closest('td').find('.nd_token-hint-value');
-    $.get(uri_base + '/ajax/control/admin/users/token', { username: username, permanent: 1 }, function(apiKey) {
-      apiKey = $.trim(apiKey);
-      if (apiKey && typeof window.nd_show_api_token === 'function') {
-        $(hint).text('...' + apiKey.slice(-8));
-        window.nd_show_api_token(apiKey);
-      } else {
-        toastr.error('Could not retrieve token');
-      }
-    }, 'text').fail(function() {
-      toastr.error('Could not retrieve token');
-    });
-  });
-
-  $('#data-table').dataTable({
-    "columnDefs": [
-      {
-        "targets": [ 2, 3, 4, 5, 6, 7, 8, 9, 10 ],
-        "searchable": false
-      },
-      {
-        "targets": [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ],
-        "orderable": false
-      }
-    ],
-[% INCLUDE 'ajax/datatabledefaults.tt' -%]
-  } );
-} );
-</script>
-

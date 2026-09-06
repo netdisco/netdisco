@@ -1,7 +1,8 @@
 [% IF results.count == 0 %]
 <div class="col-md-3 alert alert-info">The aren't enough jobs to report.</div>
 [% ELSE %]
-<table id="app-data-table" class="table table-bordered table-sm table-hover" width="100%" cellspacing="0">
+<table id="app-data-table" class="table table-bordered table-sm table-hover" width="100%" cellspacing="0"
+  data-nd-table='{"defaults":false,"paging":false,"searching":false,"info":false,"order":[[2,"desc"],[5,"desc"]],"pageLength":50}'>
   <thead>
     <tr>
       <th class="nd_center-cell">Action</th>
@@ -40,16 +41,3 @@
   </tbody>
 </table>
 [% END %]
-
-<script>
-$(document).ready(function() {
-    $('#app-data-table').dataTable({
-        "paging":   false,
-        "searching": false,
-        "info":     false,
-        "order": [[ 2, 'desc' ], [ 5, 'desc' ]],
-        "pageLength": 50
-    } );
-} );
-</script>
-

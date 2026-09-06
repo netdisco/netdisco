@@ -516,6 +516,106 @@ $(document).ready(function() {
   });
   $('#daterange').trigger('input');
 
+  // admin ACL editor: the bin beside a rule removes the rule's label and its
+  // input, then presses the row's update button. The button is found first
+  // because the click removes the label the search would start from.
+  document.addEventListener('click', function (event) {
+    var bin = event.target.closest('.nd_delete-me');
+    if (!bin) return;
+    var row = bin.closest('tr');
+    var button = row && row.querySelector('button.nd_adminbutton[name="update"]');
+    var label = bin.closest('span.nd_left-acl-rule-label, span.nd_right-acl-rule-label');
+    if (!label) return;
+    var field = label.nextElementSibling;
+    if (field && field.matches('input.nd_left-acl-rule-field, input.nd_right-acl-rule-field')) field.remove();
+    label.remove();
+    if (button) button.click();
+  });
+
+  // admin pseudo devices: the layer-3 badge toggles the hidden layers field
+  // between "router" and "nothing".
+  document.addEventListener('click', function (event) {
+    var link = event.target.closest('.nd_layer-three-link');
+    if (!link) return;
+    var badge = link.querySelector('span');
+    var layers = link.parentElement.querySelector('input');
+    badge.classList.toggle('text-bg-success');
+    layers.setAttribute('value', badge.classList.contains('text-bg-success') ? '00000100' : '00000000');
+  });
+
+  // admin users: the auth method select shows either the password field or
+  // the token controls, per row. Guarded per element because the add row
+  // carries no password field under no_auth and no token hint or button,
+  // which a plain field lookup would otherwise throw on.
+  function nd_token_fields(select) {
+    var row = select.closest('tr');
+    var pw = row.querySelector('.nd_pw_field');
+    var cell = pw && pw.closest('td');
+    var hint = row.querySelector('.nd_token_hint');
+    var ips = row.querySelector('.nd_allowed_ips_field');
+    var btn = row.querySelector('.nd_tokenbutton');
+    var token = (select.value === 'permanent_token');
+    if (pw) { pw.hidden = token; pw.disabled = token; if (token) pw.value = ''; else pw.placeholder = ''; }
+    if (cell) { cell.classList.toggle('nd_center-middle-cell', token); cell.classList.toggle('nd_center-cell', !token) }
+    if (hint) hint.hidden = !token;
+    if (btn) btn.hidden = !token;
+    if (ips) { ips.disabled = !token; if (!token) ips.value = '' }
+  }
+  document.addEventListener('change', function (event) {
+    if (event.target.matches('.nd_auth_method')) nd_token_fields(event.target);
+  });
+  // Runs ahead of the htmx glue listener below, which builds the DataTable:
+  // DataTables detaches rows outside the current page from the DOM, and this
+  // sync must see every row while they are all still there.
+  document.body.addEventListener('htmx:afterSwap', function (evt) {
+    evt.detail.target.querySelectorAll('.nd_auth_method').forEach(nd_token_fields);
+  });
+  document.addEventListener('click', function (event) {
+    var copy = event.target.closest('#nd_token-copy');
+    if (!copy) return;
+    navigator.clipboard.writeText(document.getElementById('nd_token-value').value);
+    copy.innerHTML = '<i class="fas fa-check"></i> Copied';
+  });
+
+  // admin users: the key icon requests a fresh permanent token for a
+  // token-only user. The route is declared with Dancer's ajax keyword, which
+  // matches only a request carrying X-Requested-With: XMLHttpRequest; $.get
+  // sent that automatically, fetch does not.
+  document.addEventListener('click', function (event) {
+    var btn = event.target.closest('.nd_tokenbutton');
+    if (!btn) return;
+    var hint = btn.closest('td').querySelector('.nd_token-hint-value');
+    var query = new URLSearchParams({ username: btn.dataset.username, permanent: 1 });
+    fetch(uri_base + '/ajax/control/admin/users/token?' + query,
+      { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(function (response) { return response.ok ? response.text() : Promise.reject() })
+      .then(function (apiKey) {
+        apiKey = apiKey.trim();
+        if (apiKey && typeof window.nd_show_api_token === 'function') {
+          hint.textContent = '...' + apiKey.slice(-8);
+          window.nd_show_api_token(apiKey);
+        } else {
+          toastr.error('Could not retrieve token');
+        }
+      })
+      .catch(function () { toastr.error('Could not retrieve token') });
+  });
+
+  // Called by admintask.js when the server returns a data-nd-api-key span
+  window.nd_show_api_token = function(apiKey) {
+    document.getElementById('nd_token-value').value = apiKey;
+    document.getElementById('nd_token-copy').innerHTML = '<i class="fas fa-copy"></i> Copy';
+    // Name the form rather than building its id from task.tag. This fragment
+    // is only ever rendered by the ajax route in Users.pm, which passes no task
+    // in its stash, so task.tag was always empty here and the selector was
+    // always '#_form', which matches nothing. The tag is 'users' either way:
+    // this template is registered for that one admin task.
+    document.getElementById('nd_token-reveal').addEventListener('hidden.bs.modal', function() {
+      nd_submit('#users_form');
+    }, { once: true });
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('nd_token-reveal')).show();
+  };
+
   // htmx glue. Converted panes get the same empty-result, error and
   // after-swap handling do_search gives the unconverted ones, so the two
   // transports are indistinguishable to a user. Keyed on any *_pane, not just
