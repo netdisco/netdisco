@@ -75,6 +75,34 @@ function load({ built = [] } = {}) {
 // scalar value is replaced with a neutral literal. Only the surrounding JSON
 // shape is read here, never the runtime value, so which branch or literal
 // does not matter.
+// Returns every value of a single-quoted attribute in the text. A value may
+// hold a Template Toolkit directive that itself contains a quote, such as
+// uri_for('/device'), so this scans character by character and skips each
+// [% ... %] whole instead of stopping at the first quote. A plain regex for
+// the same job backtracks exponentially on repeated directives.
+function attributeValues(text, name) {
+  const values = [];
+  const marker = name + "='";
+  let from = 0;
+  for (;;) {
+    const start = text.indexOf(marker, from);
+    if (start === -1) return values;
+    let i = start + marker.length;
+    const begin = i;
+    while (i < text.length && text[i] !== "'") {
+      if (text.startsWith('[%', i)) {
+        const close = text.indexOf('%]', i + 2);
+        if (close === -1) throw new Error('unclosed directive after ' + marker);
+        i = close + 2;
+      } else {
+        i += 1;
+      }
+    }
+    values.push(text.slice(begin, i));
+    from = i + 1;
+  }
+}
+
 function stripDirectives(text) {
   return text
     .replace(/\[%\s*(?:IF|ELSIF|ELSE|END)\b[^%]*%\]/gi, '')
@@ -711,9 +739,9 @@ test('fragments__every_render_and_callback_name__is_in_the_registry', () => {
     const full = path.join(dir, e.name);
     if (e.isDirectory()) return walk(full);
     const text = fs.readFileSync(full, 'utf8');
-    for (const m of text.matchAll(/data-nd-table='((?:[^'[]|\[(?!%)|\[%[\s\S]*?%\])*)'/g)) {
+    for (const value of attributeValues(text, 'data-nd-table')) {
       var spec;
-      try { spec = JSON.parse(stripDirectives(m[1])) }
+      try { spec = JSON.parse(stripDirectives(value)) }
       catch (err) { throw new Error(full + ': data-nd-table does not parse as JSON: ' + err.message) }
       (spec.columns || []).forEach((col) => { if (col.render) collectSpecName(col.render) });
       (spec.columnDefs || []).forEach((def) => { if (def.render) collectSpecName(def.render) });
@@ -749,9 +777,11 @@ test('fragments__every_table__supplies_the_url_keys_its_renderers_need', () => {
     const text = fs.readFileSync(full, 'utf8');
     for (const m of text.matchAll(/<table\b[\s\S]*?>/g)) {
       const block = stripDirectives(m[0]);
-      const tableMatch = /data-nd-table='((?:[^'[]|\[(?!%)|\[%[\s\S]*?%\])*)'/.exec(block);
-      if (!tableMatch) continue;
-      const urlsMatch = /data-nd-urls='((?:[^'[]|\[(?!%)|\[%[\s\S]*?%\])*)'/.exec(block);
+      const tableValues = attributeValues(block, 'data-nd-table');
+      if (!tableValues.length) continue;
+      const tableMatch = [null, tableValues[0]];
+      const urlValues = attributeValues(block, 'data-nd-urls');
+      const urlsMatch = urlValues.length ? [null, urlValues[0]] : null;
       var spec, urls;
       try { spec = JSON.parse(tableMatch[1]) }
       catch (err) { throw new Error(full + ': data-nd-table does not parse as JSON: ' + err.message) }
