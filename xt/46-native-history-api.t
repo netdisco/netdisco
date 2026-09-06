@@ -32,9 +32,6 @@ my @ours = (
 File::Find::find({ no_chdir => 1, wanted => sub {
     push @ours, $File::Find::name if -f $File::Find::name and /\.tt$/;
 } }, catdir($root, qw/share views/));
-File::Find::find({ no_chdir => 1, wanted => sub {
-    push @ours, $File::Find::name if -f $File::Find::name and /\.js$/;
-} }, catdir($root, qw/share views js/));
 
 subtest 'sharedTree__after_the_polyfill_went__names_no_window_History' => sub {
     my @offenders = ();

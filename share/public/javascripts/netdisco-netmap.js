@@ -4,9 +4,6 @@
 var graph;             // accessor object; the harness and device.js use window.graph
 var saveMapPositions;  // device.js binds the sidebar Save button to this
 
-// This file loads in <head>, before document.body exists, so the listener
-// goes on document rather than document.body: htmx:afterSwap bubbles, and
-// document is there to hear it whether or not body has been parsed yet.
 document.addEventListener('htmx:afterSwap', function (evt) {
   if (evt.detail.target.id !== 'netmap_pane') return;
   ndNetmap(evt.detail.target);

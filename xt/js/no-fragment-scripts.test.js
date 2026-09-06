@@ -17,10 +17,7 @@ const VIEWS = path.join(ROOT, 'share', 'views');
 
 // Files under share/views still carrying <script> with code, or a .js
 // extension. Sorted. Delete a line when its file is converted.
-const REMAINING = [
-  'js/common.js',
-  'layouts/main.tt',
-];
+const REMAINING = [];
 
 function walk(dir, out = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -58,6 +55,10 @@ test('remainingList__every_entry__still_exists_and_still_offends', () => {
 test('remainingList__is_sorted_with_no_duplicates', () => {
   const sorted = [...new Set(REMAINING)].sort();
   assert.deepStrictEqual(REMAINING, sorted);
+});
+
+test('remainingList__after_the_conversion__is_empty', () => {
+  assert.deepStrictEqual(REMAINING, [], 'the conversion is complete; nothing may be added back');
 });
 
 // JSON blocks are the one script type allowed. htmx 2.0.10 executes only

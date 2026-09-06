@@ -1,3 +1,9 @@
+// promoted from a <body> data attribute; the layout carries no inline
+// JavaScript for CodeQL to skip.
+var uri_base = document.body.dataset.ndUriBase;
+var default_pgtitle = document.body.dataset.ndTitle;
+var nd_check_userlog = (document.body.dataset.ndCheckUserlog === '1');
+
 // parameterised for the active tab - submits search form and injects
 // HTML response into the tab pane, or an error/empty-results message
 // dispatch a real submit event so htmx, which listens natively, sees it.
@@ -67,8 +73,7 @@ function do_search (event, tab) {
 
 // page, path and form_inputs are set from the active page's ready block
 // further down (device, search, report or admin), and read as globals here
-// and in inner_view_processing, the way each of the four former page scripts
-// used to set them at file scope for itself alone.
+// and in inner_view_processing.
 var page;
 var path;
 var form_inputs;
@@ -667,7 +672,6 @@ $(document).ready(function() {
   // snmp tab: jsTree browser and its search box.
   function nd_snmp_browser(pane) {
     var device = pane.querySelector('#jstree').dataset.ndDevice;
-    // uri_base is the global set in main.tt; document.body.dataset.ndUriBase replaces this in a later task
     var jstree_search_callback = function(str, node) {
       var pattern = str.toLowerCase();
       var mib_pat = str.replace(/::.+/,'').toLowerCase();
@@ -861,15 +865,17 @@ $(document).ready(function() {
 });
 
 
-// index.tt: load System Information once its accordion is first opened. This
-// is what the old delegated show.bs.collapse handler on .collapse did;
-// {once: true} below replaces its stats_loaded flag.
+// index.tt: load System Information once its accordion is first opened,
+// using {once: true} in place of a stats_loaded flag.
 function nd_statistics_panel() {
   var stats = document.getElementById('nd_stats');
   $('#nqbody').focus(); // set focus to main search
   $('#loginuser').focus(); // set focus to login, if it's there
 
-  document.getElementById('collapse-stats').addEventListener('show.bs.collapse', function() {
+  var collapseStats = document.getElementById('collapse-stats');
+  if (!collapseStats) return;
+
+  collapseStats.addEventListener('show.bs.collapse', function() {
     fetch( stats.dataset.ndUrl,
       { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
       .then( response => {
@@ -1011,13 +1017,78 @@ function inner_view_processing(tab) {
   // are delegated, but do_search and the htmx glue call this unconditionally.
 }
 
+// csv download icon on any table page
+// needs to be dynamically updated to use current search options
+function update_csv_download_link (type, tab, show) {
+  var form = '#' + tab + '_form';
+  var query = $(form).serialize();
+
+  if (show.length) {
+    $('#nd_csv-download')
+      .attr('href', uri_base + '/ajax/content/' + type + '/' + tab + '?' + query)
+      .attr('download', 'netdisco-' + type + '-' + tab + '.csv')
+      .show();
+  }
+  else {
+    hideWithTooltip('#nd_csv-download');
+  }
+}
+
+// page title includes tab name and possibly device name
+// this is nice for when you have multiple netdisco pages open in the
+// browser
+function update_page_title (tab) {
+  var pgtitle = default_pgtitle;
+  if ($.trim($('#nd_device-name').text()).length) {
+    pgtitle = $.trim($('#nd_device-name').text()) +' - '+ $('#'+ tab + '_link').text();
+  }
+  return pgtitle;
+}
+
+// update browser search history with the new query.
+// support history add (push) or replace via push parameter
+function update_browser_history (tab, pgtitle, push) {
+  var form = '#' + tab + '_form';
+  var query = $(form).serialize();
+  if (query.length) { query = '?' + query }
+
+  // pushState and replaceState ignore their title argument, so set the title
+  // beside each call and keep it in the state for popstate to restore
+  var state = {name: tab, fields: $(form).serializeArray(), title: pgtitle};
+
+  if (push.length) {
+    var target = uri_base + '/' + path + '/' + tab + query;
+    if (location.pathname == target) { return };
+    document.title = pgtitle;
+    history.pushState(state, '', target);
+  }
+  else {
+    document.title = pgtitle;
+    history.replaceState(state, '', uri_base + '/' + path + query);
+  }
+}
+
+// each sidebar search form has a hidden copy of the main navbar search
+function copy_navbar_to_sidebar (tab) {
+  var form = '#' + tab + '_form';
+
+  // copy navbar value to currently active sidebar form
+  if ($('#nq').val()) {
+    $(form).find("input[name=q]").val( $('#nq').val() );
+  }
+  // then copy to all other inactive tab sidebars
+  $('form').find("input[name=q]").each( function() {
+    $(this).val( $(form).find("input[name=q]").val() );
+  });
+}
+
 $(document).ready(function() {
   if (document.getElementById('nd_stats')) { nd_statistics_panel(); }
   if (document.querySelector('.nd_inventory_collapser')) { $('.nd_inventory_collapser').toggle(); }
 
   page = document.body.dataset.ndPage;               // device, search, report, admin
   path = page;                                        // what update_content builds URLs from
-  var activeForm = document.querySelector('form[data-nd-tab]:not([hidden])');
+  var activeForm = document.querySelector('.tab-pane.active form[data-nd-tab]');
   var tab = activeForm ? activeForm.dataset.ndTab : '';
   var target = '#' + tab + '_pane';
 
@@ -1309,9 +1380,7 @@ $(document).ready(function() {
     });
   }
   else if (page === 'admin') {
-    // only one attribute is added to <body> in this task (data-nd-page), so
-    // this setting travels on the sidebar form instead
-    timermax = Number(activeForm.dataset.ndJobqueueRefresh || 5);
+    timermax = Number((activeForm && activeForm.dataset.ndJobqueueRefresh) || 5);
     timercache = timermax - 1;
 
     // get autocomplete field on input focus
@@ -1470,4 +1539,46 @@ $(document).ready(function() {
       customClass: 'nd_jobqueue-popover'
     });
   }
+
+  // Every sidebar form loads its own pane over htmx, declared by its hx-get.
+  // This carries the side effects only and must not call preventDefault:
+  // htmx's own submit listener does that.
+  document.addEventListener('submit', function (event) {
+    var form = event.target;
+    if (!form.matches('form[data-nd-tab]')) return;
+    var tab = form.dataset.ndTab;
+    var page = document.body.dataset.ndPage;
+    var pgtitle = update_page_title(tab);
+    if (page === 'search' || page === 'device') copy_navbar_to_sidebar(tab);
+    if (page !== 'admin') update_browser_history(tab, pgtitle, page === 'report' ? '1' : '');
+    update_csv_download_link(page, tab, form.dataset.ndCsv === '1' ? '1' : '');
+    if (page === 'device' && tab === 'ports') {
+      document.getElementById('nd_sidebar-reset-link').href = uri_base + '/device?tab=ports&reset=on&firstsearch=on&'
+        + $('#ports_form').find('input[name="q"],input[name="f"],input[name="partial"],input[name="invert"]').serialize();
+    }
+    if (page === 'device' && tab === 'netmap') {
+      document.getElementById('nd_sidebar-reset-link').href = uri_base + '/device?tab=netmap&reset=on&firstsearch=on&'
+        + $('#netmap_form').find('input[name="q"]').serialize();
+    }
+    nd_apply_sidebar(tab);
+  });
+
+  // on page load, load the content for the active tab
+  var active = document.body.dataset.ndActiveTab;
+  if (active) {
+    if (active === 'ipinventory' || active === 'subnets') document.getElementById(active + '_submit').click();
+    else nd_submit('#' + active + '_form');
+  }
+
+  // tenant change
+  $('.nd_navtenant').click(function(event) {
+    event.preventDefault();
+    var url = new URL(window.location.href);
+    var newpath = url.pathname;
+    newpath = newpath.replace($(this).data('currenttenant'), "");
+    newpath = newpath.replace(document.body.dataset.ndPath, "/");
+    newpath = newpath.replace("//", "/");
+    newpath = $(this).data('tenantpath').concat(newpath, url.search);
+    window.location = newpath;
+  });
 });
