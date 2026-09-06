@@ -82,6 +82,31 @@ test('renderers__number__inserts_thousands_separators', () => {
   assert.strictEqual(r(1234567, 'display', {}), '1,234,567');
 });
 
+// devicepoestatus's wattage columns mix whole watts with one-decimal
+// readings in the same column; the precision comes from each value's own
+// string form rather than a fixed instance, so an integer keeps no decimal
+// and a fractional value keeps exactly the decimal places it was given.
+test('renderers__number__an_integer__keeps_no_decimal_place', () => {
+  const r = load().renderers.number({}, URLS);
+  assert.strictEqual(r(20, 'display', {}), '20');
+});
+
+test('renderers__number__a_one_decimal_value__keeps_one_decimal_place', () => {
+  const r = load().renderers.number({}, URLS);
+  assert.strictEqual(r(15.4, 'display', {}), '15.4');
+});
+
+test('renderers__number__a_two_decimal_value__groups_thousands_and_keeps_two_decimal_places', () => {
+  const r = load().renderers.number({}, URLS);
+  assert.strictEqual(r(1234.56, 'display', {}), '1,234.56');
+});
+
+test('renderers__number__precision__forces_one_decimal_count_for_every_value', () => {
+  const r = load().renderers.number({ precision: 1 }, URLS);
+  assert.strictEqual(r(20, 'display', {}), '20.0');
+  assert.strictEqual(r(15.44, 'display', {}), '15.4');
+});
+
 test('renderers__dateTime__formats_through_moment_and_blanks_null', () => {
   const r = load().renderers.dateTime({}, URLS);
   assert.strictEqual(r('2026-09-04T10:00:00', 'display', {}), 'M:2026-09-04T10:00:00');
@@ -147,7 +172,30 @@ test('renderers__devicePortsLinkNamed__suffix_data__shows_the_cell_rather_than_a
   assert.strictEqual(out, '<a href="/device?tab=ports&q=10.0.0.1&f=Gi1%2F0%2F1&c_nodes=on">sw1.example(Gi1/0/1)</a>');
 });
 
-test('renderers__reportLink__sends_the_blank_token_for_an_empty_value', () => {
+// Through resolve(), and with dns/name/ip nested under "label" as
+// report/nodevendor and report/portssid write it in their own
+// data-nd-table JSON, rather than passed as top-level keys straight to the
+// factory: the dispatch key "name" (here "devicePortsLinkNamed") and the
+// row-key argument "name" would otherwise collide inside the same JSON
+// object, as deviceLabel's own doc comment explains.
+test('renderers__devicePortsLinkNamed__label_nested__renders_through_resolve', () => {
+  const fn = load().resolve({
+    name: 'devicePortsLinkNamed', q: 'switch', f: 'data', flags: 'c_nodes=on',
+    label: { dns: 'dns', name: 'name', ip: 'switch' }, suffix: 'data',
+  }, URLS, {});
+  const out = fn('Gi1/0/1', 'display', { switch: '10.0.0.1', dns: '', name: 'sw1' });
+  assert.strictEqual(out, '<a href="/device?tab=ports&q=10.0.0.1&f=Gi1%2F0%2F1&c_nodes=on">sw1(Gi1/0/1)</a>');
+});
+
+// No blankText named: the href still carries the "blank" token (a better
+// target than the empty parameter the removed closures sent), but the label
+// is empty, matching those closures' own `data || ''`.
+test('renderers__reportLink__no_blankText__empty_value_renders_empty_text_with_the_blank_token_in_the_href', () => {
+  const r = load().renderers.reportLink({ report: 'report_netbios', param: 'domain' }, URLS);
+  assert.strictEqual(r('', 'display', {}), '<a href="/report/netbios?domain=blank"></a>');
+});
+
+test('renderers__reportLink__blankText__still_wins_over_the_blank_token_for_an_empty_value', () => {
   const r = load().renderers.reportLink({ report: 'report_netbios', param: 'domain', blankText: '(Blank Domain)' }, URLS);
   assert.strictEqual(r('', 'display', {}), '<a href="/report/netbios?domain=blank">(Blank Domain)</a>');
 });
@@ -310,6 +358,124 @@ test('callbacks__groupRows__toggleOrder__a_second_draw__does_not_bind_a_second_l
   callback.call({ api: () => api });
   callback.call({ api: () => api });
   assert.strictEqual(bindCount, 1);
+});
+
+// Shared by the groupDeviceRows tests below: a minimal api mock carrying
+// one group of one row, whose data api.row(i).data() returns directly
+// (unlike groupRows, whose group value comes from the column-0 read alone,
+// groupDeviceRows builds its label from the whole row).
+function groupDeviceApi(rowData, order) {
+  const listeners = {};
+  const body = { addEventListener: (type, fn) => { listeners[type] = fn } };
+  const table = { dataset: {} };
+  const calls = [];
+  const rows = [{ insertAdjacentHTML: (pos, html) => calls.push(html) }];
+  const api = {
+    rows: () => ({ nodes: () => rows }),
+    column: () => ({ data: () => ({ each: (fn) => fn('g', 0) }) }),
+    row: () => ({ data: () => rowData }),
+    table: () => ({ node: () => table, body: () => body }),
+    order: (v) => { if (v === undefined) return order; order = [v]; return api },
+    draw: () => api,
+  };
+  return { api, listeners, calls, currentOrder: () => order };
+}
+
+// A second api shape for the tests below: several rows in row order, each
+// with its own column-0 group value and row data, rather than groupDeviceApi's
+// single fixed row repeated for every read.
+function groupDeviceApiForGroups(entries) {
+  const calls = [];
+  const rows = entries.map(() => ({ insertAdjacentHTML: (pos, html) => calls.push(html) }));
+  const api = {
+    rows: () => ({ nodes: () => rows }),
+    column: () => ({ data: () => ({ each: (fn) => entries.forEach((e, i) => fn(e.group, i)) }) }),
+    row: (i) => ({ data: () => entries[i].row }),
+    table: () => ({ node: () => ({ dataset: {} }), body: () => ({ addEventListener: () => {} }) }),
+  };
+  return { api, calls };
+}
+
+test('callbacks__groupDeviceRows__two_rows_in_the_same_group__inserts_exactly_one_header', () => {
+  const t = load();
+  const row = { ip: '10.0.0.1', dns: 'sw1.example', model: 'M' };
+  const { api, calls } = groupDeviceApiForGroups([
+    { group: '10.0.0.1', row },
+    { group: '10.0.0.1', row },
+  ]);
+  t.callbacks.groupDeviceRows({ colspan: 5, nameKey: 'device_name' }, URLS).call({ api: () => api });
+  assert.strictEqual(calls.length, 1);
+});
+
+test('callbacks__groupDeviceRows__two_different_groups__inserts_two_headers', () => {
+  const t = load();
+  const { api, calls } = groupDeviceApiForGroups([
+    { group: '10.0.0.1', row: { ip: '10.0.0.1', dns: 'sw1.example', model: 'M' } },
+    { group: '10.0.0.2', row: { ip: '10.0.0.2', dns: 'sw2.example', model: 'M' } },
+  ]);
+  t.callbacks.groupDeviceRows({ colspan: 5, nameKey: 'device_name' }, URLS).call({ api: () => api });
+  assert.strictEqual(calls.length, 2);
+});
+
+test('callbacks__groupDeviceRows__without_a_nameKey__throws_naming_the_problem', () => {
+  const t = load();
+  assert.throws(() => t.callbacks.groupDeviceRows({ colspan: 5 }, URLS), /"nameKey"/);
+});
+
+test('callbacks__groupDeviceRows__labels_with_dns_when_present', () => {
+  const t = load();
+  const { api, calls } = groupDeviceApi({ ip: '10.0.0.1', dns: 'sw1.example', device_name: 'SW1', model: 'WS-C3750', location: '' });
+  t.callbacks.groupDeviceRows({ colspan: 5, nameKey: 'device_name' }, URLS).call({ api: () => api });
+  assert.strictEqual(
+    calls[0],
+    '<tr class="group"><td colspan="5">Device: <a href="/device?tab=details&q=10.0.0.1">sw1.example (10.0.0.1) </a> Model: WS-C3750</td></tr>',
+  );
+});
+
+test('callbacks__groupDeviceRows__falls_back_to_the_named_key_when_dns_is_absent', () => {
+  const t = load();
+  const { api, calls } = groupDeviceApi({ ip: '10.0.0.2', device_name: 'SW2', model: '', location: '' });
+  t.callbacks.groupDeviceRows({ colspan: 5, nameKey: 'device_name' }, URLS).call({ api: () => api });
+  assert.strictEqual(
+    calls[0],
+    '<tr class="group"><td colspan="5">Device: <a href="/device?tab=details&q=10.0.0.2">SW2 (10.0.0.2) </a> Model: </td></tr>',
+  );
+});
+
+test('callbacks__groupDeviceRows__falls_back_to_ip_with_no_parenthetical_when_neither_dns_nor_name_is_set', () => {
+  const t = load();
+  const { api, calls } = groupDeviceApi({ ip: '10.0.0.3', model: 'X', location: '' });
+  t.callbacks.groupDeviceRows({ colspan: 5, nameKey: 'device_name' }, URLS).call({ api: () => api });
+  assert.strictEqual(
+    calls[0],
+    '<tr class="group"><td colspan="5">Device: <a href="/device?tab=details&q=10.0.0.3">10.0.0.3</a> Model: X</td></tr>',
+  );
+});
+
+test('callbacks__groupDeviceRows__location__shown_only_when_set', () => {
+  const t = load();
+  const withLocation = groupDeviceApi({ ip: '10.0.0.4', dns: 'sw4.example', model: 'M', location: 'DC1' });
+  t.callbacks.groupDeviceRows({ colspan: 5, nameKey: 'device_name' }, URLS).call({ api: () => withLocation.api });
+  assert.strictEqual(
+    withLocation.calls[0],
+    '<tr class="group"><td colspan="5">Device: <a href="/device?tab=details&q=10.0.0.4">sw4.example (10.0.0.4) </a> Model: M Location: DC1</td></tr>',
+  );
+
+  const withoutLocation = groupDeviceApi({ ip: '10.0.0.5', dns: 'sw5.example', model: 'M' });
+  t.callbacks.groupDeviceRows({ colspan: 5, nameKey: 'device_name' }, URLS).call({ api: () => withoutLocation.api });
+  assert.strictEqual(
+    withoutLocation.calls[0],
+    '<tr class="group"><td colspan="5">Device: <a href="/device?tab=details&q=10.0.0.5">sw5.example (10.0.0.5) </a> Model: M</td></tr>',
+  );
+});
+
+test('callbacks__groupDeviceRows__toggleOrder__a_click_on_a_group_row_flips_the_order_and_redraws', () => {
+  const t = load();
+  const { api, listeners, currentOrder } = groupDeviceApi({ ip: '10.0.0.6', dns: 'sw6.example', model: 'M' }, [[0, 'asc']]);
+  t.callbacks.groupDeviceRows({ colspan: 5, nameKey: 'device_name', toggleOrder: true }, URLS).call({ api: () => api });
+  assert.ok(listeners.click, 'a click listener is bound on tbody');
+  listeners.click({ target: { closest: (sel) => (sel === 'tr.group' ? {} : null) } });
+  assert.deepStrictEqual(currentOrder(), [[0, 'desc']]);
 });
 
 test('init__a_table_that_throws_during_build__still_builds_the_rest', () => {

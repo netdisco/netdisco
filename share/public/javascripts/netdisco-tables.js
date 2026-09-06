@@ -58,7 +58,26 @@ var ndTables = (function () {
   var RENDERERS = {
     raw:        function () { return function (data) { return (data == null ? '' : data) } },
     escape:     function () { return byType(DataTable.render.text()) },
-    number:     function () { return byType(DataTable.render.number(',', '.', 0)) },
+    // The vendored formatter bakes in one fixed decimal count per instance,
+    // but a column such as devicepoestatus's wattage readings mixes whole
+    // watts with one-decimal values row by row, so the precision is read
+    // off each value's own string form instead of fixed at build time.
+    // args.precision, when given, forces that precision for every row.
+    // Non-numeric and null values pass through unformatted either way, by
+    // the vendored formatter's own guard.
+    number: function (args) {
+      var instances = {};
+      var forPrecision = function (p) { return instances[p] || (instances[p] = DataTable.render.number(',', '.', p)) };
+      var decimalPlaces = function (data) {
+        var match = /\.(\d+)$/.exec(String(data));
+        return match ? match[1].length : 0;
+      };
+      return function (data, type) {
+        var precision = (args.precision != null) ? args.precision : decimalPlaces(data);
+        var spec = forPrecision(precision);
+        return (spec[type] || function (d) { return d })(data);
+      };
+    },
     yesNo:      function () { return function (data) { return (data ? 'Yes' : 'No') } },
     dateTime:   function () { return DataTable.render.datetime('YYYY-MM-DD HH:mm') },
     capitalize: function () { return function (data) { var s = (data == null ? '' : String(data)); return esc(s.charAt(0).toUpperCase() + s.slice(1)) } },
@@ -195,8 +214,10 @@ var ndTables = (function () {
     // Link to a report carrying one query parameter. args.report names the
     // URL in data-nd-urls, args.param the parameter; args.key takes the value
     // from a row key instead of the cell; args.show names a row key for the
-    // label; args.blank is sent when the value is empty and args.blankText
-    // shown; args.capitalize upper-cases the label's first letter.
+    // label; args.blank is sent when the value is empty; args.blankText, when
+    // given, is shown instead of empty text; args.capitalize upper-cases the
+    // label's first letter. A caller naming no blankText gets an empty label
+    // rather than the sent "blank" token, matching the closures this replaced.
     reportLink: function (args, urls) {
       var reportUrl = urlFor(urls, args.report, 'reportLink');
       return function (data, type, row) {
@@ -204,7 +225,7 @@ var ndTables = (function () {
         var empty = (value == null || value === '');
         var sent = empty ? (args.blank || 'blank') : value;
         var shown = args.show ? get(row, args.show) : value;
-        var text = (shown == null || shown === '') ? (args.blankText || sent) : shown;
+        var text = (shown == null || shown === '') ? (args.blankText || '') : shown;
         text = String(text);
         if (args.capitalize) text = text.charAt(0).toUpperCase() + text.slice(1);
         return link(withQuery(reportUrl, args.param + '=' + enc(sent)), esc(text));
@@ -331,6 +352,24 @@ var ndTables = (function () {
     });
   };
 
+  // Shared by groupRows and groupDeviceRows: inserts one header row above
+  // the first row of each run of equal column-0 values. labelFor(group, row)
+  // gets the column-0 value and a lazy getter for the full row, since
+  // groupRows' label is a function of the former alone and groupDeviceRows'
+  // of the latter alone; the getter keeps groupRows from ever calling
+  // api.row(), just as it did before this loop was shared.
+  var groupHeaders = function (api, colspan, labelFor) {
+    var rows = api.rows({ page: 'current' }).nodes();
+    var last = null;
+    api.column(0, { page: 'current' }).data().each(function (group, i) {
+      if (last !== group) {
+        rows[i].insertAdjacentHTML('beforebegin',
+          '<tr class="group"><td colspan="' + colspan + '">' + labelFor(group, function () { return api.row(i).data() }) + '</td></tr>');
+        last = group;
+      }
+    });
+  };
+
   var CALLBACKS = {
     // Repeats of the first column become one group header row above their
     // first occurrence. args.colspan is the visible column count. The group
@@ -343,15 +382,33 @@ var ndTables = (function () {
       var renderGroup = args.html ? function (v) { return v } : esc;
       return function () {
         var api = this.api();
-        var rows = api.rows({ page: 'current' }).nodes();
-        var last = null;
-        api.column(0, { page: 'current' }).data().each(function (group, i) {
-          if (last !== group) {
-            rows[i].insertAdjacentHTML('beforebegin',
-              '<tr class="group"><td colspan="' + args.colspan + '">' + renderGroup(group) + '</td></tr>');
-            last = group;
-          }
-        });
+        groupHeaders(api, args.colspan, function (group) { return renderGroup(group) });
+        if (args.toggleOrder) bindGroupOrderToggle(api);
+      };
+    },
+
+    // report/apradiochannelpower and report/devicepoestatus: the group
+    // header is a whole-row device label rather than the escaped value of
+    // column 0, reproducing the two removed groupString() functions.
+    // args.colspan and args.toggleOrder as groupRows; there is no args.html,
+    // since the label is always built from row fields and escaped itself,
+    // never from an already-rendered cell. args.nameKey names the row key
+    // read when dns is absent (the two removed functions each read a
+    // different one: device_name and name).
+    groupDeviceRows: function (args, urls) {
+      if (!args.nameKey) throw new Error('callback groupDeviceRows needs a "nameKey" naming the row key to use when dns is absent');
+      var deviceUrl = urlFor(urls, 'device', 'groupDeviceRows');
+      var label = function (row) {
+        var name = row.dns || row[args.nameKey] || row.ip;
+        var html = 'Device: <a href="' + deviceUrl + '?tab=details&q=' + enc(row.ip) + '">' + esc(name);
+        if (row.dns || row[args.nameKey]) html += ' (' + esc(row.ip) + ') ';
+        html += '</a> Model: ' + esc(row.model || '');
+        html += esc(row.location ? ' Location: ' + row.location : '');
+        return html;
+      };
+      return function () {
+        var api = this.api();
+        groupHeaders(api, args.colspan, function (group, getRow) { return label(getRow()) });
         if (args.toggleOrder) bindGroupOrderToggle(api);
       };
     },
