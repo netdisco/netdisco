@@ -1,3 +1,10 @@
+2.108001 - 2026-09-06
+
+  [ENHANCEMENTS]
+
+  * significant reduction in container image size after refactoring Dockerfiles
+  * run garbage collection on DigitalOcean container registry after demo release
+
 2.108000 - 2026-09-05
 
   [ENHANCEMENTS]
