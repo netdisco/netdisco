@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Dancer ':syntax';
+use Dancer::Plugin::DBIC 'schema';
 
 use Time::Piece;
 use Time::Seconds;
@@ -18,6 +19,8 @@ our @EXPORT_OK = qw/
   request_is_api
   request_is_api_report
   request_is_api_search
+  device_display_name
+  page_title
   escape_for_script_context
   escape_results_token
 /;
@@ -295,6 +298,89 @@ sub interval_to_daterange {
     my $start = Time::Piece->new - $const{$factor} * $amt;
 
     return $start->ymd . " to " . Time::Piece->new->ymd;
+}
+
+=head2 device_display_name( $device )
+
+The name shown for a Device row in the web interface: its DNS name, or its IP
+when another device answers to the same DNS name.
+
+=cut
+
+sub device_display_name {
+  my $device = shift or return undef;
+
+  my $others = schema(vars->{'tenant'})->resultset('Device')
+    ->search({ dns => $device->dns })->count() - 1;
+
+  return ($others ? $device->ip : ($device->dns || $device->ip));
+}
+
+=head2 page_title( $page, $tab )
+
+The browser title for the C<$tab> pane of C<$page>, where C<$page> is one of
+C<device>, C<search>, C<report> or C<admin>.
+
+Returns undef where the interface has no title for the tab, so that a caller
+emitting this into a response leaves the current title alone rather than
+replacing it with something wrong.
+
+=cut
+
+sub page_title {
+  my ($page, $tab) = @_;
+  $tab ||= '';
+
+  if ($page eq 'device') {
+    # before the device lookup, so an unknown tag costs no query
+    my $label = _tab_label('device', $tab) or return undef;
+    my $device = _device_for_query( param('q') ) or return undef;
+    return device_display_name($device) .' - '. $label;
+  }
+
+  # the port log is the one report naming its subject beside the tab
+  my $report = (($page eq 'report' and $tab eq 'portlog')
+    ? setting('_reports')->{ $tab } : undef);
+
+  if ($report) {
+    return _one_line(join ' ', (param('q') || ''), '-', (param('f') || ''))
+      .' - '. $report->{'label'};
+  }
+
+  return setting('branding_text');
+}
+
+sub _tab_label {
+  my ($nav, $tab) = @_;
+
+  foreach my $item (@{ setting("_${nav}_tabs") || [] }) {
+    return $item->{'label'} if $item->{'tag'} eq $tab;
+  }
+  return undef;
+}
+
+sub _device_for_query {
+  my $q = shift or return undef;
+
+  # the same lookup the /device page makes, so that the title matches the name
+  # that page rendered, which is what the browser reads today
+  return schema(vars->{'tenant'})->resultset('Device')->search({
+    -or => [
+      \[ 'host(me.ip) = ?' => [ bind_value => $q ] ],
+      'me.dns' => $q,
+    ],
+  })->first;
+}
+
+# report.tt lays the port log's parts out over several lines, which the
+# browser would otherwise carry into the tab
+sub _one_line {
+  my $text = shift;
+  $text = '' unless defined $text;
+
+  $text =~ s/\s+/ /g;
+  $text =~ s/^\s+|\s+$//g;
+  return $text;
 }
 
 =head2 escape_for_script_context( $json )

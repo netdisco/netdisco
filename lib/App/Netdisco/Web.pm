@@ -25,6 +25,7 @@ use URI::Based;
 use App::Netdisco::Util::Web qw/
   escape_results_token
   interval_to_daterange
+  page_title
   request_is_api
   request_is_api_report
   request_is_api_search
@@ -593,6 +594,47 @@ get $swagger_base.'/' => sub {
 get $swagger_base.'/**' => sub {
     Dancer::Plugin::Swagger->instance->doc->{schemes} = [ request->scheme ];
     send_file( join '/', 'swagger-ui', @{ (splat())[0] } );
+};
+
+# htmx applies a <title> found at the top level of a swapped response, so the
+# title a tab shows comes from the fragment rather than from the browser
+# reading the page the fragment replaces.
+hook 'after' => sub {
+    my $r = shift; # a Dancer::Response
+
+    # htmx sends this on every request it makes, and htmx is the only thing
+    # that acts on the title, so it is a closer guard than X-Requested-With.
+    # It also keeps the title away from the CSV download of a report and from
+    # the API endpoints, which forward to these same paths.
+    #
+    # Read from the PSGI environment because request->header cannot be relied
+    # on: Dancer::Request::is_ajax carries the same workaround, for headers
+    # that Plack::Builder leaves unset, and netdisco-web-fg builds its app
+    # that way.
+    return unless request->env->{'HTTP_HX_REQUEST'};
+    return unless $r->status and $r->status =~ m/^2\d\d$/;
+
+    # the pane routes alone. Their two-segment shape is what excludes the
+    # report data and connected-node endpoints, neither of which replaces a
+    # pane and both of which would set the title wrongly.
+    my ($page, $tab) =
+      (request->path =~ m{/ajax/content/(device|search|report|admin)/(\w+)$})
+        or return;
+
+    # A tenant URL reaches its pane by forward, and Dancer runs this hook once
+    # for the inner request and again for the response it rebuilds from it.
+    # Without this the pane carries two titles, htmx lifts only the first, and
+    # the second is swapped into the pane as an element, which also makes an
+    # empty result set stop looking empty.
+    return if var('nd_fragment_title');
+    var('nd_fragment_title' => 1);
+
+    my $title = page_title($page, $tab) or return;
+
+    # htmx only lifts a title that is a direct child of the fragment, so this
+    # goes first and nothing may wrap it
+    $r->content('<title>'. HTML::Entities::encode_entities($title)
+                .'</title>'. ($r->content || ''));
 };
 
 # remove empty lines from CSV response
