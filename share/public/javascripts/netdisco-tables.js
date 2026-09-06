@@ -291,12 +291,29 @@ var ndTables = (function () {
     },
   };
 
+  // Binds one delegated click listener on a grouped table's tbody, toggling
+  // its column-0 order between ascending and descending. drawCallback runs
+  // on every redraw, so the table itself carries the guard; a later
+  // grouping callback can call this the same way groupRows does.
+  var bindGroupOrderToggle = function (api) {
+    var table = api.table().node();
+    if (table.dataset.ndGroupToggle) return;
+    table.dataset.ndGroupToggle = '1';
+    api.table().body().addEventListener('click', function (e) {
+      if (!e.target.closest('tr.group')) return;
+      var current = api.order()[0];
+      api.order([0, (current[0] === 0 && current[1] === 'asc') ? 'desc' : 'asc']).draw();
+    });
+  };
+
   var CALLBACKS = {
     // Repeats of the first column become one group header row above their
     // first occurrence. args.colspan is the visible column count. The group
     // value is escaped by default, matching a data-nd-data JSON row (raw
     // text); args.html true skips escaping for a DOM-sourced table, whose
-    // cells DataTables reads as already-rendered HTML.
+    // cells DataTables reads as already-rendered HTML. args.toggleOrder
+    // makes a click on a group header flip the sort direction, as the
+    // fragment's own script used to.
     groupRows: function (args) {
       var renderGroup = args.html ? function (v) { return v } : esc;
       return function () {
@@ -310,6 +327,7 @@ var ndTables = (function () {
             last = group;
           }
         });
+        if (args.toggleOrder) bindGroupOrderToggle(api);
       };
     },
 

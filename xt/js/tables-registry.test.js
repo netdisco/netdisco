@@ -216,6 +216,55 @@ test('callbacks__groupRows__html_true__does_not_escape_a_DOM_sourced_cell', () =
   assert.strictEqual(rows.calls[0], '<tr class="group"><td colspan="3"><b>Group</b></td></tr>');
 });
 
+// Shared by the toggleOrder tests below: a minimal api mock carrying just
+// the surface bindGroupOrderToggle and groupRows touch.
+function groupOrderApi(order) {
+  const listeners = {};
+  const body = { addEventListener: (type, fn) => { listeners[type] = fn } };
+  const table = { dataset: {} };
+  const rows = [{ insertAdjacentHTML: () => {} }];
+  const api = {
+    rows: () => ({ nodes: () => rows }),
+    column: () => ({ data: () => ({ each: (fn) => fn('g', 0) }) }),
+    table: () => ({ node: () => table, body: () => body }),
+    order: (v) => { if (v === undefined) return order; order = [v]; return api },
+    draw: () => api,
+  };
+  return { api, listeners, currentOrder: () => order };
+}
+
+test('callbacks__groupRows__toggleOrder__a_click_on_a_group_row_flips_the_order_and_redraws', () => {
+  const t = load();
+  const { api, listeners, currentOrder } = groupOrderApi([[0, 'asc']]);
+  t.callbacks.groupRows({ colspan: 2, toggleOrder: true }).call({ api: () => api });
+  assert.ok(listeners.click, 'a click listener is bound on tbody');
+  listeners.click({ target: { closest: (sel) => (sel === 'tr.group' ? {} : null) } });
+  assert.deepStrictEqual(currentOrder(), [[0, 'desc']]);
+  // a click outside a group row leaves the order untouched
+  listeners.click({ target: { closest: () => null } });
+  assert.deepStrictEqual(currentOrder(), [[0, 'desc']]);
+});
+
+test('callbacks__groupRows__without_toggleOrder__binds_no_listener', () => {
+  const t = load();
+  const { api, listeners } = groupOrderApi([[0, 'asc']]);
+  t.callbacks.groupRows({ colspan: 2 }).call({ api: () => api });
+  assert.strictEqual(listeners.click, undefined);
+});
+
+test('callbacks__groupRows__toggleOrder__a_second_draw__does_not_bind_a_second_listener', () => {
+  const t = load();
+  const { api } = groupOrderApi([[0, 'asc']]);
+  const callback = t.callbacks.groupRows({ colspan: 2, toggleOrder: true });
+  let bindCount = 0;
+  const body = api.table().body();
+  const originalAdd = body.addEventListener;
+  body.addEventListener = (type, fn) => { bindCount++; originalAdd(type, fn) };
+  callback.call({ api: () => api });
+  callback.call({ api: () => api });
+  assert.strictEqual(bindCount, 1);
+});
+
 test('init__a_table_that_throws_during_build__still_builds_the_rest', () => {
   const built = [];
   const t = load({ built });

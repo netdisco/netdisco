@@ -1,7 +1,8 @@
 [% USE date(format = '%Y-%m-%d %H:%M') %]
 [% USE Number.Format(THOUSANDS_SEP = settings.thousands_separator) %]
 [% PROCESS 'externallinks.tt' -%]
-<table id="nsbi-data-table" class="table table-bordered table-hover" width="100%" cellspacing="0">
+<table id="nsbi-data-table" class="table table-bordered table-hover" width="100%" cellspacing="0"
+  data-nd-table='{"columnDefs":[{"visible":false,"targets":0}],"order":[[0,"asc"]],"drawCallback":{"name":"groupRows","colspan":[% params.stamps ? 4 : 2 %],"html":true,"toggleOrder":true}}'>
   <thead>
     <tr>
       <th>MAC</th>
@@ -188,45 +189,3 @@ tr.group:hover {
     background-color: #ddd !important;
 }
 </style>
-
-<script>
-$(document).ready(function() {
-    var table = $('#nsbi-data-table').DataTable({
-        "columnDefs": [
-            { "visible": false, "targets": 0 }
-        ],
-        "order": [[ 0, 'asc' ]],
-        "drawCallback": function ( settings ) {
-            var api = this.api();
-            var rows = api.rows( {page:'current'} ).nodes();
-            var last=null;
- 
-            api.column(0, {page:'current'} ).data().each( function ( group, i ) {
-                if ( last !== group ) {
-                    $(rows).eq( i ).before(
-                    [% IF params.stamps %]
-                        '<tr class="group"><td colspan="4">'+group+'</td></tr>'                    
-                    [% ELSE %]
-                        '<tr class="group"><td colspan="2">'+group+'</td></tr>'                    
-                    [% END %]
-                    );
-
-                    last = group;
-                }
-            } );
-        },
-[% INCLUDE 'ajax/datatabledefaults.tt' -%]
-    } );
- 
-    // Order by the grouping
-    $('#nsbi-data-table tbody').on( 'click', 'tr.group', function () {
-        var currentOrder = table.order()[0];
-        if ( currentOrder[0] === 0 && currentOrder[1] === 'asc' ) {
-            table.order( [ 0, 'desc' ] ).draw();
-        }
-        else {
-            table.order( [ 0, 'asc' ] ).draw();
-        }
-    } );
-} );
-</script>
