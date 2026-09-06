@@ -77,8 +77,6 @@
   $('#loginuser').focus(); // set focus to login, if it's there
 
   $('.collapse').on('show.bs.collapse', function() {
-    $('.nd_chevron').toggleClass('fa-chevron-up fa-chevron-down');
-
     if (! stats_loaded) {
       fetch( "",
         { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
@@ -101,9 +99,5 @@
         });
       stats_loaded = 1;
     }
-  });
-
-  $('.collapse').on('hide.bs.collapse', function() {
-    $('.nd_chevron').toggleClass('fa-chevron-up fa-chevron-down');
   });
 </script>

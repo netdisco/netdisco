@@ -616,6 +616,161 @@ $(document).ready(function() {
     bootstrap.Modal.getOrCreateInstance(document.getElementById('nd_token-reveal')).show();
   };
 
+  // modules tab: collapsible nested <ul>, root scoped to the swapped pane so
+  // a second modules fragment does not rebind the first one's tree.
+  function nd_tree(root) {
+    $(root).find('.tree > ul').attr('role', 'tree').find('ul').attr('role', 'group');
+    $(root).find('.tree').find('li:has(ul)').addClass('parent_li').attr('role', 'treeitem').find(' > span').attr('title', 'Collapse this branch').on('click', function (e) {
+      var children = $(this).parent('li.parent_li').find(' > ul > li');
+      if (children.is(':visible')) {
+        children.hide('fast');
+        $(this).attr('title', 'Expand this branch').find(' > i').addClass('fa-circle-plus').removeClass('fa-circle-minus');
+      }
+      else {
+        children.show('fast');
+        $(this).attr('title', 'Collapse this branch').find(' > i').addClass('fa-circle-minus').removeClass('fa-circle-plus');
+      }
+      e.stopPropagation();
+    });
+  }
+
+  // snmp tab: jsTree browser and its search box.
+  function nd_snmp_browser(pane) {
+    var device = pane.querySelector('#jstree').dataset.ndDevice;
+    // uri_base is the global set in main.tt; document.body.dataset.ndUriBase replaces this in a later task
+    var jstree_search_callback = function(str, node) {
+      var pattern = str.toLowerCase();
+      var mib_pat = str.replace(/::.+/,'').toLowerCase();
+      var leaf_pat = str.replace(/.+::/,'').toLowerCase();
+      var mib_lc = node.original.mib.toLowerCase();
+      var leaf_lc = node.original.leaf.toLowerCase();
+      var oid = node.id.toLowerCase();
+
+      if (document.getElementById('nd_snmp_search_deviceonly').checked) {
+        if (node.original.has_value == 0) { return false; }
+      }
+
+      // partial is ticked, check OID base, or mib + leaf root, or just leaf
+      if (document.getElementById('nd_snmp_search_partial').checked) {
+        if (pattern.includes('.')) {
+          if (oid.indexOf(pattern) == 0) { return true; }
+        }
+        else if (pattern.includes('::')) {
+          if ((mib_lc == mib_pat) && (leaf_lc.indexOf(leaf_pat) == 0)) { return true; }
+        }
+        else if (leaf_lc.indexOf(pattern) == 0) {
+          return true;
+        }
+      }
+      // user supplies a qualified leaf
+      else if (pattern.includes('::')) {
+        if ((mib_lc == mib_pat) && (leaf_lc == leaf_pat)) {
+          return true;
+        }
+      }
+      // user supplies an unqualified leaf, or an OID
+      else {
+        if ((leaf_lc == pattern) || (oid == pattern)) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    $('#jstree').jstree({
+      'core': {
+        'multiple' : false,
+        'themes': {
+          'name': 'proton',
+          'responsive': true
+        },
+        'data' : {
+          'url' : function (node) {
+            return (uri_base + '/ajax/data/device/' + device + '/snmptree/'
+              + (node.id === '#' ? '.1' : node.id));
+          }
+        }
+      },
+      'plugins': ['search'],
+      'search': {
+        'ajax' : {
+          'url' : uri_base + '/ajax/data/snmp/nodesearch',
+          'beforeSend' : function(jqXHR, settings) {
+            $('#nd_snmp_loading_spinner').removeClass('far fa-circle fas fa-circle-exclamation text-success')
+                                         .addClass('fas fa-spinner text-warning fa-spin');
+
+            if (document.getElementById('nd_snmp_search_partial').checked) {
+              settings.url = settings.url + '&partial=on';
+            }
+
+            if (document.getElementById('nd_snmp_search_deviceonly').checked) {
+              settings.url = settings.url + '&deviceonly=on&ip=' + device;
+            }
+
+            return true;
+          },
+          'error' : function() {
+            $('#nd_snmp_loading_spinner').removeClass('fas fa-spinner text-warning fa-spin')
+                                         .addClass('fas fa-circle-exclamation');
+          }
+        },
+        'search_callback' : jstree_search_callback
+      },
+    });
+    $('#snmpnodecontainer').on("change", "#munger", function(e, data) {
+      var ary = $('#jstree').jstree('get_selected');
+      $('#node').load(uri_base + '/ajax/content/device/' + device + '/snmpnode/'
+        + ary[0] + '?munge=' + $('#munger').find(":selected").text());
+    });
+    $('#jstree').on("changed.jstree", function (e, data) {
+      if (data.selected && data.selected != "#") {
+        $('#node').load(uri_base + '/ajax/content/device/' + device + '/snmpnode/' + data.selected);
+      }
+    });
+    $('#jstree').on("search.jstree", function (e, data) {
+      if (data.res.length) {
+        $('#node').load(uri_base + '/ajax/content/device/' + device + '/snmpnode/' + data.res[0]);
+
+        $("#jstree").jstree().deselect_all(true);
+        $('#jstree').jstree('select_node', data.res[0] + '_anchor');
+
+        var node = $('#jstree').jstree("get_selected", true);
+        var path = $('#jstree').jstree().get_path(node[0], false, true);
+        var parent = path[path.length - 2];
+        document.getElementById( parent ).scrollIntoView();
+
+        $('#nd_snmp_loading_spinner').removeClass('fas fa-spinner text-warning fa-spin')
+                                     .addClass('far fa-circle text-success');
+      }
+    });
+    $("#nd_snmp_search_form").submit(function(e) {
+      $("#jstree").jstree("search", $("#nd_snmp_search_text").val());
+      e.preventDefault();
+    });
+    $('#nd_snmp_search_text').autocomplete({
+      source: function (request, response)  {
+        var query = $('.nd_snmp_search_param').serialize();
+        return $.get( uri_base + '/ajax/data/snmp/typeahead', query, function (data) {
+          return response(data);
+        });
+      }
+      ,delay: 150
+      ,minLength: 2
+    });
+  }
+
+  // admintask orphaned devices: the chevron on an accordion header flips to
+  // show which section is expanded. Bootstrap fires these as native events on
+  // the collapsing element itself, so a body listener sees them regardless of
+  // which accordion swapped in.
+  document.body.addEventListener('show.bs.collapse', nd_accordion_chevron);
+  document.body.addEventListener('hide.bs.collapse', nd_accordion_chevron);
+  function nd_accordion_chevron(event) {
+    var header = event.target.closest('.accordion') && event.target.previousElementSibling;
+    var icon = header && header.classList.contains('accordion-header') && header.querySelector('a i');
+    if (icon) { icon.classList.toggle('fa-chevron-up'); icon.classList.toggle('fa-chevron-down') }
+  }
+
   // htmx glue. Converted panes get the same empty-result, error and
   // after-swap handling do_search gives the unconverted ones, so the two
   // transports are indistinguishable to a user. Keyed on any *_pane, not just
@@ -630,6 +785,8 @@ $(document).ready(function() {
       return;
     }
     ndTables.init(target);
+    if (target.querySelector('.tree')) nd_tree(target);
+    if (target.querySelector('#jstree')) nd_snmp_browser(target);
     holdUntilSettled(target, document.getElementById(tab + '_indicator'));
     $('div.content > div.tab-content table.nd_floatinghead').floatThead({
       top: 40

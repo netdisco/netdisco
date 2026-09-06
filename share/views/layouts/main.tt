@@ -33,6 +33,7 @@
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/htmx.min.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-tables.js?v=[% asset_version | none %]"></script>
+  <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-netmap.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-deferred-nodes.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco_portcontrol.js?v=[% asset_version | none %]"></script>
 

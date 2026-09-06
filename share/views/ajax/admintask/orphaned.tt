@@ -98,8 +98,3 @@
 [% END %]
 </div>
 [% END %]
-<script>
-$('.accordion').on('show.bs.collapse hide.bs.collapse', function (n) {
-    $(n.target).siblings('.accordion-header').find('a i').toggleClass('fa-chevron-up fa-chevron-down');
-});
-</script>

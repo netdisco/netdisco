@@ -41,7 +41,7 @@ const path = require('node:path');
 
 const repoRoot = path.join(__dirname, '..', '..');
 const netmapJs = () => fs.readFileSync(
-  path.join(repoRoot, 'share', 'views', 'js', 'netmap.js'), 'utf8');
+  path.join(repoRoot, 'share', 'public', 'javascripts', 'netdisco-netmap.js'), 'utf8');
 const deviceJs = () => fs.readFileSync(
   path.join(repoRoot, 'share', 'views', 'js', 'device.js'), 'utf8');
 
@@ -125,7 +125,10 @@ describe('netmap manual save', () => {
     const src = netmapJs();
     const at = src.indexOf('saveMapPositions = function');
     assert.notEqual(at, -1, 'netmap.js must define saveMapPositions');
-    const body = src.slice(at, src.indexOf('\n  };', at));
+    // netdisco-netmap.js nests this one function deeper than the old
+    // per-fragment script did (inside ndNetmap, itself inside the swap
+    // listener), so its own closing brace sits one indent level further in.
+    const body = src.slice(at, src.indexOf('\n    };', at));
     assert.match(
       body,
       /toastr\.success/,

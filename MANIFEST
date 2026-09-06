@@ -405,6 +405,7 @@ share/public/javascripts/jstree/themes/proton/style.min.css
 share/public/javascripts/jstree/themes/proton/throbber.gif
 share/public/javascripts/moment.min.js
 share/public/javascripts/netdisco-deferred-nodes.js
+share/public/javascripts/netdisco-netmap.js
 share/public/javascripts/netdisco-tables.js
 share/public/javascripts/netdisco.js
 share/public/javascripts/netdisco_portcontrol.js
@@ -651,10 +652,8 @@ share/views/externallinks.tt
 share/views/index.tt
 share/views/inventory.tt
 share/views/js/admintask.js
-share/views/js/bootstrap-tree.js
 share/views/js/common.js
 share/views/js/device.js
-share/views/js/netmap.js
 share/views/js/report.js
 share/views/js/search.js
 share/views/layouts/main.tt

@@ -19,18 +19,12 @@ const VIEWS = path.join(ROOT, 'share', 'views');
 // extension. Sorted. Delete a line when its file is converted.
 const REMAINING = [
   'admintask.tt',
-  'ajax/admintask/orphaned.tt',
-  'ajax/device/modules.tt',
-  'ajax/device/netmap.tt',
-  'ajax/device/snmp.tt',
   'device.tt',
   'index.tt',
   'inventory.tt',
   'js/admintask.js',
-  'js/bootstrap-tree.js',
   'js/common.js',
   'js/device.js',
-  'js/netmap.js',
   'js/report.js',
   'js/search.js',
   'layouts/main.tt',
