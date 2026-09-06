@@ -45,7 +45,6 @@
 
 <body data-nd-uri-base="[% uri_base | html_entity %]"
       data-nd-page="[% IF device %]device[% ELSIF search %]search[% ELSIF report %]report[% ELSIF task %]admin[% END %]"
-      data-nd-title="[% settings.branding_text | html_entity %]"
       data-nd-check-userlog="[% settings.check_userlog ? 1 : 0 %]"
       data-nd-page-length="[% settings.table_pagesize | html_entity %]"
       data-nd-length-menu="[% table_showrecordsmenu | html_entity %]"

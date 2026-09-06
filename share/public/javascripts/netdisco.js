@@ -1,7 +1,6 @@
 // promoted from a <body> data attribute; the layout carries no inline
 // JavaScript for CodeQL to skip.
 var uri_base = document.body.dataset.ndUriBase;
-var default_pgtitle = document.body.dataset.ndTitle;
 var nd_check_userlog = (document.body.dataset.ndCheckUserlog === '1');
 
 // parameterised for the active tab - submits search form and injects
@@ -119,12 +118,6 @@ function update_content(from, to) {
   var leaving = document.querySelector(from_form);
   if (leaving) { htmx.trigger(leaving, 'htmx:abort') }
 
-  // page title
-  var pgtitle = default_pgtitle;
-  if ($('#nd_device-name').text().length) {
-    pgtitle = $.trim($('#nd_device-name').text()) +' - '+ $('#'+ to + '_link').text();
-  }
-
   // navbar text decoration special case
   if (to != 'device') {
     $('#nq').css('text-decoration', 'none');
@@ -134,11 +127,8 @@ function update_content(from, to) {
   }
 
   if (is_from_state_event == 0) {
-    // pushState ignores its title argument, so set the title here and keep it
-    // in the state for popstate to restore
-    document.title = pgtitle;
     history.pushState(
-      {name: to, fields: $(to_form).serializeArray(), title: pgtitle},
+      {name: to, fields: $(to_form).serializeArray()},
       '', uri_base + '/' + path + '?' + $(to_form).serialize()
     );
   }
@@ -153,7 +143,6 @@ window.addEventListener('popstate', function (event) {
 
   is_from_state_event = 1;
   $('#'+ event.state.name + '_form').deserialize(event.state.fields);
-  if (event.state.title) { document.title = event.state.title }
   $('#'+ event.state.name + '_link').click();
   is_from_state_event = 0;
 });
@@ -837,16 +826,9 @@ function nd_statistics_panel() {
 // both call this unconditionally, so it must exist even on pages with
 // nothing to do here.
 function inner_view_processing(tab) {
-  if (page === 'device') {
-    // LT wanted the page title to reflect what's on the page :)
-    document.title = $('#nd_device-name').text()
-      +' - '+ $('#'+ tab + '_link').text();
-  }
-  else if (ndPages[page] && ndPages[page].innerView) {
+  if (ndPages[page] && ndPages[page].innerView) {
     ndPages[page].innerView(tab);
   }
-  // search and report have nothing to do here now that tooltips and popovers
-  // are delegated, but do_search and the htmx glue call this unconditionally.
 }
 
 // csv download icon on any table page
@@ -866,36 +848,21 @@ function update_csv_download_link (type, tab, show) {
   }
 }
 
-// page title includes tab name and possibly device name
-// this is nice for when you have multiple netdisco pages open in the
-// browser
-function update_page_title (tab) {
-  var pgtitle = default_pgtitle;
-  if ($.trim($('#nd_device-name').text()).length) {
-    pgtitle = $.trim($('#nd_device-name').text()) +' - '+ $('#'+ tab + '_link').text();
-  }
-  return pgtitle;
-}
-
 // update browser search history with the new query.
 // support history add (push) or replace via push parameter
-function update_browser_history (tab, pgtitle, push) {
+function update_browser_history (tab, push) {
   var form = '#' + tab + '_form';
   var query = $(form).serialize();
   if (query.length) { query = '?' + query }
 
-  // pushState and replaceState ignore their title argument, so set the title
-  // beside each call and keep it in the state for popstate to restore
-  var state = {name: tab, fields: $(form).serializeArray(), title: pgtitle};
+  var state = {name: tab, fields: $(form).serializeArray()};
 
   if (push.length) {
     var target = uri_base + '/' + path + '/' + tab + query;
     if (location.pathname == target) { return };
-    document.title = pgtitle;
     history.pushState(state, '', target);
   }
   else {
-    document.title = pgtitle;
     history.replaceState(state, '', uri_base + '/' + path + query);
   }
 }
@@ -1225,9 +1192,8 @@ $(document).ready(function() {
     var form = event.target;
     if (!form.matches('form[data-nd-tab]')) return;
     var submittedTab = form.dataset.ndTab;
-    var pgtitle = update_page_title(submittedTab);
     if (page === 'search' || page === 'device') copy_navbar_to_sidebar(submittedTab);
-    if (page !== 'admin') update_browser_history(submittedTab, pgtitle, page === 'report' ? '1' : '');
+    if (page !== 'admin') update_browser_history(submittedTab, page === 'report' ? '1' : '');
     update_csv_download_link(page, submittedTab, form.dataset.ndCsv === '1' ? '1' : '');
     var resetLink = document.getElementById('nd_sidebar-reset-link');
     if (resetLink && page === 'device' && submittedTab === 'ports') {
