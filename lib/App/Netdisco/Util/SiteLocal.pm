@@ -82,7 +82,7 @@ my @RULES = (
   },
   {
     name    => 'datatabledefaults-include',
-    release => '2.108000',
+    release => '2.108001',
     pattern => qr/INCLUDE\s+['"]ajax\/datatabledefaults\.tt['"]/,
     advice  => 'ajax/datatabledefaults.tt was removed. Delete the INCLUDE and '
              . 'move the table options into the data-nd-table attribute, as '
@@ -90,7 +90,7 @@ my @RULES = (
   },
   {
     name    => 'has-sidebar-global',
-    release => '2.108000',
+    release => '2.108001',
     pattern => qr/has_sidebar\s*\[/,
     advice  => 'the has_sidebar global was removed. The sidebar visibility '
              . 'marker is now a hidden input carrying data-nd-has-sidebar '
@@ -99,7 +99,7 @@ my @RULES = (
   },
   {
     name    => 'page-script-include',
-    release => '2.108000',
+    release => '2.108001',
     pattern => qr/INCLUDE\s+['"]js\//,
     advice  => 'share/views/js/ was removed. The page scripts now live in '
              . 'share/public/javascripts/netdisco.js and a template must not '
@@ -107,7 +107,7 @@ my @RULES = (
   },
   {
     name    => 'portcontrol-js-renamed',
-    release => '2.108000',
+    release => '2.108001',
     pattern => qr/netdisco_portcontrol\.js/,
     advice  => 'netdisco_portcontrol.js was renamed netdisco-portcontrol.js '
              . 'and a reference to the old name 404s. Update the script tag '
@@ -135,7 +135,7 @@ my @FILE_RULES = (
   },
   {
     name     => 'layout-shadow',
-    release  => '2.108000',
+    release  => '2.108001',
     paths    => ['layouts/main.tt'],
     requires => qr/data-nd-uri-base/,
     advice   => 'this copy predates data-nd-uri-base and the other body '

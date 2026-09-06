@@ -717,11 +717,11 @@ xt/bin/regenerate-snapshots
 xt/js/deferred-nodes.test.js
 xt/js/error-reporter.test.js
 xt/js/netmap-autosave.test.js
-xt/js/pane-settling.test.js
 xt/js/netmap-legend.test.js
 xt/js/netmap-loading.test.js
 xt/js/no-fragment-scripts.test.js
 xt/js/page-registry.test.js
+xt/js/pane-settling.test.js
 xt/js/portsort.test.js
 xt/js/tables-registry.test.js
 xt/js/tooltip-dismissal.test.js
