@@ -14,7 +14,7 @@
 
   [BUG FIXES]
 
-  * the Module Inventory, NetBIOS and Node Vendor reports now honour every
+  * the Module Inventory, NetBIOS and Node Vendor reports now honor every
     filter when more than one is given; the second and later were dropped by
     the table's data request
 
