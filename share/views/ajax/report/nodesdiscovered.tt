@@ -1,4 +1,8 @@
-<table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0">
+<script type="application/json" id="nd-results-report-nodesdiscovered">[% results.replace('<', '\u003c') | none %]</script>
+<table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0"
+  data-nd-data="#nd-results-report-nodesdiscovered"
+  data-nd-urls='{"device_ports":"[% device_ports | html_entity %]","search_node":"[% search_node | html_entity %]"}'
+  data-nd-table='{"deferRender":true,"columns":[{"data":"ip","render":{"name":"deviceName"}},{"data":"port","type":"portsort","render":{"name":"devicePortsLink","q":"ip","f":"data","flags":"c_nodes=on"}},{"data":"remote_id","render":"escape"},{"data":"remote_ip","render":{"name":"searchNodeLink","always":true}},{"data":"remote_port","render":"escape"},{"data":"remote_type","render":"escape"}]}'>
   <thead>
     <tr>
       <th>Device</th>
@@ -10,49 +14,3 @@
     </tr>
   </thead>
 </table>
-
-<script type="text/javascript">
-$(document).ready(function() {
-  var table = $('#data-table').dataTable({
-    "deferRender": true,
-    "data": [% results | none %],
-    "columns": [
-      {
-        "data": 'ip',
-        "render": function(data, type, row, meta) {
-          return DataTable.util.escapeHtml(row.dns || row.name || data);
-        }
-      }, {
-        "data": 'port',
-        "type": 'portsort',
-        "render": function(data, type, row, meta) {
-          return type === 'display' ?
-            '<a href="[% device_ports | none %]&c_nodes=on&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(data || '') + '</a>' :
-            DataTable.util.escapeHtml(data || '');
-        }
-      }, {
-        "data": 'remote_id',
-        "render": function(data, type, row, meta) {
-          return DataTable.util.escapeHtml(data || '');
-        }
-      }, {
-        "data": 'remote_ip',
-        "render": function(data, type, row, meta) {
-          return '<a href="[% search_node | none %]&q=' + encodeURIComponent(data || '') + '">' + DataTable.util.escapeHtml(data || '') + '</a>';
-        }
-      }, {
-        "data": 'remote_port',
-        "render": function(data, type, row, meta) {
-          return DataTable.util.escapeHtml(data || '');
-        }
-      }, {
-        "data": 'remote_type',
-        "render": function(data, type, row, meta) {
-          return DataTable.util.escapeHtml(data || '');
-        }
-      }
-    ],
-[% INCLUDE 'ajax/datatabledefaults.tt' -%]
-  });
-});
-</script>

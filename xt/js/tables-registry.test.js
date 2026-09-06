@@ -94,10 +94,57 @@ test('renderers__devicePortsLink__builds_the_ports_link_from_row_keys', () => {
   assert.strictEqual(out, '<a href="/device?tab=ports&q=10.0.0.1&f=Gi1%2F0%2F1&c_nodes=on">Gi1/0/1</a>');
 });
 
+test('renderers__devicePortsLink__text_shows_a_row_key_instead_of_the_cell', () => {
+  const r = load().renderers.devicePortsLink({ q: 'ip', f: 'data', text: 'ports.name' }, URLS);
+  const out = r('Gi1/0/1', 'display', { ip: '10.0.0.1', ports: { name: 'AP-Lobby' } });
+  assert.strictEqual(out, '<a href="/device?tab=ports&q=10.0.0.1&f=Gi1%2F0%2F1">AP-Lobby</a>');
+});
+
+test('renderers__devicePortsLink__qFallback__is_used_only_when_q_is_empty', () => {
+  const r = load().renderers.devicePortsLink({ q: 'left_dns', f: 'data', qFallback: 'left_ip' }, URLS);
+  assert.strictEqual(
+    r('Gi1', 'display', { left_dns: '', left_ip: '10.0.0.1' }),
+    '<a href="/device?tab=ports&q=10.0.0.1&f=Gi1">Gi1</a>',
+  );
+  assert.strictEqual(
+    r('Gi1', 'display', { left_dns: 'sw1.example', left_ip: '10.0.0.1' }),
+    '<a href="/device?tab=ports&q=sw1.example&f=Gi1">Gi1</a>',
+  );
+});
+
+test('renderers__devicePortsLink__number__formats_the_shown_text_with_thousands_separators', () => {
+  const r = load().renderers.devicePortsLink({ q: 'ip', f: 'data', always: true, number: true }, URLS);
+  assert.strictEqual(r(1234, 'display', { ip: '10.0.0.1' }), '<a href="/device?tab=ports&q=10.0.0.1&f=1234">1,234</a>');
+});
+
+test('renderers__devicePortsLink__text_and_number_together__throws', () => {
+  const t = load();
+  assert.throws(() => t.renderers.devicePortsLink({ q: 'ip', f: 'data', text: 'x', number: true }, URLS), /"text" and "number"/);
+});
+
+test('renderers__devicePortsLink__descr__adds_a_second_line_from_a_row_key', () => {
+  const r = load().renderers.devicePortsLink({ q: 'left_ip', f: 'data', descr: 'left_port_descr' }, URLS);
+  assert.strictEqual(
+    r('Gi1', 'display', { left_ip: '10.0.0.1', left_port_descr: 'uplink' }),
+    '<a href="/device?tab=ports&q=10.0.0.1&f=Gi1">Gi1</a><br />uplink',
+  );
+  // a missing row key adds an empty second line rather than the word "undefined"
+  assert.strictEqual(
+    r('Gi1', 'display', { left_ip: '10.0.0.1' }),
+    '<a href="/device?tab=ports&q=10.0.0.1&f=Gi1">Gi1</a><br />',
+  );
+});
+
 test('renderers__devicePortsLinkNamed__labels_with_the_device_and_a_suffix', () => {
   const r = load().renderers.devicePortsLinkNamed({ q: 'data', f: 'port.port', flags: 'c_nodes=on&n_ssid=on', dns: 'device.dns', name: 'device.name', ip: 'ip', suffix: 'port.port' }, URLS);
   const out = r('10.0.0.1', 'display', { ip: '10.0.0.1', device: { dns: 'sw1.example' }, port: { port: 'Gi1' } });
   assert.strictEqual(out, '<a href="/device?tab=ports&q=10.0.0.1&f=Gi1&c_nodes=on&n_ssid=on">sw1.example(Gi1)</a>');
+});
+
+test('renderers__devicePortsLinkNamed__suffix_data__shows_the_cell_rather_than_a_row_key', () => {
+  const r = load().renderers.devicePortsLinkNamed({ q: 'switch', f: 'data', flags: 'c_nodes=on', dns: 'dns', name: 'name', ip: 'switch', suffix: 'data' }, URLS);
+  const out = r('Gi1/0/1', 'display', { switch: '10.0.0.1', dns: 'sw1.example' });
+  assert.strictEqual(out, '<a href="/device?tab=ports&q=10.0.0.1&f=Gi1%2F0%2F1&c_nodes=on">sw1.example(Gi1/0/1)</a>');
 });
 
 test('renderers__reportLink__sends_the_blank_token_for_an_empty_value', () => {
@@ -289,6 +336,39 @@ test('renderers__deviceName__prefers_dns_then_name_then_ip', () => {
   assert.strictEqual(r(null, 'display', { ip: '10.0.0.1' }), '10.0.0.1');
 });
 
+// Through resolve(), not the factory directly: a fragment's spec object IS
+// the args object, so its own dispatch key ("name": "deviceName") must not
+// shadow deviceLabel's row-key argument of the same name.
+// No tier named, so deviceLabel takes the full dns/name/ip fallback; before
+// resolve() stripped its own dispatch key, args.name here was the string
+// "deviceName" rather than unset, which this path reads as the row key
+// "deviceName" instead of falling through to "name".
+test('resolve__an_object_spec__does_not_leak_its_own_dispatch_name_into_args', () => {
+  const fn = load().resolve({ name: 'deviceName' }, URLS, {});
+  assert.strictEqual(fn(null, 'display', { ip: '10.0.0.1', name: 'sw1' }), 'sw1');
+});
+
+// A caller whose dns/name/ip keys would themselves collide with something
+// else read from the same spec nests them under "label" instead, the shape
+// searchDeviceLink already uses.
+test('renderers__deviceName__label__nests_dns_name_ip_to_avoid_the_dispatch_key', () => {
+  const fn = load().resolve({ name: 'deviceName', label: { dns: 'device.dns', name: 'device.name', ip: 'ip' } }, URLS, {});
+  assert.strictEqual(fn(null, 'display', { ip: '10.0.0.1', device: { dns: '', name: 'sw1' } }), 'sw1');
+});
+
+// The closure each of these renderers replaces read a fixed, different
+// subset of dns/name/ip; naming a subset here must not fall through to a
+// tier the caller never asked for, even when the row carries one.
+test('renderers__deviceName__naming_a_subset__consults_only_the_named_tiers', () => {
+  const r = load().renderers.deviceName({ name: 'name', ip: 'ip' }, URLS);
+  assert.strictEqual(r(null, 'display', { dns: 'sw1.example', name: 'sw1', ip: '10.0.0.1' }), 'sw1');
+});
+
+test('renderers__deviceName__naming_none__keeps_the_full_dns_name_ip_fallback', () => {
+  const r = load().renderers.deviceName({}, URLS);
+  assert.strictEqual(r(null, 'display', { dns: 'sw1.example', name: 'sw1', ip: '10.0.0.1' }), 'sw1.example');
+});
+
 test('renderers__age__shows_the_text_and_sorts_by_the_stamp', () => {
   const r = load().renderers.age({ stamp: 'time_last' }, URLS);
   assert.strictEqual(r('2:30:00', 'display', { time_last: '2026-09-04' }), '2 hours 30 mins');
@@ -322,6 +402,27 @@ test('build__merges_the_defaults_and_resolves_render_names', () => {
   assert.strictEqual(config.pagingType, 'simple_numbers');
   assert.strictEqual(typeof config.columns[0].render, 'function');
   assert.deepStrictEqual(config.order, [[0, 'asc']]);
+});
+
+// htmx swaps one tab pane at a time and never empties the pane it leaves,
+// so document.getElementById can answer with a stale sibling pane's block.
+// document is rigged here to always return the wrong one, standing in for
+// that hazard; build(table, root) must still get each table's own rows by
+// looking inside its own just-swapped root first.
+test('build__with_a_root__resolves_each_tables_data_block_inside_that_root', () => {
+  const built = [];
+  const t = load({ built });
+  const block1 = { textContent: '[{"ip":"10.0.0.1"}]' };
+  const block2 = { textContent: '[{"vlan":10}]' };
+  const document = { getElementById: () => block1 };
+  const root1 = { querySelector: (sel) => (sel === '#nd-results-1' ? block1 : null) };
+  const root2 = { querySelector: (sel) => (sel === '#nd-results-2' ? block2 : null) };
+  const table1 = { dataset: { ndTable: '{"columns":[{"data":"ip","render":"escape"}]}', ndUrls: '{}', ndData: '#nd-results-1' }, ownerDocument: document };
+  const table2 = { dataset: { ndTable: '{"columns":[{"data":"vlan","render":"raw"}]}', ndUrls: '{}', ndData: '#nd-results-2' }, ownerDocument: document };
+  t.build(table1, root1);
+  t.build(table2, root2);
+  assert.deepStrictEqual(built[0].config.data, [{ ip: '10.0.0.1' }]);
+  assert.deepStrictEqual(built[1].config.data, [{ vlan: 10 }]);
 });
 
 test('build__with_a_data_block__feeds_it_as_the_row_array', () => {
@@ -385,15 +486,46 @@ test('build__without_defaults_false__still_gets_the_shared_options', () => {
 // Every name a fragment can ask for must exist. Reads the templates rather
 // than a list kept here, so a fragment naming a renderer that was never
 // written fails this test rather than a user's page.
+//
+// Each data-nd-table value is parsed as JSON rather than scanned with a
+// regex: a regex has no notion of which "name" key belongs to the render
+// spec itself and which to something nested inside it (searchDeviceLink's
+// "label" argument is itself keyed dns/name/ip), so it can be led to the
+// wrong one depending only on which key happens to be written first.
 test('fragments__every_render_and_callback_name__is_in_the_registry', () => {
   const t = load();
   const VIEWS = path.join(ROOT, 'share', 'views', 'ajax');
   const names = new Set();
+
+  // An IF/ELSE/END pair wrapping optional JSON is stripped to its tag
+  // markers alone, always yielding the branch that is present in the
+  // source; a bare expression standing in for a scalar value is replaced
+  // with a neutral literal. Only the surrounding JSON shape is read here,
+  // never the runtime value, so which branch or literal does not matter.
+  function stripDirectives(text) {
+    return text
+      .replace(/\[%\s*(?:IF|ELSIF|ELSE|END)\b[^%]*%\]/gi, '')
+      .replace(/\[%[^%]*?%\]/g, '0');
+  }
+
+  function collectSpecName(spec) {
+    if (typeof spec === 'string') names.add(spec);
+    else if (spec && typeof spec === 'object' && typeof spec.name === 'string') names.add(spec.name);
+  }
+
   const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).forEach((e) => {
     const full = path.join(dir, e.name);
     if (e.isDirectory()) return walk(full);
     const text = fs.readFileSync(full, 'utf8');
-    for (const m of text.matchAll(/"(?:render|drawCallback|initComplete)"\s*:\s*(?:"([a-zA-Z]+)"|\{[^}]*"name"\s*:\s*"([a-zA-Z]+)")/g)) names.add(m[1] || m[2]);
+    for (const m of text.matchAll(/data-nd-table='([\s\S]*?)'/g)) {
+      var spec;
+      try { spec = JSON.parse(stripDirectives(m[1])) }
+      catch (err) { throw new Error(full + ': data-nd-table does not parse as JSON: ' + err.message) }
+      (spec.columns || []).forEach((col) => { if (col.render) collectSpecName(col.render) });
+      (spec.columnDefs || []).forEach((def) => { if (def.render) collectSpecName(def.render) });
+      if (spec.drawCallback) collectSpecName(spec.drawCallback);
+      if (spec.initComplete) collectSpecName(spec.initComplete);
+    }
   });
   walk(VIEWS);
   const missing = [...names].filter((n) => !(n in t.renderers) && !(n in t.callbacks));

@@ -1,4 +1,8 @@
-<table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0">
+<script type="application/json" id="nd-results-report-portvlanmismatch">[% results.replace('<', '\u003c') | none %]</script>
+<table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0"
+  data-nd-data="#nd-results-report-portvlanmismatch"
+  data-nd-urls='{"device_ports":"[% device_ports | html_entity %]"}'
+  data-nd-table='{"deferRender":true,"columns":[{"data":"left_ip","render":{"name":"devicePortsLinkNamed","q":"data","dns":"left_dns","ip":"left_ip"}},{"data":"left_port","type":"portsort","render":{"name":"devicePortsLink","q":"left_ip","f":"data","descr":"left_port_descr"}},{"data":"only_left_vlans","render":"raw"},{"data":"right_ip","render":{"name":"devicePortsLinkNamed","q":"data","dns":"right_dns","ip":"right_ip"}},{"data":"right_port","type":"portsort","render":{"name":"devicePortsLink","q":"right_ip","f":"data","descr":"right_port_descr"}},{"data":"only_right_vlans","render":"raw"}]}'>
   <thead>
     <tr>
       <th>Left Device</th>
@@ -10,45 +14,3 @@
     </tr>
   </thead>
 </table>
-
-<script type="text/javascript">
-$(document).ready(function() {
-    var table = $('#data-table').dataTable({
-        "deferRender": true,
-        "data": [% results | none %],
-        "columns": [
-               {
-                "data": 'left_ip',
-                "render": function(data, type, row, meta) {
-                    return '<a href="[% device_ports | none %]&q=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(row.left_dns || data || '') + '</a>'; }
-            }, {
-              "data": 'left_port',
-              "type": 'portsort',
-              "render": function(data, type, row, meta) {
-                return type === 'display' ?
-                  '<a href="[% device_ports | none %]&q=' + encodeURIComponent(row.left_ip) + '&f=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(data || '') + '</a>'
-                    + '<br />' + DataTable.util.escapeHtml(row.left_port_descr || '')
-                  : DataTable.util.escapeHtml(data || ''); }
-            }, {
-                "data": 'only_left_vlans'
-            }, {
-                "data": 'right_ip',
-                "render": function(data, type, row, meta) {
-                    return '<a href="[% device_ports | none %]&q=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(row.right_dns || data || '') + '</a>'; }
-            }, {
-              "data": 'right_port',
-              "type": 'portsort',
-              "render": function(data, type, row, meta) {
-                return type === 'display' ?
-                  '<a href="[% device_ports | none %]&q=' + encodeURIComponent(row.right_ip) + '&f=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(data || '') + '</a>'
-                    + '<br />' + DataTable.util.escapeHtml(row.right_port_descr || '')
-                  : DataTable.util.escapeHtml(data || ''); }
-            }, {
-                "data": 'only_right_vlans'
-            }
-        ],
-[% INCLUDE 'ajax/datatabledefaults.tt' -%]
-    });
-
-});
-</script>

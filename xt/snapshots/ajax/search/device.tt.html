@@ -1,4 +1,8 @@
-<table id="ds-data-table" class="table table-striped table-bordered" width="100%" cellspacing="0">
+<script type="application/json" id="nd-results-search-device"></script>
+<table id="ds-data-table" class="table table-striped table-bordered" width="100%" cellspacing="0"
+  data-nd-data="#nd-results-search-device"
+  data-nd-urls='{"device":""}'
+  data-nd-table='{"deferRender":true,"columns":[{"data":"ip","render":{"name":"deviceLink","label":{"dns":"dns","name":"name","ip":"ip"}}},{"data":"location","render":"escape"},{"data":"name","render":"escape"},{"data":"model","render":"escape"},{"data":"os_ver","type":"versionsort","render":"escape"},{"data":"ip","render":"escape"},{"data":"serial","render":{"name":"join","key":"module_serials"}},{"data":"first_seen_stamp","render":"escape"},{"data":"last_discover_stamp","render":"escape"}]}'>
   <thead>
     <tr>
       <th>Device</th>
@@ -13,87 +17,3 @@
     </tr>
   </thead>
 </table>
-
-<script type="text/javascript">
-$(document).ready(function() {
-  var table = $('#ds-data-table').dataTable({
-    "deferRender": true,
-    "data": ,
-    "columns": [{
-        "data": 'ip',
-        "render": function(data, type, row, meta) {
-          return '<a href="?q=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(row.dns || row.name || row.ip) + '</a>';
-        }
-      }, {
-        "data": 'location',
-        "render": function(data, type, row, meta) {
-          return DataTable.util.escapeHtml(data || '');
-        }
-      }, {
-        "data": 'name',
-        "render": function(data, type, row, meta) {
-          return DataTable.util.escapeHtml(data || '');
-        }
-      }, {
-        "data": 'model',
-        "render": function(data, type, row, meta) {
-          return DataTable.util.escapeHtml(data || '');
-        }
-      }, {
-        "data": 'os_ver',
-        "type": 'versionsort',
-        "render": function(data, type, row, meta) {
-          return DataTable.util.escapeHtml(data || '');
-        }
-      }, {
-        "data": 'ip',
-        "render": function(data, type, row, meta) {
-          return DataTable.util.escapeHtml(data || '');
-        }
-      }, {
-        "data": 'serial',
-        "render": function(data, type, row, meta) {
-          return row.module_serials.map(DataTable.util.escapeHtml).join('<br />');
-        }
-      }, {
-        "data": 'first_seen_stamp',
-        "render": function(data, type, row, meta) {
-          return DataTable.util.escapeHtml(data || '');
-        }
-      }, {
-        "data": 'last_discover_stamp',
-        "render": function(data, type, row, meta) {
-          return DataTable.util.escapeHtml(data || '');
-        }
-      }
-    ],
-    "processing": true
-    ,"stateSave": true
-    ,"pageLength": 
-    ,"lengthMenu": 
-    ,"dom": '<"top"l<"nd_datatables-pager"p>f>rit<"bottom"><"clear">'
-
-    ,"pagingType": 'simple_numbers'
-    ,"language": {
-
-      "processing": 'Processing...'
-      ,"search": '_INPUT_'
-      ,"searchPlaceholder": 'Filter records...'
-      ,"lengthMenu": "Show _MENU_ records."
-      ,"info":         "&nbsp;Showing _START_ to _END_ of _TOTAL_"
-      ,"infoFiltered": "(filtered from _MAX_ total)"
-      ,"infoEmpty":    "&nbsp;No matching entries"
-
-      ,"paginate": {
-        "previous": '&larr; Previous'
-        ,"next":    'Next &rarr;'
-      }
-    }
-    ,"stateSaveParams": function (settings, data) {
-      // make sure filter is never saved
-      data.search.search = "";
-      // make sure paging position is not saved
-      data.start = 0;
-    }
-  });
-});</script>

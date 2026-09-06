@@ -21,37 +21,14 @@ const REMAINING = [
   'admintask.tt',
   'ajax/admintask/orphaned.tt',
   'ajax/admintask/userlog.tt',
-  'ajax/device/addresses.tt',
   'ajax/device/modules.tt',
   'ajax/device/netmap.tt',
   'ajax/device/snmp.tt',
-  'ajax/device/vlans.tt',
-  'ajax/report/apchanneldist.tt',
-  'ajax/report/apclients.tt',
   'ajax/report/apradiochannelpower.tt',
-  'ajax/report/deviceaddrnodns.tt',
-  'ajax/report/devicebylocation.tt',
-  'ajax/report/devicednsmismatch.tt',
   'ajax/report/devicepoestatus.tt',
-  'ajax/report/duplexmismatch.tt',
-  'ajax/report/halfduplex.tt',
-  'ajax/report/ipinventory.tt',
   'ajax/report/moduleinventory.tt',
   'ajax/report/netbios.tt',
-  'ajax/report/nodemultiips.tt',
-  'ajax/report/nodesdiscovered.tt',
   'ajax/report/nodevendor.tt',
-  'ajax/report/portadmindown.tt',
-  'ajax/report/portblocking.tt',
-  'ajax/report/portmultinodes.tt',
-  'ajax/report/portssid.tt',
-  'ajax/report/portutilization.tt',
-  'ajax/report/portvlanmismatch.tt',
-  'ajax/report/vlaninventory.tt',
-  'ajax/report/vlanmultiplenames.tt',
-  'ajax/search/device.tt',
-  'ajax/search/port.tt',
-  'ajax/search/vlan.tt',
   'device.tt',
   'index.tt',
   'inventory.tt',
@@ -121,4 +98,22 @@ test('fragments__every_json_script_block__has_an_id_and_parses', () => {
       if (!m[1].includes('[%')) assert.doesNotThrow(() => JSON.parse(m[1]), rel + ': JSON block does not parse');
     }
   }
+});
+
+// A tab pane htmx has left is never emptied, so a stale sibling pane's own
+// JSON block is still in the document when a freshly-swapped one is built;
+// a block id shared by two fragments lets getElementById answer either
+// build with the wrong pane's rows. Scanned across every view, not just
+// ajax/, since a non-ajax template could carry one too.
+test('fragments__json_script_block_ids__are_unique_across_all_views', () => {
+  const ID_ATTR_BLOCK = /<script[^>]*type\s*=\s*["']application\/json["'][^>]*\bid\s*=\s*["']([^"']+)["'][^>]*>/gi;
+  const filesById = {};
+  for (const rel of files) {
+    const text = fs.readFileSync(path.join(VIEWS, rel), 'utf8');
+    for (const m of text.matchAll(ID_ATTR_BLOCK)) {
+      (filesById[m[1]] = filesById[m[1]] || []).push(rel);
+    }
+  }
+  const duplicates = Object.entries(filesById).filter(([, list]) => list.length > 1);
+  assert.deepStrictEqual(duplicates, []);
 });

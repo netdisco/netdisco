@@ -1,4 +1,8 @@
-<table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0">
+<script type="application/json" id="nd-results-report-apclients">[% results.replace('<', '\u003c') | none %]</script>
+<table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0"
+  data-nd-data="#nd-results-report-apclients"
+  data-nd-urls='{"device_ports":"[% device_ports | html_entity %]"}'
+  data-nd-table='{"deferRender":true,"columns":[{"data":"ports.port","type":"portsort","render":{"name":"devicePortsLink","q":"ip","f":"data","flags":"c_nodes=on","text":"ports.name"}},{"data":"model","render":"escape"},{"data":"ports.type","render":"escape"},{"data":"mac_count","searchable":false,"render":"number"}]}'>
   <thead>
     <tr>
       <th>Access Point</th>
@@ -8,40 +12,3 @@
     </tr>
   </thead>
 </table>
-
-<script type="text/javascript">
-$(document).ready(function() {
-  var table = $('#data-table').dataTable({
-    "deferRender": true,
-    "data": [% results | none %],
-    "columns": [
-      {
-        "data": 'ports.port',
-        "type": 'portsort',
-        "render": function(data, type, row, meta) {
-          return type === 'display' ?
-            '<a href="[% device_ports | none %]&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '&c_nodes=on">' + DataTable.util.escapeHtml(row.ports.name || '') + '</a>' :
-            DataTable.util.escapeHtml(data || '');
-        }
-      }, {
-        "data": 'model',
-        "render": function(data, type, row, meta) {
-          return DataTable.util.escapeHtml(data || '');
-        }
-      }, {
-        "data": 'ports.type',
-        "render": function(data, type, row, meta) {
-          return DataTable.util.escapeHtml(data || '');
-        }
-      }, {
-        "data": 'mac_count',
-        "searchable": false,
-        "render": function(data, type, row, meta) {
-          return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
-      }
-    ],
-[% INCLUDE 'ajax/datatabledefaults.tt' -%]
-  });
-});
-</script>

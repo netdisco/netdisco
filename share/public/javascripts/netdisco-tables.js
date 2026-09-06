@@ -25,9 +25,24 @@ var ndTables = (function () {
   };
 
   // Device label as netdisco shows it everywhere: dns, else name, else ip.
-  // args.dns, args.name and args.ip name the row keys, each optional.
+  // args.dns, args.name and args.ip name the row keys, each optional. A
+  // caller that itself needs a "name" key for something other than a row
+  // key (deviceLink's dispatch key is "name" too) cannot also write a row
+  // key literally called "name" in the same JSON object: JSON.parse keeps
+  // only the last of two identical keys. Such a caller nests dns/name/ip
+  // under args.label instead, a second object with no such collision.
+  //
+  // The closures this replaces each read a fixed, different subset of
+  // dns/name/ip (some never looked at name at all), so naming any one of the
+  // three restricts the cascade to only the named tiers, still tried in dns,
+  // name, ip order. Naming none is a caller with no such history to match,
+  // so it gets the full three-tier fallback.
   var deviceLabel = function (args, row, fallback) {
-    return get(row, args.dns || 'dns') || get(row, args.name || 'name') || get(row, args.ip || 'ip') || fallback;
+    var a = args.label || args;
+    var tiers = (a.dns || a.name || a.ip) ? [a.dns, a.name, a.ip] : ['dns', 'name', 'ip'];
+    var value;
+    tiers.forEach(function (key) { if (!value && key) value = get(row, key) });
+    return value || fallback;
   };
   var withQuery = function (base, q) { return base + (base.indexOf('?') === -1 ? '?' : '&') + q };
 
@@ -55,31 +70,41 @@ var ndTables = (function () {
 
     // Link to a device's ports tab. args.q and args.f each name a row key,
     // "data" meaning the cell itself: q for the device address, f for the
-    // port. args.flags is a literal query suffix; args.descr adds a second
-    // line from a row key; args.class sets the anchor's classes. Sorting and
+    // port. args.qFallback names a row key used for q when that key's value
+    // is empty. args.flags is a literal query suffix; args.descr adds a
+    // second line from a row key; args.class sets the anchor's classes;
+    // args.text names a row key shown instead of the cell; args.number
+    // formats the shown text with thousands separators. Sorting and
     // filtering see the escaped value alone, unless args.always, which
     // renders the link for every type as the closures it replaces did.
     devicePortsLink: function (args, urls) {
+      if (args.text && args.number) throw new Error('renderer devicePortsLink: "text" and "number" cannot both be set');
       var portsUrl = urlFor(urls, 'device_ports', 'devicePortsLink');
       var rowKeyOrCell = function (row, rowKey, cellValue) { return (rowKey === 'data') ? cellValue : get(row, rowKey) };
+      var numberFormat = args.number ? DataTable.render.number(',', '.', 0) : null;
       return function (data, type, row) {
         var text = esc(data);
         if (type !== 'display' && !args.always) return text;
         var deviceRowKey = args.q || 'ip';
         var portRowKey = args.f;
-        var href = portsUrl + '&q=' + enc(rowKeyOrCell(row, deviceRowKey, data));
+        var qValue = rowKeyOrCell(row, deviceRowKey, data);
+        if (!qValue && args.qFallback) qValue = get(row, args.qFallback);
+        var href = portsUrl + '&q=' + enc(qValue);
         if (portRowKey) href += '&f=' + enc(rowKeyOrCell(row, portRowKey, data));
         if (args.flags) href += '&' + args.flags;
         var cls = args.class ? ' class="' + args.class + '"' : '';
+        var shown = text;
+        if (args.text) shown = esc(get(row, args.text));
+        else if (numberFormat) shown = esc(numberFormat.display(data));
         var extra = args.descr ? '<br />' + esc(get(row, args.descr)) : '';
-        return '<a' + cls + ' href="' + href + '">' + text + '</a>' + extra;
+        return '<a' + cls + ' href="' + href + '">' + shown + '</a>' + extra;
       };
     },
 
     // Link to a device's ports tab labelled with the device name rather than
     // the cell. args.q and args.f as above (f optional); args.suffix names a
-    // row key shown in parentheses after the name; args.dns, args.name,
-    // args.ip pick the label keys.
+    // row key, or "data" for the cell itself, shown in parentheses after the
+    // name; args.dns, args.name, args.ip pick the label keys.
     devicePortsLinkNamed: function (args, urls) {
       var portsUrl = urlFor(urls, 'device_ports', 'devicePortsLinkNamed');
       return function (data, type, row) {
@@ -90,7 +115,7 @@ var ndTables = (function () {
         if (portRowKey) href += '&f=' + enc(portRowKey === 'data' ? data : get(row, portRowKey));
         if (args.flags) href += '&' + args.flags;
         var text = esc(deviceLabel(args, row, data));
-        if (args.suffix) text += (args.suffixSpace ? ' ' : '') + '(' + esc(get(row, args.suffix)) + ')';
+        if (args.suffix) text += (args.suffixSpace ? ' ' : '') + '(' + esc(args.suffix === 'data' ? data : get(row, args.suffix)) + ')';
         return link(href, text);
       };
     },
@@ -348,9 +373,16 @@ var ndTables = (function () {
 
   function resolve(spec, urls, table) {
     var name = (typeof spec === 'string') ? spec : spec.name;
-    var args = (typeof spec === 'string') ? {} : spec;
     var factory = RENDERERS[name] || CALLBACKS[name];
     if (!factory) throw new Error('netdisco-tables: no renderer or callback named "' + name + '"');
+    // spec doubles as the args object, so its own dispatch key would
+    // otherwise shadow a renderer argument also called "name" (deviceLabel's
+    // dns/name/ip row-key convention).
+    var args = spec;
+    if (typeof spec !== 'string' && 'name' in spec) {
+      args = {};
+      Object.keys(spec).forEach(function (k) { if (k !== 'name') args[k] = spec[k] });
+    }
     return factory(args, urls, table);
   }
 
@@ -383,7 +415,7 @@ var ndTables = (function () {
     };
   }
 
-  function build(table) {
+  function build(table, root) {
     var spec = JSON.parse(table.dataset.ndTable || '{}');
     var urls = JSON.parse(table.dataset.ndUrls || '{}');
     // "defaults":false opts a table out of every shared option, for a table
@@ -400,7 +432,13 @@ var ndTables = (function () {
     if (config.drawCallback) config.drawCallback = resolve(config.drawCallback, urls, table);
     if (config.initComplete) config.initComplete = resolve(config.initComplete, urls, table);
     if (table.dataset.ndData) {
-      var block = table.ownerDocument.getElementById(table.dataset.ndData.replace(/^#/, ''));
+      var id = table.dataset.ndData.replace(/^#/, '');
+      // htmx swaps one tab pane at a time and never empties the pane it
+      // leaves, so a stale sibling pane's own JSON block is still in the
+      // document when this one is built. Look inside the just-swapped root
+      // first; only a table built with no known root (a full page load)
+      // reaches all the way out to the document.
+      var block = (root && root.querySelector('#' + id)) || table.ownerDocument.getElementById(id);
       if (block) config.data = JSON.parse(block.textContent);
     }
     return new DataTable(table, config);
@@ -413,7 +451,7 @@ var ndTables = (function () {
       // One bad data-nd-table (or data-nd-urls) degrades one table, not the
       // whole pane: a throw here would otherwise escape the htmx:afterSwap
       // listener and leave holdUntilSettled never called.
-      try { build(table) } catch (e) { console.error(e) }
+      try { build(table, root) } catch (e) { console.error(e) }
     });
   }
 
