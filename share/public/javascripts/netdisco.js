@@ -529,6 +529,7 @@ $(document).ready(function() {
         '<div class="col-md-2 alert alert-info">No matching records.</div>';
       return;
     }
+    ndTables.init(target);
     holdUntilSettled(target, document.getElementById(tab + '_indicator'));
     $('div.content > div.tab-content table.nd_floatinghead').floatThead({
       top: 40
@@ -571,59 +572,4 @@ $(document).ready(function() {
       'Search failed! Please contact your site administrator (network error).</div>';
   });
 });
-
-// temporarily disable datatables paging
-// returns [current_page_length, current_page_index]
-function dataTablesDisablePaging() {
-  $.fn.dataTable.ext.search.pop();
-  var plen = $('#dp-data-table').DataTable().page.len();
-  var pnum = $('#dp-data-table').DataTable().page();
-  $('#dp-data-table').DataTable().page.len(-1).draw(true);
-  return [plen, pnum];
-}
-
-// restore the datatables pagination and page number
-function dataTablesRestorePage(plen, pnum) {
-  $('#dp-data-table').DataTable().page.len(plen).draw(true);
-  $('#dp-data-table').DataTable().page(pnum).draw(false);
-}
-
-// install our row filter for datatables row group toggle
-function dataTablesPushRowGroupVisibilityFilter() {
-  $.fn.dataTable.ext.search.push(
-    function(settings, data, dataIndex) {
-        var row = $($('#dp-data-table').DataTable().row(dataIndex).node());
-        if (! row.data('collapsed-group')) { return true; }
-        return row.attr('data-is-collapsed') == 'false';
-    }
-  );
-}
-
-// onclick handler
-// toggles visibility of a group of datatables rows
-// clicked element has the group name as data-collapsed-group
-var dataTablesRowGroupVisibilityToggle = function () {
-  var groupname = $(this).data('collapsed-group');
-  var [plen, pnum] = dataTablesDisablePaging();
-
-  // groupname is not in a class selector due to port name characters
-  $('tr.nd_collapsible').each(function(index) { 
-      if ($(this).data('collapsed-group') == groupname) {
-          if ($(this).attr('data-is-collapsed') == 'true') {
-            $(this).attr('data-is-collapsed', 'false');
-          }
-          else {
-            $(this).attr('data-is-collapsed', 'true');
-          }
-      }
-  });
-
-  dataTablesPushRowGroupVisibilityFilter();
-  dataTablesRestorePage(plen, pnum);
-
-  var icon = $(this).find('i');
-  icon.toggleClass(
-    "fa-list-ol fa-arrow-up-wide-short fa-rotate-180"
-  );
-};
 

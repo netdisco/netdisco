@@ -405,6 +405,7 @@ share/public/javascripts/jstree/themes/proton/style.min.css
 share/public/javascripts/jstree/themes/proton/throbber.gif
 share/public/javascripts/moment.min.js
 share/public/javascripts/netdisco-deferred-nodes.js
+share/public/javascripts/netdisco-tables.js
 share/public/javascripts/netdisco.js
 share/public/javascripts/netdisco_portcontrol.js
 share/public/javascripts/portsort.js
@@ -726,6 +727,7 @@ xt/js/netmap-legend.test.js
 xt/js/netmap-loading.test.js
 xt/js/no-fragment-scripts.test.js
 xt/js/portsort.test.js
+xt/js/tables-registry.test.js
 xt/js/tooltip-dismissal.test.js
 xt/js/view-templates.test.js
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFive.pm
