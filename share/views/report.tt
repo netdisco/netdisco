@@ -16,12 +16,17 @@
                 hx-get="[% uri_for('/ajax/content/report/' _ report.tag) | none %]"
                 hx-target="#[% report.tag | html_entity %]_pane"
                 hx-headers='{"X-Requested-With": "XMLHttpRequest"}'
-                hx-indicator="#[% report.tag | html_entity %]_indicator">
+                hx-indicator="#[% report.tag | html_entity %]_indicator"
+                data-nd-tab="[% report.tag | html_entity %]"
+                data-nd-csv="1"[%
+                  # PRE_CHOMP is on, so the newline before a directive is eaten;
+                  # the separating space has to live inside the block.
+                  IF report.rconfig.bind_params.size AND NOT report.rconfig.show_sidebar %] data-nd-hide-sidebar="1"[% END %]>
               [% TRY %]
-              <script type="text/javascript">has_sidebar["[% report.tag | html_entity %]"] = 1;</script>
+              <input type="hidden" data-nd-has-sidebar="[% report.tag | html_entity %]" value="1">
               [% INCLUDE "sidebar/report/${report.tag}.tt" %]
               [% CATCH %]
-              <script type="text/javascript">has_sidebar["[% report.tag | html_entity %]"] = [% report.rconfig.bind_params.size ? '1' : '0' %];</script>
+              <input type="hidden" data-nd-has-sidebar="[% report.tag | html_entity %]" value="[% report.rconfig.bind_params.size ? '1' : '0' %]">
               [% INCLUDE "sidebar/report/generic_report.tt" %]
               [% END %]
             </form>
@@ -56,18 +61,3 @@
       <div class="tab-pane active" id="[% report.tag | html_entity %]_pane"></div>
   </div>
 </div>
-
-<script type="text/javascript">
-[% IF report.rconfig.bind_params.size AND NOT report.rconfig.show_sidebar %]
-$('.nd_sidebar').toggle(0);
-$('#nd_sidebar-toggle-img-out').toggle();
-$('.content').css('margin-right', '10px');
-$('div.content > div.tab-content table.nd_floatinghead').floatThead('destroy');
-$('div.content > div.tab-content table.nd_floatinghead').floatThead({
-  top: 40
-  ,position: 'fixed'
-});
-sidebar_hidden = 1;
-[% END %]
-[%+ INCLUDE 'js/report.js' -%]
-</script>

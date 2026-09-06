@@ -651,11 +651,7 @@ share/views/device.tt
 share/views/externallinks.tt
 share/views/index.tt
 share/views/inventory.tt
-share/views/js/admintask.js
 share/views/js/common.js
-share/views/js/device.js
-share/views/js/report.js
-share/views/js/search.js
 share/views/layouts/main.tt
 share/views/layouts/noop.tt
 share/views/password.tt

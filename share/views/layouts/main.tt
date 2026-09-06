@@ -59,7 +59,7 @@
   [% END %]
 </head>
 
-<body>
+<body data-nd-page="[% IF device %]device[% ELSIF search %]search[% ELSIF report %]report[% ELSIF task %]admin[% END %]">
 <nav class="navbar navbar-expand navbar-dark bg-dark fixed-top">
   <div class="container">
     <a class="navbar-brand" href="[% uri_for('') | none %]">[% settings.branding_text | none %]</a>

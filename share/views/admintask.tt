@@ -18,12 +18,15 @@
                 hx-headers='{"X-Requested-With": "XMLHttpRequest"}'[%
                   # PRE_CHOMP is on, so the newline before a directive is eaten;
                   # the separating space has to live inside the block.
-                  UNLESS task.tag == 'jobqueue' %] hx-indicator="#[% task.tag | html_entity %]_indicator"[% END %]>
+                  UNLESS task.tag == 'jobqueue' %] hx-indicator="#[% task.tag | html_entity %]_indicator"[% END %]
+                data-nd-tab="[% task.tag | html_entity %]"
+                data-nd-csv="1"
+                data-nd-jobqueue-refresh="[% settings.jobqueue_refresh || 5 | html_entity %]">
               [% TRY %]
-              <script type="text/javascript">has_sidebar["[% task.tag | html_entity %]"] = 1;</script>
+              <input type="hidden" data-nd-has-sidebar="[% task.tag | html_entity %]" value="1">
               [% INCLUDE "sidebar/admintask/${task.tag}.tt" %]
               [% CATCH %]
-              <script type="text/javascript">has_sidebar["[% task.tag | html_entity %]"] = 0;</script>
+              <input type="hidden" data-nd-has-sidebar="[% task.tag | html_entity %]" value="0">
               [% END %]
             </form>
           </div> <!-- /tab-pane -->
@@ -75,7 +78,3 @@
       <div class="tab-pane active" id="[% task.tag | html_entity %]_pane"></div>
   </div>
 </div>
-
-<script type="text/javascript">
-[%+ INCLUDE 'js/admintask.js' -%]
-</script>

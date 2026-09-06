@@ -18,20 +18,8 @@ const VIEWS = path.join(ROOT, 'share', 'views');
 // Files under share/views still carrying <script> with code, or a .js
 // extension. Sorted. Delete a line when its file is converted.
 const REMAINING = [
-  'admintask.tt',
-  'device.tt',
-  'index.tt',
-  'inventory.tt',
-  'js/admintask.js',
   'js/common.js',
-  'js/device.js',
-  'js/report.js',
-  'js/search.js',
   'layouts/main.tt',
-  'report.tt',
-  'search.tt',
-  'sidebar/admintask/topology.tt',
-  'sidebar/report/portlog.tt',
 ];
 
 function walk(dir, out = []) {

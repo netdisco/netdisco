@@ -2,4 +2,4 @@
 
             <input name="dev1"  value="[% params.dev1  | html_entity %]" type="hidden"/>
             <input name="port1" value="[% params.port1 | html_entity %]" type="hidden"/>
-            <script type="text/javascript">has_sidebar["topology"] = 0;</script>
+            <input type="hidden" data-nd-has-sidebar="topology" value="0">
