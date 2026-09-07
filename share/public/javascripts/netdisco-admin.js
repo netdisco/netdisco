@@ -51,69 +51,6 @@ ndPages.admin = {
         }, (timermax * 1000)));
     }
 
-    // activate typeahead on the queue filter boxes
-    $('.nd_queue_ta').autocomplete({
-      source: function (request, response)  {
-        var name = $(this.element)[0].name;
-        var query = $(this.element).serialize();
-        return $.get( uri_base + '/ajax/data/queue/typeahead/' + name, query, function (data) {
-          return response(data);
-        });
-      }
-      ,delay: 150
-      ,minLength: 0
-    });
-
-    // activate typeahead on access control list editors
-    $('.nd_acl_host_searcher').autocomplete({
-      source: function (request, response)  {
-        var query = $('.nd_sidebar-form').serializeArray();
-        query.push($(this.element).serializeArray()[0]);
-        return $.get( uri_base + '/ajax/data/devices/typeahead', query, function (data) {
-          return response(data);
-        });
-      }
-      ,select: function( event, ui ) {
-        if (event.which == 13) { return };
-        event.preventDefault();
-        $(this).val(ui.item.value);
-        $(this).trigger(jQuery.Event('keydown', { which: 13 }));
-      }
-      ,delay: 150
-      ,minLength: 0
-    });
-
-    // activate typeahead on the topo boxes
-    $('.nd_topo_dev').autocomplete({
-      source: uri_base + '/ajax/data/deviceip/typeahead'
-      ,delay: 150
-      ,minLength: 0
-    });
-
-    // activate typeahead on the topo boxes
-    $('.nd_topo_port.nd_topo_dev1').autocomplete({
-      source: function (request, response)  {
-        var query = $('.nd_topo_dev1').serialize();
-        return $.get( uri_base + '/ajax/data/port/typeahead', query, function (data) {
-          return response(data);
-        });
-      }
-      ,delay: 150
-      ,minLength: 0
-    });
-
-    // activate typeahead on the topo boxes
-    $('.nd_topo_port.nd_topo_dev2').autocomplete({
-      source: function (request, response)  {
-        var query = $('.nd_topo_dev2').serialize();
-        return $.get( uri_base + '/ajax/data/port/typeahead', query, function (data) {
-          return response(data);
-        });
-      }
-      ,delay: 150
-      ,minLength: 0
-    });
-
     $('.nd_jobqueue-extra').click(function(event) {
       event.preventDefault();
       var icon = $(this).children('i');
@@ -129,34 +66,6 @@ ndPages.admin = {
     var target = nd_active_target;
     timermax = Number((activeForm && activeForm.dataset.ndJobqueueRefresh) || 5);
     timercache = timermax - 1;
-
-    // get autocomplete field on input focus
-    $('.nd_sidebar').on('focus', '.nd_queue_ta', function(e) {
-      $(this).autocomplete('search', '%') });
-    $('.nd_sidebar').on('click', '.nd_topo_dev_caret', function(e) {
-      $(this).siblings('.nd_queue_ta').autocomplete('search', '%') });
-
-    // get all devices on device input focus
-    $('.nd_sidebar').on('focus', '.nd_topo_dev', function(e) {
-      $(this).autocomplete('search', '%') });
-    $('.nd_sidebar').on('click', '.nd_topo_dev_caret', function(e) {
-      $(this).siblings('.nd_topo_dev').autocomplete('search', '%') });
-
-    // get all devices on device input focus
-    $(target).on('focus', '.nd_acl_host_searcher', function(e) {
-      $(this).autocomplete('search', '%') });
-    $(target).on('focus', '.nd_topo_dev', function(e) {
-      $(this).autocomplete('search', '%') });
-    $(target).on('click', '.nd_topo_dev_caret', function(e) {
-      $(this).siblings('.nd_topo_dev').autocomplete('search', '%') });
-
-    // get all ports on port input focus
-    $(target).on('focus', '.nd_topo_port', function(e) {
-      $(this).autocomplete('search') });
-    $(target).on('click', '.nd_topo_port_caret', function(e) {
-      $(this).siblings('.nd_topo_port').val('');
-      $(this).siblings('.nd_topo_port').autocomplete('search');
-    });
 
     // job control sidebar submit should reset timer
     // and update bookmark

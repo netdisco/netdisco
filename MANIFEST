@@ -346,18 +346,6 @@ share/public/css/daterangepicker.css
 share/public/css/font-awesome.min.css
 share/public/css/nd_print.css
 share/public/css/netdisco.css
-share/public/css/smoothness/images/ui-bg_glass_55_fbf9ee_1x400.png
-share/public/css/smoothness/images/ui-bg_glass_65_ffffff_1x400.png
-share/public/css/smoothness/images/ui-bg_glass_75_dadada_1x400.png
-share/public/css/smoothness/images/ui-bg_glass_75_e6e6e6_1x400.png
-share/public/css/smoothness/images/ui-bg_glass_95_fef1ec_1x400.png
-share/public/css/smoothness/images/ui-bg_highlight-soft_75_cccccc_1x100.png
-share/public/css/smoothness/images/ui-icons_222222_256x240.png
-share/public/css/smoothness/images/ui-icons_2e83ff_256x240.png
-share/public/css/smoothness/images/ui-icons_454545_256x240.png
-share/public/css/smoothness/images/ui-icons_888888_256x240.png
-share/public/css/smoothness/images/ui-icons_cd0a0a_256x240.png
-share/public/css/smoothness/jquery-ui.min.css
 share/public/css/toastr.css
 share/public/dispatch.cgi
 share/public/dispatch.fcgi
@@ -382,7 +370,6 @@ share/public/javascripts/daterangepicker.js
 share/public/javascripts/force-graph.min.js
 share/public/javascripts/htmx.min.js
 share/public/javascripts/jquery-latest.min.js
-share/public/javascripts/jquery-ui.min.js
 share/public/javascripts/jstree/jstree.min.js
 share/public/javascripts/jstree/themes/proton/30px.png
 share/public/javascripts/jstree/themes/proton/32px.png
@@ -407,6 +394,7 @@ share/public/javascripts/netdisco-deferred-nodes.js
 share/public/javascripts/netdisco-netmap.js
 share/public/javascripts/netdisco-portcontrol.js
 share/public/javascripts/netdisco-tables.js
+share/public/javascripts/netdisco-typeahead.js
 share/public/javascripts/netdisco.js
 share/public/javascripts/portsort.js
 share/public/javascripts/toastr.js
@@ -714,6 +702,7 @@ xt/59-fragment-title.t
 xt/60-pane-history-header.t
 xt/61-admin-sidebar-key.t
 xt/62-pane-chrome.t
+xt/63-typeahead-json.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/deferred-nodes.test.js

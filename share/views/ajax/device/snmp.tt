@@ -21,7 +21,10 @@
 
               <input id="nd_snmp_search_text" type="text"
                class="form-control nd_snmp_search_param"
-               name="term" required placeholder="Search for label or OID">
+               name="term" required placeholder="Search for label or OID"
+               autocomplete="off"
+               data-nd-typeahead="/ajax/data/snmp/typeahead" data-nd-typeahead-min="2"
+               data-nd-typeahead-params=".nd_snmp_search_param">
 
               <button type="submit" class="btn btn-secondary">Search</button>
             </span>

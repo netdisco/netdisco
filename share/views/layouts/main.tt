@@ -8,7 +8,6 @@
   <title>[% settings.branding_text | none %]</title>
 
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-latest.min.js?v=[% asset_version | none %]"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-ui.min.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/bootstrap.min.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/bootstrap-toggle.min.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/force-graph.min.js?v=[% asset_version | none %]"></script>
@@ -26,7 +25,6 @@
   <link rel="stylesheet" href="[% uri_base | none %]/css/bootstrap.min.css?v=[% asset_version | none %]"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/bootstrap-toggle.min.css?v=[% asset_version | none %]"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/awesome-bootstrap-checkbox.css?v=[% asset_version | none %]"/>
-  <link rel="stylesheet" href="[% uri_base | none %]/css/smoothness/jquery-ui.min.css?v=[% asset_version | none %]"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/font-awesome.min.css?v=[% asset_version | none %]"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/toastr.css?v=[% asset_version | none %]"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/netdisco.css?v=[% asset_version | none %]"/>
@@ -131,7 +129,10 @@
     </ul>
     <form class="d-flex me-auto" method="get" action="[% uri_for('/search') | none %]">
       <input placeholder="Find Anything" class="form-control"
-        id="nq" name="q" value="[% display_name | html_entity %]" type="search" autocomplete="off"/>
+        id="nq" name="q" value="[% display_name | html_entity %]" type="search" autocomplete="off"
+        data-nd-typeahead="/ajax/data/devicename/typeahead"
+        data-nd-typeahead-min="3" data-nd-typeahead-first
+        data-nd-typeahead-menu="nd_search-suggestions nd_navbar-suggestions"/>
       <input name="firstsearch" type="hidden" value="on">
       <div class="btn-group nd_navbar-search-group">
         <button class="btn btn-dark nd_navbar-search-icon">
@@ -204,6 +205,7 @@
 
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/htmx.min.js?v=[% asset_version | none %]"></script>
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco.js?v=[% asset_version | none %]"></script>
+<script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-typeahead.js?v=[% asset_version | none %]"></script>
 [% IF task %]<script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-admin.js?v=[% asset_version | none %]"></script>[% END %]
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-tables.js?v=[% asset_version | none %]"></script>
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-netmap.js?v=[% asset_version | none %]"></script>

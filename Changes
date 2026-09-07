@@ -1,4 +1,4 @@
-2.108002 - tbd
+2.109000 - tbd
 
   [ENHANCEMENTS]
 
@@ -14,10 +14,20 @@
     so tables are a little narrower
   * this release needs Safari 16.4, Firefox 101 or Chrome 74, or newer. it is
     the first that will not work on an older browser
+  * the suggestion lists on the search boxes, the job queue and topology
+    filters, the ACL editor and the SNMP and prefix searches are netdisco's
+    own now. they behave as before, and every page carries about 70 KB less
+    over the network
+  * choosing an IPv6 prefix from the suggestions in the IP Inventory sidebar
+    now disables the "never" option, which it only did if you typed the prefix
+    out in full
+  * a device name containing an ampersand now reads correctly in the search
+    suggestions
   * if you keep site-local templates or JavaScript, run netdisco-do
     checksitelocal after upgrading. this release removes several things a copy
-    may still call, including two script files a copy of the layout may still
-    name, and the report gives every file and what to change
+    may still call, including three script files and a stylesheet a copy of
+    the layout may still name, and the report gives every file and what to
+    change
 
   [BUG FIXES]
 

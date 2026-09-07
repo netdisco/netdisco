@@ -586,48 +586,54 @@ div.content > div.tab-content table.nd_floatinghead thead {
   background-color: floralWhite;
 }
 
-/* jquery ui autocomplete scrollable */
-.ui-autocomplete {
+/* The suggestion menu. One element on the body for the whole page, so it is
+   never clipped by the sidebar or the SNMP pane, both of which scroll. */
+.nd_typeahead-menu {
+  position: absolute;
+  z-index: 1000;
   max-height: 200px;
   overflow-y: auto;
   overflow-x: hidden;
-}
-
-/* The dropdown's box as the older theme drew it. Two class names rather than
-   one, the border being set by .ui-widget.ui-widget-content, which a single class
-   loses to however late this file loads. */
-.ui-autocomplete.ui-widget-content {
+  margin: 0;
   padding: 2px;
-  border-color: #aaaaaa;
+  list-style: none;
+  background: #ffffff;
+  border: 1px solid #aaaaaa;
   border-radius: 4px;
 }
 
-/* The bar paints above this widget's level, so the navbar menu's border and
-   padding, which reach into the bar, were drawn under it. How far the menu hangs
-   is set in netdisco.js: this widget positions by writing an offset, which
-   compensates for a margin, so a margin here would do nothing. */
-.ui-autocomplete.nd_navbar-suggestions {
-  z-index: 1051;
+.nd_typeahead-menu li {
+  padding: 3px 1em 3px .4em;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
-/* The menu marks its highlighted row ui-state-active where it used to use
-   ui-state-focus, and in this theme active is white, so the highlight vanished on
-   a white menu. These are the theme's own ui-state-focus values. */
-.ui-menu .ui-menu-item-wrapper.ui-state-active {
+/* The theme's own focus colours, which the fifteen non-search fields kept. */
+.nd_typeahead-menu li.nd_typeahead-active {
   border: 1px solid #999999;
-  background: #dadada url(smoothness/images/ui-bg_glass_75_dadada_1x400.png) 50% 50% repeat-x;
+  background: #dadada;
   color: #212121;
 }
 
-/* The two search boxes are the exception above: their old widget drew the picked
-   row in the old framework's blue, and that row is the one Enter takes. Scoped to
-   the marked menus, the theme's gray being right for the other fifteen. */
-.ui-autocomplete.nd_search-suggestions .ui-menu-item-wrapper.ui-state-active {
+/* The two search boxes are the exception: their menu draws the picked row in
+   the older framework's blue, and that row is the one Enter takes. */
+.nd_typeahead-menu.nd_search-suggestions li.nd_typeahead-active {
   border-color: #0077b3;
   background-color: #0081c2;
   background-image: linear-gradient(to bottom, #0088cc, #0077b3);
   background-repeat: repeat-x;
   color: #ffffff;
+}
+
+/* The bar paints above this menu's level, and the menu's border and padding
+   reach into the bar, so the border needs lifting with it. The gap is the
+   navbar's alone: this box sits above the bottom of the bar, so a menu hung at
+   its own edge starts its first row inside it. Four pixels rather than the
+   three that meet the edge exactly, the bar being a fraction taller on some
+   platforms. */
+.nd_typeahead-menu.nd_navbar-suggestions {
+  z-index: 1051;
+  margin-top: 4px;
 }
 
 /* jstree scrollable */

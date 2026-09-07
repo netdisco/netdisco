@@ -3,6 +3,7 @@
               <input id="nd_ipinventory-subnet" class="nd_sidebar-topinput nd_colored-input form-control"
                 placeholder="CIDR Prefix/Subnet" required="required"
                 name="subnet" value="[% params.subnet | html_entity %]" type="text" autocomplete="off"
+                data-nd-typeahead="/ajax/data/subnet/typeahead" data-nd-typeahead-min="3"
                 rel="tooltip" data-bs-placement="left" data-bs-title="Prefix/Subnet in CIDR Format"/>
             </div>
 

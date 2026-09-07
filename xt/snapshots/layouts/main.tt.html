@@ -8,7 +8,6 @@
   <title></title>
 
   <script type="text/javascript" src="/javascripts/jquery-latest.min.js?v="></script>
-  <script type="text/javascript" src="/javascripts/jquery-ui.min.js?v="></script>
   <script type="text/javascript" src="/javascripts/bootstrap.min.js?v="></script>
   <script type="text/javascript" src="/javascripts/bootstrap-toggle.min.js?v="></script>
   <script type="text/javascript" src="/javascripts/force-graph.min.js?v="></script>
@@ -26,7 +25,6 @@
   <link rel="stylesheet" href="/css/bootstrap.min.css?v="/>
   <link rel="stylesheet" href="/css/bootstrap-toggle.min.css?v="/>
   <link rel="stylesheet" href="/css/awesome-bootstrap-checkbox.css?v="/>
-  <link rel="stylesheet" href="/css/smoothness/jquery-ui.min.css?v="/>
   <link rel="stylesheet" href="/css/font-awesome.min.css?v="/>
   <link rel="stylesheet" href="/css/toastr.css?v="/>
   <link rel="stylesheet" href="/css/netdisco.css?v="/>
@@ -113,7 +111,10 @@
     </ul>
     <form class="d-flex me-auto" method="get" action="">
       <input placeholder="Find Anything" class="form-control"
-        id="nq" name="q" value="" type="search" autocomplete="off"/>
+        id="nq" name="q" value="" type="search" autocomplete="off"
+        data-nd-typeahead="/ajax/data/devicename/typeahead"
+        data-nd-typeahead-min="3" data-nd-typeahead-first
+        data-nd-typeahead-menu="nd_search-suggestions nd_navbar-suggestions"/>
       <input name="firstsearch" type="hidden" value="on">
       <div class="btn-group nd_navbar-search-group">
         <button class="btn btn-dark nd_navbar-search-icon">
@@ -159,6 +160,7 @@
 
 <script type="text/javascript" src="/javascripts/htmx.min.js?v="></script>
 <script type="text/javascript" src="/javascripts/netdisco.js?v="></script>
+<script type="text/javascript" src="/javascripts/netdisco-typeahead.js?v="></script>
 <script type="text/javascript" src="/javascripts/netdisco-tables.js?v="></script>
 <script type="text/javascript" src="/javascripts/netdisco-netmap.js?v="></script>
 <script type="text/javascript" src="/javascripts/netdisco-deferred-nodes.js?v="></script>

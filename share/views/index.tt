@@ -58,7 +58,10 @@
           <p></p> <p></p>
           <form class="" method="get" action="[% uri_for('/search') | none %]">
             <div class="d-flex align-items-center">
-              <input placeholder="Find Anything" class="form-control" id="nqbody" name="q" type="search" autocomplete="off"/>
+              <input placeholder="Find Anything" class="form-control" id="nqbody" name="q" type="search" autocomplete="off"
+               data-nd-typeahead="/ajax/data/devicename/typeahead"
+               data-nd-typeahead-min="3" data-nd-typeahead-first
+               data-nd-typeahead-menu="nd_search-suggestions"/>
               <input name="firstsearch" type="hidden" value="on">
               <div class="btn-group">
                 <button type="submit" class="btn btn-primary">Search</button>

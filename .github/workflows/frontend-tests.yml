@@ -84,6 +84,23 @@ jobs:
       - name: The map is posted once per settle and once per drag
         run: node --test xt/js/netmap-autosave.test.js
 
+  typeahead:
+    name: the suggestion menus
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      # Same naming rule as the jobs above: name the file, never a glob.
+      - name: The component's logic answers correctly without a browser
+        run: node --test xt/js/typeahead-core.test.js
+
+      - name: The component binds once on the document and builds no markup
+        run: node --test xt/js/typeahead-source.test.js
+
   deferred-nodes:
     name: deferred node list recovery
     runs-on: ubuntu-latest

@@ -265,62 +265,6 @@ $(document).ready(function() {
   $('.nd_field-copy-icon').hide();
   hideWithTooltip('.nd_field-clear-icon');
 
-  // activate typeahead on the main search box, for device names only
-  // the backend has already filtered, and jQuery UI does no client-side
-  // filtering of a function source, so no matcher is needed
-  $('#nq,#nqbody').autocomplete({
-    source: function (request, response) {
-      return $.get( uri_base + '/ajax/data/devicename/typeahead', request, function (data) {
-        return response(data);
-      });
-    }
-    ,delay: 150
-    ,minLength: 3
-    // the widget these boxes used to run opened with its first row picked out,
-    // so Enter took the obvious name. jQuery UI selects nothing unless asked, and
-    // does not write the row into the field: it only does that when a key moved
-    // the focus.
-    ,autoFocus: true
-  });
-
-  // Both boxes ran that widget, so both are marked and the blue highlight is
-  // scoped to the mark; the app's other fifteen keep the theme's own.
-  $('#nq,#nqbody').each(function() {
-    $(this).autocomplete('widget').addClass('nd_search-suggestions');
-  });
-
-  // The navbar's box opens underneath the bar, and a menu hung at the field's
-  // own edge starts its first row inside it. Four pixels rather than the three
-  // that meet the edge exactly, the bar being a fraction taller on some
-  // platforms. The whole object is restated because it replaces the default
-  // rather than extending it, and losing collision:none would let the menu flip
-  // above the field in a short window.
-  $('#nq').autocomplete('option', 'position',
-    { my: 'left top', at: 'left bottom+4', collision: 'none' });
-  // Its border and padding still reach into the bar, which paints above this
-  // widget's level, so the border needs lifting too. The menu is appended to the
-  // document rather than beside its field, so marking the widget here is the only
-  // way to reach one instance from the stylesheet.
-  $('#nq').autocomplete('widget').addClass('nd_navbar-suggestions');
-
-  // the widget this box used to run bolded the letters it matched, which is how
-  // the list shows why each row is in it, and jQuery UI offers no equivalent.
-  // Escaped first and marked second, because this goes in as markup where the
-  // default went in as text and the names come from the database.
-  $('#nq,#nqbody').each(function() {
-    $(this).autocomplete('instance')._renderItem = function(ul, item) {
-      var label = $('<div/>').text(item.label).html();
-      var term = $('<div/>').text(this.term).html()
-        .replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-      var marked = term.length
-        // term was regex-escaped just above
-        // eslint-disable-next-line security/detect-non-literal-regexp
-        ? label.replace(new RegExp('(' + term + ')', 'ig'), '<strong>$1</strong>')
-        : label;
-      return $('<li/>').append($('<div/>').html(marked)).appendTo(ul);
-    };
-  });
-
   // activate tooltips and popovers, delegated from a container so that
   // content injected later is covered without re-initialising. bootstrap
   // stores one instance per element whatever the component, so the popover
@@ -655,16 +599,6 @@ $(document).ready(function() {
     $("#nd_snmp_search_form").submit(function(e) {
       $("#jstree").jstree("search", $("#nd_snmp_search_text").val());
       e.preventDefault();
-    });
-    $('#nd_snmp_search_text').autocomplete({
-      source: function (request, response)  {
-        var query = $('.nd_snmp_search_param').serialize();
-        return $.get( uri_base + '/ajax/data/snmp/typeahead', query, function (data) {
-          return response(data);
-        });
-      }
-      ,delay: 150
-      ,minLength: 2
     });
   }
 
@@ -1141,17 +1075,6 @@ $(document).ready(function() {
       else {
         $('#never').removeAttr('disabled');
       }
-    });
-
-    // activate typeahead on prefix/subnet box
-    $('#nd_ipinventory-subnet').autocomplete({
-      source: function (request, response) {
-        return $.get( uri_base + '/ajax/data/subnet/typeahead', request, function (data) {
-          return response(data);
-        });
-      }
-      ,delay: 150
-      ,minLength: 3
     });
 
     // dynamically bind to all forms in the table

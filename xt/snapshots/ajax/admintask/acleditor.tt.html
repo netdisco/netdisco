@@ -26,7 +26,11 @@
       <td></td>
 
       <td>
-        <input class="form-control w-auto d-inline-block nd_acl_host_searcher" size=45 data-form="add" name="left_rule" type="text" placeholder="Hostname, IP, prefix, or property:value">
+        <input class="form-control w-auto d-inline-block nd_acl_host_searcher" size=45 data-form="add" name="left_rule" type="text" placeholder="Hostname, IP, prefix, or property:value"
+         autocomplete="off"
+         data-nd-typeahead="/ajax/data/devices/typeahead"
+         data-nd-typeahead-params=".nd_sidebar-form, self"
+         data-nd-typeahead-open data-nd-typeahead-commit="acl">
       </td>
 
       <td>
@@ -46,7 +50,11 @@
         <div class="nd_acl-rule-list">
         <span class="badge text-bg-dark nd_left-acl-rule-label">192.0.2.0/24 <a class="nd_delete-me" href="#"><i class="fas fa-circle-xmark"></i></a></span>&nbsp;&nbsp;192.0.2.0/24
         <input class="nd_left-acl-rule-field" data-form="update" name="left_rule" type="hidden" value="1."><br/>
-        <input class="form-control w-auto d-inline-block nd_acl-rule nd_acl_host_searcher" size=40 contenteditable="true" data-form="" name="left_rule" type="text" placeholder="add rule">
+        <input class="form-control w-auto d-inline-block nd_acl-rule nd_acl_host_searcher" size=40 contenteditable="true" data-form="" name="left_rule" type="text" placeholder="add rule"
+         autocomplete="off"
+         data-nd-typeahead="/ajax/data/devices/typeahead"
+         data-nd-typeahead-params=".nd_sidebar-form, self"
+         data-nd-typeahead-open data-nd-typeahead-commit="acl">
         </div>
       </td>
 
