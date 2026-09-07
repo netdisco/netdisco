@@ -175,6 +175,30 @@ my @RULES = (
              . 'hx-sync="closest .nd_sidebar:replace" and delete the trigger: '
              . 'htmx then cancels the request the tab being left started.',
   },
+  {
+    name    => 'datatables-js-renamed',
+    release => '2.108002',
+    pattern => qr/jquery\.dataTables\.min\.js/,
+    advice  => 'jquery.dataTables.min.js was renamed dataTables.min.js, the '
+             . 'library no longer needing jQuery, and a reference to the '
+             . 'old name 404s. Update the script tag in a layout copy to the '
+             . 'new file name: nothing else loads the library, so until then '
+             . 'no table on any page builds.',
+  },
+  {
+    name    => 'floatthead-js',
+    release => '2.108002',
+    # The file name and the method, because the two break differently: a
+    # layout copy still loading the plug-in 404s, and a script still calling
+    # it throws once the plug-in is not there to define the method.
+    pattern => qr/jquery\.floatThead\.js|\.\s*floatThead\s*\(/,
+    advice  => 'jquery.floatThead.js was removed and the stylesheet holds the '
+             . 'header still instead. Delete the script tag from a layout copy '
+             . 'and the .floatThead() call beside the table, and give that '
+             . 'table the class nd_floatinghead: netdisco.css sticks the '
+             . 'header of a table.nd_floatinghead inside the tab content, '
+             . 'which is what the job queue now relies on.',
+  },
 );
 
 # Rules that fault what a file does NOT contain, so a finding has no line.

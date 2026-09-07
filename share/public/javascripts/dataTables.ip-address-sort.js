@@ -9,36 +9,40 @@
  *  @author Brad Wasson
  *
  *  @example
- *    $('#example').dataTable( {
+ *    new DataTable('#example', {
  *       columnDefs: [
  *         { type: 'ip-address', targets: 0 }
  *       ]
  *    } );
  */
 
-jQuery.extend( jQuery.fn.dataTableExt.oSort, {
-	"ip-address-pre": function ( a ) {
-		var m = a.split("."), x = "";
+// A pre-formatter: left padding every octet to three digits makes one key per
+// value that orders as text, so no pairwise comparison of the octets is needed.
+DataTable.type('ip-address', {
+	order: {
+		pre: function ( a ) {
+			var m = a.split("."), x = "";
 
-		for(var i = 0; i < m.length; i++) {
-			var item = m[i];
-			if(item.length == 1) {
-				x += "00" + item;
-			} else if(item.length == 2) {
-				x += "0" + item;
-			} else {
-				x += item;
+			for(var i = 0; i < m.length; i++) {
+				var item = m[i];
+				if(item.length == 1) {
+					x += "00" + item;
+				} else if(item.length == 2) {
+					x += "0" + item;
+				} else {
+					x += item;
+				}
 			}
+
+			return x;
+		},
+
+		asc: function ( a, b ) {
+			return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+		},
+
+		desc: function ( a, b ) {
+			return ((a < b) ? 1 : ((a > b) ? -1 : 0));
 		}
-
-		return x;
-	},
-
-	"ip-address-asc": function ( a, b ) {
-		return ((a < b) ? -1 : ((a > b) ? 1 : 0));
-	},
-
-	"ip-address-desc": function ( a, b ) {
-		return ((a < b) ? 1 : ((a > b) ? -1 : 0));
 	}
-} );
+});

@@ -400,21 +400,11 @@ $(document).ready(function() {
     $('.nd_sidebar').toggle(250);
     $('#nd_sidebar-toggle-img-out').toggle();
     $('.content').css('margin-right', '10px');
-    $('div.content > div.tab-content table.nd_floatinghead').floatThead('destroy');
-    $('div.content > div.tab-content table.nd_floatinghead').floatThead({
-      top: 40
-      ,position: 'fixed'
-    });
     sidebar_hidden = 1;
   });
   $('#nd_sidebar-toggle-img-out').click(function() {
     $('#nd_sidebar-toggle-img-out').toggle();
     $('.content').css('margin-right', '215px');
-    $('div.content > div.tab-content table.nd_floatinghead').floatThead('destroy');
-    $('div.content > div.tab-content table.nd_floatinghead').floatThead({
-      top: 40
-      ,position: 'fixed'
-    });
     $('.nd_sidebar').toggle(250);
     if (! $('.nd_sidebar').hasClass('nd_sidebar-pinned')) {
         $(window).scrollTop(0);
@@ -722,10 +712,6 @@ $(document).ready(function() {
     if (target.querySelector('.tree')) nd_tree(target);
     if (target.querySelector('#jstree')) nd_snmp_browser(target);
     holdUntilSettled(target, document.getElementById(tab + '_indicator'));
-    $('div.content > div.tab-content table.nd_floatinghead').floatThead({
-      top: 40
-      ,position: 'fixed'
-    });
     inner_view_processing(tab);
   });
   // Empty the pane for the duration of the request, so the indicator is the
@@ -1130,11 +1116,6 @@ $(document).ready(function() {
       $('.nd_sidebar').toggle(0);
       $('#nd_sidebar-toggle-img-out').toggle();
       $('.content').css('margin-right', '10px');
-      $('div.content > div.tab-content table.nd_floatinghead').floatThead('destroy');
-      $('div.content > div.tab-content table.nd_floatinghead').floatThead({
-        top: 40
-        ,position: 'fixed'
-      });
       sidebar_hidden = 1;
     }
 

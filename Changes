@@ -19,18 +19,32 @@
     its results without reloading the whole page. a request whose answer never
     arrives gives up after five minutes and says so where the results would be,
     rather than leaving the spinner turning until you reload
+  * the tables that sort, page and filter your results now run on version 3 of
+    the DataTables library, which no longer needs jQuery. the arrow marking a
+    sorted column is drawn differently and is narrower, so every table's
+    columns are a little narrower with it
+  * the column headings that stay in view while you scroll a long Admin Job
+    Queue are now held there by the stylesheet rather than by a JavaScript
+    plug-in, so there is one fewer library to download on every page
   * site-local JavaScript that listens for an htmx event has to be updated for
     this release: every event htmx sends was renamed, the four that reported a
     failure became one, and the element being replaced moved within the event.
     a listener left alone stops running and says nothing about it
+  * a site-local copy of the layout template also has to be updated: two of
+    the script tags in it have changed. the DataTables file is now
+    dataTables.min.js rather than jquery.dataTables.min.js, because the
+    library no longer needs jQuery, and jquery.floatThead.js has gone
+    entirely. a layout still naming either file 404s on it, and a layout
+    naming the old DataTables file builds no table on any page
   * checksitelocal also reports a site-local layout, fragment or page template
     still calling anything this release removed: the page title, browser
     history, CSV link and form submit helpers in netdisco.js, the
-    jquery-deserialize plug-in, a hand-written htmx:abort, an INCLUDE of the
-    removed ajax/datatabledefaults.tt or of a deleted js/ page script, a
-    has_sidebar reference, the renamed netdisco-portcontrol.js, a layout
-    missing the body attributes that carry the JavaScript settings, and a page
-    template missing hx-sync or an id the results now swap their chrome into.
+    jquery-deserialize and floatThead plug-ins, a hand-written htmx:abort, an
+    INCLUDE of the removed ajax/datatabledefaults.tt or of a deleted js/ page
+    script, a has_sidebar reference, either of the renamed script files, a
+    layout missing the body attributes that carry the JavaScript settings, and
+    a page template missing hx-sync or an id the results now swap their chrome
+    into.
     the web app warns at startup about only the two that fail in silence, a
     layout that leaves every page dead and a tab that renders an empty pane
 

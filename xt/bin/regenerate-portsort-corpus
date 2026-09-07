@@ -44,10 +44,10 @@ suite.filename = SUITE;
 suite.paths = Module._nodeModulePaths(path.dirname(SUITE));
 suite._compile(source, SUITE);
 
-// The comparator is read back from the suite's own jQuery stub, after it has
+// The comparator is read back from the suite's own DataTable stub, after it has
 // run. Requiring portsort.js here instead would register against a stub the
 // suite then replaces with its own, leaving nothing to sort with.
-const portSort = globalThis.jQuery.fn.dataTableExt.oSort['portsort-asc'];
+const portSort = globalThis.DataTable.registered.portsort.order.asc;
 
 // Deduplicated on the string form, not on the value: the suite deliberately
 // sorts the number 1 against the string '1', and a text column cannot hold that

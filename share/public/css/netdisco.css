@@ -555,7 +555,9 @@ a:hover, a:focus {
   padding-top: 11px;
 }
 
-/* on both main content and sidebar, default is hidden */
+/* on both main content and sidebar, default is hidden. Anything but visible
+   here also scopes the sticky results header to this box instead of the
+   viewport, which stops it sticking at all. */
 .tab-content {
   overflow: visible;
 }
@@ -565,13 +567,21 @@ a:hover, a:focus {
   width: 100%;
 }
 
-/* results table header should have a background, for floatThead.
+/* Results table header stays in view while its rows scroll under it. The offset
+   is the height of the fixed navbar, so the header comes to rest flush beneath
+   the bar rather than behind it.
 
-   The background-color below stopped being visible on its own: the replacement
-   paints every cell with var(--bs-table-bg) where the old stylesheet left cells
-   transparent and let the thead show through. Setting the variable is the
-   framework's own way in. */
+   The background is what stops those rows showing through the header they pass
+   beneath. It stopped being visible on its own: the replacement paints every
+   cell with var(--bs-table-bg) where the old stylesheet left cells transparent
+   and let the thead show through. Setting the variable is the framework's own
+   way in.
+
+   No z-index: sticky already paints above the rows, and staying at auto leaves
+   the sidebar's z-index above the header, which is where it belongs. */
 div.content > div.tab-content table.nd_floatinghead thead {
+  position: sticky;
+  top: 40px;
   --bs-table-bg: floralWhite;
   background-color: floralWhite;
 }

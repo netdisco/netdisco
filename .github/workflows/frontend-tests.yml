@@ -226,3 +226,29 @@ jobs:
 
       - name: Nothing rebuilds the csv or reset link by hand
         run: node --test xt/js/pane-chrome.test.js
+
+  sort-types:
+    name: version and address sort types
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: The version and address sort plug-ins are registered with the library
+        run: node --test xt/js/sort-types.test.js
+
+  sticky-header:
+    name: results header stays in view
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: The results table header is stuck by the stylesheet and by no plug-in
+        run: node --test xt/js/sticky-header.test.js

@@ -377,13 +377,12 @@ share/public/javascripts/bootstrap.min.js
 share/public/javascripts/dataTables.bootstrap.js
 share/public/javascripts/dataTables.ip-address-detect.js
 share/public/javascripts/dataTables.ip-address-sort.js
+share/public/javascripts/dataTables.min.js
 share/public/javascripts/daterangepicker.js
 share/public/javascripts/force-graph.min.js
 share/public/javascripts/htmx.min.js
 share/public/javascripts/jquery-latest.min.js
 share/public/javascripts/jquery-ui.min.js
-share/public/javascripts/jquery.dataTables.min.js
-share/public/javascripts/jquery.floatThead.js
 share/public/javascripts/jstree/jstree.min.js
 share/public/javascripts/jstree/themes/proton/30px.png
 share/public/javascripts/jstree/themes/proton/32px.png
@@ -728,6 +727,8 @@ xt/js/page-registry.test.js
 xt/js/pane-chrome.test.js
 xt/js/pane-settling.test.js
 xt/js/portsort.test.js
+xt/js/sort-types.test.js
+xt/js/sticky-header.test.js
 xt/js/submit-dispatch.test.js
 xt/js/tab-request-sync.test.js
 xt/js/tables-registry.test.js
