@@ -1,0 +1,5 @@
+[%# One row's label, used by both a branch and a leaf so the markup exists once.
+    Selecting is what this does; expanding is the summary beside it. %]
+<a href="#" class="nd_snmp-label"
+   hx-get="[% uri_base | none %]/ajax/content/device/[% device | uri %]/snmpnode/[% node.oid | uri %]"
+   hx-target="#node" hx-swap="innerHTML"><i class="[% node.icon | html_entity %]"></i>[% node.label | html_entity %]</a>

@@ -502,13 +502,13 @@ subtest 'scan_site_local__path_does_not_exist__returns_nothing_and_lives' => sub
 subtest 'site_local_rules__called__describes_every_rule_the_scan_applies' => sub {
     my @rules = App::Netdisco::Util::SiteLocal::site_local_rules();
 
-    is scalar @rules, 23, 'twenty-three rules ship in this release';
+    is scalar @rules, 24, 'twenty-four rules ship in this release';
     is_deeply [ sort map { $_->{name} } @rules ],
       [ 'csv-download-link', 'csv-download-target',
         'datatabledefaults-include', 'datatables-js-renamed', 'do-search',
         'floatthead-js', 'has-sidebar-global', 'he-js', 'history-js',
         'history-replay', 'htmx-abort-trigger', 'jquery-deserialize',
-        'jquery-ui-autocomplete', 'jquery-ui-removed',
+        'jquery-ui-autocomplete', 'jquery-ui-removed', 'jstree-removed',
         'layout-shadow', 'natural-js', 'nd-submit', 'page-script-include',
         'page-title-globals', 'portcontrol-js-renamed', 'sidebar-reset-target',
         'tab-page-shadow', 'tab-sync-attribute' ],
@@ -800,6 +800,44 @@ subtest 'scan_site_local__layout_copy_links_the_smoothness_theme__reports_the_re
     my @found = scan_site_local({ paths => ["$tree"] });
     is scalar @found, 1, 'one finding';
     is $found[0]->{rule}, 'jquery-ui-removed', 'the library rule matched';
+};
+
+subtest 'scan_site_local__handler_selects_the_jstree_container__reports_the_replacement' => sub {
+    my $tree = site_local_tree(
+      'javascripts/mypane.js' => qq{\$("#jstree").jstree("search", "x");\n},
+    );
+
+    my @found = scan_site_local({ paths => ["$tree"] });
+    is scalar @found, 1, 'one finding';
+    is $found[0]->{rule}, 'jstree-removed', 'a copy of the old pane script is reported';
+};
+
+subtest 'scan_site_local__template_names_the_jstree_container__reports_the_replacement' => sub {
+    my $tree = site_local_tree(
+      'views/ajax/device/snmp.tt' =>
+        '<div id="jstree" class="nd_scrollable" data-nd-device="[% device %]"></div>',
+    );
+
+    my @found = scan_site_local({ paths => ["$tree"] });
+    is scalar @found, 1, 'one finding';
+    is $found[0]->{rule}, 'jstree-removed', 'the jstree rule matched';
+    like $found[0]->{advice}, qr/nd_snmp-tree/,
+      'the advice names what replaces the container';
+};
+
+# Anchored on the container and the call rather than the bare name, so a site
+# keeping its own copy of the library is not told to change the library. The
+# same false positive was measured on the htmx and jQuery UI rules.
+subtest 'scan_site_local__a_copy_of_the_jstree_library__is_not_reported' => sub {
+    # named outside the vendored directory, because the path itself is one of
+    # the things the rule looks for in a copied layout
+    my $tree = site_local_tree(
+      'javascripts/vendor-tree.js' =>
+        qq{e.jstree.plugins.search=function(e,t){this.bind=function(){}}\n},
+    );
+
+    is_deeply [ scan_site_local({ paths => ["$tree"] }) ], [],
+      'carrying the plugin is what the library does, not what a site must fix';
 };
 
 done_testing;

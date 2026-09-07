@@ -12,6 +12,11 @@
     says so where the results would be, instead of leaving the spinner turning
   * the arrow marking a sorted column is drawn differently and takes less room,
     so tables are a little narrower
+  * searching the SNMP browser now goes straight to the result. it used to open
+    the tree a level at a time, a request for each, and on a deep object that
+    was eighteen requests where it is now one
+  * the SNMP browser no longer needs a JavaScript library of its own, so every
+    page loads a little less
   * this release needs Safari 16.4, Firefox 101 or Chrome 74, or newer. it is
     the first that will not work on an older browser
   * the suggestion lists on the search boxes, the job queue and topology

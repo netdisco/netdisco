@@ -40,10 +40,14 @@
       <th scope="row">Filter</th>
       <td>
       [% IF node.value %]
-      <select class="form-select w-auto d-inline-block" name="munger" id="munger">
+[%# The select fetches the node again with its own value as munge, so it needs
+    no handler: it arrives with the node it filters and leaves with it. %]
+      <select class="form-select w-auto d-inline-block" name="munge" id="munger"
+              hx-get="[% uri_base | none %]/ajax/content/device/[% device | uri %]/snmpnode/[% oid | uri %]"
+              hx-target="#node" hx-swap="innerHTML" hx-trigger="change">
         [% UNLESS munge %]<option value="" selected disabled hidden>None applied</option>[% END %]
         [% FOREACH m IN mungers %]
-        <option [% 'selected' IF m == munge %] value="[% m | uri %]">[% m | html_entity %]</option>
+        <option [% 'selected' IF m == munge %] value="[% m | html_entity %]">[% m | html_entity %]</option>
         [% END %]
       </select>
       [% END %]

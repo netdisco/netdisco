@@ -636,12 +636,47 @@ div.content > div.tab-content table.nd_floatinghead thead {
   margin-top: 4px;
 }
 
-/* jstree scrollable */
-
+/* The SNMP tree's own scroll box. Nesting and disclosure are the browser's,
+   through the nested lists and <details>; this supplies the indentation the
+   theme used to and keeps each label on its marker's line. */
 .nd_scrollable {
     height: 85vh;
     overflow: auto;
 }
+
+ul.nd_snmp-tree, ul.nd_snmp-children {
+  list-style: none;
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+ul.nd_snmp-tree { padding-left: 0 }
+
+/* The marker and the label sit side by side, and the children span both columns
+   beneath them. The row is the grid rather than the details, because the label
+   is outside the details: a closed one hides everything but its summary, and
+   the label has to stay readable. display:contents lifts the summary and the
+   child list into the row's grid so all three place together. */
+.nd_snmp-row { display: grid; grid-template-columns: 1.1em 1fr }
+.nd_snmp-branch { display: contents }
+.nd_snmp-row > details > summary { grid-column: 1; cursor: pointer }
+.nd_snmp-row > .nd_snmp-label { grid-column: 2 }
+.nd_snmp-row > details > ul { grid-column: 1 / -1 }
+/* a leaf has no marker, so its label starts where a branch's does */
+.nd_snmp-row > .nd_snmp-label:first-child { grid-column: 2 }
+
+.nd_snmp-label { text-decoration: none; cursor: pointer }
+.nd_snmp-label > i { margin-right: .4em }
+
+/* The three states the tree widget this replaced set from JavaScript: in
+   flight, then either a hit or, from an out of band swap, a miss. */
+#nd_snmp_loading_spinner.htmx-request {
+  color: #ffc107;
+  animation: fa-spin 2s infinite linear;
+}
+
+.nd_snmp-empty { list-style: none; color: #6c757d }
+.nd_snmp-empty > i { margin-right: .4em }
 
 .nd_snmp_search_param {
   margin-top: -3px !important;

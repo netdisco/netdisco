@@ -84,6 +84,20 @@ jobs:
       - name: The map is posted once per settle and once per drag
         run: node --test xt/js/netmap-autosave.test.js
 
+  no-jstree:
+    name: the SNMP tree is server rendered
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      # Same naming rule as the jobs above: name the file, never a glob.
+      - name: No shipped script drives jsTree and the library is gone
+        run: node --test xt/js/no-jstree.test.js
+
   typeahead:
     name: the suggestion menus
     runs-on: ubuntu-latest

@@ -227,6 +227,20 @@ my @RULES = (
     advice  => 'jquery-ui.min.js and the smoothness theme were removed. Drop '
              . 'both lines from your copy of the layout.',
   },
+  {
+    name    => 'jstree-removed',
+    release => '2.109000',
+    # the container, the selector that reaches it, and the vendored path. Not
+    # the bare method call: the library contains that itself, in its own jQuery
+    # bridge, so matching it told a site keeping a copy to change the library.
+    # Measured against the real minified file, which this pattern does not hit.
+    pattern => qr{id=["']jstree["']|["']\#jstree["']|javascripts/jstree/},
+    advice  => 'jsTree was removed and the SNMP browser is rendered by the '
+             . 'server. A copy of the pane should hold a ul#nd_snmp-tree that '
+             . 'includes ajax/device/snmptree.tt; delete the container, the '
+             . 'script and stylesheet lines from a layout copy, and any '
+             . 'jstree() call.',
+  },
 );
 
 # Rules that fault what a file does NOT contain, so a finding has no line.

@@ -488,120 +488,6 @@ $(document).ready(function() {
     });
   }
 
-  // snmp tab: jsTree browser and its search box.
-  function nd_snmp_browser(pane) {
-    var device = pane.querySelector('#jstree').dataset.ndDevice;
-    var jstree_search_callback = function(str, node) {
-      var pattern = str.toLowerCase();
-      var mib_pat = str.replace(/::.+/,'').toLowerCase();
-      var leaf_pat = str.replace(/.+::/,'').toLowerCase();
-      var mib_lc = node.original.mib.toLowerCase();
-      var leaf_lc = node.original.leaf.toLowerCase();
-      var oid = node.id.toLowerCase();
-
-      if (document.getElementById('nd_snmp_search_deviceonly').checked) {
-        if (node.original.has_value == 0) { return false; }
-      }
-
-      // partial is ticked, check OID base, or mib + leaf root, or just leaf
-      if (document.getElementById('nd_snmp_search_partial').checked) {
-        if (pattern.includes('.')) {
-          if (oid.indexOf(pattern) == 0) { return true; }
-        }
-        else if (pattern.includes('::')) {
-          if ((mib_lc == mib_pat) && (leaf_lc.indexOf(leaf_pat) == 0)) { return true; }
-        }
-        else if (leaf_lc.indexOf(pattern) == 0) {
-          return true;
-        }
-      }
-      // user supplies a qualified leaf
-      else if (pattern.includes('::')) {
-        if ((mib_lc == mib_pat) && (leaf_lc == leaf_pat)) {
-          return true;
-        }
-      }
-      // user supplies an unqualified leaf, or an OID
-      else {
-        if ((leaf_lc == pattern) || (oid == pattern)) {
-          return true;
-        }
-      }
-      return false;
-    };
-
-    $('#jstree').jstree({
-      'core': {
-        'multiple' : false,
-        'themes': {
-          'name': 'proton',
-          'responsive': true
-        },
-        'data' : {
-          'url' : function (node) {
-            return (uri_base + '/ajax/data/device/' + device + '/snmptree/'
-              + (node.id === '#' ? '.1' : node.id));
-          }
-        }
-      },
-      'plugins': ['search'],
-      'search': {
-        'ajax' : {
-          'url' : uri_base + '/ajax/data/snmp/nodesearch',
-          'beforeSend' : function(jqXHR, settings) {
-            $('#nd_snmp_loading_spinner').removeClass('far fa-circle fas fa-circle-exclamation text-success')
-                                         .addClass('fas fa-spinner text-warning fa-spin');
-
-            if (document.getElementById('nd_snmp_search_partial').checked) {
-              settings.url = settings.url + '&partial=on';
-            }
-
-            if (document.getElementById('nd_snmp_search_deviceonly').checked) {
-              settings.url = settings.url + '&deviceonly=on&ip=' + device;
-            }
-
-            return true;
-          },
-          'error' : function() {
-            $('#nd_snmp_loading_spinner').removeClass('fas fa-spinner text-warning fa-spin')
-                                         .addClass('fas fa-circle-exclamation');
-          }
-        },
-        'search_callback' : jstree_search_callback
-      },
-    });
-    $('#snmpnodecontainer').on("change", "#munger", function(e, data) {
-      var ary = $('#jstree').jstree('get_selected');
-      $('#node').load(uri_base + '/ajax/content/device/' + device + '/snmpnode/'
-        + ary[0] + '?munge=' + $('#munger').find(":selected").text());
-    });
-    $('#jstree').on("changed.jstree", function (e, data) {
-      if (data.selected && data.selected != "#") {
-        $('#node').load(uri_base + '/ajax/content/device/' + device + '/snmpnode/' + data.selected);
-      }
-    });
-    $('#jstree').on("search.jstree", function (e, data) {
-      if (data.res.length) {
-        $('#node').load(uri_base + '/ajax/content/device/' + device + '/snmpnode/' + data.res[0]);
-
-        $("#jstree").jstree().deselect_all(true);
-        $('#jstree').jstree('select_node', data.res[0] + '_anchor');
-
-        var node = $('#jstree').jstree("get_selected", true);
-        var nodePath = $('#jstree').jstree().get_path(node[0], false, true);
-        var parent = nodePath[nodePath.length - 2];
-        document.getElementById( parent ).scrollIntoView();
-
-        $('#nd_snmp_loading_spinner').removeClass('fas fa-spinner text-warning fa-spin')
-                                     .addClass('far fa-circle text-success');
-      }
-    });
-    $("#nd_snmp_search_form").submit(function(e) {
-      $("#jstree").jstree("search", $("#nd_snmp_search_text").val());
-      e.preventDefault();
-    });
-  }
-
   // admintask orphaned devices: the chevron on an accordion header flips to
   // show which section is expanded. Bootstrap fires these as native events on
   // the collapsing element itself, so a body listener sees them regardless of
@@ -644,7 +530,6 @@ $(document).ready(function() {
     }
     ndTables.init(target);
     if (target.querySelector('.tree')) nd_tree(target);
-    if (target.querySelector('#jstree')) nd_snmp_browser(target);
     holdUntilSettled(target, document.getElementById(tab + '_indicator'));
     inner_view_processing(tab);
   });

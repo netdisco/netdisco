@@ -1,0 +1,35 @@
+[%# One level of the SNMP tree. A branch is a <details> so the browser supplies
+    disclosure and keyboard toggling; its <summary> is the marker alone.
+
+    The label is a sibling of the <details>, not a child of it: a closed
+    <details> hides everything in it that is not the summary, and the label has
+    to be readable whether the branch is open or shut. The stylesheet puts the
+    two back on one line.
+
+    Children arrive on first open, unless the server already rendered them
+    because a node opens itself or a search opened the tree down to a hit. A
+    branch that arrives filled carries no fetch at all: `toggle` fires on close
+    as well as open, and it fires in Chromium for a branch that arrives already
+    open, either of which would swap one flat level over the subtree. %]
+[%- FOREACH node IN nodes -%]
+<li class="nd_snmp-row">
+  [%- IF node.has_children -%]
+  [%# both the fetch and the accessible name go on the details: the toggle
+      event fires there, and the browser exposes the details, not the empty
+      summary, as the named group %]
+  <details class="nd_snmp-branch" aria-label="Expand [% node.label | html_entity %]"[% ' open' IF node.open %]
+           [%- UNLESS node.children.size %]
+           hx-get="[% uri_base | none %]/ajax/content/device/[% device | uri %]/snmptree/[% node.oid | uri %]"
+           hx-target="find ul" hx-swap="innerHTML" hx-trigger="toggle once"
+           [%- END %]>
+    <summary></summary>
+    <ul class="nd_snmp-children">
+      [%- IF node.children.size -%]
+      [%- INCLUDE 'ajax/device/snmptree.tt' nodes=node.children -%]
+      [%- END -%]
+    </ul>
+  </details>
+  [%- END -%]
+  [%- INCLUDE 'ajax/device/snmplabel.tt' node=node -%]
+</li>
+[%- END -%]
