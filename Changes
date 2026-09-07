@@ -14,6 +14,18 @@
     filter when more than one is given; the second and later were dropped by
     the table's data request
 
+2.108002 - 2026-09-07
+
+  [ENHANCEMENTS]
+
+  * support base64 encoded JSON for config override (NETDISCO_WITH_CONFIGURATION)
+
+  [BUG FIXES]
+
+  * the Admin Topology and ACL editor pages, and a device's SNMP tab, no longer
+    use a little more of the browser's memory every time their results are
+    reloaded. left open and reloaded many times, they could slow down
+
 2.108001 - 2026-09-06
 
   [ENHANCEMENTS]
