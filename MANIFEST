@@ -714,6 +714,7 @@ xt/57-route-cache-ajax.t
 xt/58-behind-proxy-address.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
+xt/js/autocomplete-teardown.test.js
 xt/js/deferred-nodes.test.js
 xt/js/error-reporter.test.js
 xt/js/netmap-autosave.test.js
