@@ -48,6 +48,13 @@
   * addresses that are links, on Device Inventory and Duplicate Devices, now
     sort by address. they sorted as text, which put .70 above .4
 
+2.108003 - 2026-09-07
+
+  [ENHANCEMENTS]
+
+  * move NETDISCO_WITH_CONFIGURATION handling before database connections handling
+    so that it can affect database schema and tenants configuration.
+
 2.108002 - 2026-09-07
 
   [ENHANCEMENTS]
