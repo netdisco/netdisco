@@ -405,7 +405,7 @@ subtest 'scan_site_local__layout_names_the_old_datatables_file__reports_the_rena
     is scalar @findings, 1, 'one finding'
       or diag explain \@findings;
     is $findings[0]{rule}, 'datatables-js-renamed', 'attributed to the rename';
-    is $findings[0]{release}, '2.108002', 'naming the release that renamed it';
+    is $findings[0]{release}, '2.109000', 'naming the release that renamed it';
     like $findings[0]{advice}, qr/renamed dataTables\.min\.js/,
       'and naming the current file';
 };
@@ -489,12 +489,13 @@ subtest 'scan_site_local__path_does_not_exist__returns_nothing_and_lives' => sub
 subtest 'site_local_rules__called__describes_every_rule_the_scan_applies' => sub {
     my @rules = App::Netdisco::Util::SiteLocal::site_local_rules();
 
-    is scalar @rules, 21, 'twenty-one rules ship in this release';
+    is scalar @rules, 23, 'twenty-three rules ship in this release';
     is_deeply [ sort map { $_->{name} } @rules ],
       [ 'csv-download-link', 'csv-download-target',
         'datatabledefaults-include', 'datatables-js-renamed', 'do-search',
         'floatthead-js', 'has-sidebar-global', 'he-js', 'history-js',
         'history-replay', 'htmx-abort-trigger', 'jquery-deserialize',
+        'jquery-ui-autocomplete', 'jquery-ui-removed',
         'layout-shadow', 'natural-js', 'nd-submit', 'page-script-include',
         'page-title-globals', 'portcontrol-js-renamed', 'sidebar-reset-target',
         'tab-page-shadow', 'tab-sync-attribute' ],
@@ -732,6 +733,45 @@ subtest 'scan_site_local__called_in_scalar_context__returns_the_count' => sub {
     my $count = scan_site_local({ paths => ["$tree"] });
 
     is $count, 2, 'scalar context gives the number of findings';
+};
+
+subtest 'scan_site_local__file_calls_jquery_ui_autocomplete__reports_the_attributes' => sub {
+    my $tree = site_local_tree(
+      'views/ajax/report/custom.tt' => join("\n",
+        '<script type="text/javascript">',
+        "  \$('#mybox').autocomplete({ source: '/ajax/data/deviceip/typeahead' });",
+        '</script>'),
+    );
+
+    my @found = scan_site_local({ paths => ["$tree"] });
+    is scalar @found, 1, 'one finding';
+    is $found[0]->{rule}, 'jquery-ui-autocomplete', 'the autocomplete rule matched';
+    like $found[0]->{advice}, qr/data-nd-typeahead/,
+      'the advice names the attribute that replaces the call';
+};
+
+subtest 'scan_site_local__layout_copy_loads_jquery_ui__reports_the_removal' => sub {
+    my $tree = site_local_tree(
+      'views/layouts/main.tt' =>
+        '<script src="[% uri_base %]/javascripts/jquery-ui.min.js"></script>',
+    );
+
+    my @found = scan_site_local({ paths => ["$tree"] });
+    is scalar @found, 1, 'one finding';
+    is $found[0]->{rule}, 'jquery-ui-removed', 'the library rule matched';
+};
+
+# The stylesheet is a separate line in a copied layout, and a copy that keeps
+# it gets a 404 rather than an error, so nothing else would report it.
+subtest 'scan_site_local__layout_copy_links_the_smoothness_theme__reports_the_removal' => sub {
+    my $tree = site_local_tree(
+      'views/layouts/main.tt' =>
+        '<link rel="stylesheet" href="[% uri_base %]/css/smoothness/jquery-ui.min.css"/>',
+    );
+
+    my @found = scan_site_local({ paths => ["$tree"] });
+    is scalar @found, 1, 'one finding';
+    is $found[0]->{rule}, 'jquery-ui-removed', 'the library rule matched';
 };
 
 done_testing;
