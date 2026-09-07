@@ -85,7 +85,7 @@ my @RULES = (
   },
   {
     name    => 'datatabledefaults-include',
-    release => '2.108002',
+    release  => '2.109000',
     pattern => qr/INCLUDE\s+['"]ajax\/datatabledefaults\.tt['"]/,
     advice  => 'ajax/datatabledefaults.tt was removed. Delete the INCLUDE and '
              . 'move the table options into the data-nd-table attribute, as '
@@ -93,7 +93,7 @@ my @RULES = (
   },
   {
     name    => 'has-sidebar-global',
-    release => '2.108002',
+    release  => '2.109000',
     pattern => qr/has_sidebar\s*\[/,
     advice  => 'the has_sidebar global was removed. The sidebar visibility '
              . 'marker is now a hidden input carrying data-nd-has-sidebar '
@@ -102,7 +102,7 @@ my @RULES = (
   },
   {
     name    => 'page-script-include',
-    release => '2.108002',
+    release  => '2.109000',
     pattern => qr/INCLUDE\s+['"]js\//,
     advice  => 'share/views/js/ was removed. The page scripts now live in '
              . 'share/public/javascripts/netdisco.js and a template must not '
@@ -110,7 +110,7 @@ my @RULES = (
   },
   {
     name    => 'portcontrol-js-renamed',
-    release => '2.108002',
+    release  => '2.109000',
     pattern => qr/netdisco_portcontrol\.js/,
     advice  => 'netdisco_portcontrol.js was renamed netdisco-portcontrol.js '
              . 'and a reference to the old name 404s. Update the script tag '
@@ -118,7 +118,7 @@ my @RULES = (
   },
   {
     name    => 'nd-submit',
-    release => '2.108002',
+    release  => '2.109000',
     pattern => qr/\bnd_submit\s*\(/,
     advice  => 'nd_submit() was removed. Ask htmx to submit the form, with '
              . 'htmx.trigger(\'#ports_form\', \'submit\'), which is what every '
@@ -126,7 +126,7 @@ my @RULES = (
   },
   {
     name    => 'page-title-globals',
-    release => '2.108002',
+    release  => '2.109000',
     # data-nd-title and its dataset spelling are here rather than in a file
     # rule because a layout keeping the attribute is harmless; only reading it
     # is broken, and a site-local layout is where the read usually lives.
@@ -138,7 +138,7 @@ my @RULES = (
   },
   {
     name    => 'history-replay',
-    release => '2.108002',
+    release  => '2.109000',
     pattern => qr/\bupdate_browser_history\s*\(|\bis_from_state_event\b/,
     advice  => 'the browser no longer records or replays the search history. '
              . 'A pane response says where it went with an HX-Push-Url or '
@@ -147,7 +147,7 @@ my @RULES = (
   },
   {
     name    => 'jquery-deserialize',
-    release => '2.108002',
+    release  => '2.109000',
     # The plugin shipped for one caller, the popstate replay, so a site naming
     # either the file or the method is running that replay by hand.
     pattern => qr/jquery-deserialize\.js|\.\s*deserialize\s*\(/,
@@ -158,7 +158,7 @@ my @RULES = (
   },
   {
     name    => 'csv-download-link',
-    release => '2.108002',
+    release  => '2.109000',
     pattern => qr/\bupdate_csv_download_link\s*\(|data-nd-csv\b|\bndCsv\b/,
     advice  => 'the CSV download link now arrives with the pane as an '
              . 'hx-swap-oob anchor and the browser no longer rebuilds it. '
@@ -168,7 +168,7 @@ my @RULES = (
   },
   {
     name    => 'htmx-abort-trigger',
-    release => '2.108002',
+    release  => '2.109000',
     # anchored on the trigger rather than the event name: the vendored htmx
     # bundle listens for this event, so a site keeping its own copy of that
     # file would otherwise be told to change the library
@@ -201,7 +201,7 @@ my @FILE_RULES = (
   },
   {
     name     => 'layout-shadow',
-    release  => '2.108002',
+    release  => '2.109000',
     startup  => 1,
     paths    => ['layouts/main.tt'],
     requires => qr/data-nd-uri-base/,
@@ -214,7 +214,7 @@ my @FILE_RULES = (
   },
   {
     name     => 'csv-download-target',
-    release  => '2.108002',
+    release  => '2.109000',
     paths    => [qw/ device.tt search.tt report.tt admintask.tt /],
     requires => qr/nd_csv-download/,
     advice   => 'this copy carries no element with the id nd_csv-download, so '
@@ -226,7 +226,7 @@ my @FILE_RULES = (
   },
   {
     name     => 'sidebar-reset-target',
-    release  => '2.108002',
+    release  => '2.109000',
     paths    => ['device.tt'],
     requires => qr/nd_sidebar-reset-link/,
     advice   => 'this copy carries no element with the id '
@@ -237,7 +237,7 @@ my @FILE_RULES = (
   },
   {
     name     => 'tab-sync-attribute',
-    release  => '2.108002',
+    release  => '2.109000',
     paths    => [qw/ device.tt search.tt report.tt admintask.tt /],
     requires => qr/\bhx-sync\b/,
     advice   => 'this copy predates hx-sync, so leaving a tab whose results '

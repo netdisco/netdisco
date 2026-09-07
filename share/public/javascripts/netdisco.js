@@ -197,6 +197,21 @@ function hideWithTooltip(target) {
   $(target).hide();
 }
 
+// The widget puts its suggestion list and its live region on document.body, and
+// only its own destroy takes them down. That runs from jQuery's removal path,
+// which a pane emptied natively never reaches, so both outlive the field.
+//
+// Matching the class the widget adds, rather than netdisco's own selectors,
+// covers a field a site-local template introduced. Asking for the instance is
+// the guard: every other method name throws on an element it never took over.
+function destroyAutocompletesIn(pane) {
+  if (!pane) return;
+  pane.querySelectorAll('.ui-autocomplete-input').forEach(function (field) {
+    var widget = $(field).autocomplete('instance');
+    if (widget) { widget.destroy(); }
+  });
+}
+
 // A pointer click focuses the category, which :focus-within then holds open
 // after the pointer has left. detail is 0 for a keyboard-generated click, which
 // must not close what it just opened.
@@ -749,6 +764,7 @@ $(document).ready(function() {
       window.graph.fg._destructor();
     }
 
+    destroyAutocompletesIn(target);
     target.innerHTML = '';
   });
   document.body.addEventListener('htmx:response:error', function (evt) {

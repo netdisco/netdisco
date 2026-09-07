@@ -1,4 +1,4 @@
-2.108002 - tbd
+2.109000 - tbd
 
   [ENHANCEMENTS]
 
@@ -14,7 +14,9 @@
     the first that will not work on an older browser
   * if you keep site-local templates or JavaScript, run netdisco-do
     checksitelocal after upgrading. this release removes several things a copy
-    may still call, and the report names every file and what to change
+    may still call, and the report names every file and what to change. a
+    shadowed layout is also reported when the web app starts, because it
+    leaves every page dead and says nothing otherwise
 
   [BUG FIXES]
 
@@ -24,6 +26,18 @@
   * the ACL editor's Host Preference now follows the address bar; its sidebar
     options were keyed under a name the web app never looked them up by, so
     the setting could not be linked to or bookmarked
+
+2.108002 - 2026-09-07
+
+  [ENHANCEMENTS]
+
+  * support base64 encoded JSON for config override (NETDISCO_WITH_CONFIGURATION)
+
+  [BUG FIXES]
+
+  * the Admin Topology and ACL editor pages, and a device's SNMP tab, no longer
+    use a little more of the browser's memory every time their results are
+    reloaded. left open and reloaded many times, they could slow down
 
 2.108001 - 2026-09-06
 
