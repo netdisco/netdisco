@@ -169,7 +169,10 @@ my @RULES = (
   {
     name    => 'htmx-abort-trigger',
     release  => '2.109000',
-    pattern => qr/htmx:abort/,
+    # anchored on the trigger rather than the event name: the vendored htmx
+    # bundle listens for this event, so a site keeping its own copy of that
+    # file would otherwise be told to change the library
+    pattern => qr/trigger\s*\(\s*[^)]*['"]htmx:abort['"]/,
     advice  => 'a tab form no longer owns its own request, so triggering '
              . 'htmx:abort on one cancels nothing. Give each sidebar form '
              . 'hx-sync="closest .nd_sidebar:replace" and delete the trigger: '
