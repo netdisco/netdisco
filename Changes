@@ -17,8 +17,8 @@
     was eighteen requests where it is now one
   * the SNMP browser no longer needs a JavaScript library of its own, so every
     page loads a little less
-  * this release needs Safari 16.4, Firefox 101 or Chrome 74, or newer. it is
-    the first that will not work on an older browser
+  * this release needs Safari 16.4, Firefox 101, Chrome 74 or Edge 79, or
+    newer. it is the first that will not work on an older browser
   * the suggestion lists on the search boxes, the job queue and topology
     filters, the ACL editor and the SNMP and prefix searches are netdisco's
     own now. they behave as before, and every page carries about 70 KB less
