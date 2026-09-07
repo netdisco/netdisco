@@ -716,6 +716,7 @@ xt/61-admin-sidebar-key.t
 xt/62-pane-chrome.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
+xt/js/autocomplete-teardown.test.js
 xt/js/deferred-nodes.test.js
 xt/js/error-reporter.test.js
 xt/js/history-ownership.test.js

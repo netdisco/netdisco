@@ -384,6 +384,19 @@ subtest 'scan_site_local__file_aborts_a_tab_form__reports_the_sync_attribute' =>
       'and naming the attribute that cancels for it now';
 };
 
+# The vendored htmx bundle listens for this event, so a rule keyed on the bare
+# event name told any site keeping its own copy of that file to change the
+# library. The rule is anchored on the trigger instead.
+subtest 'scan_site_local__a_copy_of_the_htmx_library__is_not_reported' => sub {
+    my $tree = site_local_tree(
+      'javascripts/htmx.min.js' =>
+        qq{e.addEventListener("htmx:abort",r),t.listeners.push(r)\n},
+    );
+
+    is_deeply [ scan_site_local({ paths => ["$tree"] }) ], [],
+      'listening for the event is what the library does, not what a site must fix';
+};
+
 subtest 'scan_site_local__form_declares_hx_sync__reports_nothing' => sub {
     my $tree = site_local_tree(
       'views/device.tt' =>
@@ -405,7 +418,7 @@ subtest 'scan_site_local__layout_names_the_old_datatables_file__reports_the_rena
     is scalar @findings, 1, 'one finding'
       or diag explain \@findings;
     is $findings[0]{rule}, 'datatables-js-renamed', 'attributed to the rename';
-    is $findings[0]{release}, '2.108002', 'naming the release that renamed it';
+    is $findings[0]{release}, '2.109000', 'naming the release that renamed it';
     like $findings[0]{advice}, qr/renamed dataTables\.min\.js/,
       'and naming the current file';
 };
