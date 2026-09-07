@@ -26,6 +26,8 @@ use App::Netdisco::Util::Web qw/
   escape_results_token
   interval_to_daterange
   page_title
+  pane_chrome
+  pane_history_header
   request_is_api
   request_is_api_report
   request_is_api_search
@@ -232,7 +234,8 @@ if (setting('template_paths') and ref [] eq ref setting('template_paths')) {
 }
 
 # here rather than earlier because template_paths is only resolved above
-foreach my $finding (scan_shadowed_files({ paths => [ site_local_paths() ] })) {
+foreach my $finding (scan_shadowed_files(
+  { paths => [ site_local_paths() ], startup => 1 })) {
     warning sprintf
       '%s predates %s. Run "netdisco-do checksitelocal" for details.',
       $finding->{path}, $finding->{release};
@@ -295,6 +298,11 @@ hook 'before' => sub {
       $key .= ('/' . param('tab'));
   }
   $key =~ s|.*/(\w+)/(\w+)$|${1}_${2}|;
+
+  # the admin pages are served from /admin/<task> but their sidebar options
+  # are configured, and read by the sidebar templates, under admintask_<task>
+  $key =~ s/^admin_/admintask_/;
+
   var(sidebar_key => $key);
 
   # trim whitespace
@@ -596,9 +604,11 @@ get $swagger_base.'/**' => sub {
     send_file( join '/', 'swagger-ui', @{ (splat())[0] } );
 };
 
-# htmx applies a <title> found at the top level of a swapped response, so the
-# title a tab shows comes from the fragment rather than from the browser
-# reading the page the fragment replaces.
+# htmx applies a <title> found at the top level of a swapped response, the
+# HX-Push-Url and HX-Replace-Url headers to the address bar, and an element
+# carrying hx-swap-oob to whatever in the page has that id, so the chrome
+# around a pane comes from the response rather than from the browser reading
+# the page the fragment replaces.
 hook 'after' => sub {
     my $r = shift; # a Dancer::Response
 
@@ -621,20 +631,30 @@ hook 'after' => sub {
       (request->path =~ m{/ajax/content/(device|search|report|admin)/(\w+)$})
         or return;
 
+    $r->header( pane_history_header($page, $tab) );
+
     # A tenant URL reaches its pane by forward, and Dancer runs this hook once
     # for the inner request and again for the response it rebuilds from it.
     # Without this the pane carries two titles, htmx lifts only the first, and
     # the second is swapped into the pane as an element, which also makes an
-    # empty result set stop looking empty.
-    return if var('nd_fragment_title');
-    var('nd_fragment_title' => 1);
+    # empty result set stop looking empty; the chrome would swap twice over
+    # itself. The header above needs no guard: setting it twice leaves one
+    # header, where prepending twice leaves two of everything.
+    return if var('nd_fragment_chrome');
+    var('nd_fragment_chrome' => 1);
 
-    my $title = page_title($page, $tab) or return;
+    my $title = page_title($page, $tab) || '';
+    my $chrome = pane_chrome($page, $tab);
+    return unless length $title or length $chrome;
 
     # htmx only lifts a title that is a direct child of the fragment, so this
-    # goes first and nothing may wrap it
-    $r->content('<title>'. HTML::Entities::encode_entities($title)
-                .'</title>'. ($r->content || ''));
+    # goes first and nothing may wrap it. The chrome follows for the same
+    # reason: an out-of-band element is swapped from the top level of the
+    # fragment, which is also where htmx 4 will want its <hx-partial>.
+    $r->content(
+      (length $title
+        ? ('<title>'. HTML::Entities::encode_entities($title) .'</title>') : '')
+      . $chrome . ($r->content || ''));
 };
 
 # remove empty lines from CSV response

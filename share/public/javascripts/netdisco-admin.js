@@ -2,7 +2,7 @@
 // admin pages. Registers with ndPages (declared in netdisco.js) so
 // netdisco.js can drive it without knowing admin exists. It reads
 // netdisco.js's uri_base, nd_active_tab, nd_active_target and activeForm
-// globals, and calls its nd_submit helper.
+// globals.
 
 // admin jobqueue: keep track of timers so we can kill them
 var nd_timers = new Array();
@@ -47,7 +47,7 @@ ndPages.admin = {
           timercache = timermax - 1;
 
           // reload the tab content in...
-          nd_submit('#' + tab + '_form');
+          htmx.trigger('#' + tab + '_form', 'submit');
         }, (timermax * 1000)));
     }
 
@@ -181,7 +181,7 @@ ndPages.admin = {
       // reset the timer cache
       timercache = timermax - 1;
       // and reload content
-      nd_submit('#' + tab + '_form');
+      htmx.trigger('#' + tab + '_form', 'submit');
     });
 
     // job control pause/play icon switcheroo
@@ -197,7 +197,7 @@ ndPages.admin = {
         $('#nd_countdown').text('0');
       }
       else {
-        nd_submit('#' + tab + '_form');
+        htmx.trigger('#' + tab + '_form', 'submit');
       }
     });
 
@@ -238,26 +238,28 @@ ndPages.admin = {
         ,success: function(data) {
           if (mode == 'add') {
             toastr.success('Added record');
-            nd_submit('#' + tab + '_form');
           }
           else if (mode == 'delete') {
             toastr.success('Deleted record');
-            nd_submit('#' + tab + '_form');
           }
           else {
             toastr.success('Updated record');
           }
-          nd_submit('#' + tab + '_form');
+          // one refresh for every mode. add and delete each asked for their own
+          // as well, which used to race two answers into the pane and, now that
+          // the sidebar cancels its own in-flight request, aborts the first one
+          // and reports the abort to the console.
+          htmx.trigger('#' + tab + '_form', 'submit');
         }
         // TODO: fix sanity_ok in Netdisco Web
         ,error: function() {
           if (mode == 'add') {
             toastr.error('Failed to add record');
-            nd_submit('#' + tab + '_form');
+            htmx.trigger('#' + tab + '_form', 'submit');
           }
           else if (mode == 'delete') {
             toastr.error('Failed to delete record');
-            nd_submit('#' + tab + '_form');
+            htmx.trigger('#' + tab + '_form', 'submit');
           }
           else {
             toastr.error('Failed to update record');
@@ -332,12 +334,14 @@ document.addEventListener('change', function (event) {
   if (event.target.matches('.nd_auth_method')) nd_token_fields(event.target);
 });
 // Registered here at top level rather than inside a ready callback, so
-// this attaches ahead of netdisco.js's own htmx:afterSwap listener, which
+// this attaches ahead of netdisco.js's own htmx:after:swap listener, which
 // builds the DataTable and runs from $(document).ready. DataTables detaches
 // rows outside the current page from the DOM, and this sync must see every
 // row while they are all still there.
-document.body.addEventListener('htmx:afterSwap', function (evt) {
-  evt.detail.target.querySelectorAll('.nd_auth_method').forEach(nd_token_fields);
+document.body.addEventListener('htmx:after:swap', function (evt) {
+  // htmx dispatches this on the element that made the request, so the pane is
+  // read from the context
+  evt.detail.ctx.target.querySelectorAll('.nd_auth_method').forEach(nd_token_fields);
 });
 document.addEventListener('click', function (event) {
   var copy = event.target.closest('#nd_token-copy');
@@ -380,7 +384,7 @@ window.nd_show_api_token = function(apiKey) {
   // always '#_form', which matches nothing. The tag is 'users' either way:
   // this template is registered for that one admin task.
   document.getElementById('nd_token-reveal').addEventListener('hidden.bs.modal', function() {
-    nd_submit('#users_form');
+    htmx.trigger('#users_form', 'submit');
   }, { once: true });
   bootstrap.Modal.getOrCreateInstance(document.getElementById('nd_token-reveal')).show();
 };

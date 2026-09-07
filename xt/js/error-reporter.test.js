@@ -50,7 +50,7 @@ function harness() {
   return {
     fireError: (message, error) => windowListeners.error({ message, error }),
     fireRejection: (reason) => windowListeners.unhandledrejection({ reason }),
-    fireSwapError: (detail) => bodyListeners['htmx:swapError']({ detail }),
+    fireHtmxError: (detail) => bodyListeners['htmx:error']({ detail }),
     errorCalls,
     toastrCalls,
   };
@@ -88,10 +88,47 @@ test('unhandledRejection__reports_like_any_other_script_error', () => {
   assert.strictEqual(h.toastrCalls.length, 1);
 });
 
-test('htmxSwapError__reports_like_any_other_script_error', () => {
+// htmx carries four different failures on one event: a request that never
+// arrived, one that timed out, one that was abandoned when a newer request
+// replaced it, and an exception thrown while displaying an answer that did
+// arrive. Only the last of those is a script error. The first three reach the
+// reader as the pane's own failure message, which is written by a separate
+// listener above this block and must not also raise a toast, or every
+// abandoned tab switch would.
+test('htmxError__an_answer_that_could_not_be_displayed__reports_like_a_script_error', () => {
   const h = harness();
-  h.fireSwapError('bad content type');
+  h.fireHtmxError({ ctx: { response: { status: 200 } }, error: new Error('bad content type') });
   assert.strictEqual(h.errorCalls.length, 1,
     'a swap htmx cannot display is otherwise an event nobody listens to');
   assert.strictEqual(h.toastrCalls.length, 1);
+});
+
+test('htmxError__a_failure_with_no_request_behind_it__reports_like_a_script_error', () => {
+  const h = harness();
+  h.fireHtmxError({ error: new Error('handler threw') });
+  assert.strictEqual(h.errorCalls.length, 1,
+    'an exception inside an htmx handler reaches nobody else');
+  assert.strictEqual(h.toastrCalls.length, 1);
+});
+
+test('htmxError__a_request_that_never_arrived__is_left_to_the_pane_handler', () => {
+  const h = harness();
+  h.fireHtmxError({ ctx: {}, error: new Error('offline') });
+  assert.strictEqual(h.errorCalls.length, 0,
+    'the pane says so in the pane; a toast beside it fires on every abandoned tab switch too');
+  assert.strictEqual(h.toastrCalls.length, 0);
+});
+
+// htmx sets the response before it reads the body, so a request abandoned
+// during the read reaches this handler looking like one that was answered.
+// Clicking a second tab while the first is still arriving is an ordinary
+// thing to do and must not raise anything at all.
+test('htmxError__an_abandoned_request_that_had_begun_answering__raises_nothing', () => {
+  const h = harness();
+  const aborted = new Error('aborted');
+  aborted.name = 'AbortError';
+  h.fireHtmxError({ ctx: { response: { status: 200 } }, error: aborted });
+  assert.strictEqual(h.errorCalls.length, 0,
+    'a tab switch would otherwise report a script error on every click');
+  assert.strictEqual(h.toastrCalls.length, 0);
 });

@@ -49,7 +49,7 @@ test('netdiscoAdminJs__loaded__registers_ndPages_admin_with_formInputs_innerView
 
 // Selectors and identifiers that belong only to the moved admin code. A
 // generic, page-agnostic exclusion for the jobqueue pane already carries the
-// word "jobqueue" in netdisco.js's htmx:beforeRequest indicator handling
+// word "jobqueue" in netdisco.js's htmx:before:request indicator handling
 // (share/public/javascripts/netdisco.js, "jobqueue is excluded"), so this
 // checks the admin-specific "nd_jobqueue" and "nd_countdown" tokens rather
 // than the bare word.

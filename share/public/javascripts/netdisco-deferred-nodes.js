@@ -1,6 +1,7 @@
 // The deferred connected-nodes box consumes its htmx trigger when the click
-// fires, before the request is sent, and htmx never clears that flag. Without
-// this, a fetch that fails leaves an empty box no further clicking can fill.
+// fires, before the request is sent, and a spent trigger never comes back.
+// Without this, a fetch that fails leaves an empty box no further clicking can
+// fill.
 (function () {
   'use strict';
 
@@ -27,10 +28,18 @@
   /**
    * Shows the failure message on a deferred connected-nodes box when its htmx request
    * errors, ignoring the event when it did not originate from such a box.
-   * @param {Event} evt the htmx:responseError or htmx:sendError event
+   * @param {CustomEvent} evt the htmx:response:error or htmx:error event
    * @returns {void}
    */
   function onFailure(evt) {
+    // htmx:error also carries an exception thrown outside any request, which
+    // arrives with no context and is not this box's failure. The box has no
+    // hx-sync and refuses to fetch while one is in flight, so an abort here
+    // can only be the configured request ceiling, which is a failure like any
+    // other as far as the box is concerned.
+    if (evt.type === 'htmx:error' && !evt.detail.ctx) {
+      return;
+    }
     const box = /** @type {Element|null} */ (evt.target);
     if (box && box.matches && box.matches(BOX)) {
       showFailure(box);
@@ -66,8 +75,8 @@
     window.htmx.ajax('GET', box.getAttribute('hx-get'), { source: box });
   }
 
-  document.addEventListener('htmx:responseError', onFailure);
-  document.addEventListener('htmx:sendError', onFailure);
+  document.addEventListener('htmx:response:error', onFailure);
+  document.addEventListener('htmx:error', onFailure);
 
   document.addEventListener(
     'click',

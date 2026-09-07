@@ -827,7 +827,7 @@ const ndTables = (function () {
     Array.prototype.forEach.call(tables, function (table) {
       if (table.classList.contains('dataTable')) return;
       // One bad data-nd-table (or data-nd-urls) degrades one table, not the
-      // whole pane: a throw here would otherwise escape the htmx:afterSwap
+      // whole pane: a throw here would otherwise escape the htmx:after:swap
       // listener and leave holdUntilSettled never called.
       try {
         build(table, root);

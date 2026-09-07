@@ -44,7 +44,7 @@ subtest 'sharedTree__after_the_polyfill_went__names_no_window_History' => sub {
     }
     is scalar(@offenders), 0, 'nothing reaches for the history.js global'
       or diag "still using window.History:\n  " . join("\n  ", @offenders)
-            . "\nuse history.pushState, history.replaceState and the popstate event";
+            . "\nanswer with HX-Push-Url or HX-Replace-Url from the route instead";
 };
 
 subtest 'mainLayout__after_the_polyfill_went__does_not_load_it' => sub {
@@ -54,16 +54,23 @@ subtest 'mainLayout__after_the_polyfill_went__does_not_load_it' => sub {
       'the library is not shipped';
 };
 
-subtest 'tabNavigation__replaying_a_history_entry__still_guards_against_a_loop' => sub {
-    # replaying an entry clicks a tab link, so the replay guard has to stay;
-    # the guard against pushState firing its own event does not, since the
-    # native one fires nothing
-    my $netdisco = slurp( catfile($root, qw/share public javascripts netdisco.js/) );
-    like $netdisco, qr/\bis_from_state_event\b/, 'the replay guard is still there';
-    unlike $netdisco, qr/\bis_from_history_plugin\b/,
-      'the guard that only history.js needed is gone';
-    like $netdisco, qr/addEventListener\(\s*'popstate'/,
-      'back and forward are handled through popstate';
+# htmx now sets the address bar from HX-Push-Url and HX-Replace-Url, and
+# answers a back navigation itself. Netdisco keeping its own entries beside
+# htmx's would give a single press two meanings, so nothing here may reach for
+# the history API at all. The polyfill names above are still checked because a
+# site copying old netdisco code is the way they come back.
+subtest 'sharedTree__now_htmx_owns_history__touches_no_history_api' => sub {
+    my @offenders = ();
+    foreach my $file (sort @ours) {
+        my $source = slurp($file);
+        push @offenders, $file if $source =~ m/\bhistory\.(?:push|replace)State\b/
+                               or $source =~ m/\bpopstate\b/
+                               or $source =~ m/\bis_from_state_event\b/
+                               or $source =~ m/\.deserialize\(/;
+    }
+    is scalar(@offenders), 0, 'the browser history is left to htmx'
+      or diag "still driving history by hand:\n  " . join("\n  ", @offenders)
+            . "\nanswer with HX-Push-Url or HX-Replace-Url from the route instead";
 };
 
 done_testing;

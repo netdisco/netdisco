@@ -15,10 +15,10 @@
                 method="get" action="[% uri_for('/search') | none %]"
                 hx-get="[% uri_for('/ajax/content/search/' _ tab.tag) | none %]"
                 hx-target="#[% tab.tag | html_entity %]_pane"
+                hx-sync="closest .nd_sidebar:replace"
                 hx-headers='{"X-Requested-With": "XMLHttpRequest"}'
                 hx-indicator="#[% tab.tag | html_entity %]_indicator"
-                data-nd-tab="[% tab.tag | html_entity %]"
-                data-nd-csv="[% tab.provides_csv ? 1 : 0 %]">
+                data-nd-tab="[% tab.tag | html_entity %]">
               <input name="tab" value="[% tab.tag | html_entity %]" type="hidden"/>
               [% TRY %]
               <input type="hidden" data-nd-has-sidebar="[% tab.tag | html_entity %]" value="1">

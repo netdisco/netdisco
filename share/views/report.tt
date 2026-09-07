@@ -15,10 +15,10 @@
                 method="get" action="[% uri_for('/report') | none %]"
                 hx-get="[% uri_for('/ajax/content/report/' _ report.tag) | none %]"
                 hx-target="#[% report.tag | html_entity %]_pane"
+                hx-sync="closest .nd_sidebar:replace"
                 hx-headers='{"X-Requested-With": "XMLHttpRequest"}'
                 hx-indicator="#[% report.tag | html_entity %]_indicator"
-                data-nd-tab="[% report.tag | html_entity %]"
-                data-nd-csv="1"[%
+                data-nd-tab="[% report.tag | html_entity %]"[%
                   # PRE_CHOMP is on, so the newline before a directive is eaten;
                   # the separating space has to live inside the block.
                   IF report.rconfig.bind_params.size AND NOT report.rconfig.show_sidebar %] data-nd-hide-sidebar="1"[% END %]>

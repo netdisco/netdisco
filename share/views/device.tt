@@ -19,10 +19,10 @@
                 method="get" action="[% uri_for('/device') | none %]"
                 hx-get="[% uri_for('/ajax/content/device/' _ tab.tag) | none %]"
                 hx-target="#[% tab.tag | html_entity %]_pane"
+                hx-sync="closest .nd_sidebar:replace"
                 hx-headers='{"X-Requested-With": "XMLHttpRequest"}'
                 hx-indicator="#[% tab.tag | html_entity %]_indicator"
-                data-nd-tab="[% tab.tag | html_entity %]"
-                data-nd-csv="[% tab.provides_csv ? 1 : 0 %]">
+                data-nd-tab="[% tab.tag | html_entity %]">
               <input name="tab" value="[% tab.tag | html_entity %]" type="hidden"/>
               [% TRY %]
               <input type="hidden" data-nd-has-sidebar="[% tab.tag | html_entity %]" value="1">
@@ -49,7 +49,7 @@
       [% END %]
       <span id="nd_device-name">
         [% IF netdisco_device.is_pseudo %]<span class="badge text-bg-warning">[% END %][% display_name | html_entity %][% IF netdisco_device.is_pseudo %]</span>[% END %]
-        <a id="nd_csv-download" href="#" download="netdisco.csv">&nbsp;
+        &nbsp;<a id="nd_csv-download" href="#" download="netdisco.csv">
           <i id="nd_csv-download-icon" class="text-info far fa-file-lines fa-lg"
             rel="tooltip" data-bs-placement="left" data-bs-title="Download as CSV"></i></a>
       </span>
