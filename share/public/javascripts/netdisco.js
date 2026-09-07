@@ -192,6 +192,22 @@ function disposeTooltips(target) {
   });
 }
 
+// A delegated popover puts its instance on the row rather than on the element
+// it was declared against, and appends the tip to body. A pane swap replaces
+// the row and bootstrap dismisses nothing whose trigger has left the document,
+// so the tips pile up one per refresh, keep the text of the job they described,
+// and swallow the pointer for the row beneath them. The tip names its trigger
+// through aria-describedby, which is the only way back to the instance; a tip
+// whose trigger has already gone has none, and is just removed.
+function disposePopovers() {
+  $('.popover').each(function () {
+    var trigger = this.id && document.querySelector('[aria-describedby="' + this.id + '"]');
+    var instance = trigger && bootstrap.Popover.getInstance(trigger);
+    if (instance) { instance.dispose(); }
+    else { this.remove(); }
+  });
+}
+
 function hideWithTooltip(target) {
   disposeTooltips(target);
   $(target).hide();
@@ -544,6 +560,9 @@ $(document).ready(function() {
     var target = ctx.target;
     if (!target.id.match(/_pane$/)) return;
     nd_latest_pane_request = ctx;
+
+    disposePopovers();
+
     if (target.id === 'jobqueue_pane') return;
 
     // force-graph renders every frame until destroyed, and emptying the pane
@@ -559,6 +578,12 @@ $(document).ready(function() {
   document.body.addEventListener('htmx:response:error', function (evt) {
     var target = evt.detail.ctx.target;
     if (!target.id.match(/_pane$/)) return;
+    // An expired session is not a fault the reader should report to anyone. The
+    // server sends HX-Redirect with it, so this message is what remains on
+    // screen for the moment before the browser leaves, and all that is left for
+    // a request htmx did not make.
+    var status = evt.detail.ctx.response && evt.detail.ctx.response.status;
+    if (status === 401 || status === 403) return nd_session_expired(target);
     nd_pane_failure(target, 'server error');
   });
   // htmx puts a failed send, a timed out request, an abandoned request and an
@@ -582,6 +607,16 @@ $(document).ready(function() {
     // long the query takes rather than at the network.
     nd_pane_failure(target, aborted ? 'request timed out' : 'network error');
   });
+  function nd_session_expired(pane) {
+    // every part is a literal
+    // eslint-disable-next-line no-unsanitized/property
+    pane.innerHTML =
+      '<div class="col-md-5 alert alert-warning"><i class="fas fa-right-to-bracket"></i> ' +
+      'Your session has expired. <a href="' + nd_login_url() + '">Log in again</a> to carry on.</div>';
+  }
+  function nd_login_url() {
+    return uri_base + '/login?return_url=' + encodeURIComponent(window.location.pathname + window.location.search);
+  }
   function nd_pane_failure(pane, reason) {
     // every part is a literal, including reason: its three call sites pass one
     // of three fixed strings and nothing here comes from a response

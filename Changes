@@ -43,6 +43,14 @@
   * the ACL editor's Host Preference now follows the address bar; its sidebar
     options were keyed under a name the web app never looked them up by, so
     the setting could not be linked to or bookmarked
+  * when your session expires you are now taken to the login page and returned
+    to where you were once you log in. a page whose panel refreshes on its own,
+    the Job Queue in particular, used to report a server error and stop
+    refreshing, with nothing to say your session had ended
+  * the job log that appears when you hover a Job Queue row is now dismissed
+    when the table refreshes. one was left behind on every refresh, still
+    showing the job it described, and they piled up over the page and swallowed
+    clicks meant for the rows beneath them
 
 2.108002 - 2026-09-07
 
