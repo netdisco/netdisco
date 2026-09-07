@@ -1,4 +1,8 @@
-2.108002 - tbd
+2.108002 - 2026-09-07
+
+  [ENHANCEMENTS]
+
+  * support base64 encoded JSON for config override (NETDISCO_WITH_CONFIGURATION)
 
   [BUG FIXES]
 
