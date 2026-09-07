@@ -51,6 +51,8 @@
     when the table refreshes. one was left behind on every refresh, still
     showing the job it described, and they piled up over the page and swallowed
     clicks meant for the rows beneath them
+  * addresses that are links, on Device Inventory and Duplicate Devices, now
+    sort by address. they sorted as text, which put .70 above .4
 
 2.108002 - 2026-09-07
 
