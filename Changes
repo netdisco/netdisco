@@ -2,6 +2,8 @@
 
   [ENHANCEMENTS]
 
+  * this release needs Safari 16.4, Firefox 101, Chrome 74 or Edge 79, or
+    newer. it is the first that will not work on an older browser
   * Back and Forward now fetch the page again for the tab and options in the
     address bar, so what you return to is current rather than the results as
     they were when you left them
@@ -10,24 +12,13 @@
     sooner and the results you replaced never flash up on the way
   * a request whose answer never arrives now gives up after five minutes and
     says so where the results would be, instead of leaving the spinner turning
+  * searching the SNMP browser now goes straight to the object, where it used
+    to open the tree a level at a time
+  * the SNMP browser tree and the suggestion lists under the search boxes are
+    drawn by netdisco itself now. they work as they did, and both look a little
+    different
   * the arrow marking a sorted column is drawn differently and takes less room,
     so tables are a little narrower
-  * searching the SNMP browser now goes straight to the result. it used to open
-    the tree a level at a time, a request for each, and on a deep object that
-    was eighteen requests where it is now one
-  * the SNMP browser no longer needs a JavaScript library of its own, so every
-    page loads a little less
-  * this release needs Safari 16.4, Firefox 101, Chrome 74 or Edge 79, or
-    newer. it is the first that will not work on an older browser
-  * the suggestion lists on the search boxes, the job queue and topology
-    filters, the ACL editor and the SNMP and prefix searches are netdisco's
-    own now. they behave as before, and every page carries about 70 KB less
-    over the network
-  * choosing an IPv6 prefix from the suggestions in the IP Inventory sidebar
-    now disables the "never" option, which it only did if you typed the prefix
-    out in full
-  * a device name containing an ampersand now reads correctly in the search
-    suggestions
   * if you keep site-local templates or JavaScript, run netdisco-do
     checksitelocal after upgrading. this release removes several things a copy
     may still call, including script files and a stylesheet a copy of the
@@ -38,11 +29,14 @@
   [BUG FIXES]
 
   * the Module Inventory, NetBIOS and Node Vendor reports now honor every
-    filter when more than one is given; the second and later were dropped by
-    the table's data request
-  * the ACL editor's Host Preference now follows the address bar; its sidebar
-    options were keyed under a name the web app never looked them up by, so
-    the setting could not be linked to or bookmarked
+    filter when more than one is given, rather than only the first
+  * the ACL editor's Host Preference now follows the address bar, so it can be
+    linked to and bookmarked
+  * choosing an IPv6 prefix from the suggestions in the IP Inventory sidebar
+    now disables the "never" option, which it only did if you typed the prefix
+    out in full
+  * a device name containing an ampersand now reads correctly in the search
+    suggestions
   * when your session expires you are now taken to the login page and returned
     to where you were once you log in. a page whose panel refreshes on its own,
     the Job Queue in particular, used to report a server error and stop
