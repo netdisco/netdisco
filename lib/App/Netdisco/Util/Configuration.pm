@@ -4,6 +4,7 @@ use Dancer qw/:syntax :script/;
 use Dancer::Plugin::DBIC 'schema';
 
 use Hash::Merge::Simple;
+use MIME::Base64 'decode_base64';
 use Storable 'dclone';
 use Try::Tiny;
 
@@ -188,8 +189,15 @@ sub parse_params_to_config {
 
       }
       else {
+          # try to decode base64
+          my $decoded = try { from_json(decode_base64($value)) }; # might explode
+          if (defined $decoded and ref {} eq ref $decoded) {
+              return parse_params_to_config($decoded);
+          }
           # some other use of subaction (file ref, log comment, etc)
-          return $value;
+          else {
+              return $value;
+          }
       }
   }
 
