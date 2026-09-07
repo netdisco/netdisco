@@ -207,7 +207,12 @@ my @RULES = (
     release  => '2.109000',
     # Both the constructor and the method form, since a copy that only calls
     # the method still throws once the library is gone.
-    pattern => qr/\.\s*autocomplete\s*\(|\bui-autocomplete\b/,
+    # the call alone, not the class the widget adds: a site keeping its own
+    # copy of the library would otherwise be told to change the library, and
+    # both the minified script and its stylesheet carry that class. A site
+    # stylesheet overriding it is left unreported, which is cosmetic; a layout
+    # copy still loading the theme is caught by the rule below.
+    pattern => qr/\.\s*autocomplete\s*\(/,
     advice  => 'jQuery UI was removed. A field asks for suggestions in its '
              . 'markup now: give the input a data-nd-typeahead attribute '
              . 'holding the endpoint path, with data-nd-typeahead-min, '

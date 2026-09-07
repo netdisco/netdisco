@@ -763,6 +763,21 @@ subtest 'scan_site_local__file_calls_jquery_ui_autocomplete__reports_the_attribu
       'the advice names the attribute that replaces the call';
 };
 
+# Both the minified library and its stylesheet carry the class the widget adds,
+# so a rule keyed on that class told any site keeping its own copy to change the
+# library. The rule is anchored on the call instead.
+subtest 'scan_site_local__a_copy_of_the_jquery_ui_library__is_not_reported' => sub {
+    my $tree = site_local_tree(
+      'javascripts/jquery-ui.min.js' =>
+        qq{t.widget("ui.autocomplete",{version:"1.14.2",defaultElement:"<input>"})\n},
+      'css/smoothness/jquery-ui.min.css' =>
+        qq{.ui-autocomplete{position:absolute;top:0;left:0;cursor:default}\n},
+    );
+
+    is_deeply [ scan_site_local({ paths => ["$tree"] }) ], [],
+      'carrying the widget is what the library does, not what a site must fix';
+};
+
 subtest 'scan_site_local__layout_copy_loads_jquery_ui__reports_the_removal' => sub {
     my $tree = site_local_tree(
       'views/layouts/main.tt' =>
