@@ -30,6 +30,13 @@
     options were keyed under a name the web app never looked them up by, so
     the setting could not be linked to or bookmarked
 
+2.108003 - 2026-09-07
+
+  [ENHANCEMENTS]
+
+  * move NETDISCO_WITH_CONFIGURATION handling before database connections handling
+    so that it can affect database schema and tenants configuration.
+
 2.108002 - 2026-09-07
 
   [ENHANCEMENTS]
