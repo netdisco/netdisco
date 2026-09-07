@@ -1,3 +1,11 @@
+2.108002 - tbd
+
+  [BUG FIXES]
+
+  * the Admin Topology and ACL editor pages, and a device's SNMP tab, no longer
+    use a little more of the browser's memory every time their results are
+    reloaded. left open and reloaded many times, they could slow down
+
 2.108001 - 2026-09-06
 
   [ENHANCEMENTS]
