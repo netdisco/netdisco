@@ -497,34 +497,33 @@ const ndTables = (function () {
     }
   };
 
-  // toggle is bound with addEventListener rather than jQuery's .bind; $(this)
-  // still resolves because the browser calls the handler with the clicked
-  // element as its context either way.
+  // toggle is bound with addEventListener as a plain function, so its this
+  // is the element that received the click.
   const collapse = {
     // temporarily disable datatables paging
     // returns [current_page_length, current_page_index]
     disablePaging: function () {
-      $.fn.dataTable.ext.search.pop();
-      const plen = $('#dp-data-table').DataTable().page.len();
-      const pnum = $('#dp-data-table').DataTable().page();
-      $('#dp-data-table').DataTable().page.len(-1).draw(true);
+      DataTable.ext.search.pop();
+      const plen = new DataTable('#dp-data-table').page.len();
+      const pnum = new DataTable('#dp-data-table').page();
+      new DataTable('#dp-data-table').page.len(-1).draw(true);
       return [plen, pnum];
     },
 
     // restore the datatables pagination and page number
     restorePage: function (plen, pnum) {
-      $('#dp-data-table').DataTable().page.len(plen).draw(true);
-      $('#dp-data-table').DataTable().page(pnum).draw(false);
+      new DataTable('#dp-data-table').page.len(plen).draw(true);
+      new DataTable('#dp-data-table').page(pnum).draw(false);
     },
 
     // install our row filter for datatables row group toggle
     pushFilter: function () {
-      $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-        const row = $($('#dp-data-table').DataTable().row(dataIndex).node());
-        if (!row.data('collapsed-group')) {
+      DataTable.ext.search.push(function (_settings, _data, dataIndex) {
+        const row = new DataTable('#dp-data-table').row(dataIndex).node();
+        if (!row.dataset.collapsedGroup) {
           return true;
         }
-        return row.attr('data-is-collapsed') === 'false';
+        return row.getAttribute('data-is-collapsed') === 'false';
       });
     },
 
@@ -532,16 +531,16 @@ const ndTables = (function () {
     // toggles visibility of a group of datatables rows
     // clicked element has the group name as data-collapsed-group
     toggle: function () {
-      const groupname = $(this).attr('data-collapsed-group');
+      const groupname = this.getAttribute('data-collapsed-group');
       const [plen, pnum] = ndTables.collapse.disablePaging();
 
       // groupname is not in a class selector due to port name characters
-      $('tr.nd_collapsible').each(function () {
-        if ($(this).attr('data-collapsed-group') === groupname) {
-          if ($(this).attr('data-is-collapsed') === 'true') {
-            $(this).attr('data-is-collapsed', 'false');
+      document.querySelectorAll('tr.nd_collapsible').forEach(function (row) {
+        if (row.getAttribute('data-collapsed-group') === groupname) {
+          if (row.getAttribute('data-is-collapsed') === 'true') {
+            row.setAttribute('data-is-collapsed', 'false');
           } else {
-            $(this).attr('data-is-collapsed', 'true');
+            row.setAttribute('data-is-collapsed', 'true');
           }
         }
       });
@@ -549,8 +548,12 @@ const ndTables = (function () {
       ndTables.collapse.pushFilter();
       ndTables.collapse.restorePage(plen, pnum);
 
-      const icon = $(this).find('i');
-      icon.toggleClass('fa-list-ol fa-arrow-up-wide-short fa-rotate-180');
+      const icon = this.querySelector('i');
+      if (icon) {
+        icon.classList.toggle('fa-list-ol');
+        icon.classList.toggle('fa-arrow-up-wide-short');
+        icon.classList.toggle('fa-rotate-180');
+      }
     }
   };
 
