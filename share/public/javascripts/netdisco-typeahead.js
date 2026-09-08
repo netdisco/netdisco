@@ -288,20 +288,25 @@
   function search(field, term, settings) {
     const mine = ++sequence;
     typed = field.value;
-    $.get(
-      uri_base + settings.url,
-      buildQuery(field, term, settings),
-      (data) => {
-        if (mine !== sequence || owner !== field) {
+    const query = new URLSearchParams(buildQuery(field, term, settings));
+    ndRequest
+      .get(uri_base + settings.url + '?' + query)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('typeahead request failed: ' + response.status);
+        }
+        return response.json();
+      })
+      .catch(() => undefined)
+      .then((data) => {
+        if (data === undefined || mine !== sequence || owner !== field) {
           return;
         }
         rows = normalizeRows(data);
         active = settings.first && rows.length ? 0 : -1;
         place(field);
         paint();
-      },
-      'json'
-    );
+      });
   }
 
   /**
