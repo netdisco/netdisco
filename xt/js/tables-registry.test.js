@@ -12,11 +12,11 @@ const ROOT = path.join(__dirname, '..', '..');
 const source = fs.readFileSync(
   path.join(ROOT, 'share', 'public', 'javascripts', 'netdisco-tables.js'), 'utf8');
 
-// Load the file in a scope with the globals it touches stubbed. The three
+// Load the file in a scope with the globals it touches stubbed. The two
 // DataTable.render entries mirror the vendored 3.0.3 shapes read from
 // share/public/javascripts/dataTables.min.js: text() and number()
-// return an object keyed by render type (falling back to the raw value for
-// a type they don't name), datetime() returns a callable directly.
+// return an object keyed by render type, falling back to the raw value for
+// a type they don't name.
 function load({ built = [] } = {}) {
   const DataTable = function (el, config) { built.push({ el, config }); return { api: () => ({}) }; };
   // Matches the vendored escaper (share/public/javascripts/dataTables.min.js,
@@ -44,29 +44,11 @@ function load({ built = [] } = {}) {
         },
       };
     },
-    // Mirrors the real datetime() for the shape this file exercises: a
-    // callable returned directly, blanking null/empty, formatting a display
-    // value through the given format, and returning the raw input unchanged
-    // for every type, including display, when it fails to parse (matched
-    // here by not looking like a date at all). Does not mirror it for
-    // 'sort'/'type' on a value that does parse: the vendored function
-    // returns a parsed moment object for 'sort' and the registered type name
-    // for 'type', used for correct column sorting; this mock returns the raw
-    // value for both, which no assertion here depends on.
-    datetime: function (format) {
-      return function (data, type) {
-        if (data == null || data === '') return '';
-        if (!/^\d{4}-\d{2}-\d{2}/.test(String(data))) return data;
-        if (type === 'sort' || type === 'type') return data;
-        return moment(data).format(format);
-      };
-    },
   };
   const document = { body: { dataset: {} }, querySelectorAll: () => [], getElementById: () => null };
   const window = {};
-  const moment = (d) => ({ format: () => 'M:' + d });
-  const fn = new Function('DataTable', 'document', 'window', 'moment', source + '\nreturn ndTables;');
-  return fn(DataTable, document, window, moment);
+  const fn = new Function('DataTable', 'document', 'window', source + '\nreturn ndTables;');
+  return fn(DataTable, document, window);
 }
 
 // Shared by both fragment-scanning tests below. An IF/ELSE/END pair wrapping
@@ -151,20 +133,38 @@ test('renderers__number__precision__forces_one_decimal_count_for_every_value', (
   assert.strictEqual(r(15.44, 'display', {}), '15.4');
 });
 
-test('renderers__dateTime__formats_through_moment_and_blanks_null', () => {
+test('renderers__dateTime__a_timestamp_from_the_server__shows_the_date_and_the_minute', () => {
   const r = load().renderers.dateTime({}, URLS);
-  assert.strictEqual(r('2026-09-04T10:00:00', 'display', {}), 'M:2026-09-04T10:00:00');
-  assert.strictEqual(r(null, 'display', {}), '');
+  assert.strictEqual(r('2026-09-07 15:40:16.963812', 'display'), '2026-09-07 15:40');
+  assert.strictEqual(r('2026-09-07 15:40:16.963812', 'filter'), '2026-09-07 15:40');
 });
 
-// The vendored parser returns an unparseable value unchanged, for every type
-// including display, and DataTables writes a display value straight to
-// innerHTML; escaping only the pass-through case keeps a value that did
-// format from being escaped a second time.
-test('renderers__dateTime__an_unparseable_value__renders_escaped_for_display', () => {
+test('renderers__dateTime__sorting__keeps_the_whole_value_so_it_orders_as_text', () => {
   const r = load().renderers.dateTime({}, URLS);
-  assert.strictEqual(r('<b>', 'display', {}), '&lt;b&gt;');
-  assert.strictEqual(r('<b>', 'sort', {}), '<b>');
+  assert.strictEqual(r('2026-09-07 15:40:16.963812', 'sort'), '2026-09-07 15:40:16.963812');
+});
+
+test('renderers__dateTime__an_empty_cell__renders_as_empty', () => {
+  const r = load().renderers.dateTime({}, URLS);
+  assert.strictEqual(r(null, 'display'), '');
+});
+
+test('renderers__dateTime__a_T_separated_timestamp__is_treated_like_a_space_separated_one', () => {
+  const r = load().renderers.dateTime({}, URLS);
+  assert.strictEqual(r('2026-09-07T15:40:16.963812', 'display'), '2026-09-07 15:40');
+});
+
+// No well formed timestamp's first 16 characters ever contain a special
+// character, so every other case here proves the string was sliced to the
+// right length without proving it was escaped: esc() and a no-op agree on
+// all of them. Putting the markup inside the sliced region discriminates
+// the two, and the sort assertion is the other half of the contract, that
+// the untouched value is returned raw so it still sorts as text.
+test('renderers__dateTime__markup_inside_the_sliced_region__is_escaped_for_display_and_raw_for_sort', () => {
+  const r = load().renderers.dateTime({}, URLS);
+  const data = '<b>2026-09-07 15:40:16.963812';
+  assert.strictEqual(r(data, 'display'), '&lt;b&gt;2026-09-07 15');
+  assert.strictEqual(r(data, 'sort'), data);
 });
 
 test('renderers__devicePortsLink__builds_the_ports_link_from_row_keys', () => {

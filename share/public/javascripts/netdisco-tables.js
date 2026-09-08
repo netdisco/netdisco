@@ -145,17 +145,16 @@ const ndTables = (function () {
       };
     },
     /**
-     * Formats a cell as YYYY-MM-DD HH:mm using the vendored datetime renderer, escaping
-     * the output only when that renderer returned the raw input unchanged because the
-     * value failed to parse. A value it did format is already escaped by DataTables
-     * itself, and escaping it twice would corrupt entities in a name or description.
+     * Formats a cell as YYYY-MM-DD HH:mm. The server sends local wall clock
+     * already in sort order as text, so this slices the string rather than
+     * constructing a Date: there is no timezone here to get wrong.
      * @returns {Function} the DataTables render function
      */
     dateTime: function () {
-      const vendored = DataTable.render.datetime('YYYY-MM-DD HH:mm');
       return function (data, type) {
-        const out = vendored(data, type);
-        return type === 'display' && out === data ? esc(out) : out;
+        if (data == null) return '';
+        const text = String(data).replace('T', ' ');
+        return type === 'display' || type === 'filter' ? esc(text.slice(0, 16)) : text;
       };
     },
     /**
