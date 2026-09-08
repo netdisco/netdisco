@@ -197,6 +197,7 @@
 [% content | none %]
 
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/htmx.min.js?v=[% asset_version | none %]"></script>
+<script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-request.js?v=[% asset_version | none %]"></script>
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-toast.js?v=[% asset_version | none %]"></script>
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco.js?v=[% asset_version | none %]"></script>
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-typeahead.js?v=[% asset_version | none %]"></script>

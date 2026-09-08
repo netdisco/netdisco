@@ -258,6 +258,19 @@ jobs:
       - name: Nothing rebuilds the csv or reset link by hand
         run: node --test xt/js/pane-chrome.test.js
 
+  request-helper:
+    name: shared ajax request and serialization helper
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Requests carry the header ajax routes require and fields serialize the way the server expects
+        run: node --test xt/js/request-helper.test.js
+
   sort-types:
     name: version and address sort types
     runs-on: ubuntu-latest
