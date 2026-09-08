@@ -4,6 +4,25 @@
 let graph; // accessor object; the harness and netdisco.js use window.graph
 let saveMapPositions; // netdisco.js binds the sidebar Save button to this
 
+// Each render adds its own listeners on document, window and the sidebar
+// toggle buttons, none of which are torn down by the fragment reload that
+// replaces the pane. The previous render's listeners must go with it, or a
+// reload leaves two resize handlers fighting over one canvas. One controller
+// per render, aborted at the top of the next, covers all of them.
+/** @type {AbortController | null} */
+let ndnetmapListeners = null;
+
+/**
+ * Aborts the previous render's document/window/sidebar listeners and returns
+ * the signal for this render's replacements.
+ * @returns {AbortSignal} the signal to pass to every listener this render adds
+ */
+function beginRenderListeners() {
+  if (ndnetmapListeners) ndnetmapListeners.abort();
+  ndnetmapListeners = new AbortController();
+  return ndnetmapListeners.signal;
+}
+
 /**
  * @typedef {object} NdNetmapWindowProps
  * @property {object} [graph]
@@ -38,7 +57,17 @@ function ndNetmap(pane) {
   const map = pane.querySelector('#nd2_netmap-wrap');
   if (!(map instanceof HTMLElement)) return;
 
-  $.getJSON(map.dataset.ndDataUrl, function (mapdata) {
+  ndRequest
+    .getJSON(map.dataset.ndDataUrl)
+    // Caught here so only a failed request is silent; an exception thrown
+    // while rendering the fetched data must still reach the page's own
+    // unhandled-rejection reporter.
+    .catch(function (error) {
+      console.error(error);
+      return null;
+    })
+    .then(function (mapdata) {
+      if (!mapdata) return;
     // the netmap fragment reloads in place (do_search's $(target).html()), so
     // this callback runs again while the previous ForceGraph instance's rAF
     // loop is still running; without tearing it down first, its stale
@@ -194,8 +223,10 @@ function ndNetmap(pane) {
       }
     }
 
+    const netmapPaneEl = document.getElementById('netmap_pane');
+    const netmapPaneParent = netmapPaneEl && netmapPaneEl.parentElement;
     const fg = ForceGraph()(container)
-      .width(parseInt(jQuery('#netmap_pane').parent().css('width')))
+      .width(parseInt(netmapPaneParent ? getComputedStyle(netmapPaneParent).width : '0'))
       .height(window.innerHeight - 100)
       .nodeId('ID')
       .nodeRelSize(1)
@@ -289,17 +320,24 @@ function ndNetmap(pane) {
         n.fx = n.x;
         n.fy = n.y;
       });
-      $.post(
-        map.dataset.ndSaveUrl,
-        $(
-          "#nd_vlan-entry, #nd_mapshow-hops, #nd_hgroup-select, #nd_lgroup-select, #nq, input[name='mapshow']"
-        ).serialize() +
+      const body = new URLSearchParams(
+        ndRequest
+          .fields(
+            document.body,
+            "#nd_vlan-entry, #nd_mapshow-hops, #nd_hgroup-select, #nd_lgroup-select, #nq, input[name='mapshow']"
+          )
+          .toString() +
           '&positions=' +
           JSON.stringify(graph.positions())
-      ).done(function () {
-        if (announce && !autosaveOn()) {
+      );
+      ndRequest.post(map.dataset.ndSaveUrl, body).then(function (response) {
+        if (response.ok && announce && !autosaveOn()) {
           ndToast.success('Saved map positions.');
         }
+      }).catch(function (err) {
+        // Handled here so the page-wide unhandled-rejection reporter does not
+        // announce a failed save as a broken page.
+        console.error(err);
       });
     };
 
@@ -447,9 +485,11 @@ function ndNetmap(pane) {
       });
       fg.nodeRelSize(fg.nodeRelSize());
     }
-    // raw listeners cannot be namespaced like jQuery's; on a fragment reload,
-    // remove the previous render's pair by reference before adding this one,
-    // or they accumulate on window forever
+    // This pair lives on window, which survives the fragment reload that
+    // destroys the pane, so removal cannot rely on the old element going
+    // away. It is wired up before this render's listener controller exists
+    // below, so it tracks its own previous handlers by reference instead of
+    // sharing that signal.
     if (ndWindow.__ndNetmapPointerHandlers) {
       window.removeEventListener('pointermove', ndWindow.__ndNetmapPointerHandlers.move);
       window.removeEventListener('pointerup', ndWindow.__ndNetmapPointerHandlers.up);
@@ -494,14 +534,19 @@ function ndNetmap(pane) {
         }
       });
     }
-    // namespaced so a fragment reload's .off() removes only this render's
-    // handler instead of every handler ever bound to these shared elements
-    $(document)
-      .off('.ndnetmap')
-      .on('webkitfullscreenchange.ndnetmap mozfullscreenchange.ndnetmap fullscreenchange.ndnetmap', function () {
-        resizeGraphContainer();
-        $('#nd2_netmap-fullscreen i').attr('class', isFullScreen() ? 'fas fa-compress fa-lg' : 'fas fa-expand fa-lg');
-      });
+    const signal = beginRenderListeners();
+    ['webkitfullscreenchange', 'mozfullscreenchange', 'fullscreenchange'].forEach(function (name) {
+      document.addEventListener(
+        name,
+        function () {
+          resizeGraphContainer();
+          document.querySelectorAll('#nd2_netmap-fullscreen i').forEach(function (el) {
+            el.className = isFullScreen() ? 'fas fa-compress fa-lg' : 'fas fa-expand fa-lg';
+          });
+        },
+        { signal: signal }
+      );
+    });
 
     /**
      * Resizes the graph canvas to the pane's current width after a short delay,
@@ -510,12 +555,18 @@ function ndNetmap(pane) {
      */
     function resizeGraphContainer() {
       setTimeout(function () {
-        fg.width(parseInt(jQuery('#netmap_pane').parent().css('width'))).height(window.innerHeight - 100);
+        const resizePaneEl = document.getElementById('netmap_pane');
+        const resizePaneParent = resizePaneEl && resizePaneEl.parentElement;
+        fg.width(parseInt(resizePaneParent ? getComputedStyle(resizePaneParent).width : '0')).height(
+          window.innerHeight - 100
+        );
       }, 500);
     }
-    $('#nd_sidebar-toggle-img-in').off('.ndnetmap').on('click.ndnetmap', resizeGraphContainer);
-    $('#nd_sidebar-toggle-img-out').off('.ndnetmap').on('click.ndnetmap', resizeGraphContainer);
-    $(window).off('resize.ndnetmap').on('resize.ndnetmap', resizeGraphContainer);
+    const sidebarToggleIn = document.getElementById('nd_sidebar-toggle-img-in');
+    if (sidebarToggleIn) sidebarToggleIn.addEventListener('click', resizeGraphContainer, { signal: signal });
+    const sidebarToggleOut = document.getElementById('nd_sidebar-toggle-img-out');
+    if (sidebarToggleOut) sidebarToggleOut.addEventListener('click', resizeGraphContainer, { signal: signal });
+    window.addEventListener('resize', resizeGraphContainer, { signal: signal });
 
     // onEngineTick is a setter, not a subscription, so the tick count lives in
     // this handler rather than a second one that would replace it
