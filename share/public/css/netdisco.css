@@ -2103,3 +2103,13 @@ td.nd_nowrap {
 .nd_pane-settling {
   visibility: hidden;
 }
+/* The sidebar column is too narrow for the two fields side by side, so they
+   stack; keeping each label inline with its field, rather than on its own
+   line above it, keeps that stack from growing taller than the sidebar can
+   spare. Hiding this pair with the hidden attribute relies on Bootstrap's
+   reboot marking [hidden] display:none!important; without that rule this
+   display:grid would outrank the browser's own default and the pair would
+   stay visible. */
+.nd_daterange-pair { display: grid; gap: .25em; margin-top: .3em }
+.nd_daterange-addon { width: 3.3em; justify-content: flex-start; font-size: .78rem; padding: .1rem .4rem }
+.nd_daterange-input { font-size: .85rem; padding: .15rem .4rem }

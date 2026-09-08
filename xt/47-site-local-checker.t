@@ -502,16 +502,18 @@ subtest 'scan_site_local__path_does_not_exist__returns_nothing_and_lives' => sub
 subtest 'site_local_rules__called__describes_every_rule_the_scan_applies' => sub {
     my @rules = App::Netdisco::Util::SiteLocal::site_local_rules();
 
-    is scalar @rules, 24, 'twenty-four rules ship in this release';
+    is scalar @rules, 28, 'twenty-eight rules ship in this release';
     is_deeply [ sort map { $_->{name} } @rules ],
       [ 'csv-download-link', 'csv-download-target',
-        'datatabledefaults-include', 'datatables-js-renamed', 'do-search',
+        'datatabledefaults-include', 'datatables-js-renamed',
+        'daterange-input-id', 'daterangepicker-removed', 'do-search',
         'floatthead-js', 'has-sidebar-global', 'he-js', 'history-js',
         'history-replay', 'htmx-abort-trigger', 'jquery-deserialize',
         'jquery-ui-autocomplete', 'jquery-ui-removed', 'jstree-removed',
-        'layout-shadow', 'natural-js', 'nd-submit', 'page-script-include',
-        'page-title-globals', 'portcontrol-js-renamed', 'sidebar-reset-target',
-        'tab-page-shadow', 'tab-sync-attribute' ],
+        'layout-shadow', 'moment-removed', 'natural-js', 'nd-submit',
+        'page-script-include', 'page-title-globals', 'portcontrol-js-renamed',
+        'sidebar-reset-target', 'tab-page-shadow', 'tab-sync-attribute',
+        'toastr-removed' ],
       'named as the report cites them, file rules included';
     ok !(grep { !length($_->{advice} || '') } @rules),
       'and every rule carries remediation advice';
@@ -838,6 +840,149 @@ subtest 'scan_site_local__a_copy_of_the_jstree_library__is_not_reported' => sub 
 
     is_deeply [ scan_site_local({ paths => ["$tree"] }) ], [],
       'carrying the plugin is what the library does, not what a site must fix';
+};
+
+subtest 'scan_site_local__handler_calls_daterangepicker__reports_the_replacement' => sub {
+    my $tree = site_local_tree(
+      'javascripts/mypane.js' => qq{\$('#daterange').daterangepicker({ opens: 'left' });\n},
+    );
+
+    my @found = scan_site_local({ paths => ["$tree"] });
+    is scalar @found, 1, 'one finding';
+    is $found[0]->{rule}, 'daterangepicker-removed', 'the daterangepicker rule matched';
+    like $found[0]->{advice}, qr/_daterange\.tt/,
+      'the advice names the replacement container';
+};
+
+subtest 'scan_site_local__layout_copy_loads_moment_and_daterangepicker__reports_the_removal' => sub {
+    my $tree = site_local_tree(
+      'views/layouts/main.tt' => join("\n",
+        '<script src="[% uri_base %]/javascripts/moment.min.js"></script>',
+        '<script src="[% uri_base %]/javascripts/daterangepicker.js"></script>',
+      ),
+    );
+
+    my @found = scan_site_local({ paths => ["$tree"] });
+    is scalar @found, 2, 'both script tags are reported';
+    is_deeply [ map { $_->{rule} } @found ],
+      [ ('daterangepicker-removed') x 2 ], 'both attributed to the removal';
+};
+
+# The stylesheet is a separate line in a copied layout, and a copy that keeps
+# it gets a 404 rather than an error, so nothing else would report it.
+subtest 'scan_site_local__layout_copy_links_daterangepicker_css__reports_the_removal' => sub {
+    my $tree = site_local_tree(
+      'views/layouts/main.tt' =>
+        '<link rel="stylesheet" href="[% uri_base %]/css/daterangepicker.css"/>',
+    );
+
+    my @found = scan_site_local({ paths => ["$tree"] });
+    is scalar @found, 1, 'one finding';
+    is $found[0]->{rule}, 'daterangepicker-removed', 'the library rule matched';
+};
+
+# The library never calls itself this way, only inside namespaced event
+# strings like click.daterangepicker, so a site keeping its own copy of the
+# library is not told to change the library.
+subtest 'scan_site_local__a_copy_of_the_daterangepicker_library__is_not_reported' => sub {
+    my $tree = site_local_tree(
+      'javascripts/vendor-daterangepicker.js' =>
+        qq{.on('click.daterangepicker', '.prev', \$.proxy(this.clickPrev, this));\n},
+    );
+
+    is_deeply [ scan_site_local({ paths => ["$tree"] }) ], [],
+      'naming itself in an event string is what the library does, not what a site must fix';
+};
+
+subtest 'scan_site_local__handler_calls_moment__reports_the_removal' => sub {
+    my $tree = site_local_tree(
+      'javascripts/mypane.js' => qq{var label = moment(row.last_seen).fromNow();\n},
+    );
+
+    my @found = scan_site_local({ paths => ["$tree"] });
+    is scalar @found, 1, 'one finding';
+    is $found[0]->{rule}, 'moment-removed', 'the moment rule matched';
+    like $found[0]->{advice}, qr/Intl\.DateTimeFormat/,
+      'the advice names a native replacement';
+};
+
+subtest 'scan_site_local__table_config_uses_datatable_render_datetime__reports_the_removal' => sub {
+    my $tree = site_local_tree(
+      'views/ajax/report/custom.tt' =>
+        qq{render: DataTable.render.datetime('MMM Do YY')\n},
+    );
+
+    my @found = scan_site_local({ paths => ["$tree"] });
+    is scalar @found, 1, 'one finding';
+    is $found[0]->{rule}, 'moment-removed', 'the moment rule matched';
+};
+
+# A site that only customized the sidebar markup never wrote a
+# .daterangepicker() call or named a removed script, so the two subtests
+# above would stay quiet; this is the id-only trace they miss.
+subtest 'scan_site_local__template_holds_the_old_daterange_input__reports_the_replacement' => sub {
+    my $tree = site_local_tree(
+      'views/sidebar/search/node.tt' => join("\n",
+        '<input class="nd_side-input form-control" id="daterange"',
+        '  type="text" name="daterange" value="[% vars.sidebar_defaults.search_node.daterange | html_entity %]"/>',
+      ),
+    );
+
+    my @found = scan_site_local({ paths => ["$tree"] });
+    is scalar @found, 1, 'one finding';
+    is $found[0]->{rule}, 'daterange-input-id', 'the id rule matched';
+    is $found[0]->{line}, 1, 'at the line carrying the id, not the type on the next line';
+    like $found[0]->{advice}, qr/_daterange\.tt/,
+      'the advice names the replacement include';
+};
+
+subtest 'scan_site_local__handler_calls_toastr_success__reports_the_replacement' => sub {
+    my $tree = site_local_tree(
+      'javascripts/mypane.js' => qq{toastr.success("Saved");\n},
+    );
+
+    my @found = scan_site_local({ paths => ["$tree"] });
+    is scalar @found, 1, 'one finding';
+    is $found[0]->{rule}, 'toastr-removed', 'the toastr rule matched';
+    like $found[0]->{advice}, qr/ndToast/,
+      'the advice names what replaces the call';
+};
+
+subtest 'scan_site_local__layout_copy_loads_toastr__reports_the_removal' => sub {
+    my $tree = site_local_tree(
+      'views/layouts/main.tt' =>
+        '<script src="[% uri_base %]/javascripts/toastr.js"></script>',
+    );
+
+    my @found = scan_site_local({ paths => ["$tree"] });
+    is scalar @found, 1, 'one finding';
+    is $found[0]->{rule}, 'toastr-removed', 'the library rule matched';
+};
+
+# The stylesheet is a separate line in a copied layout, and a copy that keeps
+# it gets a 404 rather than an error, so nothing else would report it.
+subtest 'scan_site_local__layout_copy_links_toastr_css__reports_the_removal' => sub {
+    my $tree = site_local_tree(
+      'views/layouts/main.tt' =>
+        '<link rel="stylesheet" href="[% uri_base %]/css/toastr.css"/>',
+    );
+
+    my @found = scan_site_local({ paths => ["$tree"] });
+    is scalar @found, 1, 'one finding';
+    is $found[0]->{rule}, 'toastr-removed', 'the library rule matched';
+};
+
+# The library's own source reads toastr.options from itself, so the pattern is
+# anchored on the success/error/info/warning calls instead, the same way the
+# jstree and jQuery UI rules are anchored on the call rather than the name.
+subtest 'scan_site_local__a_copy_of_the_toastr_library__is_not_reported' => sub {
+    my $tree = site_local_tree(
+      'javascripts/vendor-toastr.js' =>
+        qq{return \$.extend({}, getDefaults(), toastr.options);\n},
+    );
+
+    is_deeply [ scan_site_local({ paths => ["$tree"] }) ], [],
+      'reading its own options is what the library does, not what a site must fix';
 };
 
 done_testing;

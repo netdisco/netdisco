@@ -11,9 +11,6 @@
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/bootstrap.min.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/bootstrap-toggle.min.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/force-graph.min.js?v=[% asset_version | none %]"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/toastr.js?v=[% asset_version | none %]"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/moment.min.js?v=[% asset_version | none %]"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/daterangepicker.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/dataTables.min.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/dataTables.bootstrap.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/dataTables.ip-address-detect.js?v=[% asset_version | none %]"></script>
@@ -25,10 +22,8 @@
   <link rel="stylesheet" href="[% uri_base | none %]/css/bootstrap-toggle.min.css?v=[% asset_version | none %]"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/awesome-bootstrap-checkbox.css?v=[% asset_version | none %]"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/font-awesome.min.css?v=[% asset_version | none %]"/>
-  <link rel="stylesheet" href="[% uri_base | none %]/css/toastr.css?v=[% asset_version | none %]"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/netdisco.css?v=[% asset_version | none %]"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/bootstrap-tree.css?v=[% asset_version | none %]"/>
-  <link rel="stylesheet" href="[% uri_base | none %]/css/daterangepicker.css?v=[% asset_version | none %]"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/dataTables.bootstrap.css?v=[% asset_version | none %]"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/nd_print.css?v=[% asset_version | none %]" media="print"/>
 
@@ -202,10 +197,12 @@
 [% content | none %]
 
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/htmx.min.js?v=[% asset_version | none %]"></script>
+<script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-toast.js?v=[% asset_version | none %]"></script>
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco.js?v=[% asset_version | none %]"></script>
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-typeahead.js?v=[% asset_version | none %]"></script>
 [% IF task %]<script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-admin.js?v=[% asset_version | none %]"></script>[% END %]
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-tables.js?v=[% asset_version | none %]"></script>
+<script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-daterange.js?v=[% asset_version | none %]"></script>
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-netmap.js?v=[% asset_version | none %]"></script>
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-deferred-nodes.js?v=[% asset_version | none %]"></script>
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-portcontrol.js?v=[% asset_version | none %]"></script>

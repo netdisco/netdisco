@@ -28,7 +28,7 @@ function port_control (e) {
       ,log:    logmessage
     }
     ,success: function() {
-      toastr.info('Submitted change request');
+      ndToast.info('Submitted change request');
 
       // update all the screen furniture unless bouncing
       if (! $(e).hasClass('fa-bullseye')) {
@@ -62,7 +62,7 @@ function port_control (e) {
       }
     }
     ,error: function() {
-      toastr.error('Failed to submit change request');
+      ndToast.error('Failed to submit change request');
       td.find('.nd_editable-cell-content').text(td.data('default'));
       td.blur();
     }
@@ -78,10 +78,10 @@ $(document).ready(function() {
         url: uri_base + '/ajax/userlog'
         ,success: function(data) {
           for (var i = 0; i < data['error'].length; i++) {
-            toastr.error(data['error'][i], 'Failed Job:');
+            ndToast.error(data['error'][i], 'Failed Job:');
           }
           for (i = 0; i < data['done'].length; i++) {
-            toastr.success(data['done'][i], 'Successful Job:');
+            ndToast.success(data['done'][i], 'Successful Job:');
           }
           // Schedule next request when the current one's complete
           setTimeout(worker, 5000);

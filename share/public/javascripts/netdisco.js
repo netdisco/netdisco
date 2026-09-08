@@ -408,75 +408,6 @@ $(document).ready(function() {
     $(this).toggleClass('nd_deep-horizon');
   });
 
-  // activate daterange plugin
-  $('#daterange').daterangepicker({
-    ranges: {
-      'Today': [moment(), moment()]
-      ,'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')]
-      ,'Last 7 Days': [moment().subtract(6, 'days'), moment()]
-      ,'Last 30 Days': [moment().subtract(29, 'days'), moment()]
-      ,'This Month': [moment().startOf('month'), moment().endOf('month')]
-      ,'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-    }
-    // The plugin seeds its options from this element's data-* attributes and
-    // lets the caller override them, so an unset option is the one a stray
-    // attribute could supply. Both of these reach a jQuery HTML sink, so pin
-    // them here rather than relying on the markup never gaining an attribute.
-    //
-    // The template is copied verbatim from daterangepicker 3.1.0, the version
-    // named in package.json, where the plugin builds it at daterangepicker.js
-    // lines 100 to 116. Re-copy it whenever that version changes: the plugin
-    // queries selectors inside this container, so a stale copy renders a broken
-    // widget with nothing thrown and no test to catch it.
-    ,template:
-      '<div class="daterangepicker">' +
-        '<div class="ranges"></div>' +
-        '<div class="drp-calendar left">' +
-          '<div class="calendar-table"></div>' +
-          '<div class="calendar-time"></div>' +
-        '</div>' +
-        '<div class="drp-calendar right">' +
-          '<div class="calendar-table"></div>' +
-          '<div class="calendar-time"></div>' +
-        '</div>' +
-        '<div class="drp-buttons">' +
-          '<span class="drp-selected"></span>' +
-          '<button class="cancelBtn" type="button"></button>' +
-          '<button class="applyBtn" disabled="disabled" type="button"></button> ' +
-        '</div>' +
-      '</div>'
-    ,parentEl: 'body'
-    ,minDate: '2004-01-01'
-    ,showDropdowns: true
-    ,timePicker: false
-    ,opens: 'left'
-    ,locale: { format: 'YYYY-MM-DD', separator: ' to ' }
-    ,autoUpdateInput: false
-  }
-  ,function(start, end) {
-    $('#daterange').trigger('input');
-  });
-
-  // daterangepicker 3.x writes the picker's own dates into the input on init
-  // unless autoUpdateInput is off, which blanks the server-rendered value. With
-  // it off, nothing updates the input when a range is applied, so do it here.
-  $('#daterange').on('apply.daterangepicker', function (ev, picker) {
-    $(this).val(picker.startDate.format('YYYY-MM-DD')
-      + ' to ' + picker.endDate.format('YYYY-MM-DD'));
-    $(this).trigger('input');
-  });
-
-  // handler for datepicker in node sidebar
-  $('.nd_sidebar').on('input', '#daterange', function() {
-    if ($(this).prop('value') == '') {
-      $('#daterange').parent('.clearfix').removeClass('success');
-    }
-    else {
-      $('#daterange').parent('.clearfix').addClass('success');
-    }
-  });
-  $('#daterange').trigger('input');
-
   // inventory: a very large platform or OS table starts collapsed (see the
   // toggle() below); each Show link expands its own group's rows again.
   document.addEventListener('click', function (event) {
@@ -634,7 +565,7 @@ $(document).ready(function() {
     console.error(message, detail);
     if (ndReported) return;
     ndReported = true;
-    toastr.error('Something on this page failed. The browser console has the details.');
+    ndToast.error('Something on this page failed. The browser console has the details.');
   }
   window.addEventListener('error', function (evt) {
     // a script from another origin reports only the bare "Script error."
@@ -887,7 +818,7 @@ $(document).ready(function() {
         ,data: tr.find('input[data-form="' + mode + '"],textarea[data-form="' + mode + '"]').serializeArray()
         ,success: function() {
           if (mode != 'delete') {
-            toastr.info('Requested '+ mode +' for device '+ tr.data('for-device'));
+            ndToast.info('Requested '+ mode +' for device '+ tr.data('for-device'));
             if (mode == 'snapshot_del') {
                 $('.nd_snap_btn').toggleClass('btn-success');
                 $('.nd_snap_btn').toggleClass('btn-info');
@@ -895,13 +826,13 @@ $(document).ready(function() {
             }
           }
           else {
-            toastr.success('Queued job to delete '+ tr.data('for-device'));
+            ndToast.success('Queued job to delete '+ tr.data('for-device'));
           }
         }
         // skip any error reporting for now
         // TODO: fix sanity_ok in Netdisco Web
         ,error: function() {
-          toastr.error('Failed to '+ mode +' device '+ tr.data('for-device'));
+          ndToast.error('Failed to '+ mode +' device '+ tr.data('for-device'));
         }
       });
     });
@@ -922,12 +853,12 @@ $(document).ready(function() {
         ,url: uri_base + '/ajax/control/nonadmin/' + mode
         ,data: tr.find('input[data-form="' + mode + '"],textarea[data-form="' + mode + '"]').serializeArray()
         ,success: function() {
-          toastr.info('Requested '+ mode +' for device '+ tr.data('for-device'));
+          ndToast.info('Requested '+ mode +' for device '+ tr.data('for-device'));
         }
         // skip any error reporting for now
         // TODO: fix sanity_ok in Netdisco Web
         ,error: function() {
-          toastr.error('Failed to '+ mode +' device '+ tr.data('for-device'));
+          ndToast.error('Failed to '+ mode +' device '+ tr.data('for-device'));
         }
       });
     });

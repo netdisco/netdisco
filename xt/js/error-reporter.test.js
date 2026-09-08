@@ -33,7 +33,7 @@ function harness() {
   const windowListeners = {};
   const bodyListeners = {};
   const errorCalls = [];
-  const toastrCalls = [];
+  const ndToastCalls = [];
 
   const windowMock = {
     addEventListener: (name, fn) => { windowListeners[name] = fn },
@@ -42,17 +42,17 @@ function harness() {
     body: { addEventListener: (name, fn) => { bodyListeners[name] = fn } },
   };
   const consoleMock = { error: (...args) => errorCalls.push(args) };
-  const toastrMock = { error: (message) => toastrCalls.push(message) };
+  const ndToastMock = { error: (message) => ndToastCalls.push(message) };
 
-  new Function('window', 'document', 'console', 'toastr', extractReporterBlock())(
-    windowMock, documentMock, consoleMock, toastrMock);
+  new Function('window', 'document', 'console', 'ndToast', extractReporterBlock())(
+    windowMock, documentMock, consoleMock, ndToastMock);
 
   return {
     fireError: (message, error) => windowListeners.error({ message, error }),
     fireRejection: (reason) => windowListeners.unhandledrejection({ reason }),
     fireHtmxError: (detail) => bodyListeners['htmx:error']({ detail }),
     errorCalls,
-    toastrCalls,
+    ndToastCalls,
   };
 }
 
@@ -60,7 +60,7 @@ test('scriptError__with_a_message_and_an_error__logs_and_toasts_once', () => {
   const h = harness();
   h.fireError('boom', new Error('boom'));
   assert.strictEqual(h.errorCalls.length, 1, 'the console must carry the detail every time');
-  assert.strictEqual(h.toastrCalls.length, 1, 'the user must be told something failed');
+  assert.strictEqual(h.ndToastCalls.length, 1, 'the user must be told something failed');
 });
 
 test('scriptError__a_second_error_on_the_same_page__logs_again_but_toasts_no_more', () => {
@@ -69,7 +69,7 @@ test('scriptError__a_second_error_on_the_same_page__logs_again_but_toasts_no_mor
   h.fireError('second', new Error('second'));
   assert.strictEqual(h.errorCalls.length, 2,
     'every error belongs in the console, or a second, different failure is invisible');
-  assert.strictEqual(h.toastrCalls.length, 1,
+  assert.strictEqual(h.ndToastCalls.length, 1,
     'a toast per error would be noise once several unrelated things fail on one page');
 });
 
@@ -78,14 +78,14 @@ test('scriptError__a_bare_cross_origin_script_error__is_ignored', () => {
   h.fireError('Script error.', undefined);
   assert.strictEqual(h.errorCalls.length, 0,
     'a script from another origin reports no detail at all, so logging it teaches nothing');
-  assert.strictEqual(h.toastrCalls.length, 0);
+  assert.strictEqual(h.ndToastCalls.length, 0);
 });
 
 test('unhandledRejection__reports_like_any_other_script_error', () => {
   const h = harness();
   h.fireRejection(new Error('rejected'));
   assert.strictEqual(h.errorCalls.length, 1, 'a rejected promise is as silent as a thrown error otherwise');
-  assert.strictEqual(h.toastrCalls.length, 1);
+  assert.strictEqual(h.ndToastCalls.length, 1);
 });
 
 // htmx carries four different failures on one event: a request that never
@@ -100,7 +100,7 @@ test('htmxError__an_answer_that_could_not_be_displayed__reports_like_a_script_er
   h.fireHtmxError({ ctx: { response: { status: 200 } }, error: new Error('bad content type') });
   assert.strictEqual(h.errorCalls.length, 1,
     'a swap htmx cannot display is otherwise an event nobody listens to');
-  assert.strictEqual(h.toastrCalls.length, 1);
+  assert.strictEqual(h.ndToastCalls.length, 1);
 });
 
 test('htmxError__a_failure_with_no_request_behind_it__reports_like_a_script_error', () => {
@@ -108,7 +108,7 @@ test('htmxError__a_failure_with_no_request_behind_it__reports_like_a_script_erro
   h.fireHtmxError({ error: new Error('handler threw') });
   assert.strictEqual(h.errorCalls.length, 1,
     'an exception inside an htmx handler reaches nobody else');
-  assert.strictEqual(h.toastrCalls.length, 1);
+  assert.strictEqual(h.ndToastCalls.length, 1);
 });
 
 test('htmxError__a_request_that_never_arrived__is_left_to_the_pane_handler', () => {
@@ -116,7 +116,7 @@ test('htmxError__a_request_that_never_arrived__is_left_to_the_pane_handler', () 
   h.fireHtmxError({ ctx: {}, error: new Error('offline') });
   assert.strictEqual(h.errorCalls.length, 0,
     'the pane says so in the pane; a toast beside it fires on every abandoned tab switch too');
-  assert.strictEqual(h.toastrCalls.length, 0);
+  assert.strictEqual(h.ndToastCalls.length, 0);
 });
 
 // htmx sets the response before it reads the body, so a request abandoned
@@ -130,5 +130,5 @@ test('htmxError__an_abandoned_request_that_had_begun_answering__raises_nothing',
   h.fireHtmxError({ ctx: { response: { status: 200 } }, error: aborted });
   assert.strictEqual(h.errorCalls.length, 0,
     'a tab switch would otherwise report a script error on every click');
-  assert.strictEqual(h.toastrCalls.length, 0);
+  assert.strictEqual(h.ndToastCalls.length, 0);
 });

@@ -20,11 +20,11 @@
                   <span class="nd_searchcheckbox form-control-plaintext">Not within...</span>
                 </label>
               </div>
-              <div class="clearfix">
-                <input class="nd_side-input form-control" id="daterange" required="required"
-                  type="text" name="daterange" value="[%
-                    (params.exists('daterange') ? params.daterange : to_daterange()) | html_entity %]"/>
-              </div>
+              [%- all_dates = to_daterange() -%]
+              [%- INCLUDE 'sidebar/_daterange.tt'
+                    all_dates = all_dates
+                    current   = (params.exists('daterange') ? params.daterange : all_dates)
+                    required  = 1 -%]
             </fieldset>
 
             <fieldset>

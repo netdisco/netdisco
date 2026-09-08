@@ -241,6 +241,71 @@ my @RULES = (
              . 'script and stylesheet lines from a layout copy, and any '
              . 'jstree() call.',
   },
+  {
+    name    => 'daterangepicker-removed',
+    release => '2.109000',
+    # The three file names together, since a copied layout loses each on its
+    # own line, and the call, since a script keeping it throws once the
+    # library is gone. Measured against the library's own source, which does
+    # not carry this call form: it names itself only inside namespaced event
+    # strings such as click.daterangepicker, never as a call.
+    pattern => qr{javascripts/(?:moment\.min|daterangepicker)\.js
+                  |css/daterangepicker\.css
+                  |\.\s*daterangepicker\s*\(}x,
+    advice  => 'moment.js, daterangepicker.js and daterangepicker.css were '
+             . 'removed. Give the field a container like '
+             . 'share/views/sidebar/_daterange.tt and delete the '
+             . '.daterangepicker() call and the two script tags and the '
+             . 'stylesheet link from a layout copy: netdisco-daterange.js '
+             . 'drives the control now, so add a script tag for it to the '
+             . 'layout copy in their place.',
+  },
+  {
+    name    => 'moment-removed',
+    release => '2.109000',
+    # The rule above catches a layout still loading the file; this catches the
+    # call, since moment was a global on every page for a decade and a site
+    # script formatting a date with it throws once the library is gone. The
+    # vendored DataTables render helper of the same name as the second
+    # alternative requires moment or luxon internally, so a table column
+    # configured with it now fails with neither present.
+    pattern => qr/\bmoment\s*\(|DataTable\.render\.datetime\s*\(/,
+    advice  => 'moment.js was removed and nothing replaces it as a global. '
+             . 'Format the date with native Date or Intl.DateTimeFormat '
+             . 'instead of calling moment, and give a datetime column a '
+             . 'different render function: the DataTable.render.datetime '
+             . 'helper needs moment or luxon and neither is loaded any more.',
+  },
+  {
+    name    => 'daterange-input-id',
+    release => '2.109000',
+    # A site that only customized the sidebar markup never wrote a
+    # .daterangepicker() call or named a removed script, so the two rules
+    # above stay quiet and this id is the only trace left to catch. The id
+    # and the type="text" that went with it sit on different lines in the
+    # old markup, so the id alone is the anchor rather than the pair on one
+    # line. No shipped template sets this id any more.
+    pattern => qr/id=["']daterange["']/,
+    advice  => 'this field carried the daterangepicker widget by its id, '
+             . 'which is gone along with the JavaScript that drove it, so '
+             . 'the field is now a plain text box with nothing behind it. '
+             . 'Replace it with a copy of share/views/sidebar/_daterange.tt: '
+             . 'netdisco-daterange.js drives the control from its markup, '
+             . 'not by id.',
+  },
+  {
+    name    => 'toastr-removed',
+    release => '2.109000',
+    # Anchored on the call rather than toastr.options, which the library's own
+    # source reads from itself, so a site keeping a copy of the library is not
+    # told to change the library.
+    pattern => qr{javascripts/toastr\.js|css/toastr\.css
+                  |toastr\s*\.\s*(?:error|success|info|warning)\s*\(}x,
+    advice  => 'toastr was removed. Use ndToast (success, error and info) '
+             . 'instead: delete the toastr.js script and toastr.css '
+             . 'stylesheet lines from a layout copy and add a script tag '
+             . 'for netdisco-toast.js in their place.',
+  },
 );
 
 # Rules that fault what a file does NOT contain, so a finding has no line.

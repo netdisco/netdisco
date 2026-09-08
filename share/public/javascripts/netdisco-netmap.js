@@ -298,7 +298,7 @@ function ndNetmap(pane) {
           JSON.stringify(graph.positions())
       ).done(function () {
         if (announce && !autosaveOn()) {
-          toastr.success('Saved map positions.');
+          ndToast.success('Saved map positions.');
         }
       });
     };

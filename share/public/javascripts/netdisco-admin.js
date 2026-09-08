@@ -146,13 +146,13 @@ ndPages.admin = {
         }
         ,success: function(data) {
           if (mode == 'add') {
-            toastr.success('Added record');
+            ndToast.success('Added record');
           }
           else if (mode == 'delete') {
-            toastr.success('Deleted record');
+            ndToast.success('Deleted record');
           }
           else {
-            toastr.success('Updated record');
+            ndToast.success('Updated record');
           }
           // one refresh for every mode. add and delete each asked for their own
           // as well, which used to race two answers into the pane and, now that
@@ -163,15 +163,15 @@ ndPages.admin = {
         // TODO: fix sanity_ok in Netdisco Web
         ,error: function() {
           if (mode == 'add') {
-            toastr.error('Failed to add record');
+            ndToast.error('Failed to add record');
             htmx.trigger('#' + tab + '_form', 'submit');
           }
           else if (mode == 'delete') {
-            toastr.error('Failed to delete record');
+            ndToast.error('Failed to delete record');
             htmx.trigger('#' + tab + '_form', 'submit');
           }
           else {
-            toastr.error('Failed to update record');
+            ndToast.error('Failed to update record');
           }
         }
       });
@@ -277,10 +277,10 @@ document.addEventListener('click', function (event) {
         hint.textContent = '...' + key.slice(-8);
         window.nd_show_api_token(key);
       } else {
-        toastr.error('Could not retrieve token');
+        ndToast.error('Could not retrieve token');
       }
     })
-    .catch(function () { toastr.error('Could not retrieve token') });
+    .catch(function () { ndToast.error('Could not retrieve token') });
 });
 
 // Opens the token modal for a freshly issued API token

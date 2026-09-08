@@ -283,3 +283,29 @@ jobs:
 
       - name: The results table header is stuck by the stylesheet and by no plug-in
         run: node --test xt/js/sticky-header.test.js
+
+  daterange-presets:
+    name: date range preset arithmetic
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Each preset resolves to the right pair of dates
+        run: node --test xt/js/daterange-presets.test.js
+
+  toast:
+    name: Bootstrap toast notifications
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: A toast is built and dismissed without toastr
+        run: node --test xt/js/toast.test.js

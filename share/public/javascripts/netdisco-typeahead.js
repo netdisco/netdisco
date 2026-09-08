@@ -19,16 +19,19 @@
   function readOptions(element) {
     const params = element.getAttribute(ATTR + '-params');
     return {
-      url: element.getAttribute(ATTR),
+      url: element.getAttribute(ATTR) || '',
       min: Number(element.getAttribute(ATTR + '-min') || 0),
       params: params
-        ? params.split(',').map((s) => s.trim()).filter((s) => s.length)
+        ? params
+            .split(',')
+            .map((s) => s.trim())
+            .filter((s) => s.length)
         : null,
       openTerm: element.getAttribute(ATTR + '-open'),
       opensOnFocus: element.hasAttribute(ATTR + '-open'),
       first: element.hasAttribute(ATTR + '-first'),
       menuClass: element.getAttribute(ATTR + '-menu') || '',
-      commit: element.getAttribute(ATTR + '-commit') || '',
+      commit: element.getAttribute(ATTR + '-commit') || ''
     };
   }
 
@@ -110,14 +113,20 @@
     return next;
   }
 
-  window.ndTypeahead = {
+  /**
+   * @typedef {object} NdTypeaheadWindowProps
+   * @property {object} [ndTypeahead] the readOptions, normalizeRows, highlightInto and nextIndex functions above, exported for tests
+   */
+  /** @type {Window & NdTypeaheadWindowProps} */
+  const ndWindow = window;
+  ndWindow.ndTypeahead = {
     readOptions: readOptions,
     normalizeRows: normalizeRows,
     highlightInto: highlightInto,
-    nextIndex: nextIndex,
+    nextIndex: nextIndex
   };
 
-  /** @type {Element|null} the menu, built once and reused for the life of the page */
+  /** @type {HTMLElement|null} the menu, built once and reused for the life of the page */
   let menu = null;
   /** @type {HTMLInputElement|null} the field the menu currently belongs to */
   let owner = null;
@@ -148,7 +157,7 @@
 
   /**
    * Returns the menu, building it on first use.
-   * @returns {Element} the one menu element
+   * @returns {HTMLElement} the one menu element
    */
   function theMenu() {
     if (menu) {
@@ -192,8 +201,8 @@
   function place(field) {
     const box = field.getBoundingClientRect();
     const list = theMenu();
-    list.style.left = (box.left + window.scrollX) + 'px';
-    list.style.top = (box.bottom + window.scrollY) + 'px';
+    list.style.left = box.left + window.scrollX + 'px';
+    list.style.top = box.bottom + window.scrollY + 'px';
     list.style.minWidth = box.width + 'px';
   }
 
@@ -224,8 +233,7 @@
       owner.setAttribute('aria-expanded', rows.length ? 'true' : 'false');
       if (active >= 0) {
         owner.setAttribute('aria-activedescendant', 'nd_typeahead-row-' + active);
-      }
-      else {
+      } else {
         owner.removeAttribute('aria-activedescendant');
       }
     }
@@ -237,16 +245,20 @@
    * from them never adds a term of its own.
    * @param {HTMLInputElement} field the field being searched from
    * @param {string} term the text to send when the request carries a term
+   * @param {ReturnType<typeof readOptions>} settings the field's own typeahead settings
    * @returns {{[key: string]: string}} the query parameters
    */
-  function buildQuery(field, term) {
-    if (!options.params) {
+  function buildQuery(field, term, settings) {
+    if (!settings.params) {
       return { term: term };
     }
+    /** @type {{[key: string]: string}} */
     const query = {};
-    options.params.forEach((selector) => {
-      const group = selector === 'self'
-        ? [field] : Array.from(document.querySelectorAll(selector));
+    settings.params.forEach((selector) => {
+      const group =
+        selector === 'self'
+          ? [field]
+          : /** @type {HTMLInputElement[]} */ (Array.from(document.querySelectorAll(selector)));
       group.forEach((input) => {
         if (input.name && !input.disabled) {
           query[input.name] = input.value;
@@ -260,20 +272,26 @@
    * Fetches and shows the suggestions for a field.
    * @param {HTMLInputElement} field the field being searched from
    * @param {string} term the text to search for
+   * @param {ReturnType<typeof readOptions>} settings the field's own typeahead settings
    * @returns {void}
    */
-  function search(field, term) {
+  function search(field, term, settings) {
     const mine = ++sequence;
     typed = field.value;
-    $.get(uri_base + options.url, buildQuery(field, term), (data) => {
-      if (mine !== sequence || owner !== field) {
-        return;
-      }
-      rows = normalizeRows(data);
-      active = (options.first && rows.length) ? 0 : -1;
-      place(field);
-      paint();
-    }, 'json');
+    $.get(
+      uri_base + settings.url,
+      buildQuery(field, term, settings),
+      (data) => {
+        if (mine !== sequence || owner !== field) {
+          return;
+        }
+        rows = normalizeRows(data);
+        active = settings.first && rows.length ? 0 : -1;
+        place(field);
+        paint();
+      },
+      'json'
+    );
   }
 
   /**
@@ -287,15 +305,16 @@
       close();
     }
     owner = field;
-    options = readOptions(field);
-    theMenu().className = 'nd_typeahead-menu ' + options.menuClass;
+    const settings = readOptions(field);
+    options = settings;
+    theMenu().className = 'nd_typeahead-menu ' + settings.menuClass;
     field.setAttribute('role', 'combobox');
     field.setAttribute('aria-controls', MENU_ID);
     field.setAttribute('aria-autocomplete', 'list');
     if (timer) {
       clearTimeout(timer);
     }
-    timer = setTimeout(() => search(field, term), DELAY);
+    timer = setTimeout(() => search(field, term, settings), DELAY);
   }
 
   /**
@@ -330,7 +349,8 @@
    * @returns {HTMLInputElement|null} the field, or null
    */
   function fieldFor(target) {
-    return target && target.closest ? target.closest('[' + ATTR + ']') : null;
+    const element = /** @type {Element|null} */ (target);
+    return element && element.closest ? /** @type {HTMLInputElement|null} */ (element.closest('[' + ATTR + ']')) : null;
   }
 
   document.addEventListener('focusin', (event) => {
@@ -341,7 +361,7 @@
     }
     const settings = readOptions(field);
     if (settings.opensOnFocus) {
-      open(field, field.value || settings.openTerm);
+      open(field, field.value || settings.openTerm || '');
     }
   });
 
@@ -358,10 +378,12 @@
   });
 
   document.addEventListener('click', (event) => {
-    const caret = event.target.closest
-      && event.target.closest('.nd_topo_dev_caret, .nd_topo_port_caret');
+    const target = /** @type {Element} */ (event.target);
+    const caret = target.closest && target.closest('.nd_topo_dev_caret, .nd_topo_port_caret');
     if (caret) {
-      const sibling = caret.parentNode.querySelector('[' + ATTR + ']');
+      const sibling = /** @type {HTMLInputElement|null} */ (
+        caret.parentNode && caret.parentNode.querySelector('[' + ATTR + ']')
+      );
       if (!sibling) {
         return;
       }
@@ -371,15 +393,15 @@
         sibling.value = '';
       }
       sibling.focus();
-      open(sibling, sibling.value || readOptions(sibling).openTerm);
+      open(sibling, sibling.value || readOptions(sibling).openTerm || '');
       return;
     }
-    const row = event.target.closest && event.target.closest('#' + MENU_ID + ' li');
+    const row = /** @type {HTMLElement|null} */ (target.closest && target.closest('#' + MENU_ID + ' li'));
     if (row && owner) {
-      commit(owner, { value: row.dataset.ndValue }, false);
+      commit(owner, { value: row.dataset.ndValue || '' }, false);
       return;
     }
-    if (!fieldFor(event.target)) {
+    if (!fieldFor(target)) {
       close();
     }
   });
@@ -393,13 +415,11 @@
       active = nextIndex(active, rows.length, event.key === 'ArrowDown' ? 1 : -1);
       owner.value = active === -1 ? typed : rows[active].value;
       paint();
-    }
-    else if (event.key === 'Escape') {
+    } else if (event.key === 'Escape') {
       event.preventDefault();
       owner.value = typed;
       close();
-    }
-    else if (event.key === 'Enter' && active !== -1) {
+    } else if (event.key === 'Enter' && active !== -1) {
       event.preventDefault();
       commit(owner, rows[active], true);
     }
@@ -416,9 +436,13 @@
   // scrollbar is the exception: it is taller than its 200px cap whenever the
   // answer runs long, and closing on that would make the rows below the fold
   // unreachable.
-  document.addEventListener('scroll', (event) => {
-    if (owner && event.target !== document && event.target !== menu) {
-      close();
-    }
-  }, true);
+  document.addEventListener(
+    'scroll',
+    (event) => {
+      if (owner && event.target !== document && event.target !== menu) {
+        close();
+      }
+    },
+    true
+  );
 })();
