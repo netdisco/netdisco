@@ -335,3 +335,17 @@ jobs:
 
       - name: The vendored toggle file draws the widget on its own
         run: node --test xt/js/toggle-build.test.js
+
+  no-jquery:
+    name: no jQuery in the shipped tree
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      # Same naming rule as the jobs above: name the file, never a glob.
+      - name: No shipped script calls jQuery and the library is gone
+        run: node --test xt/js/no-jquery.test.js

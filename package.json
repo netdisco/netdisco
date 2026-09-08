@@ -11,7 +11,6 @@
     "datatables.net": "3.0.3",
     "datatables.net-bs5": "3.0.3",
     "htmx.org": "4.0.0",
-    "jquery": "3.7.1",
     "force-graph": "1.51.4",
     "swagger-ui-dist": "5.32.12"
   }

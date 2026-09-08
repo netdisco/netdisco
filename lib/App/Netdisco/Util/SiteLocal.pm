@@ -306,6 +306,24 @@ my @RULES = (
              . 'stylesheet lines from a layout copy and add a script tag '
              . 'for netdisco-toast.js in their place.',
   },
+  {
+    name    => 'jquery-removed',
+    release => '2.109000',
+    # Anchored on the exact vendored file name, not a generic jquery*.js glob,
+    # so a site's own copy of jquery-ui.min.js or jquery.dataTables.min.js is
+    # left to the rule that already covers it. And on the literal jQuery
+    # global rather than the bare dollar sign: the widget rules above each
+    # anchor on their own call and would report the same line twice, and a
+    # template commonly prints a dollar amount or an ES6 template literal,
+    # neither of which names the library. A call written only as $(...) for
+    # something none of the widget rules name is not caught here.
+    pattern => qr{javascripts/jquery-latest(?:\.min)?\.js|\bjQuery\b},
+    advice  => 'jQuery must not appear in a site-local script or a copied '
+             . 'layout. Delete the script line naming jquery-latest.min.js '
+             . 'from a layout copy, and rewrite a jQuery call with native '
+             . 'DOM methods: netdisco-request.js carries the request and '
+             . 'form helpers the shipped scripts use.',
+  },
 );
 
 # Rules that fault what a file does NOT contain, so a finding has no line.

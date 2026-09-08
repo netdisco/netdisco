@@ -7,7 +7,6 @@
   <link rel="icon" href="[% uri_base | none %]/images/favicon.ico" type="image/x-icon">
   <title>[% settings.branding_text | none %]</title>
 
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-latest.min.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/bootstrap.min.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/bootstrap-toggle.min.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/force-graph.min.js?v=[% asset_version | none %]"></script>

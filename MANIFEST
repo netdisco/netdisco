@@ -366,7 +366,6 @@ share/public/javascripts/dataTables.ip-address-sort.js
 share/public/javascripts/dataTables.min.js
 share/public/javascripts/force-graph.min.js
 share/public/javascripts/htmx.min.js
-share/public/javascripts/jquery-latest.min.js
 share/public/javascripts/netdisco-admin.js
 share/public/javascripts/netdisco-daterange.js
 share/public/javascripts/netdisco-deferred-nodes.js
@@ -700,6 +699,7 @@ xt/js/netmap-autosave.test.js
 xt/js/netmap-legend.test.js
 xt/js/netmap-loading.test.js
 xt/js/no-fragment-scripts.test.js
+xt/js/no-jquery.test.js
 xt/js/no-jstree.test.js
 xt/js/page-registry.test.js
 xt/js/pane-chrome.test.js

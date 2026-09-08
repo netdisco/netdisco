@@ -502,18 +502,18 @@ subtest 'scan_site_local__path_does_not_exist__returns_nothing_and_lives' => sub
 subtest 'site_local_rules__called__describes_every_rule_the_scan_applies' => sub {
     my @rules = App::Netdisco::Util::SiteLocal::site_local_rules();
 
-    is scalar @rules, 28, 'twenty-eight rules ship in this release';
+    is scalar @rules, 29, 'twenty-nine rules ship in this release';
     is_deeply [ sort map { $_->{name} } @rules ],
       [ 'csv-download-link', 'csv-download-target',
         'datatabledefaults-include', 'datatables-js-renamed',
         'daterange-input-id', 'daterangepicker-removed', 'do-search',
         'floatthead-js', 'has-sidebar-global', 'he-js', 'history-js',
         'history-replay', 'htmx-abort-trigger', 'jquery-deserialize',
-        'jquery-ui-autocomplete', 'jquery-ui-removed', 'jstree-removed',
-        'layout-shadow', 'moment-removed', 'natural-js', 'nd-submit',
-        'page-script-include', 'page-title-globals', 'portcontrol-js-renamed',
-        'sidebar-reset-target', 'tab-page-shadow', 'tab-sync-attribute',
-        'toastr-removed' ],
+        'jquery-removed', 'jquery-ui-autocomplete', 'jquery-ui-removed',
+        'jstree-removed', 'layout-shadow', 'moment-removed', 'natural-js',
+        'nd-submit', 'page-script-include', 'page-title-globals',
+        'portcontrol-js-renamed', 'sidebar-reset-target', 'tab-page-shadow',
+        'tab-sync-attribute', 'toastr-removed' ],
       'named as the report cites them, file rules included';
     ok !(grep { !length($_->{advice} || '') } @rules),
       'and every rule carries remediation advice';
@@ -983,6 +983,44 @@ subtest 'scan_site_local__a_copy_of_the_toastr_library__is_not_reported' => sub 
 
     is_deeply [ scan_site_local({ paths => ["$tree"] }) ], [],
       'reading its own options is what the library does, not what a site must fix';
+};
+
+
+subtest 'scan_site_local__layout_copy_loads_jquery__reports_the_removal' => sub {
+    my $tree = site_local_tree(
+      'views/layouts/main.tt' =>
+        '<script src="[% uri_base %]/javascripts/jquery-latest.min.js"></script>',
+    );
+
+    my @found = scan_site_local({ paths => ["$tree"] });
+    is scalar @found, 1, 'one finding';
+    is $found[0]->{rule}, 'jquery-removed', 'the library rule matched';
+    like $found[0]->{advice}, qr/netdisco-request\.js/,
+      'the advice names the helper a site-local script can use instead';
+};
+
+subtest 'scan_site_local__handler_calls_jQuery__reports_the_removal' => sub {
+    my $tree = site_local_tree(
+      'javascripts/mypane.js' => qq{jQuery(document).ready(function () {});\n},
+    );
+
+    my @found = scan_site_local({ paths => ["$tree"] });
+    is scalar @found, 1, 'one finding';
+    is $found[0]->{rule}, 'jquery-removed', 'the jQuery rule matched';
+};
+
+# A template commonly prints a dollar amount, and a script commonly
+# interpolates a string with ${}. Neither one names the library.
+subtest 'scan_site_local__file_uses_a_dollar_sign_for_something_else__reports_nothing' => sub {
+    my $tree = site_local_tree(
+      'views/report/custom.tt' =>
+        '<td>$[% item.price | html_entity %]</td>',
+      'javascripts/mypane.js' =>
+        'const label = `Cost: ${row.price}`;' . "\n",
+    );
+
+    is_deeply [ scan_site_local({ paths => ["$tree"] }) ], [],
+      'printing a price or interpolating a string is not a call to the library';
 };
 
 done_testing;
