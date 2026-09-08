@@ -712,6 +712,7 @@ xt/js/submit-dispatch.test.js
 xt/js/tab-request-sync.test.js
 xt/js/tables-registry.test.js
 xt/js/toast.test.js
+xt/js/toggle-build.test.js
 xt/js/tooltip-dismissal.test.js
 xt/js/typeahead-core.test.js
 xt/js/typeahead-source.test.js
