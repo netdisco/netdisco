@@ -114,8 +114,17 @@
   }
 
   /**
+   * Dispatches the keydown the ACL editor's rule-add handler listens for.
+   * @param {HTMLInputElement} field the field the row was written into
+   * @returns {void}
+   */
+  function dispatchAclCommitKeydown(field) {
+    field.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+  }
+
+  /**
    * @typedef {object} NdTypeaheadWindowProps
-   * @property {object} [ndTypeahead] the readOptions, normalizeRows, highlightInto and nextIndex functions above, exported for tests
+   * @property {object} [ndTypeahead] the readOptions, normalizeRows, highlightInto, nextIndex and dispatchAclCommitKeydown functions above, exported for tests
    */
   /** @type {Window & NdTypeaheadWindowProps} */
   const ndWindow = window;
@@ -123,7 +132,8 @@
     readOptions: readOptions,
     normalizeRows: normalizeRows,
     highlightInto: highlightInto,
-    nextIndex: nextIndex
+    nextIndex: nextIndex,
+    dispatchAclCommitKeydown: dispatchAclCommitKeydown
   };
 
   /** @type {HTMLElement|null} the menu, built once and reused for the life of the page */
@@ -334,12 +344,10 @@
     // is driven by change, which the browser fires on blur either way.
     field.dispatchEvent(new Event('input', { bubbles: true }));
     committing = false;
-    // The ACL editor adds a rule from a delegated jQuery keydown handler, and a
-    // native key event carries no `which` for that handler to read. An Enter
-    // that chose the row is already on its way there and needs no help; only a
-    // row taken with the pointer does.
+    // Choosing a row with the pointer must still notify the contenteditable
+    // keydown handler, because only a live Enter reaches it on its own.
     if (commitStyle === 'acl' && !fromEnter) {
-      $(field).trigger(jQuery.Event('keydown', { which: 13 }));
+      dispatchAclCommitKeydown(field);
     }
   }
 

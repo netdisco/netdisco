@@ -17,7 +17,12 @@ const source = fs.readFileSync(
 // before there is a document.
 function loadCore() {
   const win = { addEventListener() {}, document: { addEventListener() {} } };
-  const sandbox = { window: win, document: win.document, jQuery: undefined };
+  const sandbox = {
+    window: win,
+    document: win.document,
+    jQuery: undefined,
+    KeyboardEvent: function (type, init) { this.type = type; Object.assign(this, init); },
+  };
   sandbox.globalThis = sandbox;
   vm.createContext(sandbox);
   vm.runInContext(source, sandbox);
@@ -30,6 +35,16 @@ const withAttributes = (attrs) => ({
   getAttribute: (name) => (name in attrs ? attrs[name] : null),
   hasAttribute: (name) => name in attrs,
 });
+
+// A stand-in for a field, carrying only what dispatchAclCommitKeydown needs:
+// somewhere to register a listener and somewhere for the dispatch to reach it.
+const withEventTarget = () => {
+  const listeners = {};
+  return {
+    addEventListener: (type, fn) => { (listeners[type] = listeners[type] || []).push(fn); },
+    dispatchEvent: (event) => { (listeners[event.type] || []).forEach((fn) => fn(event)); },
+  };
+};
 
 test('readOptions__a_field_with_only_a_url__defaults_the_rest', () => {
   const core = loadCore();
@@ -140,6 +155,20 @@ test('nextIndex__from_the_typed_text_going_up__reaches_the_last_row', () => {
 test('nextIndex__with_no_rows__stays_on_the_typed_text', () => {
   const core = loadCore();
   assert.equal(core.nextIndex(-1, 0, 1), -1);
+});
+
+// The ACL editor's rule-add handler lives in another file and reads the
+// keydown by its key. This is the producer side of that contract: a listener
+// that only ever sees native events must still see one.
+test('dispatchAclCommitKeydown__dispatched_on_a_field__a_native_listener_observes_a_bubbling_Enter_keydown', () => {
+  const core = loadCore();
+  const seen = [];
+  const field = withEventTarget();
+  field.addEventListener('keydown', (event) => seen.push({ key: event.key, bubbles: event.bubbles }));
+  core.dispatchAclCommitKeydown(field);
+  assert.deepEqual(seen, [{ key: 'Enter', bubbles: true }],
+    'the delegated rule-add handler on .tab-content reads the key off a bubbled event, ' +
+    'so a keydown missing either property never reaches it');
 });
 
 // Records what highlightInto did without a DOM: which strings went into a

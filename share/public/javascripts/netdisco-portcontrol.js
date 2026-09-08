@@ -141,8 +141,8 @@ $(document).ready(function() {
   $('.tab-content').on('keydown', '[contenteditable=true]', function(event) {
     var cell = this,
         td = $(cell).closest('td'),
-        esc = event.which == 27,
-        nl  = event.which == 13;
+        esc = event.key === 'Escape',
+        nl  = event.key === 'Enter';
 
     if (esc) {
       $(cell).blur();
