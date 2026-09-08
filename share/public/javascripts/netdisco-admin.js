@@ -19,20 +19,23 @@ ndPages.admin = {
   // no admin sidebar form carries the colored-input styling
   // device_form_state applies, so there is nothing to collect here.
   formInputs: function () {
-    return $();
+    return [];
   },
 
   innerView: function (tab) {
     // reload this table every 5 seconds
+    var countdownIcon = document.getElementById('nd_countdown-control-icon');
     if ((tab == 'jobqueue')
-        && $('#nd_countdown-control-icon').hasClass('fa-play')) {
+        && countdownIcon && countdownIcon.classList.contains('fa-play')) {
 
-        $('#nd_countdown').text(timermax);
+        var countdownLabel = document.getElementById('nd_countdown');
+        if (countdownLabel) countdownLabel.textContent = String(timermax);
 
         // add new timers
         for (var i = timercache; i > 0; i--) {
           nd_timers.push(setTimeout(function() {
-            $('#nd_countdown').text(timercache);
+            var label = document.getElementById('nd_countdown');
+            if (label) label.textContent = String(timercache);
             timercache = timercache - 1;
           }, ((timermax * 1000) - (i * 1000)) ));
         }
@@ -51,13 +54,23 @@ ndPages.admin = {
         }, (timermax * 1000)));
     }
 
-    $('.nd_jobqueue-extra').click(function(event) {
-      event.preventDefault();
-      var icon = $(this).children('i');
-      $(icon).toggleClass('fa-plus');
-      $(icon).toggleClass('fa-minus');
-      var extra_id = $(this).data('extra');
-      $('#' + extra_id).toggle();
+    // Cast once: querySelectorAll's own return type carries only Element,
+    // and that leaves .dataset untyped for the closure below.
+    var extraButtons = /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.nd_jobqueue-extra'));
+    extraButtons.forEach(function (button) {
+      button.addEventListener('click', function(event) {
+        event.preventDefault();
+        var icon = button.querySelector(':scope > i');
+        if (icon) {
+          icon.classList.toggle('fa-plus');
+          icon.classList.toggle('fa-minus');
+        }
+        var extraId = button.dataset.extra;
+        if (extraId) {
+          var extra = document.getElementById(extraId);
+          if (extra) extra.classList.toggle('nd_collapse-pre-hidden');
+        }
+      });
     });
   },
 
@@ -69,7 +82,8 @@ ndPages.admin = {
 
     // job control sidebar submit should reset timer
     // and update bookmark
-    $('#' + tab + '_submit').click(function(event) {
+    var submitBtn = document.getElementById(tab + '_submit');
+    if (submitBtn) submitBtn.addEventListener('click', function() {
       for (var i = 0; i < nd_timers.length; i++) {
           clearTimeout(nd_timers[i]);
       }
@@ -77,12 +91,15 @@ ndPages.admin = {
       timercache = timermax - 1;
 
       // bookmark
-      var querystr = $('#' + tab + '_form').serialize();
-      $('#nd_jobqueue-bookmark').attr('href',uri_base + '/admin/' + tab + '?' + querystr);
+      var tabForm = document.getElementById(tab + '_form');
+      var querystr = tabForm ? ndRequest.query(tabForm) : '';
+      var bookmark = document.getElementById('nd_jobqueue-bookmark');
+      if (bookmark) bookmark.setAttribute('href', uri_base + '/admin/' + tab + '?' + querystr);
     });
 
     // job control refresh icon should reload the page
-    $('#nd_countdown-refresh').click(function(event) {
+    var refreshBtn = document.getElementById('nd_countdown-refresh');
+    if (refreshBtn) refreshBtn.addEventListener('click', function(event) {
       event.preventDefault();
       for (var i = 0; i < nd_timers.length; i++) {
           clearTimeout(nd_timers[i]);
@@ -94,16 +111,22 @@ ndPages.admin = {
     });
 
     // job control pause/play icon switcheroo
-    $('#nd_countdown-control').click(function(event) {
+    var controlBtn = document.getElementById('nd_countdown-control');
+    if (controlBtn) controlBtn.addEventListener('click', function(event) {
       event.preventDefault();
-      var icon = $('#nd_countdown-control-icon');
-      icon.toggleClass('fa-pause fa-play text-danger text-success');
+      var icon = document.getElementById('nd_countdown-control-icon');
+      if (!icon) return;
+      icon.classList.toggle('fa-pause');
+      icon.classList.toggle('fa-play');
+      icon.classList.toggle('text-danger');
+      icon.classList.toggle('text-success');
 
-      if (icon.hasClass('fa-pause')) {
+      if (icon.classList.contains('fa-pause')) {
         for (var i = 0; i < nd_timers.length; i++) {
             clearTimeout(nd_timers[i]);
         }
-        $('#nd_countdown').text('0');
+        var countdownLabel = document.getElementById('nd_countdown');
+        if (countdownLabel) countdownLabel.textContent = '0';
       }
       else {
         htmx.trigger('#' + tab + '_form', 'submit');
@@ -112,7 +135,12 @@ ndPages.admin = {
 
     // activity for admin task tables
     // dynamically bind to all forms in the table
-    $('.content').on('click', '.nd_adminbutton', function(event) {
+    // const so TypeScript keeps the null-narrowing inside the closure below
+    const content = document.querySelector('.content');
+    if (content) content.addEventListener('click', function(event) {
+      var button = event.target instanceof Element ? event.target.closest('.nd_adminbutton') : null;
+      if (!button || !content.contains(button)) return;
+
       // stop form from submitting normally
       event.preventDefault();
 
@@ -122,7 +150,7 @@ ndPages.admin = {
       }
 
       // what purpose - add/update/del
-      var mode = $(this).attr('name');
+      var mode = button.getAttribute('name');
 
       // admin task name with special case(s)
       var task = tab + '/';
@@ -130,21 +158,41 @@ ndPages.admin = {
         task = '';
       }
 
-      // submit the query and put results into the tab pane
-      $.ajax({
-        type: 'POST'
-        ,async: true
-        ,dataType: 'html'
-        ,url: uri_base + '/ajax/control/admin/' + task + mode
-        ,data: $(this).closest('tr').find('input[data-form="' + mode + '"],select[data-form="' + mode + '"]').serializeArray()
-        ,beforeSend: function() {
-          if (mode == 'add' || mode == 'delete') {
-            $(target).html(
-              '<div class="col-md-2 alert">Request submitted...</div>'
-            );
-          }
+      var row = button.closest('tr');
+      if (!row) return;
+
+      // collected before the pane is wiped below, which detaches this row
+      var body = ndRequest.fields(row, 'input[data-form="' + mode + '"],select[data-form="' + mode + '"]');
+
+      if (mode == 'add' || mode == 'delete') {
+        var targetEl = document.querySelector(target);
+        if (targetEl) {
+          targetEl.textContent = '';
+          var alertDiv = document.createElement('div');
+          alertDiv.className = 'col-md-2 alert';
+          alertDiv.textContent = 'Request submitted...';
+          targetEl.appendChild(alertDiv);
         }
-        ,success: function(data) {
+      }
+
+      // submit the query and put results into the tab pane
+      ndRequest.post(uri_base + '/ajax/control/admin/' + task + mode, body)
+        .then(function (res) {
+          // TODO: fix sanity_ok in Netdisco Web
+          if (!res.ok) {
+            if (mode == 'add') {
+              ndToast.error('Failed to add record');
+              htmx.trigger('#' + tab + '_form', 'submit');
+            }
+            else if (mode == 'delete') {
+              ndToast.error('Failed to delete record');
+              htmx.trigger('#' + tab + '_form', 'submit');
+            }
+            else {
+              ndToast.error('Failed to update record');
+            }
+            return;
+          }
           if (mode == 'add') {
             ndToast.success('Added record');
           }
@@ -154,14 +202,13 @@ ndPages.admin = {
           else {
             ndToast.success('Updated record');
           }
-          // one refresh for every mode. add and delete each asked for their own
-          // as well, which used to race two answers into the pane and, now that
-          // the sidebar cancels its own in-flight request, aborts the first one
-          // and reports the abort to the console.
+          // one refresh for every mode; add and delete also trigger their
+          // own, so both would race into the pane if the sidebar did not
+          // cancel its in-flight request first, and the aborted one logs
+          // to the console.
           htmx.trigger('#' + tab + '_form', 'submit');
-        }
-        // TODO: fix sanity_ok in Netdisco Web
-        ,error: function() {
+        })
+        .catch(function () {
           if (mode == 'add') {
             ndToast.error('Failed to add record');
             htmx.trigger('#' + tab + '_form', 'submit');
@@ -173,8 +220,7 @@ ndPages.admin = {
           else {
             ndToast.error('Failed to update record');
           }
-        }
-      });
+        });
     });
 
     // show the event log output on hover, delegated from the pane so that rows
@@ -261,15 +307,14 @@ document.addEventListener('click', function (event) {
 
 // admin users: the key icon requests a fresh permanent token for a
 // token-only user. The route is declared with Dancer's ajax keyword, which
-// matches only a request carrying X-Requested-With: XMLHttpRequest; $.get
-// sent that automatically, fetch does not.
+// matches only a request carrying X-Requested-With: XMLHttpRequest, so the
+// request goes through ndRequest.get rather than a bare fetch.
 document.addEventListener('click', function (event) {
   var btn = event.target.closest('.nd_tokenbutton');
   if (!btn) return;
   var hint = btn.closest('td').querySelector('.nd_token-hint-value');
   var query = new URLSearchParams({ username: btn.dataset.username, permanent: 1 });
-  fetch(uri_base + '/ajax/control/admin/users/token?' + query,
-    { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+  ndRequest.get(uri_base + '/ajax/control/admin/users/token?' + query)
     .then(function (response) { return response.ok ? response.text() : Promise.reject(new Error('token request failed: ' + response.status)) })
     .then(function (apiKey) {
       var key = apiKey.trim();
