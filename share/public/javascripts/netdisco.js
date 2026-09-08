@@ -78,7 +78,7 @@ function do_search (event, tab) {
 
   htmx.ajax('GET',
     uri_base + '/ajax/content/' + path + '/' + tab + '?'
-      + ndRequest.query(document.getElementById(tab + '_form')),
+      + (form ? ndRequest.query(form) : ''),
     { target: '#' + tab + '_pane',
       headers: { 'X-Requested-With': 'XMLHttpRequest' } });
 }
@@ -560,9 +560,8 @@ document.addEventListener('DOMContentLoaded', function() {
       var span = li.querySelector(':scope > span');
       if (!span) return;
       span.setAttribute('title', 'Collapse this branch');
-      // No interaction test drives this tree: the modules tab has none in the
-      // harness. This flips the branch instantly rather than sliding it,
-      // the same ruling made above for the sidebar's own toggle.
+      // This flips the branch instantly rather than sliding it, matching
+      // the sidebar's own toggle above.
       span.addEventListener('click', function (e) {
         var children = li.querySelectorAll(':scope > ul > li');
         var icon = span.querySelector(':scope > i');
@@ -1114,19 +1113,12 @@ function nd_setup_report_sidebar(tab, target) {
           targetEl.appendChild(alertDiv);
         }
 
-        // submit the query and put results into the tab pane
+        // submit the query and refresh the tab either way
+        // TODO: fix sanity_ok in Netdisco Web, then report a request that
+        // reached the server but failed separately from a network failure
+        function refreshTab() { htmx.trigger('#' + tab + '_form', 'submit'); }
         ndRequest.post(uri_base + '/ajax/control/report/' + tab + '/' + mode, body)
-          .then(
-            function (res) {
-              // skip any error reporting for now
-              // TODO: fix sanity_ok in Netdisco Web
-              if (!res.ok) return htmx.trigger('#' + tab + '_form', 'submit');
-              htmx.trigger('#' + tab + '_form', 'submit');
-            },
-            function () {
-              htmx.trigger('#' + tab + '_form', 'submit');
-            }
-          );
+          .then(refreshTab, refreshTab);
       });
     }
 }

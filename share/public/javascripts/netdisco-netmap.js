@@ -68,7 +68,7 @@ function ndNetmap(pane) {
     })
     .then(function (mapdata) {
       if (!mapdata) return;
-    // the netmap fragment reloads in place (do_search's $(target).html()), so
+    // the netmap fragment reloads in place when htmx swaps the pane, so
     // this callback runs again while the previous ForceGraph instance's rAF
     // loop is still running; without tearing it down first, its stale
     // onEngineStop fires against the new, still-settling graph through the

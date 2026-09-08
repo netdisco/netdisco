@@ -207,8 +207,7 @@ ndPages.admin = {
           // cancel its in-flight request first, and the aborted one logs
           // to the console.
           htmx.trigger('#' + tab + '_form', 'submit');
-        })
-        .catch(function () {
+        }, function () {
           if (mode == 'add') {
             ndToast.error('Failed to add record');
             htmx.trigger('#' + tab + '_form', 'submit');
@@ -290,9 +289,9 @@ document.addEventListener('change', function (event) {
 });
 // Registered here at top level rather than inside a ready callback, so
 // this attaches ahead of netdisco.js's own htmx:after:swap listener, which
-// builds the DataTable and runs from $(document).ready. DataTables detaches
-// rows outside the current page from the DOM, and this sync must see every
-// row while they are all still there.
+// builds the DataTable and runs from a DOMContentLoaded listener. DataTables
+// detaches rows outside the current page from the DOM, and this sync must
+// see every row while they are all still there.
 document.body.addEventListener('htmx:after:swap', function (evt) {
   // htmx dispatches this on the element that made the request, so the pane is
   // read from the context
@@ -324,8 +323,7 @@ document.addEventListener('click', function (event) {
       } else {
         ndToast.error('Could not retrieve token');
       }
-    })
-    .catch(function () { ndToast.error('Could not retrieve token') });
+    }, function () { ndToast.error('Could not retrieve token') });
 });
 
 // Opens the token modal for a freshly issued API token

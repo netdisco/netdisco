@@ -882,16 +882,19 @@ subtest 'scan_site_local__layout_copy_links_daterangepicker_css__reports_the_rem
 };
 
 # The library never calls itself this way, only inside namespaced event
-# strings like click.daterangepicker, so a site keeping its own copy of the
-# library is not told to change the library.
-subtest 'scan_site_local__a_copy_of_the_daterangepicker_library__is_not_reported' => sub {
+# strings like click.daterangepicker, so the daterangepicker rule itself
+# stays silent on its own vendored copy. The copy still calls $.proxy(,
+# though, and the jquery-removed rule catches that.
+subtest 'scan_site_local__a_copy_of_the_daterangepicker_library__reports_its_jquery_call' => sub {
     my $tree = site_local_tree(
       'javascripts/vendor-daterangepicker.js' =>
         qq{.on('click.daterangepicker', '.prev', \$.proxy(this.clickPrev, this));\n},
     );
 
-    is_deeply [ scan_site_local({ paths => ["$tree"] }) ], [],
-      'naming itself in an event string is what the library does, not what a site must fix';
+    my @found = scan_site_local({ paths => ["$tree"] });
+    is scalar @found, 1, 'one finding';
+    is $found[0]->{rule}, 'jquery-removed',
+      'attributed to the jQuery removal, not the daterangepicker rule';
 };
 
 subtest 'scan_site_local__handler_calls_moment__reports_the_removal' => sub {
@@ -972,17 +975,21 @@ subtest 'scan_site_local__layout_copy_links_toastr_css__reports_the_removal' => 
     is $found[0]->{rule}, 'toastr-removed', 'the library rule matched';
 };
 
-# The library's own source reads toastr.options from itself, so the pattern is
-# anchored on the success/error/info/warning calls instead, the same way the
-# jstree and jQuery UI rules are anchored on the call rather than the name.
-subtest 'scan_site_local__a_copy_of_the_toastr_library__is_not_reported' => sub {
+# The library's own source reads toastr.options from itself, so the toastr
+# rule's own pattern is anchored on the success/error/info/warning calls
+# instead, the same way the jstree and jQuery UI rules are anchored on the
+# call rather than the name. The copy still calls $.extend(, though, and the
+# jquery-removed rule catches that.
+subtest 'scan_site_local__a_copy_of_the_toastr_library__reports_its_jquery_call' => sub {
     my $tree = site_local_tree(
       'javascripts/vendor-toastr.js' =>
         qq{return \$.extend({}, getDefaults(), toastr.options);\n},
     );
 
-    is_deeply [ scan_site_local({ paths => ["$tree"] }) ], [],
-      'reading its own options is what the library does, not what a site must fix';
+    my @found = scan_site_local({ paths => ["$tree"] });
+    is scalar @found, 1, 'one finding';
+    is $found[0]->{rule}, 'jquery-removed',
+      'attributed to the jQuery removal, not the toastr rule';
 };
 
 
@@ -1007,6 +1014,16 @@ subtest 'scan_site_local__handler_calls_jQuery__reports_the_removal' => sub {
     my @found = scan_site_local({ paths => ["$tree"] });
     is scalar @found, 1, 'one finding';
     is $found[0]->{rule}, 'jquery-removed', 'the jQuery rule matched';
+};
+
+subtest 'scan_site_local__handler_calls_dollar_ajax__reports_the_removal' => sub {
+    my $tree = site_local_tree(
+      'javascripts/mypane.js' => qq{\$.ajax({url: '/foo'}).done(render);\n},
+    );
+
+    my @found = scan_site_local({ paths => ["$tree"] });
+    is scalar @found, 1, 'one finding';
+    is $found[0]->{rule}, 'jquery-removed', 'the jQuery rule matched \$.ajax(';
 };
 
 # A template commonly prints a dollar amount, and a script commonly

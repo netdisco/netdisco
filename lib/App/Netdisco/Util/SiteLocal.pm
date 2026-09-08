@@ -311,18 +311,21 @@ my @RULES = (
     release => '2.109000',
     # Anchored on the exact vendored file name, not a generic jquery*.js glob,
     # so a site's own copy of jquery-ui.min.js or jquery.dataTables.min.js is
-    # left to the rule that already covers it. And on the literal jQuery
-    # global rather than the bare dollar sign: the widget rules above each
-    # anchor on their own call and would report the same line twice, and a
-    # template commonly prints a dollar amount or an ES6 template literal,
-    # neither of which names the library. A call written only as $(...) for
-    # something none of the widget rules name is not caught here.
-    pattern => qr{javascripts/jquery-latest(?:\.min)?\.js|\bjQuery\b},
+    # left to the rule that already covers it. Also on the literal jQuery
+    # global and on a "$." method call such as $.ajax( or $.get(, which
+    # covers a site-local script still making jQuery's own request calls.
+    # A bare $( is still not caught: the widget rules above each anchor on
+    # their own call, and a bare $( would report the same line twice against
+    # their own test fixtures.
+    pattern => qr{javascripts/jquery-latest(?:\.min)?\.js|\bjQuery\b|\$\s*\.\s*\w+\s*\(},
     advice  => 'jQuery must not appear in a site-local script or a copied '
              . 'layout. Delete the script line naming jquery-latest.min.js '
              . 'from a layout copy, and rewrite a jQuery call with native '
              . 'DOM methods: netdisco-request.js carries the request and '
-             . 'form helpers the shipped scripts use.',
+             . 'form helpers the shipped scripts use. If the reported file '
+             . 'is a copy of a third-party library rather than the site\'s '
+             . 'own script, update that library to a build that needs no '
+             . 'jQuery, or drop it, rather than rewriting its calls.',
   },
 );
 

@@ -7,6 +7,25 @@ function getAction(el) {
   return (el.ndAction !== undefined) ? el.ndAction : el.dataset.action;
 }
 
+/**
+ * Normalizes a request body's fields to what URLSearchParams expects.
+ * Details renders no #nd_portlog-reason or #nd_portlog-log, and a Details
+ * cell carries no data-for-port, so several fields are missing on that tab,
+ * and URLSearchParams stringifies a missing value as the literal text
+ * "undefined", which the server would treat as a real value: every field
+ * passes through here to become the empty string instead.
+ * @param {Record<string, string | undefined | null>} fields
+ * @returns {Record<string, string>}
+ */
+function formValues(fields) {
+  var out = /** @type {Record<string, string>} */ ({});
+  for (var key in fields) {
+    var value = fields[key];
+    out[key] = (value === null || value === undefined) ? '' : value;
+  }
+  return out;
+}
+
 // Resets a cell's editable text to the value the server rendered; a bare
 // control cell carries no .nd_editable-cell-content and is left alone.
 function resetCellContent(td) {
@@ -44,10 +63,9 @@ function port_control (e) {
   var td = e.closest('td');
   var reasonField = document.getElementById('nd_portlog-reason');
   var logField = document.getElementById('nd_portlog-log');
-  if (!(reasonField instanceof HTMLSelectElement) || !(logField instanceof HTMLTextAreaElement)) return;
-  var reason = reasonField.value,
-      logmessage = logField.value;
-  logField.value = '';
+  var reason = (reasonField instanceof HTMLSelectElement) ? reasonField.value : '';
+  var logmessage = (logField instanceof HTMLTextAreaElement) ? logField.value : '';
+  if (logField instanceof HTMLTextAreaElement) logField.value = '';
 
   if (nd_save_ok == false) {
     resetCellContent(td);
@@ -56,7 +74,7 @@ function port_control (e) {
   }
   nd_save_ok = false;
 
-  var body = new URLSearchParams({
+  var body = new URLSearchParams(formValues({
     device: td.dataset.forDevice
     ,port: td.dataset.forPort
     ,field: td.dataset.field
@@ -64,7 +82,7 @@ function port_control (e) {
     ,value: td.textContent.trim()
     ,reason: reason
     ,log: logmessage
-  });
+  }));
 
   ndRequest.post(uri_base + '/ajax/portcontrol', body)
     .then(function (response) {
@@ -108,8 +126,7 @@ function port_control (e) {
           td.ndAction = 'false';
         }
       }
-    })
-    .catch(function() {
+    }, function() {
       ndToast.error('Failed to submit change request');
       resetCellContent(td);
       td.blur();

@@ -46,7 +46,7 @@
   function fields(root, selector) {
     const out = new URLSearchParams();
     Array.prototype.forEach.call(root.querySelectorAll(selector), (el) => {
-      if (!el.name || el.disabled) return;
+      if (!el.name || el.matches(':disabled')) return;
       if ((el.type === 'checkbox' || el.type === 'radio') && !el.checked) return;
       // A multiple select contributes one pair per chosen option. Its `value`
       // is only the first, so a sidebar filtering on several vendors would
