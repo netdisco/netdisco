@@ -58,6 +58,87 @@ function queryElement(root, selector) {
   return match instanceof HTMLElement ? match : null;
 }
 
+/**
+ * Updates a port or power icon, its tooltip and its neighbor cell after a
+ * change succeeds, matching the action the server just accepted.
+ * @param {HTMLElement} e the clicked icon
+ * @param {HTMLElement} td the containing editable cell
+ * @returns {void}
+ */
+function applyPortControlResult(e, td) {
+  var action = String(getAction(td) == null ? '' : getAction(td)).trim();
+  if (action == 'down') showPortDown(e, td);
+  else if (action == 'up') showPortUp(e, td);
+  else if (action == 'false') showPowerOff(e, td);
+  else if (action == 'true') showPowerOn(e, td);
+}
+
+/**
+ * Reflects a port that has just been taken down: marks the neighbor cell,
+ * flips the icon to offer re-enabling, and retitles its tooltip.
+ * @param {HTMLElement} e the clicked icon
+ * @param {HTMLElement} td the containing editable cell
+ * @returns {void}
+ */
+function showPortDown(e, td) {
+  var prev = td.previousElementSibling;
+  if (prev && prev.matches('td')) prev.innerHTML = '<i class="fas fa-xmark"></i>';
+  e.classList.toggle('fa-hand-point-down');
+  e.classList.toggle('fa-hand-point-up');
+  var bullseye = e.parentElement && e.parentElement.querySelector('.fa-bullseye');
+  if (bullseye instanceof HTMLElement) bullseye.style.display = 'none';
+  retitleTooltip(e, 'Enable Port');
+  td.ndAction = 'up';
+}
+
+/**
+ * Reflects a port that has just been brought up: marks the neighbor cell
+ * as busy, flips the icon to offer taking it down, and retitles its
+ * tooltip.
+ * @param {HTMLElement} e the clicked icon
+ * @param {HTMLElement} td the containing editable cell
+ * @returns {void}
+ */
+function showPortUp(e, td) {
+  var prev = td.previousElementSibling;
+  if (prev && prev.matches('td')) prev.innerHTML = '<i class="fas fa-arrows-rotate fa-spin"></i>';
+  e.classList.toggle('fa-hand-point-up');
+  e.classList.toggle('fa-hand-point-down');
+  var bullseye = e.parentElement && e.parentElement.querySelector('.fa-bullseye');
+  if (bullseye instanceof HTMLElement) bullseye.style.display = '';
+  retitleTooltip(e, 'Disable Port');
+  td.ndAction = 'down';
+}
+
+/**
+ * Reflects power that has just been switched off: clears the neighbor
+ * badge, flips the icon to offer switching it back on, and retitles its
+ * tooltip.
+ * @param {HTMLElement} e the clicked icon
+ * @param {HTMLElement} td the containing editable cell
+ * @returns {void}
+ */
+function showPowerOff(e, td) {
+  var next = e.nextElementSibling;
+  if (next && next.matches('span')) next.textContent = '';
+  e.classList.toggle('nd_power-on');
+  retitleTooltip(e, 'Enable Power');
+  td.ndAction = 'true';
+}
+
+/**
+ * Reflects power that has just been switched on: flips the icon to offer
+ * switching it back off and retitles its tooltip.
+ * @param {HTMLElement} e the clicked icon
+ * @param {HTMLElement} td the containing editable cell
+ * @returns {void}
+ */
+function showPowerOn(e, td) {
+  e.classList.toggle('nd_power-on');
+  retitleTooltip(e, 'Disable Power');
+  td.ndAction = 'false';
+}
+
 // user clicked or asked for port changes to be submitted via ajax
 function port_control (e) {
   var td = e.closest('td');
@@ -90,47 +171,54 @@ function port_control (e) {
     })
     .then(function() {
       ndToast.info('Submitted change request');
-
-      // update all the screen furniture unless bouncing
-      if (! e.classList.contains('fa-bullseye')) {
-        if (String(getAction(td) == null ? '' : getAction(td)).trim() == 'down') {
-          let prev = td.previousElementSibling;
-          if (prev && prev.matches('td')) prev.innerHTML = '<i class="fas fa-xmark"></i>';
-          e.classList.toggle('fa-hand-point-down');
-          e.classList.toggle('fa-hand-point-up');
-          let bullseye = e.parentElement.querySelector('.fa-bullseye');
-          if (bullseye) bullseye.style.display = 'none';
-          retitleTooltip(e, 'Enable Port');
-          td.ndAction = 'up';
-        }
-        else if (String(getAction(td) == null ? '' : getAction(td)).trim() == 'up') {
-          let prev = td.previousElementSibling;
-          if (prev && prev.matches('td')) prev.innerHTML = '<i class="fas fa-arrows-rotate fa-spin"></i>';
-          e.classList.toggle('fa-hand-point-up');
-          e.classList.toggle('fa-hand-point-down');
-          let bullseye = e.parentElement.querySelector('.fa-bullseye');
-          if (bullseye) bullseye.style.display = '';
-          retitleTooltip(e, 'Disable Port');
-          td.ndAction = 'down';
-        }
-        else if (String(getAction(td) == null ? '' : getAction(td)).trim() == 'false') {
-          var next = e.nextElementSibling;
-          if (next && next.matches('span')) next.textContent = '';
-          e.classList.toggle('nd_power-on');
-          retitleTooltip(e, 'Enable Power');
-          td.ndAction = 'true';
-        }
-        else if (String(getAction(td) == null ? '' : getAction(td)).trim() == 'true') {
-          e.classList.toggle('nd_power-on');
-          retitleTooltip(e, 'Disable Power');
-          td.ndAction = 'false';
-        }
-      }
+      if (! e.classList.contains('fa-bullseye')) applyPortControlResult(e, td);
     }, function() {
       ndToast.error('Failed to submit change request');
       resetCellContent(td);
       td.blur();
     });
+}
+
+/**
+ * Opens the confirmation modal for a VLAN change, saving the port once the
+ * user dismisses it.
+ * @param {HTMLElement} cell the contenteditable cell holding the new VLAN
+ * @returns {void}
+ */
+function confirmPvidChange(cell) {
+  var modal = document.getElementById('nd_portlog');
+  if (!(modal instanceof HTMLElement)) return;
+  modal.addEventListener('hidden.bs.modal', function() {
+    port_control(cell); // save
+  }, { once: true });
+  bootstrap.Modal.getOrCreateInstance(modal).show();
+}
+
+/**
+ * Turns an edited ACL rule label into a hidden field the admin form
+ * submits, then presses the row's own update button.
+ * @param {HTMLInputElement} cell the contenteditable field holding the rule label
+ * @param {HTMLElement} td the containing editable cell
+ * @param {string} className the hidden input's class, left or right
+ * @param {string} inputName the hidden input's form field name, left or right
+ * @returns {boolean} whether the field was promoted. An empty field promotes
+ *   nothing, and the caller must return without its usual cleanup in that
+ *   case, matching the original guard that returned from the whole keydown
+ *   handler rather than only from this step.
+ */
+function promoteAclRuleField(cell, td, className, inputName) {
+  if (cell.value.length == 0) return false;
+  var input = document.createElement('input');
+  input.className = className;
+  input.dataset.form = 'update';
+  input.name = inputName;
+  input.type = 'hidden';
+  input.value = Math.floor( Date.now() / 1000 ) + '.' + window.btoa(cell.value);
+  td.appendChild(input);
+  var row = cell.closest('tr');
+  var button = row && row.querySelector('button.nd_adminbutton[name="update"]');
+  if (button instanceof HTMLElement) button.click();
+  return true;
 }
 
 // on load, establish global delegations for now and future
@@ -257,40 +345,13 @@ document.addEventListener('DOMContentLoaded', function() {
         event.preventDefault();
 
         if (td.dataset.field == 'c_pvid') {
-          var modal = document.getElementById('nd_portlog');
-          if (!(modal instanceof HTMLElement)) return;
-          modal.addEventListener('hidden.bs.modal', function() {
-            port_control(cell); // save
-          }, { once: true });
-          bootstrap.Modal.getOrCreateInstance(modal).show();
+          confirmPvidChange(cell);
         }
         else if (td.dataset.field == 'nd_left-acl-rule-field') {
-          if (!(cell instanceof HTMLInputElement)) return;
-          if (cell.value.length == 0) { return }
-          let input = document.createElement('input');
-          input.className = 'nd_left-acl-rule-field';
-          input.dataset.form = 'update';
-          input.name = 'left_rule';
-          input.type = 'hidden';
-          input.value = Math.floor( Date.now() / 1000 ) + '.' + window.btoa(cell.value);
-          td.appendChild(input);
-          let row = cell.closest('tr');
-          let button = row && row.querySelector('button.nd_adminbutton[name="update"]');
-          if (button instanceof HTMLElement) button.click();
+          if (!(cell instanceof HTMLInputElement) || !promoteAclRuleField(cell, td, 'nd_left-acl-rule-field', 'left_rule')) return;
         }
         else if (td.dataset.field == 'nd_right-acl-rule-field') {
-          if (!(cell instanceof HTMLInputElement)) return;
-          if (cell.value.length == 0) { return }
-          let input = document.createElement('input');
-          input.className = 'nd_right-acl-rule-field';
-          input.dataset.form = 'update';
-          input.name = 'right_rule';
-          input.type = 'hidden';
-          input.value = Math.floor( Date.now() / 1000 ) + '.' + window.btoa(cell.value);
-          td.appendChild(input);
-          let row = cell.closest('tr');
-          let button = row && row.querySelector('button.nd_adminbutton[name="update"]');
-          if (button instanceof HTMLElement) button.click();
+          if (!(cell instanceof HTMLInputElement) || !promoteAclRuleField(cell, td, 'nd_right-acl-rule-field', 'right_rule')) return;
         }
         else {
           // no confirm for port descr change

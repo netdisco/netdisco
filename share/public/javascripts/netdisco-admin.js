@@ -242,6 +242,7 @@ ndPages.admin = {
 // input, then presses the row's update button. The button is found first
 // because the click removes the label the search would start from.
 document.addEventListener('click', function (event) {
+  if (!(event.target instanceof Element)) return;
   var bin = event.target.closest('.nd_delete-me');
   if (!bin) return;
   var row = bin.closest('tr');
@@ -251,16 +252,17 @@ document.addEventListener('click', function (event) {
   var field = label.nextElementSibling;
   if (field && field.matches('input.nd_left-acl-rule-field, input.nd_right-acl-rule-field')) field.remove();
   label.remove();
-  if (button) button.click();
+  if (button instanceof HTMLElement) button.click();
 });
 
 // admin pseudo devices: the layer-3 badge toggles the hidden layers field
 // between "router" and "nothing".
 document.addEventListener('click', function (event) {
+  if (!(event.target instanceof Element)) return;
   var link = event.target.closest('.nd_layer-three-link');
   if (!link) return;
   var badge = link.querySelector('span');
-  var layers = link.parentElement.querySelector('input');
+  var layers = link.parentElement && link.parentElement.querySelector('input');
   if (!badge || !layers) return;
   badge.classList.toggle('text-bg-success');
   layers.setAttribute('value', badge.classList.contains('text-bg-success') ? '00000100' : '00000000');
@@ -285,6 +287,7 @@ function nd_token_fields(select) {
   if (ips) { ips.disabled = !token; if (!token) ips.value = '' }
 }
 document.addEventListener('change', function (event) {
+  if (!(event.target instanceof Element)) return;
   if (event.target.matches('.nd_auth_method')) nd_token_fields(event.target);
 });
 // Registered here at top level rather than inside a ready callback, so
@@ -293,14 +296,17 @@ document.addEventListener('change', function (event) {
 // detaches rows outside the current page from the DOM, and this sync must
 // see every row while they are all still there.
 document.body.addEventListener('htmx:after:swap', function (evt) {
+  if (!(evt instanceof CustomEvent)) return;
   // htmx dispatches this on the element that made the request, so the pane is
   // read from the context
   evt.detail.ctx.target.querySelectorAll('.nd_auth_method').forEach(nd_token_fields);
 });
 document.addEventListener('click', function (event) {
+  if (!(event.target instanceof Element)) return;
   var copy = event.target.closest('#nd_token-copy');
   if (!copy) return;
-  navigator.clipboard.writeText(document.getElementById('nd_token-value').value);
+  var tokenValue = document.getElementById('nd_token-value');
+  if (tokenValue instanceof HTMLInputElement) navigator.clipboard.writeText(tokenValue.value);
   copy.innerHTML = '<i class="fas fa-check"></i> Copied';
 });
 
@@ -309,16 +315,18 @@ document.addEventListener('click', function (event) {
 // matches only a request carrying X-Requested-With: XMLHttpRequest, so the
 // request goes through ndRequest.get rather than a bare fetch.
 document.addEventListener('click', function (event) {
+  if (!(event.target instanceof Element)) return;
   var btn = event.target.closest('.nd_tokenbutton');
-  if (!btn) return;
-  var hint = btn.closest('td').querySelector('.nd_token-hint-value');
-  var query = new URLSearchParams({ username: btn.dataset.username, permanent: 1 });
+  if (!(btn instanceof HTMLElement)) return;
+  var cell = btn.closest('td');
+  var hint = cell && cell.querySelector('.nd_token-hint-value');
+  var query = new URLSearchParams({ username: btn.dataset.username || '', permanent: '1' });
   ndRequest.get(uri_base + '/ajax/control/admin/users/token?' + query)
     .then(function (response) { return response.ok ? response.text() : Promise.reject(new Error('token request failed: ' + response.status)) })
     .then(function (apiKey) {
       var key = apiKey.trim();
       if (key && typeof window.nd_show_api_token === 'function') {
-        hint.textContent = '...' + key.slice(-8);
+        if (hint) hint.textContent = '...' + key.slice(-8);
         window.nd_show_api_token(key);
       } else {
         ndToast.error('Could not retrieve token');
@@ -328,15 +336,19 @@ document.addEventListener('click', function (event) {
 
 // Opens the token modal for a freshly issued API token
 window.nd_show_api_token = function(apiKey) {
-  document.getElementById('nd_token-value').value = apiKey;
-  document.getElementById('nd_token-copy').innerHTML = '<i class="fas fa-copy"></i> Copy';
+  var tokenValue = document.getElementById('nd_token-value');
+  if (tokenValue instanceof HTMLInputElement) tokenValue.value = apiKey;
+  var tokenCopy = document.getElementById('nd_token-copy');
+  if (tokenCopy) tokenCopy.innerHTML = '<i class="fas fa-copy"></i> Copy';
   // Name the form rather than building its id from task.tag. This fragment
   // is only ever rendered by the ajax route in Users.pm, which passes no task
   // in its stash, so task.tag was always empty here and the selector was
   // always '#_form', which matches nothing. The tag is 'users' either way:
   // this template is registered for that one admin task.
-  document.getElementById('nd_token-reveal').addEventListener('hidden.bs.modal', function() {
+  var tokenReveal = document.getElementById('nd_token-reveal');
+  if (!tokenReveal) return;
+  tokenReveal.addEventListener('hidden.bs.modal', function() {
     htmx.trigger('#users_form', 'submit');
   }, { once: true });
-  bootstrap.Modal.getOrCreateInstance(document.getElementById('nd_token-reveal')).show();
+  bootstrap.Modal.getOrCreateInstance(tokenReveal).show();
 };
