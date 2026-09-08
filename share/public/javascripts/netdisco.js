@@ -30,8 +30,7 @@ function nd_has_sidebar(tab) {
   // A tab whose sidebar include throws renders the try block's marker (1)
   // and then the catch block's (0); a tab with its own sidebar template that
   // deliberately reports 0 renders that same 1 first, then its own 0. Either
-  // way the last marker in the document is the one that used to win when
-  // this was a plain object assignment.
+  // way, the last marker in the document is the one taken as authoritative.
   var markers = document.querySelectorAll('[data-nd-has-sidebar="' + tab + '"]');
   var marker = markers[markers.length - 1];
   return marker ? marker.value !== '0' : true;
@@ -128,33 +127,21 @@ function update_content(from, to) {
     if (nq) nq.style.textDecoration = 'none';
   }
   else {
-    // form_inputs is a plain array from this page's own setup below, but a
-    // page whose setup does not set it that way yet leaves it array-like
-    // without a forEach of its own; normalize either shape.
-    // TODO: once every page sets form_inputs to a plain array, call .forEach directly.
-    Array.prototype.forEach.call(form_inputs, function (input) { device_form_state(input) });
+    form_inputs.forEach(function (input) { device_form_state(input) });
   }
 
   htmx.trigger(to_form, 'submit');
 }
 
 // if any field in Search Options has content, highlight in green
-function device_form_state(e) {
-  // A page whose own setup does not wrap this field as a plain element yet
-  // still calls this with the field library-wrapped, and still leaves
-  // form_inputs itself in that library-wrapped, merely array-like shape
-  // rather than the plain array this file's own pages set.
-  // TODO: once every page passes a plain element and sets form_inputs to a
-  // plain array, drop this normalization and read form_inputs directly.
-  var field = (e && e.jquery) ? e[0] : e;
-  var inputs = Array.prototype.slice.call(form_inputs);
-  var with_val = inputs.filter(function (n) { return n.value != "" }).length;
-  var with_text = inputs.filter(function (n) {
+function device_form_state(field) {
+  var with_val = form_inputs.filter(function (n) { return n.value != "" }).length;
+  var with_text = form_inputs.filter(function (n) {
     return !n.matches('select') && n.value != "";
   }).length;
 
-  // by id rather than a selector built from DOM text, which $() may read as
-  // markup
+  // by id rather than a selector built from DOM text: the text can contain
+  // characters a selector would read as syntax rather than literal content
   var clear_btn = document.getElementById(field.getAttribute('name') + '_clear_btn');
 
   if (field.value == "") {
@@ -317,10 +304,10 @@ window.addEventListener('keydown', function (event) {
 // own script builds its table from a ready callback afterwards, so the raw
 // full-length table would paint with no indicator until that finishes.
 //
-// Quiet DOM rather than a table library's own event, so this outlives the move
-// off jQuery. Quiet is not enough on its own: the build has gaps of several
-// hundred milliseconds where nothing changes because the thread is busy
-// computing, and revealing in one of those shows a table that is still moving.
+// Quiet DOM rather than a table library's own event. Quiet is not enough on
+// its own: the build has gaps of several hundred milliseconds where nothing
+// changes because the thread is busy computing, and revealing in one of
+// those shows a table that is still moving.
 // A frame that took far longer than a frame should is the evidence of that, so
 // both conditions have to hold, twice running.
 //
@@ -831,8 +818,8 @@ function nd_statistics_panel() {
   }, { once: true });
 }
 
-// called after every ajax-loaded pane finishes settling, for per-page glue
-// that jQuery delegation cannot express. do_search and the htmx glue above
+// called after every ajax-loaded pane finishes settling, so a page's own
+// script can react to the new content. do_search and the htmx glue above
 // both call this unconditionally, so it must exist even on pages with
 // nothing to do here.
 function inner_view_processing(tab) {
@@ -1045,6 +1032,105 @@ function nd_setup_device_sidebar() {
     });
 }
 
+/**
+ * Binds the report page's sidebar controls: the sidebar-hidden startup state,
+ * the colored-input field highlighting, the trash icon in search forms, the
+ * IP inventory subnet field's effect on the "never" checkbox, and the
+ * add/update/delete forms embedded in the report table.
+ * @param {string} tab the active report's tag, part of its route and form id
+ * @param {string} target the CSS selector for the active report's tab pane
+ * @returns {void}
+ */
+function nd_setup_report_sidebar(tab, target) {
+    // some reports carry bind params but no configured sidebar, so they
+    // start with the sidebar already hidden; mirrors the manual toggle below
+    if (document.querySelector('form[data-nd-hide-sidebar]')) {
+      document.querySelectorAll('.nd_sidebar').forEach(nd_toggle_display);
+      // netdisco.css sets #nd_sidebar-toggle-img-out { display: none }; the
+      // icon is an <i>, whose own default display is inline.
+      var toggleOut = document.getElementById('nd_sidebar-toggle-img-out');
+      if (toggleOut) toggleOut.style.display = 'inline';
+      document.querySelectorAll('.content').forEach(function (el) { el.style.marginRight = '10px' });
+      sidebar_hidden = 1;
+    }
+
+    // colored input fields in the Report Options sidebar forms
+    form_inputs = Array.prototype.slice.call(document.querySelectorAll('.nd_colored-input'));
+
+    // sidebar form fields should change colour and have trash icon
+    form_inputs.forEach(function (input) { device_form_state(input) });
+    form_inputs.forEach(function (input) {
+      input.addEventListener('change', function () { device_form_state(input) });
+    });
+
+    // handler for bin icon in search forms
+    document.querySelectorAll('.nd_field-clear-icon').forEach(function (el) {
+      el.addEventListener('click', function () {
+        var name = el.dataset.btnFor;
+        var matches = document.querySelectorAll('[name=' + name + ']');
+        matches.forEach(function (input) { input.value = ''; });
+        if (matches[0]) device_form_state(matches[0]); // reset input field
+      });
+    });
+
+    var ipinventorySubnet = document.getElementById('nd_ipinventory-subnet');
+    if (ipinventorySubnet instanceof HTMLInputElement) {
+      ipinventorySubnet.addEventListener('input', function () {
+        var never = document.getElementById('never');
+        if (!never) return;
+        if (ipinventorySubnet.value.indexOf(':') != -1) {
+          never.setAttribute('disabled', 'disabled');
+        }
+        else {
+          never.removeAttribute('disabled');
+        }
+      });
+    }
+
+    // dynamically bind to all forms in the table
+    var content = document.querySelector('.content');
+    if (content) {
+      content.addEventListener('click', function (event) {
+        var eventTarget = event.target;
+        var t = eventTarget instanceof Element ? eventTarget.closest('.nd_adminbutton') : null;
+        if (!t || !content.contains(t)) return;
+        // stop form from submitting normally
+        event.preventDefault();
+
+        // what purpose - add/update/del
+        var mode = t.getAttribute('name');
+        var row = t.closest('tr');
+        if (!row) return;
+
+        // collected before the pane is wiped below, which detaches this row
+        var body = ndRequest.fields(row, 'input[data-form="' + mode + '"]');
+
+        var targetEl = document.querySelector(target);
+        if (targetEl) {
+          targetEl.textContent = '';
+          var alertDiv = document.createElement('div');
+          alertDiv.className = 'col-md-2 alert';
+          alertDiv.textContent = 'Request submitted...';
+          targetEl.appendChild(alertDiv);
+        }
+
+        // submit the query and put results into the tab pane
+        ndRequest.post(uri_base + '/ajax/control/report/' + tab + '/' + mode, body)
+          .then(
+            function (res) {
+              // skip any error reporting for now
+              // TODO: fix sanity_ok in Netdisco Web
+              if (!res.ok) return htmx.trigger('#' + tab + '_form', 'submit');
+              htmx.trigger('#' + tab + '_form', 'submit');
+            },
+            function () {
+              htmx.trigger('#' + tab + '_form', 'submit');
+            }
+          );
+      });
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   if (document.getElementById('nd_stats')) { nd_statistics_panel(); }
   if (document.querySelector('.nd_inventory_collapser')) {
@@ -1063,171 +1149,128 @@ document.addEventListener('DOMContentLoaded', function() {
     nd_setup_device_sidebar();
 
     // activity for admin tasks in device details
-    //
-    // mode and tr are read here in the wrapped form the ajax call below and
-    // its callbacks still consume: tr.find() and tr.data() further down
-    // require it, so unwrapping only the two lines here would hand the rest
-    // of this handler a bare Element with neither method.
-    $('#details_pane').on('click', '.nd_adminbutton', function(event) {
-      // stop form from submitting normally
-      event.preventDefault();
+    var detailsPane = document.getElementById('details_pane');
+    if (detailsPane) {
+      detailsPane.addEventListener('click', function (event) {
+        var eventTarget = event.target;
+        var t = eventTarget instanceof Element ? eventTarget.closest('.nd_adminbutton') : null;
+        if (!t || !detailsPane.contains(t)) return;
+        // stop form from submitting normally
+        event.preventDefault();
 
-      // what purpose - discover/macsuck/arpnip
-      var mode = $(this).attr('name');
-      var tr = $(this).closest('tr');
+        // what purpose - discover/macsuck/arpnip
+        var mode = t.getAttribute('name');
+        var row = t.closest('tr');
+        if (!row) return;
 
-      // submit the query
-      $.ajax({
-        type: 'POST'
-        ,async: true
-        ,dataType: 'html'
-        ,url: uri_base + '/ajax/control/admin/' + mode
-        ,data: tr.find('input[data-form="' + mode + '"],textarea[data-form="' + mode + '"]').serializeArray()
-        ,success: function() {
-          if (mode != 'delete') {
-            ndToast.info('Requested '+ mode +' for device '+ tr.data('for-device'));
-            if (mode == 'snapshot_del') {
-                $('.nd_snap_btn').toggleClass('btn-success');
-                $('.nd_snap_btn').toggleClass('btn-info');
-                $('.nd_snap_func').toggleClass('disabled');
+        // submit the query
+        ndRequest.post(uri_base + '/ajax/control/admin/' + mode,
+                       ndRequest.fields(row, 'input[data-form="' + mode + '"],textarea[data-form="' + mode + '"]'))
+          .then(
+            function (res) {
+              // skip any error reporting for now
+              // TODO: fix sanity_ok in Netdisco Web
+              if (!res.ok) return ndToast.error('Failed to ' + mode + ' device ' + row.dataset.forDevice);
+              if (mode != 'delete') {
+                ndToast.info('Requested ' + mode + ' for device ' + row.dataset.forDevice);
+                if (mode == 'snapshot_del') {
+                  document.querySelectorAll('.nd_snap_btn').forEach(function (el) {
+                    el.classList.toggle('btn-success');
+                    el.classList.toggle('btn-info');
+                  });
+                  document.querySelectorAll('.nd_snap_func').forEach(function (el) { el.classList.toggle('disabled') });
+                }
+              }
+              else {
+                ndToast.success('Queued job to delete ' + row.dataset.forDevice);
+              }
+            },
+            function () {
+              ndToast.error('Failed to ' + mode + ' device ' + row.dataset.forDevice);
             }
-          }
-          else {
-            ndToast.success('Queued job to delete '+ tr.data('for-device'));
-          }
-        }
-        // skip any error reporting for now
-        // TODO: fix sanity_ok in Netdisco Web
-        ,error: function() {
-          ndToast.error('Failed to '+ mode +' device '+ tr.data('for-device'));
-        }
+          );
       });
-    });
 
-    $('#details_pane').on('click', '.nd_nonadminbutton', function(event) {
-      // stop form from submitting normally
-      event.preventDefault();
+      detailsPane.addEventListener('click', function (event) {
+        var eventTarget = event.target;
+        var t = eventTarget instanceof Element ? eventTarget.closest('.nd_nonadminbutton') : null;
+        if (!t || !detailsPane.contains(t)) return;
+        // stop form from submitting normally
+        event.preventDefault();
 
-      // what purpose - discover/macsuck/arpnip
-      var mode = $(this).attr('name');
-      var tr = $(this).closest('tr');
+        // what purpose - discover/macsuck/arpnip
+        var mode = t.getAttribute('name');
+        var row = t.closest('tr');
+        if (!row) return;
 
-      // submit the query
-      $.ajax({
-        type: 'POST'
-        ,async: true
-        ,dataType: 'html'
-        ,url: uri_base + '/ajax/control/nonadmin/' + mode
-        ,data: tr.find('input[data-form="' + mode + '"],textarea[data-form="' + mode + '"]').serializeArray()
-        ,success: function() {
-          ndToast.info('Requested '+ mode +' for device '+ tr.data('for-device'));
-        }
-        // skip any error reporting for now
-        // TODO: fix sanity_ok in Netdisco Web
-        ,error: function() {
-          ndToast.error('Failed to '+ mode +' device '+ tr.data('for-device'));
-        }
+        // submit the query
+        ndRequest.post(uri_base + '/ajax/control/nonadmin/' + mode,
+                       ndRequest.fields(row, 'input[data-form="' + mode + '"],textarea[data-form="' + mode + '"]'))
+          .then(
+            function (res) {
+              // skip any error reporting for now
+              // TODO: fix sanity_ok in Netdisco Web
+              if (!res.ok) return ndToast.error('Failed to ' + mode + ' device ' + row.dataset.forDevice);
+              ndToast.info('Requested ' + mode + ' for device ' + row.dataset.forDevice);
+            },
+            function () {
+              ndToast.error('Failed to ' + mode + ' device ' + row.dataset.forDevice);
+            }
+          );
       });
-    });
 
-    // clear any values in the delete confirm dialog
-    $('#details_pane').on('hidden.bs.modal', '.nd_modal', function () {
-      $('#nd_devdel-log').val('');
-      $('#nd_devdel-archive').attr('checked', false);
-    });
+      // clear any values in the delete confirm dialog
+      detailsPane.addEventListener('hidden.bs.modal', function (event) {
+        var eventTarget = event.target;
+        var t = eventTarget instanceof Element ? eventTarget.closest('.nd_modal') : null;
+        if (!t || !detailsPane.contains(t)) return;
+        var log = document.getElementById('nd_devdel-log');
+        if (log instanceof HTMLTextAreaElement) log.value = '';
+        var archive = document.getElementById('nd_devdel-archive');
+        if (archive instanceof HTMLInputElement) archive.removeAttribute('checked');
+      });
+    }
   }
   else if (page === 'search') {
     // fields in the Device Search Options form (Device tab)
-    form_inputs = $("#device_form .clearfix input").not('[type="checkbox"]')
-        .add("#device_form .clearfix select");
+    form_inputs = Array.prototype.slice.call(document.querySelectorAll(
+      '#device_form .clearfix input:not([type="checkbox"]), #device_form .clearfix select'
+    ));
 
     // sidebar form fields should change colour and have bin/copy icon
-    form_inputs.each(function() {device_form_state($(this))});
-    form_inputs.change(function() {device_form_state($(this))});
+    form_inputs.forEach(function (input) { device_form_state(input) });
+    form_inputs.forEach(function (input) {
+      input.addEventListener('change', function () { device_form_state(input) });
+    });
 
     // handler for copy icon in search option
-    $('.nd_field-copy-icon').click(function() {
-      var name = $(this).data('btn-for');
-      var input = $('#device_form [name=' + name + ']');
-      input.val( $('#nq').val() );
-      device_form_state(input); // will hide copy icons
+    document.querySelectorAll('.nd_field-copy-icon').forEach(function (el) {
+      el.addEventListener('click', function () {
+        var name = el.dataset.btnFor;
+        var input = document.querySelector('#device_form [name=' + name + ']');
+        if (!input) return;
+        var nq = document.getElementById('nq');
+        if (nq) input.value = nq.value;
+        device_form_state(input); // will hide copy icons
+      });
     });
 
     // handler for bin icon in search option
-    $('.nd_field-clear-icon').click(function() {
-      var name = $(this).data('btn-for');
-      var input = $('#device_form [name=' + name + ']');
-      input.val('');
-      device_form_state(input); // will hide copy icons
-    });
-  }
-  else if (page === 'report') {
-    // some reports carry bind params but no configured sidebar, so they
-    // start with the sidebar already hidden; mirrors the manual toggle below
-    if (document.querySelector('form[data-nd-hide-sidebar]')) {
-      $('.nd_sidebar').toggle(0);
-      $('#nd_sidebar-toggle-img-out').toggle();
-      $('.content').css('margin-right', '10px');
-      sidebar_hidden = 1;
-    }
-
-    // colored input fields in the Report Options sidebar forms
-    form_inputs = $(".nd_colored-input");
-
-    // sidebar form fields should change colour and have trash icon
-    form_inputs.each(function() {device_form_state($(this))});
-    form_inputs.change(function() {device_form_state($(this))});
-
-    // handler for bin icon in search forms
-    $('.nd_field-clear-icon').click(function() {
-      var name = $(this).data('btn-for');
-      var input = $('[name=' + name + ']');
-      input.val('');
-      device_form_state(input); // reset input field
-    });
-
-    $('#nd_ipinventory-subnet').on('input', function(event) {
-      if ($(this).val().indexOf(':') != -1) {
-        $('#never').attr('disabled', 'disabled');
-      }
-      else {
-        $('#never').removeAttr('disabled');
-      }
-    });
-
-    // dynamically bind to all forms in the table
-    $('.content').on('click', '.nd_adminbutton', function(event) {
-      // stop form from submitting normally
-      event.preventDefault();
-
-      // what purpose - add/update/del
-      var mode = $(this).attr('name');
-
-      // submit the query and put results into the tab pane
-      $.ajax({
-        type: 'POST'
-        ,async: true
-        ,dataType: 'html'
-        ,url: uri_base + '/ajax/control/report/' + tab + '/' + mode
-        ,data: $(this).closest('tr').find('input[data-form="' + mode + '"]').serializeArray()
-        ,beforeSend: function() {
-          $(target).html(
-            '<div class="col-md-2 alert">Request submitted...</div>'
-          );
-        }
-        ,success: function() {
-          htmx.trigger('#' + tab + '_form', 'submit');
-        }
-        // skip any error reporting for now
-        // TODO: fix sanity_ok in Netdisco Web
-        ,error: function() {
-          htmx.trigger('#' + tab + '_form', 'submit');
-        }
+    document.querySelectorAll('.nd_field-clear-icon').forEach(function (el) {
+      el.addEventListener('click', function () {
+        var name = el.dataset.btnFor;
+        var input = document.querySelector('#device_form [name=' + name + ']');
+        if (!input) return;
+        input.value = '';
+        device_form_state(input); // will hide copy icons
       });
     });
   }
+  else if (page === 'report') {
+    nd_setup_report_sidebar(tab, target);
+  }
   else if (ndPages[page] && ndPages[page].ready) {
-    form_inputs = ndPages[page].formInputs ? ndPages[page].formInputs() : $();
+    form_inputs = ndPages[page].formInputs ? ndPages[page].formInputs() : [];
     ndPages[page].ready();
   }
 
@@ -1235,10 +1278,10 @@ document.addEventListener('DOMContentLoaded', function() {
   // This carries the side effects only and must not call preventDefault:
   // htmx's own submit listener does that.
   //
-  // The csv and reset links used to be rebuilt here and now arrive with the
-  // pane. What is left is what no response can answer: the navbar copy writes
-  // into a form the response must never replace, and whether a tab has a
-  // sidebar is declared by the sidebar templates rather than by any route.
+  // What this listener handles is what no response can answer: the navbar
+  // copy writes into a form the response must never replace, and whether a
+  // tab has a sidebar is declared by the sidebar templates rather than by
+  // any route.
   document.addEventListener('submit', function (event) {
     var form = event.target;
     if (!form.matches('form[data-nd-tab]')) return;
@@ -1258,14 +1301,16 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // tenant change
-  $('.nd_navtenant').click(function(event) {
-    event.preventDefault();
-    var url = new URL(window.location.href);
-    var newpath = url.pathname;
-    newpath = newpath.replace($(this).data('currenttenant'), "");
-    newpath = newpath.replace(document.body.dataset.ndPath, "/");
-    newpath = newpath.replace("//", "/");
-    newpath = $(this).data('tenantpath').concat(newpath, url.search);
-    window.location = newpath;
+  document.querySelectorAll('.nd_navtenant').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      event.preventDefault();
+      var url = new URL(window.location.href);
+      var newpath = url.pathname;
+      newpath = newpath.replace(link.dataset.currenttenant, "");
+      newpath = newpath.replace(document.body.dataset.ndPath, "/");
+      newpath = newpath.replace("//", "/");
+      newpath = link.dataset.tenantpath.concat(newpath, url.search);
+      window.location = newpath;
+    });
   });
 });
