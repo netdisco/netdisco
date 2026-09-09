@@ -363,3 +363,17 @@ jobs:
       # Same naming rule as the jobs above: name the file, never a glob.
       - name: Arrow keys move within a dropend submenu, and the pointer can reach it
         run: node --test xt/js/navbar-submenu.test.js
+
+  disco-queue:
+    name: queueing from the Discover box
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      # Same naming rule as the jobs above: name the file, never a glob.
+      - name: The Discover box queues over ajax and reports either way
+        run: node --test xt/js/disco-queue.test.js

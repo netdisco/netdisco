@@ -286,6 +286,31 @@ document.addEventListener('click', function (event) {
 });
 
 /**
+ * Queues one job for whatever the Discover box names, and says what happened.
+ * The action's own admin route answers 400 for a device it will not take, so
+ * an unresolvable name or too wide a prefix is reported rather than silently
+ * dropped.
+ * @param {string} action the job action to queue, such as discover or pingsweep
+ * @param {string} [extra] the job's extra argument, the latency for a sweep
+ * @returns {void}
+ */
+function nd_queue_disco_job(action, extra) {
+  var box = /** @type {HTMLInputElement|null} */ (document.getElementById('discodevs'));
+  if (!box || !box.value) { return }
+  var target = box.value;
+  var body = new URLSearchParams({ device: target });
+  if (extra) { body.set('extra', extra) }
+
+  ndRequest.post(uri_base + '/ajax/control/admin/' + action, body)
+    .then(function (response) {
+      if (response.ok) { ndToast.info('Queued ' + action + ' for ' + target) }
+      else { ndToast.error('Could not queue ' + action + ' for ' + target) }
+    }, function () {
+      ndToast.error('Could not queue ' + action + ' for ' + target);
+    });
+}
+
+/**
  * Which item an arrow key should focus within a dropend submenu, given how
  * many items it holds and which one has focus now. An index of -1 for the
  * current item means focus is on the submenu itself rather than an item.
@@ -447,7 +472,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (instance) { instance.hide(); }
   }, true);
 
-  // bind submission to the navbar go icon
+  
+// bind submission to the navbar go icon
   var navsearchgo = document.getElementById('navsearchgo');
   if (navsearchgo) {
     navsearchgo.addEventListener('click', function () {
@@ -481,25 +507,30 @@ document.addEventListener('DOMContentLoaded', function() {
         form.submit();
         return;
       }
-      var discodevs = document.getElementById('discodevs');
-      if (discodevs && discodevs.value) {
-        var timeoutField = document.createElement('input');
-        timeoutField.type = 'hidden';
-        timeoutField.name = 'timeout';
-        timeoutField.value = link.dataset.timeout;
-        form.appendChild(timeoutField);
-
-        var actionField = document.createElement('input');
-        actionField.type = 'hidden';
-        actionField.name = 'action';
-        actionField.value = link.dataset.action;
-        form.appendChild(actionField);
-
-        form.submit();
-        return;
-      }
     });
   });
+
+  // The Discover box queues its job over ajax rather than posting the form, so
+  // the answer arrives where the reader is standing. Posting it navigated to
+  // the job queue on success and silently back to this page on failure, which
+  // is the same page a refused job returns to and says nothing about why.
+  //
+  // Its own listeners rather than the search dropdown's: that one finds the box
+  // it fills by asking the document, so a value left in the navbar search took
+  // precedence and submitted this form as a plain discover.
+  var discoForm = document.querySelector('form[action$="/admin/discodevs"]');
+  if (discoForm) {
+    discoForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      nd_queue_disco_job('discover');
+    });
+    discoForm.addEventListener('click', function (event) {
+      var sweep = event.target.closest('.dropdown-item[data-action]');
+      if (!sweep) { return }
+      event.preventDefault();
+      nd_queue_disco_job(sweep.dataset.action, sweep.dataset.timeout);
+    });
+  }
 
   // fix green background on search checkboxes
   // https://github.com/twitter/bootstrap/issues/742

@@ -693,8 +693,10 @@ xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/daterange-presets.test.js
 xt/js/deferred-nodes.test.js
+xt/js/disco-queue.test.js
 xt/js/error-reporter.test.js
 xt/js/history-ownership.test.js
+xt/js/navbar-submenu.test.js
 xt/js/netmap-autosave.test.js
 xt/js/netmap-legend.test.js
 xt/js/netmap-loading.test.js
@@ -708,7 +710,6 @@ xt/js/portsort.test.js
 xt/js/request-helper.test.js
 xt/js/sort-types.test.js
 xt/js/sticky-header.test.js
-xt/js/navbar-submenu.test.js
 xt/js/submit-dispatch.test.js
 xt/js/tab-request-sync.test.js
 xt/js/tables-registry.test.js
