@@ -13,6 +13,10 @@
 :root {
   --bs-body-font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   --bs-body-font-size: 13px;
+  /* Tooltips and popovers take their face from this rather than from the body,
+     and they are the only two things that read it, so without it they are the
+     one part of the page drawn in the system stack. */
+  --bs-font-sans-serif: "Helvetica Neue", Helvetica, Arial, sans-serif;
   --bs-body-line-height: 18px;
   /* The old body color was #333333 against the replacement's #212529. Both halves
      are stated because other rules read rgba(var(--bs-body-color-rgb), ...). Muted
@@ -813,14 +817,13 @@ ul.nd_snmp-tree { padding-left: 0 }
 
 /* the job queue log popover. the log is preformatted output, so it keeps its
    own line breaks and takes whatever width it needs rather than the default
-   276px, which would wrap every line. */
+   276px, which would wrap every line. Its type is the theme's, so the log reads
+   as part of the page rather than as a terminal pasted onto it. */
 .nd_jobqueue-popover {
   --bs-popover-max-width: none;
 }
 
 .nd_jobqueue-popover .popover-body {
-  font-size: 15px;
-  font-family: monospace;
   white-space: pre;
 }
 

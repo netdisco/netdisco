@@ -52,6 +52,10 @@
     clicks meant for the rows beneath them
   * addresses that are links, on Device Inventory and Duplicate Devices, now
     sort by address. they sorted as text, which put .70 above .4
+  * tooltips and the job log that appears when you hover a Job Queue row are
+    drawn in the same typeface as the rest of the page again. the log had also
+    been set larger, and in a monospaced face, which read as a terminal dropped
+    onto the page
   * the Discover box on the front page now says whether your job was queued,
     and leaves you where you are. a name that does not resolve, a prefix wider
     than /22, or anything that is not an address, sent you back to the front
