@@ -111,6 +111,12 @@
               [% IF ai == 'divider' %]
               <li><hr class="dropdown-divider"></li>
               [% ELSE %]
+[%# firstsearch tells the before_template hook not to fold the url's params
+    into this page's saved sidebar defaults, so a menu click opens the task at
+    its configured default rather than at whatever was last linked to. Only the
+    ACL editor has any such defaults, and its host preference is settable from
+    the address bar, so it is the one task this changes; the reports links above
+    carry it on the same footing. -%]
               <li><a class="dropdown-item" href="[% uri_for('/admin/' _ ai) %]?firstsearch=on">[% settings._admin_tasks.$ai.label | html_entity %]</a></li>
               [% END %]
             [% END %]
