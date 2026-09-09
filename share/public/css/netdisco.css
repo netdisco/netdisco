@@ -589,6 +589,13 @@ a:hover, a:focus {
 
    No z-index: sticky already paints above the rows, and staying at auto leaves
    the sidebar's z-index above the header, which is where it belongs. */
+/* A button's label is one phrase. These sit in cells whose width the table
+   library decides, and nothing sets a minimum, so a two word label such as
+   "Create ACL" breaks across two lines as the window narrows. */
+#data-table .btn {
+  white-space: nowrap;
+}
+
 div.content > div.tab-content table.nd_floatinghead thead {
   position: sticky;
   top: 40px;

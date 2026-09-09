@@ -56,6 +56,9 @@
     drawn in the same typeface as the rest of the page again. the log had also
     been set larger, and in a monospaced face, which read as a terminal dropped
     onto the page
+  * a button in an admin table no longer breaks its label across two lines as
+    the window narrows. "Create ACL" on the User Management page split in two
+    below about 1200 pixels
   * the Discover box on the front page now says whether your job was queued,
     and leaves you where you are. a name that does not resolve, a prefix wider
     than /22, or anything that is not an address, sent you back to the front
