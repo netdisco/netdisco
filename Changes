@@ -22,8 +22,7 @@
   * the date range boxes on Node Search, IP Inventory and Subnet Utilization
     are now a list of the usual ranges above two ordinary date fields. they
     send what they always did
-  * the sidebar and the Modules tree now open and close at once instead of
-    sliding
+  * the sidebar now opens and closes at once instead of sliding
   * if you keep site-local templates or JavaScript, run netdisco-do
     checksitelocal after upgrading. this release removes several things a copy
     may still call, including script files and a stylesheet a copy of the
