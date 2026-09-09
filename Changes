@@ -27,6 +27,20 @@
     options were keyed under a name the web app never looked them up by, so
     the setting could not be linked to or bookmarked
 
+2.108004 - 2026-09-09
+
+  [BUG FIXES]
+
+  * #1675 a login logo too wide to sit beside the username and password fields
+    is drawn below them again, where it was until the interface was rebuilt on
+    Bootstrap 5
+  * #1676 #1677 fix hook workers getting no configuration causing JSON decode
+    error, caused by supporting JSON in NETDISCO_WITH_CONFIGURATION
+  * fix where the ports are cached in Discover job so that they don't always
+    trigger a changed device event
+  * fix changed device rules to exclude custom fields on device and device
+    ports
+
 2.108003 - 2026-09-07
 
   [ENHANCEMENTS]
