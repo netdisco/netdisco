@@ -687,10 +687,12 @@ updated_device_hook_ignored_fields:
     - uptime
     - last_discover
     - num_ports
+    - custom_fields
   device_port:
     - up
     - up_admin
     - lastchange
+    - custom_fields
 devices_no: []
 devices_only: []
 discover_no: []
