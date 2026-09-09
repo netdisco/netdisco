@@ -708,6 +708,7 @@ xt/js/portsort.test.js
 xt/js/request-helper.test.js
 xt/js/sort-types.test.js
 xt/js/sticky-header.test.js
+xt/js/submenu-keys.test.js
 xt/js/submit-dispatch.test.js
 xt/js/tab-request-sync.test.js
 xt/js/tables-registry.test.js

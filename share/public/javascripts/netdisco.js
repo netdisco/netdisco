@@ -285,19 +285,60 @@ document.addEventListener('click', function (event) {
   if (category && event.detail > 0) { category.blur() }
 });
 
-// Bootstrap's own Escape handler builds a Dropdown from the nested list, finds
-// no toggle beside it and throws, leaving the menu open. On window rather than
-// document because Bootstrap registers its delegated handlers as capture
-// listeners on document and loads first, so nothing there can precede them.
+/**
+ * Which item an arrow key should focus within a dropend submenu, given how
+ * many items it holds and which one has focus now. An index of -1 for the
+ * current item means focus is on the submenu itself rather than an item.
+ * @param {number} count how many items the submenu holds
+ * @param {number} index the focused item's position, or -1 for none
+ * @param {string} key the pressed key, 'ArrowUp' or 'ArrowDown'
+ * @returns {number} the item to focus, or -1 to leave for the category above
+ */
+function nd_submenu_focus_index(count, index, key) {
+  var wanted = (key === 'ArrowUp' ? index - 1 : index + 1);
+  if (wanted < 0) { return -1 }
+  // Bootstrap stops at the ends rather than cycling, so the top level and a
+  // submenu feel the same.
+  if (wanted >= count) { return index }
+  return wanted;
+}
+
+// Bootstrap resolves the toggle to drive by looking beside the menu, and a
+// dropend submenu's category link carries the dropdown-toggle class but not
+// the data-bs-toggle attribute, so it finds nothing and throws on Escape and
+// on either arrow. On window rather than document because Bootstrap registers
+// its delegated handlers as capture listeners on document and loads first, so
+// nothing there can precede them; stopping propagation is what keeps them from
+// running, which is also why the arrows have to move focus here.
 window.addEventListener('keydown', function (event) {
-  if (event.key !== 'Escape') { return }
-  if (!event.target.closest('li.dropend > .dropdown-menu')) { return }
+  var submenu = event.target.closest('li.dropend > .dropdown-menu');
+  if (!submenu) { return }
+
+  if (event.key === 'Escape') {
+    event.stopPropagation();
+    var toggle = event.target.closest('.nav-item.dropdown');
+    toggle = toggle && toggle.querySelector(':scope > .dropdown-toggle');
+    if (!toggle) { return }
+    toggle.focus();
+    bootstrap.Dropdown.getOrCreateInstance(toggle).hide();
+    return;
+  }
+
+  if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') { return }
+  event.preventDefault();
   event.stopPropagation();
-  var toggle = event.target.closest('.nav-item.dropdown');
-  toggle = toggle && toggle.querySelector(':scope > .dropdown-toggle');
-  if (!toggle) { return }
-  toggle.focus();
-  bootstrap.Dropdown.getOrCreateInstance(toggle).hide();
+
+  var items = Array.prototype.slice.call(
+    submenu.querySelectorAll(':scope > li > .dropdown-item'));
+  var wanted = nd_submenu_focus_index(
+    items.length, items.indexOf(event.target), event.key);
+
+  // Leaving the submenu upward lands on the category that opened it, which is
+  // in the menu Bootstrap can drive itself.
+  var target = (wanted < 0
+    ? submenu.parentElement.querySelector(':scope > .dropdown-toggle')
+    : items[wanted]);
+  if (target) { target.focus() }
 }, true);
 
 // htmx takes the indicator down when the response arrives, but the fragment's
