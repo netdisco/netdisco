@@ -138,3 +138,30 @@ test('holdUntilSettled__a_pane_with_no_indicator__is_left_alone', () => {
     + 'on every tick would be the flash this prevents');
   assert.strictEqual(h.pending, 0, 'and nothing is left watching frames');
 });
+
+// The hiding has to start before the answer is put into the pane, not after.
+// htmx paints between inserting a fragment and firing its after-swap event, so
+// hiding there leaves a table the library has not converted on screen: on a
+// device with thousands of ports that is the whole raw table.
+//
+// SOURCE ASSERTIONS. Which frame paints what is a browser question; these stop
+// the mechanism being undone by an edit that looks harmless.
+test('paneSettling__the_answer_arriving__is_hidden_before_it_is_inserted', () => {
+  assert.match(source, /htmx:before:swap/,
+    'nothing hides the pane before the swap, so the raw table paints first');
+  const from = source.indexOf("'htmx:before:swap'");
+  const handler = source.slice(from, source.indexOf('});', from));
+  assert.match(handler, /_pane\$/, 'the pre-swap hide is no longer limited to panes');
+  assert.match(handler, /classList\.add\('nd_pane-settling'\)/,
+    'the pre-swap handler no longer hides the pane');
+});
+
+// Three paths leave the swap handler without ever reaching holdUntilSettled,
+// and each has to show the pane again or it stays invisible for good.
+test('paneSettling__a_path_that_never_settles__shows_the_pane_again', () => {
+  const removals = (source.match(/classList\.remove\('nd_pane-settling'\)/g) || []).length;
+  assert.ok(removals >= 4,
+    'only ' + removals + ' places clear nd_pane-settling; holdUntilSettled plus'
+    + ' the empty result, the error response and the failed request each need to,'
+    + ' or that pane never becomes visible again');
+});

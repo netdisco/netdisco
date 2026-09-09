@@ -725,11 +725,15 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!target.id.match(/_pane$/)) return;
     // The status list stopped the swap, so the pane holds the failure message
     // the response-error handler put there and there is nothing to set up.
-    if (ctx.response && ctx.response.status >= 400) return;
+    if (ctx.response && ctx.response.status >= 400) {
+      target.classList.remove('nd_pane-settling');
+      return;
+    }
     var tab = target.id.replace(/_pane$/, '');
     if (target.innerHTML === '') {
       target.innerHTML =
         '<div class="col-md-2 alert alert-info">No matching records.</div>';
+      target.classList.remove('nd_pane-settling');
       return;
     }
     ndTables.init(target);
@@ -744,6 +748,19 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!target || target.id !== 'nd_snmp-tree') { return }
     var hit = target.querySelector('.nd_snmp-found');
     if (hit) { hit.scrollIntoView({ block: 'center' }) }
+  });
+
+  // Hide the pane before the answer is put into it, not after. htmx paints
+  // between inserting the fragment and firing its after-swap event, so a table
+  // the library has not converted yet is on screen for a frame or two first: on
+  // a device with 7300 ports that is the whole raw table. Every path that
+  // leaves the handler below without reaching holdUntilSettled has to show the
+  // pane again, or it stays invisible.
+  document.body.addEventListener('htmx:before:swap', function (evt) {
+    var target = evt.detail.ctx.target;
+    if (target && target.id && target.id.match(/_pane$/)) {
+      target.classList.add('nd_pane-settling');
+    }
   });
 
   // Empty the pane for the duration of the request, so the indicator is the
@@ -779,6 +796,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // server sends HX-Redirect with it, so this message is what remains on
     // screen for the moment before the browser leaves, and all that is left for
     // a request htmx did not make.
+    target.classList.remove('nd_pane-settling');
     var status = evt.detail.ctx.response && evt.detail.ctx.response.status;
     if (status === 401 || status === 403) return nd_session_expired(target);
     nd_pane_failure(target, 'server error');
