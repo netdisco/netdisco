@@ -78,6 +78,23 @@ test('submenuFocusIndex__with_focus_on_the_submenu_itself__enters_at_the_first_i
 // Sliced from the arrow filter rather than from the top of the listener: the
 // Escape branch above it stops propagation too, and matching that instead
 // would pass with the arrows left unguarded.
+// Sideways movement is the other half of walking a menu by key, and nothing
+// else on the page implements it: Bootstrap's own handler answers only to the
+// up and down arrows and Escape.
+test('navbarSubmenu__walking_sideways__moves_into_the_list_and_back_out', () => {
+  const from = source.indexOf("if (event.key === 'ArrowRight' || event.key === 'ArrowLeft')");
+  assert.ok(from > 0,
+    'the submenu keydown listener no longer answers the left and right arrows,'
+    + ' so a keyboard cannot enter a list that opens to the side');
+  const sideways = source.slice(from, source.indexOf('if (!submenu) { return }', from));
+  assert.match(sideways, /event\.preventDefault\(\)/,
+    'the sideways branch no longer stops the page scrolling under the menu');
+  assert.match(sideways, /\.dropdown-menu > li > \.dropdown-item/,
+    'the sideways branch no longer names the submenu item it moves onto');
+  assert.match(sideways, /landing\.focus\(\)/,
+    'the sideways branch no longer moves focus, which is all it exists to do');
+});
+
 test('netdiscoJs__before_bootstrap_can_throw__takes_both_arrows_in_the_submenu', () => {
   const from = source.indexOf("if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')");
   assert.ok(from > 0,

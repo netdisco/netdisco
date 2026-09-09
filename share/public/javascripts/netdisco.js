@@ -311,7 +311,28 @@ function nd_submenu_focus_index(count, index, key) {
 // nothing there can precede them; stopping propagation is what keeps them from
 // running, which is also why the arrows have to move focus here.
 window.addEventListener('keydown', function (event) {
+  var row = event.target.closest('li.dropend');
+  if (!row) { return }
   var submenu = event.target.closest('li.dropend > .dropdown-menu');
+  var category = row.querySelector(':scope > .dropdown-toggle');
+
+  // Sideways is how a menu is meant to be walked: into a list that opens to the
+  // side, and back out of it. The list stays on screen either way, because
+  // focus is still inside the category that :focus-within holds open.
+  if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+    var into = (event.key === 'ArrowRight');
+    if (into && event.target !== category) { return }
+    if (!into && !submenu) { return }
+    var landing = into
+      ? row.querySelector(':scope > .dropdown-menu > li > .dropdown-item')
+      : category;
+    if (!landing) { return }
+    event.preventDefault();
+    event.stopPropagation();
+    landing.focus();
+    return;
+  }
+
   if (!submenu) { return }
 
   if (event.key === 'Escape') {
