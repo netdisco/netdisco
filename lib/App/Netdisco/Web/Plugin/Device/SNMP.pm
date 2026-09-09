@@ -219,6 +219,9 @@ sub _get_snmp_data {
     my @parts = grep {length} split m/\./, $base;
     my %open = map {($_ => 1)} @{ $open_to || [] };
 
+    # Only a search passes a path, and its last step is the node that matched.
+    my $hit = (scalar @{ $open_to || [] }) ? $open_to->[-1] : '';
+
     my %meta = map { ('.'. join '.', @{$_->{oid_parts}}) => $_ }
                schema(vars->{'tenant'})->resultset('Virtual::FilteredSNMPObject')
                                  ->search({}, { bind => [
@@ -244,6 +247,7 @@ sub _get_snmp_data {
           label => ($row->{leaf} .' ('. $row->{oid_parts}->[-1] .')'),
           icon  => _snmp_icon($row),
           has_children => $has_children,
+          found => (($hit and $oid eq $hit) ? 1 : 0),
           open  => $open,
           children => ($open ? _get_snmp_data($ip, $oid, $open_to) : []),
         }

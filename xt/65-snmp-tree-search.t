@@ -27,10 +27,13 @@ is $error, undef, 'the template renders' or diag $error;
 
 like $html, qr{<details[^>]* open}, 'a node on the path renders already open';
 like $html, qr{org \(3\)}, 'the node on the path is there';
-# The label sits after the details it belongs to, because a closed details hides
-# anything in it that is not the summary, so document order is child then
-# parent. Nesting is the claim, not order.
-like $html, qr{dod \(6\).*</ul>.*org \(3\)}s,
+# The label sits before the details it belongs to, so that the child list
+# inside that details lands beneath the label rather than after it. Nesting is
+# the claim, not order: the child has to be inside the parent's own child list.
+# Matched on the closing tag of the label's own anchor, not on the bare text:
+# the branch's aria-label repeats it, and that sits ahead of the child list in
+# either order, so a looser pattern passes whatever the order is.
+like $html, qr{org \(3\)</a>.*<ul class="nd_snmp-children">.*dod \(6\)</a>.*</ul>.*</details>}s,
   'and its child is nested inside it, in the same response';
 
 # A node the server filled must not fetch its children again and swap one flat
@@ -56,5 +59,25 @@ my $route = do { local (@ARGV, $/) = 'lib/App/Netdisco/Web/Plugin/Device/SNMP.pm
 like $route, qr{header 'HX-Reswap' => 'none';\s*\n\s*return _snmp_state_icon},
   'a miss says not to swap, and answers the icon alone';
 like $route, qr{hx-swap-oob="true"}, 'the icon is swapped out of band';
+
+
+# A search opens the tree to its hit, and the hit has to say which node it is:
+# the tree it opens can be hundreds of rows, so an opened path on its own points
+# at nothing. Only the node the search matched carries the mark.
+my ($marked) = render_template('ajax/device/snmptree.tt', {
+  device => '192.0.2.1',
+  nodes => [
+    { oid => '.1.3', label => 'org (3)', icon => 'fas fa-folder text-info',
+      has_children => 1, open => 1, found => 0, children => [
+        { oid => '.1.3.6', label => 'dod (6)', icon => 'fas fa-leaf text-info',
+          has_children => 0, open => 0, found => 1, children => [] },
+      ] },
+  ],
+});
+
+like $marked, qr{class="nd_snmp-label nd_snmp-found"[^>]*>\s*<i[^>]*></i>dod \(6\)}s,
+  'the node the search found is marked';
+my @marks = ($marked =~ m/nd_snmp-found/g);
+is scalar @marks, 1, 'and it is the only one marked';
 
 done_testing;

@@ -3,8 +3,9 @@
 
     The label is a sibling of the <details>, not a child of it: a closed
     <details> hides everything in it that is not the summary, and the label has
-    to be readable whether the branch is open or shut. The stylesheet puts the
-    two back on one line.
+    to be readable whether the branch is open or shut. It comes first so that
+    the child list, which follows inside the <details>, lands beneath it; the
+    stylesheet lifts the marker out of flow into the row's left gutter.
 
     Children arrive on first open, unless the server already rendered them
     because a node opens itself or a search opened the tree down to a hit. A
@@ -13,6 +14,7 @@
     open, either of which would swap one flat level over the subtree. %]
 [%- FOREACH node IN nodes -%]
 <li class="nd_snmp-row">
+  [%- INCLUDE 'ajax/device/snmplabel.tt' node=node -%]
   [%- IF node.has_children -%]
   [%# both the fetch and the accessible name go on the details: the toggle
       event fires there, and the browser exposes the details, not the empty
@@ -30,6 +32,5 @@
     </ul>
   </details>
   [%- END -%]
-  [%- INCLUDE 'ajax/device/snmplabel.tt' node=node -%]
 </li>
 [%- END -%]

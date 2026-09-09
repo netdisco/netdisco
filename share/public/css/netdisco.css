@@ -653,25 +653,94 @@ div.content > div.tab-content table.nd_floatinghead thead {
 ul.nd_snmp-tree, ul.nd_snmp-children {
   list-style: none;
   margin: 0;
-  padding-left: 1.2em;
+  padding-left: 22px;
 }
 
 ul.nd_snmp-tree { padding-left: 0 }
 
-/* The marker and the label sit side by side, and the children span both columns
-   beneath them. The row is the grid rather than the details, because the label
-   is outside the details: a closed one hides everything but its summary, and
-   the label has to stay readable. display:contents lifts the summary and the
-   child list into the row's grid so all three place together. */
-.nd_snmp-row { display: grid; grid-template-columns: 1.1em 1fr }
-.nd_snmp-branch { display: contents }
-.nd_snmp-row > details > summary { grid-column: 1; cursor: pointer }
-.nd_snmp-row > .nd_snmp-label { grid-column: 2 }
-.nd_snmp-row > details > ul { grid-column: 1 / -1 }
-/* a leaf has no marker, so its label starts where a branch's does */
-.nd_snmp-row > .nd_snmp-label:first-child { grid-column: 2 }
+/* Metrics, colours and the shape of the open/close control are taken from
+   jsTree 3.3.17's proton theme (MIT), the widget this replaced: a 22px label
+   with a pixel above it and two below, so rows step by 25px; 22px per level;
+   #a6a6a6 level lines one pixel wide running through the control; and a 13px
+   rounded control with a #999 border and glyph on white.
+   They are drawn in CSS here rather than loaded from that theme's sprite, so
+   no image is needed.
 
-.nd_snmp-label { text-decoration: none; cursor: pointer }
+   The label comes first in the row and the child list follows it inside the
+   <details>, so both sit in normal flow and a nested list is as wide as its
+   row. Only the marker is placed, into the row's left gutter.
+
+   Laying the row out as a grid instead does not work. The summary becomes a
+   grid item, but a browser slots the rest of a <details> into a box of its own,
+   so grid-column never reaches the child list and the list collapses to the
+   width of its own padding. */
+.nd_snmp-row { position: relative }
+
+/* The line down a level, and the tick from it to each row, at the width and
+   colour the sprite drew them: one solid pixel of #a6a6a6, not a dotted rule,
+   which is too faint to see. Both are dropped on the last child so the line
+   stops at the last tick rather than running past it, which is what the sprite
+   did by leaving that node no background. */
+.nd_snmp-row::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid #a6a6a6;
+}
+.nd_snmp-row:last-child::before { bottom: auto; height: 12px }
+.nd_snmp-row::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 12px;
+  width: 12px;
+  border-top: 1px solid #a6a6a6;
+}
+
+/* The control this replaced was a boxed + and -, drawn from a sprite image at
+   these colours, sitting on the level line with its own fill covering it. The
+   browser's own triangle is removed in both spellings it answers to. */
+.nd_snmp-row > details > summary {
+  position: absolute;
+  left: 4px;
+  top: 5px;
+  cursor: pointer;
+  list-style: none;
+}
+.nd_snmp-row > details > summary::-webkit-details-marker { display: none }
+.nd_snmp-row > details > summary::before {
+  content: "";
+  display: block;
+  width: 13px;
+  height: 13px;
+  background: url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%2713%27%20height=%2713%27%3E%3Crect%20x=%27.5%27%20y=%27.5%27%20width=%2712%27%20height=%2712%27%20rx=%272%27%20fill=%27%23fff%27%20stroke=%27%23999%27/%3E%3Cpath%20d=%27M3.5%206.5h6M6.5%203.5v6%27%20fill=%27none%27%20stroke=%27%23999%27/%3E%3C/svg%3E") no-repeat center;
+}
+.nd_snmp-row > details[open] > summary::before {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%2713%27%20height=%2713%27%3E%3Crect%20x=%27.5%27%20y=%27.5%27%20width=%2712%27%20height=%2712%27%20rx=%272%27%20fill=%27%23fff%27%20stroke=%27%23999%27/%3E%3Cpath%20d=%27M3.5%206.5h6%27%20fill=%27none%27%20stroke=%27%23999%27/%3E%3C/svg%3E");
+}
+
+.nd_snmp-label {
+  display: inline-block;
+  height: 22px;
+  line-height: 22px;
+  margin: 1px 0 2px 22px;
+  padding: 0 4px 0 1px;
+  color: #333;
+  text-decoration: none;
+  cursor: pointer;
+}
+/* A search marks the node it found. The widget selected it and styled it as a
+   match at the same time, which is where both halves of this come from. */
+.nd_snmp-label.nd_snmp-found {
+  background-color: #3392e3;
+  border-radius: 3px;
+  color: #8b0000;
+  font-style: italic;
+  font-weight: 700;
+}
+.nd_snmp-label:hover, .nd_snmp-label:focus { color: #333; background-color: #e8eff7 }
 .nd_snmp-label > i { margin-right: .4em }
 
 /* The three states the tree widget this replaced set from JavaScript: in

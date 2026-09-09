@@ -669,6 +669,15 @@ document.addEventListener('DOMContentLoaded', function() {
     holdUntilSettled(target, document.getElementById(tab + '_indicator'));
     inner_view_processing(tab);
   });
+  // A search opens the tree to the node it found and marks it. That tree can
+  // run to thousands of rows, so a mark below the fold says nothing on its own.
+  document.body.addEventListener('htmx:after:swap', function (evt) {
+    var target = evt.detail.ctx.target;
+    if (!target || target.id !== 'nd_snmp-tree') { return }
+    var hit = target.querySelector('.nd_snmp-found');
+    if (hit) { hit.scrollIntoView({ block: 'center' }) }
+  });
+
   // Empty the pane for the duration of the request, so the indicator is the
   // only thing on screen. Leaving the previous results up gives an interactive
   // table that no longer answers the search being run.
