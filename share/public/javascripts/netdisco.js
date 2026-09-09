@@ -333,6 +333,22 @@ window.addEventListener('keydown', function (event) {
     return;
   }
 
+  // On a category, up and down step between the entries of the menu holding it.
+  // Bootstrap walks every visible focusable descendant instead, and the list a
+  // category holds open is one, so it descends into that list and the category
+  // below is never reached. Sideways is how the list is entered.
+  if (event.target === category
+      && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
+    var peers = Array.prototype.slice.call(
+      row.parentElement.querySelectorAll(':scope > li > .dropdown-item'));
+    var peer = nd_submenu_focus_index(
+      peers.length, peers.indexOf(category), event.key);
+    event.preventDefault();
+    event.stopPropagation();
+    if (peer >= 0) { peers[peer].focus() }
+    return;
+  }
+
   if (!submenu) { return }
 
   if (event.key === 'Escape') {

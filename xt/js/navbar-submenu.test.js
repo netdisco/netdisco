@@ -95,6 +95,22 @@ test('navbarSubmenu__walking_sideways__moves_into_the_list_and_back_out', () => 
     'the sideways branch no longer moves focus, which is all it exists to do');
 });
 
+// The category below a category is only reachable if stepping stays out of the
+// list the focused one holds open, which is the whole point of the branch.
+test('navbarSubmenu__stepping_off_a_category__stays_out_of_its_open_list', () => {
+  const from = source.indexOf("event.target === category\n      && (event.key === 'ArrowUp'");
+  assert.ok(from > 0,
+    'the listener no longer steps between categories itself, so the arrows fall'
+    + " back to Bootstrap, which descends into the category's own open list");
+  const branch = source.slice(from, source.indexOf('if (!submenu) { return }', from));
+  assert.match(branch, /:scope > li > \.dropdown-item/,
+    'the category branch no longer restricts itself to the menu\'s own entries,'
+    + ' so items inside an open list are stepped through again');
+  assert.match(branch, /event\.stopPropagation\(\)/,
+    'the category branch no longer stops the event, so Bootstrap moves focus a'
+    + ' second time after it');
+});
+
 test('netdiscoJs__before_bootstrap_can_throw__takes_both_arrows_in_the_submenu', () => {
   const from = source.indexOf("if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')");
   assert.ok(from > 0,
