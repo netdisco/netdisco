@@ -74,6 +74,17 @@ class FakeElement {
     };
   }
 
+  // Enough of closest() for the dismiss handler: one simple selector, walked
+  // up through parentNode, which is all this module asks of it.
+  closest(selector) {
+    let node = this;
+    while (node) {
+      if (matchesSimpleSelector(node, selector)) return node;
+      node = node.parentNode;
+    }
+    return null;
+  }
+
   get textContent() {
     return this.children.length ? this.children.map((child) => child.textContent).join('') : this.text;
   }
@@ -153,10 +164,16 @@ class FakeElement {
 class FakeBootstrapToast {
   constructor(element) {
     this.element = element;
+    this.hidden = 0;
+    element.bsToast = this;
   }
 
   show() {
     this.element.classList.add('show');
+  }
+
+  hide() {
+    this.hidden += 1;
   }
 }
 
@@ -183,11 +200,11 @@ function load() {
   return { ndToast, document: doc };
 }
 
-test('ndToast__an_error__is_rendered_with_the_danger_styling', () => {
+test('ndToast__an_error__is_rendered_with_the_error_styling', () => {
   const { ndToast, document } = load();
   ndToast.error('it broke', 'Discover');
   const toast = document.querySelector('.toast');
-  assert.ok(toast.className.includes('text-bg-danger'));
+  assert.ok(toast.className.includes('nd_toast-error'));
   assert.ok(toast.textContent.includes('it broke'));
   assert.ok(toast.textContent.includes('Discover'));
 });
@@ -218,8 +235,25 @@ test('ndToast__success_and_info__are_styled_for_their_own_kind', () => {
   ndToast.success('saved');
   ndToast.info('queued');
   const [first, second] = document.querySelectorAll('.toast');
-  assert.ok(first.className.includes('text-bg-success'));
-  assert.ok(second.className.includes('text-bg-info'));
+  assert.ok(first.className.includes('nd_toast-success'));
+  assert.ok(second.className.includes('nd_toast-info'));
+});
+
+// toastr dismissed on a tap anywhere, which is what the pointer cursor the
+// stylesheet puts over a notification offers. The close button stays the
+// library's own, so a click on it is not counted twice.
+test('ndToast__clicked_anywhere_but_the_close_button__dismisses_itself', () => {
+  const { ndToast, document } = load();
+  ndToast.info('queued');
+  const toast = document.querySelector('.toast');
+  toast.listeners['click'][0]({ target: toast });
+  assert.equal(toast.bsToast.hidden, 1, 'a tap on the body hides it');
+
+  ndToast.info('again');
+  const second = [...document.querySelectorAll('.toast')][1];
+  const button = second.querySelector('.btn-close');
+  second.listeners['click'][0]({ target: button });
+  assert.equal(second.bsToast.hidden, 0, 'a tap on the close button is left alone');
 });
 
 test('ndToast__no_title_given__still_renders_the_message_alone', () => {

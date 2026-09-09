@@ -8,9 +8,9 @@ const ndToast = (function () {
   const DELAY = 5000;
 
   const STYLE_CLASSES = {
-    success: 'text-bg-success',
-    error: 'text-bg-danger',
-    info: 'text-bg-info'
+    success: 'nd_toast-success',
+    error: 'nd_toast-error',
+    info: 'nd_toast-info'
   };
 
   /**
@@ -37,7 +37,7 @@ const ndToast = (function () {
   function closeButton() {
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = 'btn-close me-2 m-auto';
+    button.className = 'btn-close btn-close-white me-2 m-auto';
     button.setAttribute('data-bs-dismiss', 'toast');
     button.setAttribute('aria-label', 'Close');
     return button;
@@ -91,7 +91,16 @@ const ndToast = (function () {
       el.remove();
     });
 
-    new bootstrap.Toast(el, { delay: DELAY }).show();
+    const toast = new bootstrap.Toast(el, { delay: DELAY });
+    // The whole notification dismisses, which is what the pointer cursor over
+    // it offers. The close button is left to the library, so that a keyboard
+    // reaches one too.
+    el.addEventListener('click', function (event) {
+      if (!(/** @type {Element} */ (event.target)).closest('.btn-close')) {
+        toast.hide();
+      }
+    });
+    toast.show();
   }
 
   /**
