@@ -717,6 +717,7 @@ xt/55-ports-search-shadow.t
 xt/56-ports-deferred-nodes.t
 xt/57-route-cache-ajax.t
 xt/58-behind-proxy-address.t
+xt/59-login-logo-layout.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/autocomplete-teardown.test.js
