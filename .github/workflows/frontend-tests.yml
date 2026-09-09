@@ -350,8 +350,8 @@ jobs:
       - name: No shipped script calls jQuery and the library is gone
         run: node --test xt/js/no-jquery.test.js
 
-  submenu-keys:
-    name: arrow keys in the navbar submenus
+  navbar-submenu:
+    name: reaching a navbar submenu item
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -361,5 +361,5 @@ jobs:
           node-version: '22'
 
       # Same naming rule as the jobs above: name the file, never a glob.
-      - name: Arrow keys move within a dropend submenu
-        run: node --test xt/js/submenu-keys.test.js
+      - name: Arrow keys move within a dropend submenu, and the pointer can reach it
+        run: node --test xt/js/navbar-submenu.test.js

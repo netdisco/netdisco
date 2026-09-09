@@ -454,13 +454,19 @@ a:hover, a:focus {
 
    The placement rule is restated because the replacement scopes its own to
    [data-bs-popper], which only a script sets, so without this the submenu lands
-   over its parent. */
+   over its parent.
+
+   The negative margin has to stay negative. A positive one leaves a strip that
+   belongs to neither the category nor the submenu, and a pointer crossing it
+   slowly enough to land there loses the hover that holds the submenu open. One
+   pixel of overlap also collapses the two adjoining borders into a single
+   line. */
 .dropend > .dropdown-menu {
   top: 0;
   right: auto;
   left: 100%;
   margin-top: 0;
-  margin-left: var(--bs-dropdown-spacer);
+  margin-left: -1px;
 }
 /* Keyboard as well as pointer: the category anchors carry no data-bs-toggle
    (see above), so focus arriving on one is all there is to open a submenu.

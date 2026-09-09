@@ -1,4 +1,5 @@
-// Guards arrow-key movement inside the navbar's dropend submenus.
+// Guards reaching an item in the navbar's dropend submenus, by key and by
+// pointer.
 //
 // Bootstrap resolves the toggle for a keyboard event by looking beside the
 // menu the event came from. A dropend submenu's category link carries the
@@ -21,6 +22,18 @@ const path = require('node:path');
 const ROOT = path.join(__dirname, '..', '..');
 const source = fs.readFileSync(
   path.join(ROOT, 'share', 'public', 'javascripts', 'netdisco.js'), 'utf8');
+const netdiscoCss = fs.readFileSync(
+  path.join(ROOT, 'share', 'public', 'css', 'netdisco.css'), 'utf8');
+
+// Comments are stripped first: they quote selectors and property names, and a
+// rule found inside one would be evidence of nothing.
+function declarations(css, selector) {
+  const stripped = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  const start = stripped.indexOf(selector + ' {');
+  assert.notEqual(start, -1, 'netdisco.css carries a rule for ' + selector);
+  const body = stripped.slice(start + selector.length + 2);
+  return body.slice(0, body.indexOf('}'));
+}
 
 function extract(name) {
   const from = source.indexOf('function ' + name);
@@ -77,4 +90,25 @@ test('netdiscoJs__before_bootstrap_can_throw__takes_both_arrows_in_the_submenu',
   assert.ok(/nd_submenu_focus_index\(/.test(arrows),
     'the arrow branch no longer moves focus itself; having stopped the event'
     + ' it is the only thing that can');
+});
+
+// A submenu is held open by the pointer being inside the category, and the
+// submenu is a descendant of it, so the two boxes have to touch. Any gap is
+// dead space that drops the hover, and the slower the pointer the more surely
+// it lands there.
+test('navbarSubmenu__so_the_pointer_can_reach_it__touches_its_category', () => {
+  const rule = declarations(netdiscoCss, '.dropend > .dropdown-menu');
+  const margin = /margin-left:\s*([^;]+);/.exec(rule);
+  assert.ok(margin, '.dropend > .dropdown-menu sets no margin-left');
+  const value = margin[1].trim();
+  // A bare 0 carries no unit and is as good as a negative length here.
+  const px = /^(-?[\d.]+)(px)?$/.exec(value);
+  assert.ok(px && (px[2] || Number(px[1]) === 0),
+    'margin-left is "' + value + '"; it must be a pixel length or zero, and'
+    + ' a variable such as --bs-dropdown-spacer is a positive gap the pointer'
+    + ' falls into');
+  assert.ok(Number(px[1]) <= 0,
+    'margin-left is ' + value + ', which separates the submenu from the'
+    + ' category that opens it; a pointer crossing that strip loses the hover'
+    + ' and the submenu disappears');
 });
