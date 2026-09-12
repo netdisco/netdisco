@@ -753,6 +753,23 @@ document.addEventListener('DOMContentLoaded', function() {
     if (hit) { hit.scrollIntoView({ block: 'center' }) }
   });
 
+  // Double-clicking a label opens its node. htmx binds its handler on the
+  // anchor itself, so stopping the second click in capture on the way down
+  // keeps the panel to one request.
+  document.body.addEventListener('click', function (evt) {
+    var label = evt.target.closest('a.nd_snmp-label');
+    if (label && evt.detail > 1) { evt.stopPropagation(); evt.preventDefault() }
+  }, true);
+
+  document.body.addEventListener('dblclick', function (evt) {
+    var label = evt.target.closest('a.nd_snmp-label');
+    if (!label) return;
+    // A branch the search opened already holds its children and carries no
+    // hx-get, so toggling it must stay a DOM operation.
+    var branch = label.closest('.nd_snmp-row').querySelector(':scope > details');
+    if (branch) { branch.open = !branch.open }
+  });
+
   // Hide the pane before the answer is put into it, not after. htmx paints
   // between inserting the fragment and firing its after-swap event, so a table
   // the library has not converted yet is on screen for a frame or two first: on

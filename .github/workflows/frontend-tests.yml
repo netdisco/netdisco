@@ -390,3 +390,16 @@ jobs:
 
       - name: The open control is stacked above the lines it sits on
         run: node --test xt/js/snmp-tree-control.test.js
+
+  snmp-tree-dblclick:
+    name: double-click on an SNMP tree label
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: A double-click toggles the node and asks for the panel once
+        run: node --test xt/js/snmp-tree-dblclick.test.js
