@@ -34,6 +34,8 @@
 
   [BUG FIXES]
 
+  * fix an authenticated credential disclosure: the device API returned the
+    stored SNMP community in the device object
   * fix an authenticated SQL injection in the device search "fields" parameter
   * Device Search no longer returns the stored SNMP community, and a field name
     which is not a Device column is refused rather than passed to the database
