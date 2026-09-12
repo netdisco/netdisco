@@ -712,11 +712,15 @@ ul.nd_snmp-tree { padding-left: 0 }
 
 /* The control this replaced was a boxed + and -, drawn from a sprite image at
    these colours, sitting on the level line with its own fill covering it. The
-   browser's own triangle is removed in both spellings it answers to. */
+   browser's own triangle is removed in both spellings it answers to.
+
+   The ::after tick follows this control in tree order, so without the z-index
+   it paints over the box and takes the click at its center. */
 .nd_snmp-row > details > summary {
   position: absolute;
   left: 4px;
   top: 5px;
+  z-index: 1;
   cursor: pointer;
   list-style: none;
 }

@@ -377,3 +377,16 @@ jobs:
       # Same naming rule as the jobs above: name the file, never a glob.
       - name: The Discover box queues over ajax and reports either way
         run: node --test xt/js/disco-queue.test.js
+
+  snmp-tree-control:
+    name: the SNMP tree's open control
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: The open control is stacked above the lines it sits on
+        run: node --test xt/js/snmp-tree-control.test.js
