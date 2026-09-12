@@ -34,6 +34,10 @@
 
   [BUG FIXES]
 
+  * fix an authenticated server-side request forgery: any user could have the
+    backend poll an address of their choosing
+  * a non-admin job no longer forwards the extra and port parameters into the
+    backend configuration
   * fix a privilege escalation in the port control endpoint, where a
     port_control user could queue any backend job action
   * fix an authenticated reflected XSS in the /t/<tenant> URL segment

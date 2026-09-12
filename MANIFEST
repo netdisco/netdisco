@@ -701,6 +701,7 @@ xt/75-device-search-column-allowlist.t
 xt/76-tenant-segment-validation.t
 xt/77-portcontrol-field-allowlist.t
 xt/78-device-serializable-columns.t
+xt/79-nonadmin-job-target.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/daterange-presets.test.js
