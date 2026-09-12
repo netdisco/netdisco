@@ -8,9 +8,9 @@ use File::Find;
 use File::Spec::Functions qw/catdir catfile updir/;
 use FindBin;
 
-# The radio's circle is drawn by the label's ::before with no top, so it sits at
-# the top of the label's line box. A label wrapping a form control has a line
-# box taller than its text, which leaves the text low against the circle.
+# The radio's circle is the label's ::before with no top and its dot the ::after
+# with one. A label wrapping a form control is taller than its text, so
+# centering is what lines all three up, and it has to reach both pseudo-elements.
 
 my $views = catdir( $FindBin::Bin, updir(), qw/share views/ );
 
@@ -64,5 +64,10 @@ like( $css, qr/\.nd_radio-with-field\s*\{[^}]*align-items:\s*center/,
 # lone class, so the rule above does nothing without the element in it.
 like( $css, qr/label\.nd_radio-with-field\s*\{/,
     'the selector outranks the theme it overrides' );
+
+foreach my $part (qw/before after/) {
+    like( $css, qr/label\.nd_radio-with-field::$part\s*\{[^}]*\btop:/,
+        "the ::$part is placed rather than left where the contents put it" );
+}
 
 done_testing;

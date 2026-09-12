@@ -1333,12 +1333,25 @@ td > form.nd_inline-form {
   font-size: 14px;
 }
 
-/* The gap replaces the whitespace flex drops; the element in the selector
+/* The gap stands in for the whitespace flex drops and must be no wider: the
+   caption clears this row by about two pixels. The element in the selector
    outranks awesome-bootstrap-checkbox's own `.radio label`. */
 .radio label.nd_radio-with-field {
   display: inline-flex;
   align-items: center;
-  gap: .35em;
+  gap: .25em;
+}
+
+/* The circle carries no `top` and the dot is pinned, so they part by half the
+   caption's height unless both are centered. The offsets are half the vendored
+   19px circle and 11px dot. */
+.radio label.nd_radio-with-field::before {
+  top: 50%;
+  margin-top: -9.5px;
+}
+.radio label.nd_radio-with-field::after {
+  top: 50%;
+  margin-top: -5.5px;
 }
 
 .nd_icon-archived {
