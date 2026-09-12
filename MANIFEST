@@ -693,6 +693,7 @@ xt/67-daterange-markup.t
 xt/68-archived-icon-color.t
 xt/69-delete-button-style.t
 xt/70-radio-label-alignment.t
+xt/71-toggle-attributes.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/daterange-presets.test.js
