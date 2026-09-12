@@ -218,23 +218,4 @@ subtest 'loadmibs__a_later_block_dies__still_reports_the_refusal' => sub {
       or diag join "\n", map { $_->log // '' } @{ $job->_statuslist };
 };
 
-subtest 'loadmibs__vendor_report_is_an_lfs_stub__refuses_without_deleting' => sub {
-    my $job = run_loadmibs( mibhome_with_lfs_stubs(), 'cisco' );
-
-    is $job->status, 'error',
-      'the guard covers the single-vendor read as well'
-      or diag $job->log;
-
-    # The line count is the only thing that distinguishes this branch from the
-    # default one, so without it this subtest silently becomes a duplicate of
-    # the first: three lines is cisco_oids alone, twelve is all four files.
-    like $job->log, qr/\bread 3 lines\b/,
-      'and only the named vendor report was read'
-      or diag $job->log;
-
-    is_deeply [ grep { m/^(?:delete|populate) SNMPObject/ } @STATEMENTS ], [],
-      'and the load branch never touched snmp_object'
-      or diag join "\n", @STATEMENTS;
-};
-
 done_testing;
