@@ -35,6 +35,8 @@
   * the archived-node marker is drawn in one color everywhere it appears
   * the delete button on the Duplicate Devices admin page shows its icon
     again, rather than red on red
+  * the Neighbor Hops label in the netmap sidebar lines up with its radio
+    button again
   * the Module Inventory, NetBIOS and Node Vendor reports now honor every
     filter when more than one is given, rather than only the first
   * the ACL editor's Host Preference now follows the address bar, so it can be

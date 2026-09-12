@@ -692,6 +692,7 @@ xt/66-session-expiry-htmx.t
 xt/67-daterange-markup.t
 xt/68-archived-icon-color.t
 xt/69-delete-button-style.t
+xt/70-radio-label-alignment.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/daterange-presets.test.js

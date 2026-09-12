@@ -1333,6 +1333,14 @@ td > form.nd_inline-form {
   font-size: 14px;
 }
 
+/* The gap replaces the whitespace flex drops; the element in the selector
+   outranks awesome-bootstrap-checkbox's own `.radio label`. */
+.radio label.nd_radio-with-field {
+  display: inline-flex;
+  align-items: center;
+  gap: .35em;
+}
+
 .nd_icon-archived {
   color: #c09853;
 }
@@ -1675,7 +1683,8 @@ ul ul, ul ol, ol ol, ol ul {
 }
 #nd_mapshow-hops {
   width: 44px;
-  margin-bottom: -5px;
+  /* Split evenly: its label centers the margin box. */
+  margin: -2.5px 0;
 }
 
 /* netmap maximise icon */
