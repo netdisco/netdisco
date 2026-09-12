@@ -699,6 +699,7 @@ xt/73-tree-connectors.t
 xt/74-datatables-column-allowlist.t
 xt/75-device-search-column-allowlist.t
 xt/76-tenant-segment-validation.t
+xt/77-portcontrol-field-allowlist.t
 xt/78-device-serializable-columns.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots

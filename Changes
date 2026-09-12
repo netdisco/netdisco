@@ -34,6 +34,8 @@
 
   [BUG FIXES]
 
+  * fix a privilege escalation in the port control endpoint, where a
+    port_control user could queue any backend job action
   * fix an authenticated reflected XSS in the /t/<tenant> URL segment
   * a /t/ URL naming a tenancy which is not configured is no longer a page
   * fix an authenticated credential disclosure: the device API returned the

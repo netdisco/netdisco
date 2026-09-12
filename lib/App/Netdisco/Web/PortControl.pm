@@ -7,24 +7,37 @@ use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::JobQueue qw/jq_insert jq_userlog/;
 
+my %action_map = (
+  'location' => 'location',
+  'contact'  => 'contact',
+  'c_port'   => 'portcontrol',
+  'c_name'   => 'portname',
+  'c_pvid'   => 'vlan',
+  'c_power'  => 'power',
+);
+
+sub _action_for_field {
+    my $field = shift;
+    return undef unless defined $field and length $field;
+    return $action_map{ $field } if exists $action_map{ $field };
+    return $field
+      if scalar grep {$_ eq $field} @{ setting('_inline_actions') || [] };
+    return undef;
+}
+
 ajax '/ajax/portcontrol' => require_any_role [qw(admin port_control)] => sub {
     send_error('No device/port/field', 400)
       unless param('device') and (param('port') or param('field'));
+
+    my $action = _action_for_field( param('field') );
+    send_error('Unknown field. Send one of location, contact, c_port, c_name,'
+      .' c_pvid, c_power, or a configured custom field.', 400)
+      unless defined $action;
 
     my $log = sprintf 'd:[%s] p:[%s] f:[%s]. a:[%s] v[%s]',
       param('device'), (param('port') || ''), param('field'),
       (param('action') || ''), (param('value') || '');
 
-    my %action_map = (
-      'location' => 'location',
-      'contact'  => 'contact',
-      'c_port'   => 'portcontrol',
-      'c_name'   => 'portname',
-      'c_pvid'   => 'vlan',
-      'c_power'  => 'power',
-    );
-
-    my $action = ($action_map{ param('field') } || param('field') || '');
     my $subaction = ($action =~ m/^(?:power|portcontrol)/
       ? (param('action') ."-other")
       : param('value'));
