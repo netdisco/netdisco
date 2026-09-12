@@ -418,7 +418,10 @@ window.addEventListener('keydown', function (event) {
 // a budget: it starts at the swap, so it covers only the browser's own work,
 // never the fetch.
 function holdUntilSettled(pane, indicator) {
-  if (!pane || !indicator) return;
+  if (!pane) return;
+  // This is the only thing that reveals a pane, so declining to hold one cannot
+  // mean leaving it hidden: whatever hid it is waiting on this.
+  if (!indicator) { pane.classList.remove('nd_pane-settling'); return }
   pane.classList.add('nd_pane-settling');
   indicator.classList.add('nd_indicator-held');
 
@@ -758,9 +761,13 @@ document.addEventListener('DOMContentLoaded', function() {
   // pane again, or it stays invisible.
   document.body.addEventListener('htmx:before:swap', function (evt) {
     var target = evt.detail.ctx.target;
-    if (target && target.id && target.id.match(/_pane$/)) {
-      target.classList.add('nd_pane-settling');
-    }
+    if (!target || !target.id || !target.id.match(/_pane$/)) return;
+    // Hide only a pane that will be held. holdUntilSettled declines a pane with
+    // no indicator, and it is what shows a pane again, so hiding one here hides
+    // it for good. The job queue is that pane.
+    var tab = target.id.replace(/_pane$/, '');
+    if (!document.getElementById(tab + '_indicator')) return;
+    target.classList.add('nd_pane-settling');
   });
 
   // Empty the pane for the duration of the request, so the indicator is the
