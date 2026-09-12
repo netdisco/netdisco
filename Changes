@@ -34,6 +34,7 @@
 
   [BUG FIXES]
 
+  * fix an authenticated SQL injection in report sorting and searching
   * the archived-node marker is drawn in one color everywhere it appears
   * the delete button on the Duplicate Devices admin page shows its icon
     again, rather than red on red

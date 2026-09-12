@@ -47,6 +47,11 @@ column is casted to text.  Conditions are combined as disjunction (OR).
 Note: this does not match the built-in DataTables filtering which does it
 word by word on any field. 
 
+Both the filtering and the ordering clauses name their columns with the
+C<columns[i][data]> query parameters, and each name is used as an SQL
+identifier.  A name must therefore be one this ResultSet resolves, that is,
+one of its own columns or one brought in by a join.  Anything else dies.
+
 =cut
 
 sub get_datatables_data {
@@ -104,7 +109,7 @@ sub _with_datatables_order_clause {
 
             # We only get the column index (starting from 0), so we have to
             # translate the index into a column name.
-            my $column_name = _datatables_index_to_column( $params,
+            my $column_name = $rs->_datatables_index_to_column( $params,
                 $params->{'order'}{$i}{'column'} );
 
             # Prefix with table alias if no prefix
@@ -144,7 +149,7 @@ sub _with_datatables_where_clause {
             if (    $params->{'columns'}{$i}{'searchable'}
                 and $params->{'columns'}{$i}{'searchable'} eq 'true' )
             {
-                my $column = _datatables_index_to_column( $params, $i );
+                my $column = $rs->_datatables_index_to_column( $params, $i );
                 my $csa = $rs->current_source_alias;
                 $column =~ s/^(\w+)$/$csa\.$1/x;
 
@@ -181,8 +186,14 @@ sub _with_datatables_paging {
 
 # Use the DataTables columns.data definition to derive the column
 # name from the index.
+#
+# The name comes from the request and both callers use it as an SQL
+# identifier, so this is the one gate on it. The allow-list is the resolved
+# 'as' list rather than the result source columns because a joined column
+# such as manufacturer.abbrev is only in the former.
 
 sub _datatables_index_to_column {
+    my $rs     = shift;
     my $params = shift;
     my $i      = shift;
 
@@ -192,7 +203,16 @@ sub _datatables_index_to_column {
         $i = 0;
     }
     $field = $params->{'columns'}{$i}{'data'};
-    return $field;
+
+    my @permitted = @{ $rs->_resolved_attrs->{'as'} || [] };
+    return $field
+        if defined $field and grep { $_ eq $field } @permitted;
+
+    # the index is request data when ordering, so name it only when it can
+    # hold nothing but digits
+    my $at = ( $i =~ m/\A[0-9]+\z/ ) ? " at index $i" : '';
+    die "unknown DataTables column$at, expected one of: "
+        . join( ', ', @permitted ) . "\n";
 }
 
 1;
