@@ -24,24 +24,26 @@ register_worker({ phase => 'main' }, sub {
 
   my $home = (setting('mibhome') || catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs'));
   my $reports = catdir( $home, 'EXTRAS', 'reports' );
-  my @maps = grep { ! m/\./ }
-             map  { (splitdir($_))[-1] }
-             grep { -f }
-             glob (catfile( $reports, '*_oids' ));
-
   my @report = ();
+
+  # always load these, whether loading one or all vendors
+  push @report, read_lines( catfile( $reports, $_ ), 'latin-1' )
+    for qw(rfc_oids net-snmp_oids cisco_oids);
+
   if ($vendor) {
       push @report, read_lines( catfile( $reports, "${vendor}_oids" ), 'latin-1' );
   }
   else {
-      my %seen_report = ();
-      my @to_read = grep { not $seen_report{$_}++ }
-                    (qw(rfc_oids net-snmp_oids cisco_oids), @maps);
-
+      my %seen_report = (map {($_ => 1)} qw(rfc_oids net-snmp_oids cisco_oids));
+      my @maps = grep { ! m/\./ }
+                 map  { (splitdir($_))[-1] }
+                 grep { -f }
+                      glob (catfile( $reports, '*_oids' ));
+      my @to_read = grep { not $seen_report{$_}++ } @maps;
       push @report, read_lines( catfile( $reports, $_ ), 'latin-1' )
         for @to_read;
   }
-  
+
   my @browser = ();
   my %children = ();
   my %seenoid = ();
