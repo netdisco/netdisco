@@ -35,7 +35,7 @@
       <td class="nd_center-cell">[% row.last_discover_stamp | html_entity %]</td>
 
       <td class="nd_center-cell">
-        <button class="btn btn-danger btn-sm"
+        <button class="btn"
           data-bs-toggle="modal" data-bs-target="#nd_devdel-[% count | html_entity %]" type="button">
           <i class="fas fa-trash-can text-danger"></i>
         </button>
