@@ -10,6 +10,57 @@ use App::Netdisco::Web::Plugin;
 
 my @DEFAULT_FIELDS = qw/ip dns name location model os_ver serial chassis_id/;
 
+# the last known good SNMP read community is a credential, so it is never
+# offered to a caller, whatever they ask for
+my %SECRET_FIELDS = map {$_ => 1} qw/snmp_comm/;
+
+# not a Device column: it is selected from the joined community table
+my $AUTH_TAG_FIELD = 'device_auth_tag';
+
+# Postgres folds an unquoted identifier to lower case over ASCII alone, and
+# its lexer takes only ASCII whitespace around one, so a name is matched the
+# way the database would have read it and no more widely
+sub _folded_name {
+    my $name = shift;
+    $name =~ s/\A[ \t\n\r\f\x0B]+//;
+    $name =~ s/[ \t\n\r\f\x0B]+\z//;
+    $name =~ tr/A-Z/a-z/;
+    return $name;
+}
+
+# resolve the caller's "fields" into a SELECT list, or nothing at all if it
+# names anything which is not a selectable Device column
+sub _requested_fields {
+    my ($result_source, $fields) = @_;
+
+    my @selectable = grep { ! $SECRET_FIELDS{$_} } $result_source->columns;
+    my %canonical = map {(_folded_name($_) => $_)} @selectable, $AUTH_TAG_FIELD;
+
+    my @asked = $fields eq 'all' ? @selectable
+              : $fields          ? split(/\s*,\s*/, $fields)
+              :                    @DEFAULT_FIELDS;
+
+    my $want_tag = List::MoreUtils::any { $_ eq $AUTH_TAG_FIELD } @asked;
+    my @labels = grep { $_ ne $AUTH_TAG_FIELD } @asked;
+
+    return if List::MoreUtils::any { ! $canonical{ _folded_name($_) } } @labels;
+
+    # each field keeps for its key the name the caller sent, which the label
+    # form holds on the perl side, while the database is only ever asked for
+    # the column that name matched
+    my @cols = map {
+        my $column = $canonical{ _folded_name($_) };
+        ($_ eq $column) ? $column : { $_ => "me.$column" }
+    } @labels;
+
+    # a "fields" which is given but names no column of its own selected every
+    # column before this list existed, so it still selects every one it may
+    return {
+      columns  => (@cols ? \@cols : $fields ? \@selectable : [@DEFAULT_FIELDS]),
+      want_tag => $want_tag,
+    };
+}
+
 register_search_tab({
     tag => 'device',
     label => 'Device',
@@ -58,7 +109,7 @@ register_search_tab({
         default => 'false',
       },
       fields => {
-        description => 'Comma-separated list of fields to return. Default: ip,dns,name,location,model,os_ver,serial,chassis_id. Any Device table column is valid (e.g. vendor,os,layers,last_discover,last_macsuck,last_arpnip). Use "all" for every column. Extra join: device_auth_tag.',
+        description => 'Comma-separated list of fields to return. Default: ip,dns,name,location,model,os_ver,serial,chassis_id. Any Device table column except snmp_comm is valid (e.g. vendor,os,layers,last_discover,last_macsuck,last_arpnip), and any other name is an error. Each field is returned under the name you gave it. Use "all" for every column except snmp_comm, which is never returned. Extra join: device_auth_tag.',
       },
       seeallcolumns => {
         description => 'Deprecated, use fields=all instead. If true and "fields" is not given, all columns of the Device will be shown.',
@@ -80,19 +131,18 @@ get '/ajax/content/search/device' => require_login sub {
       qw/name location dns ip description model os os_ver vendor layers mac/;
 
     my $fields = param('fields') || (param('seeallcolumns') ? 'all' : '');
-    my @cols = $fields eq 'all' ? ()
-             : $fields          ? split(/\s*,\s*/, $fields)
-             :                    @DEFAULT_FIELDS;
-
-    my $want_tag = List::MoreUtils::any { $_ eq 'device_auth_tag' } @cols;
-    @cols = grep { $_ ne 'device_auth_tag' } @cols;
 
     my $rs_columns = schema(vars->{'tenant'})->resultset('Device');
-    $rs_columns = $rs_columns->columns(\@cols) if @cols;
+    my $select = _requested_fields( $rs_columns->result_source, $fields );
+    send_error( 'Unknown field requested in "fields" - only Device table'
+      .' columns, except snmp_comm, and device_auth_tag may be asked for', 400 )
+      if ! $select;
+
+    $rs_columns = $rs_columns->columns( $select->{columns} );
     $rs_columns = $rs_columns->search(undef, {
       join => 'community',
       '+columns' => [{ device_auth_tag => 'community.snmp_auth_tag_read' }],
-    }) if $want_tag;
+    }) if $select->{want_tag};
 
     my $rs;
     if ($has_opt) {

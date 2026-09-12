@@ -34,6 +34,9 @@
 
   [BUG FIXES]
 
+  * fix an authenticated SQL injection in the device search "fields" parameter
+  * Device Search no longer returns the stored SNMP community, and a field name
+    which is not a Device column is refused rather than passed to the database
   * fix an authenticated SQL injection in report sorting and searching
   * the archived-node marker is drawn in one color everywhere it appears
   * the delete button on the Duplicate Devices admin page shows its icon

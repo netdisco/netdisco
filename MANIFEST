@@ -697,6 +697,7 @@ xt/71-toggle-attributes.t
 xt/72-standards-mode.t
 xt/73-tree-connectors.t
 xt/74-datatables-column-allowlist.t
+xt/75-device-search-column-allowlist.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/daterange-presets.test.js
