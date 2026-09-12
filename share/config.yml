@@ -919,7 +919,7 @@ worker_plugins:
   - 'Hook::Exec'
   - 'Hook::HTTP'
   - 'Linter'
-  - 'LoadMIBs'
+  - 'LoadMIBsFromOIDs'
   - 'Location'
   - 'Macsuck'
   - 'Macsuck::Hooks'

@@ -1,4 +1,4 @@
-package App::Netdisco::Worker::Plugin::LoadMIBs;
+package App::Netdisco::Worker::Plugin::LoadMIBsFromOIDs;
 
 use Dancer ':syntax';
 use App::Netdisco::Worker::Plugin;
@@ -19,7 +19,7 @@ register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
 
   my $vendor = $job->extra;
-  debug sprintf 'loadmibs - loading netdisco-mibs object cache%s',
+  debug sprintf 'loadmibsfromoids - loading netdisco-mibs object cache%s',
     ($vendor ? (sprintf ' for vendor "%s"', $vendor) : '');
 
   my $home = (setting('mibhome') || catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs'));
@@ -76,12 +76,12 @@ register_worker({ phase => 'main' }, sub {
     $row->{num_children} = $children{ $row->{oid} } || 0;
   }
 
-  debug sprintf "loadmibs - loaded %d objects from netdisco-mibs",
+  debug sprintf "loadmibsfromoids - loaded %d objects from netdisco-mibs",
     scalar @browser;
 
   if (not scalar @browser) {
     my $refusal = sprintf
-      'loadmibs - refusing to empty snmp_object: read %d lines from %s but '
+      'loadmibsfromoids - refusing to empty snmp_object: read %d lines from %s but '
     . 'parsed 0 objects', scalar @report, $reports;
 
     # error() is what survives --quiet on the console. add_status() records the
@@ -92,9 +92,9 @@ register_worker({ phase => 'main' }, sub {
   else {
     schema('netdisco')->txn_do(sub {
       my $gone = schema('netdisco')->resultset('SNMPObject')->delete;
-      debug sprintf 'loadmibs - removed %d oids', $gone;
+      debug sprintf 'loadmibsfromoids - removed %d oids', $gone;
       schema('netdisco')->resultset('SNMPObject')->populate(\@browser);
-      debug sprintf 'loadmibs - added %d new oids', scalar @browser;
+      debug sprintf 'loadmibsfromoids - added %d new oids', scalar @browser;
     });
   }
 
@@ -108,7 +108,7 @@ register_worker({ phase => 'main' }, sub {
     foreach my $ip (@devices) {
         my $dev = get_device($ip);
         next unless $dev->in_storage;
-        debug sprintf 'loadmibs - promoting snapshot for %s to be browsable', $dev->ip;
+        debug sprintf 'loadmibsfromoids - promoting snapshot for %s to be browsable', $dev->ip;
         make_snmpwalk_browsable($dev);
     }
   });
@@ -134,7 +134,7 @@ register_worker({ phase => 'main' }, sub {
         }
 
         schema('netdisco')->resultset('DeviceBrowser')->populate(\@rows);
-        debug sprintf 'loadmibs - updated %d legacy snapshot rows', scalar @rows;
+        debug sprintf 'loadmibsfromoids - updated %d legacy snapshot rows', scalar @rows;
     }
   });
 

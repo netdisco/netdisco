@@ -14,7 +14,7 @@ use File::Spec::Functions 'catfile';
 
 use App::Netdisco;
 use App::Netdisco::Backend::Job;
-use App::Netdisco::Worker::Plugin::LoadMIBs ();
+use App::Netdisco::Worker::Plugin::LoadMIBsFromOIDs ();
 
 use Try::Tiny;
 use Dancer qw/:moose :script !pass/;
@@ -69,7 +69,7 @@ our $BREAK_LATER_BLOCKS = 0;
 # after this assignment and undo it.
 {
   no warnings 'redefine';
-  *App::Netdisco::Worker::Plugin::LoadMIBs::schema = sub { bless {}, 'FakeSchema' };
+  *App::Netdisco::Worker::Plugin::LoadMIBsFromOIDs::schema = sub { bless {}, 'FakeSchema' };
 }
 
 {
@@ -86,7 +86,7 @@ our $BREAK_LATER_BLOCKS = 0;
 # juniper_oids is here so the line count can tell the dedupe apart from dropping
 # @maps altogether: without it every file is one of the three hardcoded names
 # and both regressions read the same number of lines. It is reached through the
-# *_oids glob, so a TMPDIR containing a dot drops it (see LoadMIBs.pm:29) and
+# *_oids glob, so a TMPDIR containing a dot drops it (see LoadMIBsFromOIDs.pm:29) and
 # the count assertion fails rather than passing for the wrong reason.
 sub mibhome_with_lfs_stubs {
   my $home = File::Temp->newdir();
@@ -123,7 +123,7 @@ sub run_loadmibs {
   # subaction, not extra: extra is a read-only alias for it (Job.pm:229) and is
   # not a constructor slot, so Moo drops it and the vendor branch never runs.
   my $job = App::Netdisco::Backend::Job->new({
-    job => 0, action => 'loadmibs', ($vendor ? (subaction => $vendor) : ()) });
+    job => 0, action => 'loadmibsfromoids', ($vendor ? (subaction => $vendor) : ()) });
   try { MyWorker->new()->run($job) } catch { diag "unexpected exception: $_" };
   return $job;
 }
