@@ -24,9 +24,8 @@ register_worker({ phase => 'main' }, sub {
 
   my $home = (setting('mibhome') || catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs'));
   my $reports = catdir( $home, 'EXTRAS', 'reports' );
-  my @maps = map  { (splitdir($_))[-1] }
-             grep { ! m/^(?:EXTRAS)$/ }
-             grep { ! m/\./ }
+  my @maps = grep { ! m/\./ }
+             map  { (splitdir($_))[-1] }
              grep { -f }
              glob (catfile( $reports, '*_oids' ));
 
