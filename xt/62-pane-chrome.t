@@ -38,6 +38,9 @@ use File::Slurper 'read_text';
 setting('no_auth' => 1);
 setting('branding_text' => 'Netdisco');
 
+# the /t/ routes serve configured tenancies alone, so this tag must be one
+push @{ setting('tenant_tags') }, 'xt';
+
 setting('_device_tabs' => [
   { tag => 'ports',        label => 'Ports', provides_csv => 1 },
   { tag => 'netmap',       label => 'Neighbors' },

@@ -42,6 +42,9 @@ use Dancer::Plugin::Ajax;
 setting('no_auth' => 1);
 setting('branding_text' => 'Netdisco');
 
+# the /t/ routes serve configured tenancies alone, so this tag must be one
+push @{ setting('tenant_tags') }, 'xt';
+
 # Dancer::Test's own `headers` argument never reaches Dancer::Request, so the
 # CGI-style variable is what carries a header here. See xt/57 and xt/59.
 sub pane_response {

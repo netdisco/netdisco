@@ -34,6 +34,8 @@
 
   [BUG FIXES]
 
+  * fix an authenticated reflected XSS in the /t/<tenant> URL segment
+  * a /t/ URL naming a tenancy which is not configured is no longer a page
   * fix an authenticated credential disclosure: the device API returned the
     stored SNMP community in the device object
   * fix an authenticated SQL injection in the device search "fields" parameter

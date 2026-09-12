@@ -14,6 +14,7 @@ use URI ();
 use Socket6 (); # to ensure dependency is met
 use HTML::Entities (); # to ensure dependency is met
 use URI::QueryParam (); # part of URI, to add helper methods
+use URI::Escape 'uri_escape_utf8';
 use MIME::Base64 'encode_base64';
 use Path::Class 'dir';
 use Module::Load ();
@@ -343,7 +344,7 @@ hook 'before_template' => sub {
     # allow portable static content
     $tokens->{uri_base} = request->base->path
       if request->base->path ne '/';
-    $tokens->{uri_base} .= ('/t/'. vars->{'tenant'})
+    $tokens->{uri_base} .= ('/t/'. uri_escape_utf8(vars->{'tenant'}))
       if vars->{'tenant'};
 
     # cache-busting suffix for the stylesheets and scripts in the layout.
@@ -675,13 +676,25 @@ hook 'after' => sub {
 };
 
 # support for tenancies
+
+# the segment is echoed back into the page as uri_base, which the layout and
+# the SNMP panes emit unfiltered, so only a configured tag may set it.
+sub _tenant_is_configured {
+    my $tenant = shift;
+    return 0 unless defined $tenant;
+    return scalar grep { defined $_ and $_ eq $tenant }
+                       @{ setting('tenant_tags') || [] };
+}
+
 any qr{^/t/(?<tenant>[^/]+)/?$} => sub {
     my $capture = captures;
+    pass unless _tenant_is_configured($capture->{'tenant'});
     var tenant => $capture->{'tenant'};
     forward '/';
 };
 any '/t/*/**' => sub {
     my ($tenant, $path) = splat;
+    pass unless _tenant_is_configured($tenant);
     var tenant => $tenant;
     forward (join '/', '', @$path, (request->path =~ m{/$} ? '' : ()));
 };

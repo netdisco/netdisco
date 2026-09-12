@@ -46,6 +46,9 @@ use App::Netdisco::Util::Web 'page_title';
 
 setting('no_auth' => 1);
 setting('branding_text' => 'Netdisco');
+
+# the /t/ routes serve configured tenancies alone, so this tag must be one
+push @{ setting('tenant_tags') }, 'xt';
 setting('_reports')->{'portlog'} = { tag => 'portlog', label => 'Port Log' };
 
 # Dancer::Test's own `headers` argument never reaches Dancer::Request, so the
