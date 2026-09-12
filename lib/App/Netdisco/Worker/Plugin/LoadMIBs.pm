@@ -28,9 +28,9 @@ register_worker({ phase => 'main' }, sub {
   return Status->error(sprintf 'is not a gzip file: "%s"', $objects)
     unless $ae->is_gz;
 
+  my $obj_count_pre = schema(vars->{'tenant'})->resultset('SNMPObject')->count();
   debug sprintf 'loadmibs - current object cache size: %s', $obj_count_pre;
   debug 'loadmibs - loading netdisco-mibs object cache';
-  my $obj_count_pre = schema(vars->{'tenant'})->resultset('SNMPObject')->count();
   my $gzip = $ae->bin_gzip;
   system(qq{$gzip -d -c '$objects' | psql -X -v ON_ERROR_STOP=0 -v ON_ERROR_ROLLBACK=on -q});
   my $obj_count_post = schema(vars->{'tenant'})->resultset('SNMPObject')->count();
