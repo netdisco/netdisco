@@ -4,6 +4,8 @@
 
   * this release needs Safari 16.4, Firefox 101, Chrome 74 or Edge 79, or
     newer. it is the first that will not work on an older browser
+  * pages are now drawn in the display mode the current framework is written
+    for. rows in a table stand a little taller as a result
   * Back and Forward now fetch the page again for the tab and options in the
     address bar, so what you return to is current rather than the results as
     they were when you left them
