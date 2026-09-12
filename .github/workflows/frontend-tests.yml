@@ -403,3 +403,16 @@ jobs:
 
       - name: A double-click toggles the node and asks for the panel once
         run: node --test xt/js/snmp-tree-dblclick.test.js
+
+  stranded-popovers:
+    name: a job log popover whose row has gone
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: A tip with no trigger left is removed
+        run: node --test xt/js/stranded-popovers.test.js

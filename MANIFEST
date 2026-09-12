@@ -717,6 +717,7 @@ xt/js/snmp-tree-control.test.js
 xt/js/snmp-tree-dblclick.test.js
 xt/js/sort-types.test.js
 xt/js/sticky-header.test.js
+xt/js/stranded-popovers.test.js
 xt/js/submit-dispatch.test.js
 xt/js/tab-request-sync.test.js
 xt/js/tables-registry.test.js

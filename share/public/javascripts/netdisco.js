@@ -249,8 +249,20 @@ function disposePopovers() {
   document.querySelectorAll('.popover').forEach(function (el) {
     var trigger = el.id && document.querySelector('[aria-describedby="' + el.id + '"]');
     var instance = trigger && bootstrap.Popover.getInstance(trigger);
-    if (instance) { instance.dispose(); }
+    // hide, not dispose: bootstrap reads the instance again when the hide
+    // transition ends, and a disposed one throws there.
+    if (instance) { instance.hide(); }
     else { el.remove(); }
+  });
+}
+
+// Bootstrap dismisses a tip from events on its trigger, so one whose trigger has
+// gone is dismissed by nothing and popper leaves it where it last drew.
+// disposePopovers runs before the request, too early to catch one raised after.
+function removeStrandedPopovers() {
+  document.querySelectorAll('.popover').forEach(function (el) {
+    var trigger = el.id && document.querySelector('[aria-describedby="' + el.id + '"]');
+    if (!trigger) { el.remove(); }
   });
 }
 
@@ -744,6 +756,10 @@ document.addEventListener('DOMContentLoaded', function() {
     holdUntilSettled(target, document.getElementById(tab + '_indicator'));
     inner_view_processing(tab);
   });
+  document.body.addEventListener('htmx:after:swap', function () {
+    removeStrandedPopovers();
+  });
+
   // A search opens the tree to the node it found and marks it. That tree can
   // run to thousands of rows, so a mark below the fold says nothing on its own.
   document.body.addEventListener('htmx:after:swap', function (evt) {
