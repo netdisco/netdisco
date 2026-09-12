@@ -1333,6 +1333,10 @@ td > form.nd_inline-form {
   font-size: 14px;
 }
 
+.nd_icon-archived {
+  color: #c09853;
+}
+
 /* port admin up/down control */
 .nd_edit-icon, .nd_hand-icon {
   cursor: pointer;

@@ -32,6 +32,7 @@
 
   [BUG FIXES]
 
+  * the archived-node marker is drawn in one color everywhere it appears
   * the Module Inventory, NetBIOS and Node Vendor reports now honor every
     filter when more than one is given, rather than only the first
   * the ACL editor's Host Preference now follows the address bar, so it can be

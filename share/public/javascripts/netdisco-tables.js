@@ -90,8 +90,8 @@ const ndTables = (function () {
   // args.mark, beside it with args.archived, absent for an active row.
   const archivedMark = function (args, row) {
     if (!((args.archived || args.mark) && !row.active)) return '';
-    if (args.mark) return '&nbsp;&nbsp;<i class="fas fa-book text-warning"></i> ';
-    return '&nbsp;<i class="fas fa-book text-warning"></i>&nbsp;';
+    if (args.mark) return '&nbsp;&nbsp;<i class="fas fa-book nd_icon-archived"></i> ';
+    return '&nbsp;<i class="fas fa-book nd_icon-archived"></i>&nbsp;';
   };
 
   const RENDERERS = {
@@ -337,7 +337,7 @@ const ndTables = (function () {
         if (type !== 'display' || !row.time_last) return text;
         if (row.node) {
           const flag = row.active ? '' : '&archived=on';
-          const mark = row.active ? '' : '&nbsp;<i class="fas fa-book text-warning"></i>&nbsp;';
+          const mark = row.active ? '' : '&nbsp;<i class="fas fa-book nd_icon-archived"></i>&nbsp;';
           return link(urlFor(urls, 'search_node', 'ipInventoryAddress') + '&q=' + enc(data) + flag, text + mark);
         }
         return link(urlFor(urls, 'search_device', 'ipInventoryAddress') + '&q=' + enc(data), text);

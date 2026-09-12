@@ -285,12 +285,12 @@ test('renderers__searchNodeLink__the_flag_combinations_and_the_archived_marker',
   // archived: adds the &archived=on flag and the single-marker HTML.
   assert.strictEqual(
     t.renderers.searchNodeLink({ archived: true }, URLS)('AA:BB:CC', 'display', { active: false }),
-    '<a href="/search?tab=node&q=AA%3ABB%3ACC&archived=on">AA:BB:CC&nbsp;<i class="fas fa-book text-warning"></i>&nbsp;</a>',
+    '<a href="/search?tab=node&q=AA%3ABB%3ACC&archived=on">AA:BB:CC&nbsp;<i class="fas fa-book nd_icon-archived"></i>&nbsp;</a>',
   );
   // mark without archived: the marker only, no flag.
   assert.strictEqual(
     t.renderers.searchNodeLink({ mark: true }, URLS)('AA:BB:CC', 'display', { active: false }),
-    '<a href="/search?tab=node&q=AA%3ABB%3ACC">AA:BB:CC&nbsp;&nbsp;<i class="fas fa-book text-warning"></i> </a>',
+    '<a href="/search?tab=node&q=AA%3ABB%3ACC">AA:BB:CC&nbsp;&nbsp;<i class="fas fa-book nd_icon-archived"></i> </a>',
   );
   // an active row gets neither, regardless of archived/mark.
   assert.strictEqual(

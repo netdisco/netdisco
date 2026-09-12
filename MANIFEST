@@ -690,6 +690,7 @@ xt/64-snmp-tree-markup.t
 xt/65-snmp-tree-search.t
 xt/66-session-expiry-htmx.t
 xt/67-daterange-markup.t
+xt/68-archived-icon-color.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/daterange-presets.test.js
