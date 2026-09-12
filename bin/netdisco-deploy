@@ -227,6 +227,7 @@ sub deploy_oui {
   print color 'bold blue';
   print 'Updating OUI, Manufacturers, Enterprises, and Products... ';
 
+  # tables oui, enterprise, manufacturer, product, snmp_filter
   my $latest = 'https://github.com/netdisco/upstream-sources/raw/refs/heads/master/bootstrap/netdisco-lookup-tables.sql';
   my $file = file($home, 'netdisco-lookup-tables.sql');
   my $resp = HTTP::Tiny->new->mirror($latest, $file);
