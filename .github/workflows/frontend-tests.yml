@@ -188,3 +188,55 @@ jobs:
 
       - name: netdisco-admin.js registers with ndPages and carries no admin code left in netdisco.js
         run: node --test xt/js/page-registry.test.js
+
+  history-ownership:
+    name: history handed to htmx
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Nothing drives the browser history by hand
+        run: node --test xt/js/history-ownership.test.js
+
+  tab-request-sync:
+    name: tab request cancellation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Nothing cancels an abandoned tab request by hand
+        run: node --test xt/js/tab-request-sync.test.js
+
+  submit-dispatch:
+    name: sidebar form submit dispatch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Nothing builds a form submit event by hand
+        run: node --test xt/js/submit-dispatch.test.js
+
+  pane-chrome:
+    name: per-tab chrome from the response
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Nothing rebuilds the csv or reset link by hand
+        run: node --test xt/js/pane-chrome.test.js

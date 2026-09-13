@@ -2,6 +2,16 @@
 
   [ENHANCEMENTS]
 
+  * Back and Forward now fetch the page again for the tab and options in the
+    address bar, so what you return to is current rather than the results as
+    they were when you left them
+  * changing your search or your columns while results are still loading now
+    abandons the request already in flight, so what you asked for last arrives
+    sooner and the results you replaced never flash up on the way
+  * a request whose answer never arrives now gives up after five minutes and
+    says so where the results would be, instead of leaving the spinner turning
+  * this release needs Safari 16.4, Firefox 101 or Chrome 74, or newer. it is
+    the first that will not work on an older browser
   * if you keep site-local templates or JavaScript, run netdisco-do
     checksitelocal after upgrading. this release removes several things a copy
     may still call, and the report names every file and what to change. a
@@ -13,6 +23,9 @@
   * the Module Inventory, NetBIOS and Node Vendor reports now honor every
     filter when more than one is given; the second and later were dropped by
     the table's data request
+  * the ACL editor's Host Preference now follows the address bar; its sidebar
+    options were keyed under a name the web app never looked them up by, so
+    the setting could not be linked to or bookmarked
 
 2.108004 - 2026-09-09
 

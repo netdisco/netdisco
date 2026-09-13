@@ -13,14 +13,17 @@ let saveMapPositions; // netdisco.js binds the sidebar Save button to this
 const ndWindow = window;
 
 document.addEventListener(
-  'htmx:afterSwap',
+  'htmx:after:swap',
   /**
    * Rebuilds the netmap when htmx swaps in the netmap pane fragment; ignores every other swap.
-   * @param {CustomEvent} evt the htmx:afterSwap event
+   * @param {CustomEvent} evt the htmx:after:swap event
    */
   function (evt) {
-    if (evt.detail.target.id !== 'netmap_pane') return;
-    ndNetmap(evt.detail.target);
+    // htmx dispatches this on the element that made the request, so the pane
+    // is read from the context
+    const pane = evt.detail.ctx.target;
+    if (pane.id !== 'netmap_pane') return;
+    ndNetmap(pane);
   }
 );
 

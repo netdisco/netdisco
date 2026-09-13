@@ -1,8 +1,8 @@
 // Coverage for share/public/javascripts/netdisco-deferred-nodes.js.
 //
-// htmx sets its `once` flag when the click fires, before the request is sent,
-// and never clears it, so the retry cannot go back through the trigger. Why it
-// goes through htmx.ajax with the box as source is commented at the call site.
+// htmx spends the box's trigger when the click fires, before the request is
+// sent, so the retry cannot go back through it. Why it goes through htmx.ajax
+// with the box as source is commented at the call site.
 
 'use strict';
 
@@ -66,35 +66,47 @@ describe('registration', () => {
   test('deferredNodes__loaded__listens_for_both_htmx_failure_events', () => {
     assert.deepStrictEqual(
       Object.keys(listeners).sort(),
-      ['click', 'htmx:responseError', 'htmx:sendError']);
+      ['click', 'htmx:error', 'htmx:response:error']);
   });
 });
 
 describe('failure message', () => {
-  test('deferredNodes__responseError_on_a_deferred_box__writes_a_retry_link', () => {
+  test('deferredNodes__response_error_on_a_deferred_box__writes_a_retry_link', () => {
     const box = makeBox();
-    listeners['htmx:responseError']({ target: box });
+    listeners['htmx:response:error']({ target: box, detail: { ctx: {} } });
     assert.match(box.innerHTML, /nd_nodes-retry/);
   });
 
-  test('deferredNodes__sendError_on_a_deferred_box__writes_a_retry_link', () => {
+  test('deferredNodes__a_request_that_never_arrived__writes_a_retry_link', () => {
     const box = makeBox();
-    listeners['htmx:sendError']({ target: box });
+    listeners['htmx:error'](
+      { type: 'htmx:error', target: box, detail: { ctx: {}, error: new Error('offline') } });
     assert.match(box.innerHTML, /nd_nodes-retry/);
+  });
+
+  // htmx puts a script error on the same event as a failed request, and one
+  // that never had a request behind it carries no context. Reporting it as the
+  // box failing would blank a box that had loaded.
+  test('deferredNodes__a_script_error_with_no_request_behind_it__is_ignored', () => {
+    const box = makeBox();
+    box.innerHTML = '<div>a node</div>';
+    listeners['htmx:error'](
+      { type: 'htmx:error', target: box, detail: { error: new Error('boom') } });
+    assert.equal(box.innerHTML, '<div>a node</div>');
   });
 
   // The spinner is inside the swap region, so the failure message has to put it
   // back or a retry runs with no indicator at all.
   test('deferredNodes__a_failure_message__still_carries_the_spinner', () => {
     const box = makeBox();
-    listeners['htmx:responseError']({ target: box });
+    listeners['htmx:response:error']({ target: box, detail: { ctx: {} } });
     assert.match(box.innerHTML,
       /<span class="htmx-indicator"><i class="fas fa-spinner fa-spin"><\/i> Waiting for results\.\.\.<\/span>/);
   });
 
   test('deferredNodes__an_error_on_an_unrelated_element__is_ignored', () => {
     const other = { innerHTML: 'untouched', matches: () => false };
-    listeners['htmx:responseError']({ target: other });
+    listeners['htmx:response:error']({ target: other, detail: { ctx: {} } });
     assert.equal(other.innerHTML, 'untouched');
   });
 });
@@ -149,7 +161,7 @@ describe('retry', () => {
 
   test('deferredNodes__reopening_a_box_that_failed__tries_again', () => {
     const box = makeBox({ 'hx-get': '/x' });
-    listeners['htmx:responseError']({ target: box });
+    listeners['htmx:response:error']({ target: box, detail: { ctx: {} } });
     listeners.click({ target: makeOpener(box), preventDefault() {} });
     assert.equal(ajaxCalls.length, 1);
     assert.doesNotMatch(box.innerHTML, /nd_nodes-retry/);
@@ -163,7 +175,7 @@ describe('retry', () => {
   test('deferredNodes__a_retry__clears_the_failure_message_before_requesting', () => {
     const box = makeBox({ 'hx-get': '/x' });
     const link = { closest: (sel) => (sel === '.nd_nodes-retry' ? link : box) };
-    listeners['htmx:responseError']({ target: box });
+    listeners['htmx:response:error']({ target: box, detail: { ctx: {} } });
     assert.match(box.innerHTML, /nd_nodes-retry/);
 
     listeners.click({ target: link, preventDefault() {} });

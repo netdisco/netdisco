@@ -15,12 +15,12 @@
                 method="get" action="[% uri_for('/admin') | none %]"
                 hx-get="[% uri_for('/ajax/content/admin/' _ task.tag) | none %]"
                 hx-target="#[% task.tag | html_entity %]_pane"
+                hx-sync="closest .nd_sidebar:replace"
                 hx-headers='{"X-Requested-With": "XMLHttpRequest"}'[%
                   # PRE_CHOMP is on, so the newline before a directive is eaten;
                   # the separating space has to live inside the block.
                   UNLESS task.tag == 'jobqueue' %] hx-indicator="#[% task.tag | html_entity %]_indicator"[% END %]
                 data-nd-tab="[% task.tag | html_entity %]"
-                data-nd-csv="1"
                 data-nd-jobqueue-refresh="[% settings.jobqueue_refresh || 5 | html_entity %]">
               [% TRY %]
               <input type="hidden" data-nd-has-sidebar="[% task.tag | html_entity %]" value="1">

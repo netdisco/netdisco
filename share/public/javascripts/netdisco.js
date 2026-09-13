@@ -1,21 +1,28 @@
+// Must stay above every other statement here: this file executes during parse,
+// so a request started from a DOMContentLoaded listener is already too late.
+//
+// htmx swaps a 4xx or 5xx body into the target by default. Left on, a Dancer
+// error page replaces the pane's own failure message, and in a deferred
+// connected-nodes box it destroys the indicator that box refuses to fetch
+// without, so a box that failed once can never be clicked again.
+htmx.config.noSwap = [204, 304, '4xx', '5xx'];
+
+// Back and Forward re-request the page, which is what we want, but the library
+// answers them by swapping the response into the body rather than navigating.
+// That re-inserts the layout's script tags and runs them against a document
+// that already ran them, so every const in them is declared twice and the page
+// dies. Asking for a real reload is the same round trip without that.
+htmx.config.history = 'reload';
+
+// The library's own ceiling is 60 seconds, which a Ports tab on a large device
+// has been measured to exceed. This one is far above any pane load ever
+// observed, so it only ever cuts off a request that was never going to answer.
+htmx.config.defaultTimeout = 300000;
+
 // promoted from a <body> data attribute; the layout carries no inline
 // JavaScript for CodeQL to skip.
 var uri_base = document.body.dataset.ndUriBase;
-var default_pgtitle = document.body.dataset.ndTitle;
 var nd_check_userlog = (document.body.dataset.ndCheckUserlog === '1');
-
-// parameterised for the active tab - submits search form and injects
-// HTML response into the tab pane, or an error/empty-results message
-// dispatch a real submit event so htmx, which listens natively, sees it.
-// jQuery's trigger('submit') would instead end in form.submit(), a full page
-// navigation that fires no submit listener at all. An untrusted event cannot
-// cause native submission, so this only ever reaches listeners.
-function nd_submit (form_selector) {
-  var form = document.querySelector(form_selector);
-  if (form) {
-    form.dispatchEvent(new SubmitEvent('submit', {bubbles: true, cancelable: true}));
-  }
-}
 
 // a data-nd-has-sidebar="tab" marker of 0 means the tab ships no sidebar
 // template. Shared with the htmx path, which does not call do_search.
@@ -48,8 +55,9 @@ function nd_apply_sidebar (tab) {
 
 // Nothing shipped calls this. It is here for site-local code whose own
 // submit handler still calls it; the shipped equivalent is the delegated
-// submit listener in this file. It forwards with htmx.ajax() rather than
-// nd_submit(), which would re-enter the caller's own handler and recurse.
+// submit listener in this file. It forwards with htmx.ajax() rather than by
+// dispatching a submit event, which would re-enter the caller's own handler
+// and recurse.
 function do_search (event, tab) {
   event.preventDefault();
   nd_apply_sidebar(tab);
@@ -99,10 +107,6 @@ var nd_active_target;
 var form_inputs;
 var sidebar_hidden = 0;
 
-// set while replaying a history entry, so the tab click that replay fakes does
-// not push a new entry for the tab it just restored
-var is_from_state_event = 0;
-
 // on tab change, hide previous tab's search form and show new tab's
 // search form. also trigger to load the content for the newly active tab.
 function update_content(from, to) {
@@ -110,20 +114,6 @@ function update_content(from, to) {
   $('#' + to + '_search').toggleClass('active');
 
   var to_form = '#' + to + '_form';
-  var from_form = '#' + from + '_form';
-
-  // Cancel a request still running for the tab being left. Its indicator sits
-  // beside the pane rather than inside it, so the tab machinery cannot hide it
-  // and it would stay on screen alongside the new tab's. Nothing is lost:
-  // entering a tab always re-submits its form.
-  var leaving = document.querySelector(from_form);
-  if (leaving) { htmx.trigger(leaving, 'htmx:abort') }
-
-  // page title
-  var pgtitle = default_pgtitle;
-  if ($('#nd_device-name').text().length) {
-    pgtitle = $.trim($('#nd_device-name').text()) +' - '+ $('#'+ to + '_link').text();
-  }
 
   // navbar text decoration special case
   if (to != 'device') {
@@ -133,30 +123,8 @@ function update_content(from, to) {
     form_inputs.each(function() {device_form_state($(this))});
   }
 
-  if (is_from_state_event == 0) {
-    // pushState ignores its title argument, so set the title here and keep it
-    // in the state for popstate to restore
-    document.title = pgtitle;
-    history.pushState(
-      {name: to, fields: $(to_form).serializeArray(), title: pgtitle},
-      '', uri_base + '/' + path + '?' + $(to_form).serialize()
-    );
-  }
-
-  nd_submit(to_form);
+  htmx.trigger(to_form, 'submit');
 }
-
-// handler for ajax navigation
-window.addEventListener('popstate', function (event) {
-  // the first entry for a document carries no state
-  if (!event.state) { return }
-
-  is_from_state_event = 1;
-  $('#'+ event.state.name + '_form').deserialize(event.state.fields);
-  if (event.state.title) { document.title = event.state.title }
-  $('#'+ event.state.name + '_link').click();
-  is_from_state_event = 0;
-});
 
 // if any field in Search Options has content, highlight in green
 function device_form_state(e) {
@@ -208,20 +176,25 @@ function retitleTooltip(element, title) {
   if (instance) { instance.dispose(); }
 }
 
-// Hide an element that may be showing a tooltip, and any tooltip-carrying
-// element inside it. Bootstrap dismisses a tip when the pointer leaves its
-// trigger, but macOS Chrome fires no boundary event when the trigger is hidden
-// under a pointer that has not moved, so nothing dismisses the tip and popper
-// then anchors it to a zero sized rectangle at the window origin. Linux
-// Chromium and Firefox both fire it, which is why #1667 only ever reproduced
-// on a Mac and why leaving this to the mouseleave handler below is not enough.
-function hideWithTooltip(target) {
-  var elements = $(target);
-  elements.find('[rel=tooltip]').addBack('[rel=tooltip]').each(function () {
+// Dismiss the tooltips of an element that is about to go away, and of any
+// tooltip-carrying element inside it. Bootstrap dismisses a tip when the
+// pointer leaves its trigger, but macOS Chrome fires no boundary event when the
+// trigger is hidden or replaced under a pointer that has not moved, so nothing
+// dismisses the tip and popper then anchors it to a zero sized rectangle at the
+// window origin. Linux Chromium and Firefox both fire it, which is why #1667
+// only ever reproduced on a Mac and why leaving this to the mouseleave handler
+// below is not enough. The sidebar reset icon is the worst case: its tip is
+// appended to body, so it outlives the anchor a pane response replaces.
+function disposeTooltips(target) {
+  $(target).find('[rel=tooltip]').addBack('[rel=tooltip]').each(function () {
     var instance = bootstrap.Tooltip.getInstance(this);
     if (instance) { instance.dispose(); }
   });
-  elements.hide();
+}
+
+function hideWithTooltip(target) {
+  disposeTooltips(target);
+  $(target).hide();
 }
 
 // The widget puts its suggestion list and its live region on document.body, and
@@ -732,13 +705,28 @@ $(document).ready(function() {
     if (icon) { icon.classList.toggle('fa-chevron-up'); icon.classList.toggle('fa-chevron-down') }
   }
 
+  // The newest pane request on the page, which is one request and not one per
+  // pane: every sidebar form shares a queue on .nd_sidebar, so the request
+  // htmx abandons when another tab is clicked belongs to the pane being left
+  // and its replacement to the pane being opened. An abandoned request reports
+  // its abort on the same event a real network failure uses, with nothing in
+  // the event to tell them apart, and only the request the page is still
+  // waiting on can be describing what the reader sees.
+  var nd_latest_pane_request = null;
+
   // htmx glue. Converted panes get the same empty-result, error and
   // after-swap handling do_search gives the unconverted ones, so the two
   // transports are indistinguishable to a user. Keyed on any *_pane, not just
   // admin, because later rungs convert the search and device tabs onto this.
-  document.body.addEventListener('htmx:afterSwap', function (evt) {
-    var target = evt.detail.target;
+  document.body.addEventListener('htmx:after:swap', function (evt) {
+    // One event per response, dispatched on the element that made the request,
+    // so the pane is read from the context and never from the event.
+    var ctx = evt.detail.ctx;
+    var target = ctx.target;
     if (!target.id.match(/_pane$/)) return;
+    // The status list stopped the swap, so the pane holds the failure message
+    // the response-error handler put there and there is nothing to set up.
+    if (ctx.response && ctx.response.status >= 400) return;
     var tab = target.id.replace(/_pane$/, '');
     if (target.innerHTML === '') {
       target.innerHTML =
@@ -761,9 +749,12 @@ $(document).ready(function() {
   //
   // jobqueue is excluded for the reason it carries no indicator: it refreshes
   // on a timer and would blank on every tick.
-  document.body.addEventListener('htmx:beforeRequest', function (evt) {
-    var target = evt.detail.target;
-    if (!target.id.match(/_pane$/) || target.id === 'jobqueue_pane') return;
+  document.body.addEventListener('htmx:before:request', function (evt) {
+    var ctx = evt.detail.ctx;
+    var target = ctx.target;
+    if (!target.id.match(/_pane$/)) return;
+    nd_latest_pane_request = ctx;
+    if (target.id === 'jobqueue_pane') return;
 
     // force-graph renders every frame until destroyed, and emptying the pane
     // only detaches its canvas. netdisco-netmap.js destroys the previous
@@ -776,20 +767,40 @@ $(document).ready(function() {
     destroyAutocompletesIn(target);
     target.innerHTML = '';
   });
-  document.body.addEventListener('htmx:responseError', function (evt) {
-    var target = evt.detail.target;
+  document.body.addEventListener('htmx:response:error', function (evt) {
+    var target = evt.detail.ctx.target;
     if (!target.id.match(/_pane$/)) return;
-    target.innerHTML =
-      '<div class="col-md-5 alert alert-danger"><i class="fas fa-triangle-exclamation"></i> ' +
-      'Search failed! Please contact your site administrator (server error).</div>';
+    nd_pane_failure(target, 'server error');
   });
-  document.body.addEventListener('htmx:sendError', function (evt) {
-    var target = evt.detail.target;
+  // htmx puts a failed send, a timed out request, an abandoned request and an
+  // exception thrown while displaying an answer on this one event. No context
+  // at all means there was no request to fail, and an answer that arrived and
+  // then failed is a display problem the reporter below owns. An abort is
+  // neither, wherever in the exchange it landed: htmx sets the response before
+  // it reads the body, so a request abandoned during the read arrives here
+  // looking like it was answered.
+  document.body.addEventListener('htmx:error', function (evt) {
+    var ctx = evt.detail.ctx;
+    if (!ctx) return;
+    var error = evt.detail.error;
+    var aborted = !!(error && error.name === 'AbortError');
+    if (ctx.response && !aborted) return;
+    var target = ctx.target;
     if (!target.id.match(/_pane$/)) return;
-    target.innerHTML =
-      '<div class="col-md-5 alert alert-danger"><i class="fas fa-triangle-exclamation"></i> ' +
-      'Search failed! Please contact your site administrator (network error).</div>';
+    if (nd_latest_pane_request !== ctx) return;
+    // An abort nothing replaced is the ceiling in htmx.config.defaultTimeout
+    // firing, which is worth naming: it sends an administrator looking at how
+    // long the query takes rather than at the network.
+    nd_pane_failure(target, aborted ? 'request timed out' : 'network error');
   });
+  function nd_pane_failure(pane, reason) {
+    // every part is a literal, including reason: its three call sites pass one
+    // of three fixed strings and nothing here comes from a response
+    // eslint-disable-next-line no-unsanitized/property
+    pane.innerHTML =
+      '<div class="col-md-5 alert alert-danger"><i class="fas fa-triangle-exclamation"></i> ' +
+      'Search failed! Please contact your site administrator (' + reason + ').</div>';
+  }
 
   // A script error otherwise fails silently: htmx fires an event nobody
   // listens to, and an exception inside one of our own handlers reaches
@@ -809,8 +820,46 @@ $(document).ready(function() {
   window.addEventListener('unhandledrejection', function (evt) {
     nd_report_script_error('Unhandled rejection', evt.reason);
   });
-  document.body.addEventListener('htmx:swapError', function (evt) {
+  // The pane handler above takes the failures whose answer never arrived, and
+  // every abort, and says so in the pane itself. What is left to report as a
+  // script error is a failure with no request behind it, or an answer that
+  // arrived and could not be displayed.
+  document.body.addEventListener('htmx:error', function (evt) {
+    var error = evt.detail.error;
+    if (error && error.name === 'AbortError') return;
+    var ctx = evt.detail.ctx;
+    if (ctx && !ctx.response) return;
     nd_report_script_error('Response could not be displayed', evt.detail);
+  });
+
+  // The chrome is replaced rather than hidden now, so the tip of an element
+  // being swapped out has to go with it. htmx describes the whole response as
+  // one list of swap tasks, which is also the only place a piece of chrome the
+  // page has no element for is still visible: htmx builds no task for it and
+  // drops it from the response without a word, which reads as the csv or reset
+  // link quietly going stale. Most often a site-local page template that has
+  // dropped one of the ids.
+  document.body.addEventListener('htmx:before:swap', function (evt) {
+    var ctx = evt.detail.ctx;
+    // The chrome only. Walking the pane as well would scan every element of a
+    // Ports table for a tip on the swap path, and the pane is already emptied
+    // when its request starts.
+    var chrome = evt.detail.tasks.filter(function (task) { return task.type === 'oob' });
+    chrome.forEach(function (task) {
+      if (task.target instanceof Element) { disposeTooltips(task.target) }
+    });
+
+    var offered = (ctx.text.match(/hx-swap-oob\s*=/g) || []).length;
+    if (chrome.length < offered) {
+      nd_report_script_error('This page has no element for '
+        + (offered - chrome.length) + ' of the ' + offered
+        + ' out-of-band items in the response', evt.detail);
+    }
+
+    // htmx takes a title from anywhere in the response and applies it even
+    // where the status list has told it not to swap, so a server error page
+    // would otherwise rename the browser tab.
+    if (ctx.response && ctx.response.status >= 400) { ctx.title = '' }
   });
 });
 
@@ -853,66 +902,8 @@ function nd_statistics_panel() {
 // both call this unconditionally, so it must exist even on pages with
 // nothing to do here.
 function inner_view_processing(tab) {
-  if (page === 'device') {
-    // LT wanted the page title to reflect what's on the page :)
-    document.title = $('#nd_device-name').text()
-      +' - '+ $('#'+ tab + '_link').text();
-  }
-  else if (ndPages[page] && ndPages[page].innerView) {
+  if (ndPages[page] && ndPages[page].innerView) {
     ndPages[page].innerView(tab);
-  }
-  // search and report have nothing to do here now that tooltips and popovers
-  // are delegated, but do_search and the htmx glue call this unconditionally.
-}
-
-// csv download icon on any table page
-// needs to be dynamically updated to use current search options
-function update_csv_download_link (type, tab, show) {
-  var form = '#' + tab + '_form';
-  var query = $(form).serialize();
-
-  if (show.length) {
-    $('#nd_csv-download')
-      .attr('href', uri_base + '/ajax/content/' + type + '/' + tab + '?' + query)
-      .attr('download', 'netdisco-' + type + '-' + tab + '.csv')
-      .show();
-  }
-  else {
-    hideWithTooltip('#nd_csv-download');
-  }
-}
-
-// page title includes tab name and possibly device name
-// this is nice for when you have multiple netdisco pages open in the
-// browser
-function update_page_title (tab) {
-  var pgtitle = default_pgtitle;
-  if ($.trim($('#nd_device-name').text()).length) {
-    pgtitle = $.trim($('#nd_device-name').text()) +' - '+ $('#'+ tab + '_link').text();
-  }
-  return pgtitle;
-}
-
-// update browser search history with the new query.
-// support history add (push) or replace via push parameter
-function update_browser_history (tab, pgtitle, push) {
-  var form = '#' + tab + '_form';
-  var query = $(form).serialize();
-  if (query.length) { query = '?' + query }
-
-  // pushState and replaceState ignore their title argument, so set the title
-  // beside each call and keep it in the state for popstate to restore
-  var state = {name: tab, fields: $(form).serializeArray(), title: pgtitle};
-
-  if (push.length) {
-    var target = uri_base + '/' + path + '/' + tab + query;
-    if (location.pathname == target) { return };
-    document.title = pgtitle;
-    history.pushState(state, '', target);
-  }
-  else {
-    document.title = pgtitle;
-    history.replaceState(state, '', uri_base + '/' + path + query);
   }
 }
 
@@ -935,7 +926,7 @@ $(document).ready(function() {
   if (document.querySelector('.nd_inventory_collapser')) { $('.nd_inventory_collapser').toggle(); }
 
   page = document.body.dataset.ndPage;               // device, search, report, admin
-  path = page;                                        // what update_content builds URLs from
+  path = page;                                        // what do_search builds its fragment URL from
   activeForm = document.querySelector('.tab-pane.active form[data-nd-tab]');
   var tab = activeForm ? activeForm.dataset.ndTab : '';
   var target = '#' + tab + '_pane';
@@ -973,7 +964,7 @@ $(document).ready(function() {
     $('.nd_field-clear-icon').click(function() {
       portfilter.val('');
       $('#nd_ports-form-prefer-field').attr('value', '');
-      nd_submit('#ports_form');
+      htmx.trigger('#ports_form', 'submit');
       device_form_state(portfilter); // will hide copy icons
     });
 
@@ -981,7 +972,7 @@ $(document).ready(function() {
     $('#ports_form').on('click', '.nd_device-port-submit-prefer', function() {
       event.preventDefault();
       $('#nd_ports-form-prefer-field').attr('value', $(this).data('prefer'));
-      nd_submit('#ports_form');
+      htmx.trigger('#ports_form', 'submit');
     });
 
     // clickable device port names can simply resubmit AJAX rather than
@@ -997,7 +988,7 @@ $(document).ready(function() {
       // make sure we're preferring a port filter
       $('#nd_ports-form-prefer-field').attr('value', 'port');
 
-      nd_submit('#ports_form');
+      htmx.trigger('#ports_form', 'submit');
       device_form_state(portfilter); // will hide copy icons
     });
 
@@ -1219,12 +1210,12 @@ $(document).ready(function() {
           );
         }
         ,success: function() {
-          nd_submit('#' + tab + '_form');
+          htmx.trigger('#' + tab + '_form', 'submit');
         }
         // skip any error reporting for now
         // TODO: fix sanity_ok in Netdisco Web
         ,error: function() {
-          nd_submit('#' + tab + '_form');
+          htmx.trigger('#' + tab + '_form', 'submit');
         }
       });
     });
@@ -1237,23 +1228,16 @@ $(document).ready(function() {
   // Every sidebar form loads its own pane over htmx, declared by its hx-get.
   // This carries the side effects only and must not call preventDefault:
   // htmx's own submit listener does that.
+  //
+  // The csv and reset links used to be rebuilt here and now arrive with the
+  // pane. What is left is what no response can answer: the navbar copy writes
+  // into a form the response must never replace, and whether a tab has a
+  // sidebar is declared by the sidebar templates rather than by any route.
   document.addEventListener('submit', function (event) {
     var form = event.target;
     if (!form.matches('form[data-nd-tab]')) return;
     var submittedTab = form.dataset.ndTab;
-    var pgtitle = update_page_title(submittedTab);
     if (page === 'search' || page === 'device') copy_navbar_to_sidebar(submittedTab);
-    if (page !== 'admin') update_browser_history(submittedTab, pgtitle, page === 'report' ? '1' : '');
-    update_csv_download_link(page, submittedTab, form.dataset.ndCsv === '1' ? '1' : '');
-    var resetLink = document.getElementById('nd_sidebar-reset-link');
-    if (resetLink && page === 'device' && submittedTab === 'ports') {
-      resetLink.href = uri_base + '/device?tab=ports&reset=on&firstsearch=on&'
-        + $('#ports_form').find('input[name="q"],input[name="f"],input[name="partial"],input[name="invert"]').serialize();
-    }
-    if (resetLink && page === 'device' && submittedTab === 'netmap') {
-      resetLink.href = uri_base + '/device?tab=netmap&reset=on&firstsearch=on&'
-        + $('#netmap_form').find('input[name="q"]').serialize();
-    }
     nd_apply_sidebar(submittedTab);
   });
 
@@ -1264,7 +1248,7 @@ $(document).ready(function() {
       var submitEl = document.getElementById(active + '_submit');
       if (submitEl) submitEl.click();
     }
-    else nd_submit('#' + active + '_form');
+    else htmx.trigger('#' + active + '_form', 'submit');
   }
 
   // tenant change

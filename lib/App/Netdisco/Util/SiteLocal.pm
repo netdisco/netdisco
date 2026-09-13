@@ -50,8 +50,10 @@ my @RULES = (
     # site's `window.History && ...` guard stops running its branch and never
     # throws. That silence is why this rule matters more than it looks.
     pattern => qr/\bHistory\s*\.\s*(?:pushState|replaceState|getState|Adapter|enabled|log)\b/,
-    advice  => 'history.js was removed. Use the browser\'s own '
-             . 'history.pushState() and a popstate listener.',
+    advice  => 'history.js was removed, and the browser no longer drives '
+             . 'the address bar at all. Let the pane response say where it '
+             . 'went, with an HX-Push-Url or HX-Replace-Url header, and drop '
+             . 'the history call and any popstate listener beside it.',
   },
   {
     name    => 'natural-js',
@@ -76,8 +78,9 @@ my @RULES = (
     # devtools.
     pattern => qr/\bdo_search\s*\(/,
     advice  => 'do_search() now only forwards to htmx and will be removed in a '
-             . 'future release. Give the form the hx-get, hx-target, hx-headers '
-             . 'and hx-indicator attributes that share/views/device.tt uses, '
+             . 'future release. Give the form the hx-get, hx-target, hx-headers, '
+             . 'hx-indicator and hx-sync attributes that share/views/device.tt '
+             . 'uses, '
              . 'then drop the do_search call from the submit handler.',
   },
   {
@@ -113,19 +116,82 @@ my @RULES = (
              . 'and a reference to the old name 404s. Update the script tag '
              . 'to the new file name.',
   },
+  {
+    name    => 'nd-submit',
+    release  => '2.109000',
+    pattern => qr/\bnd_submit\s*\(/,
+    advice  => 'nd_submit() was removed. Ask htmx to submit the form, with '
+             . 'htmx.trigger(\'#ports_form\', \'submit\'), which is what every '
+             . 'shipped caller now does.',
+  },
+  {
+    name    => 'page-title-globals',
+    release  => '2.109000',
+    # data-nd-title and its dataset spelling are here rather than in a file
+    # rule because a layout keeping the attribute is harmless; only reading it
+    # is broken, and a site-local layout is where the read usually lives.
+    pattern => qr/\bupdate_page_title\s*\(|\bdefault_pgtitle\b|\bndTitle\b|data-nd-title/,
+    advice  => 'the page title now arrives as a <title> element at the top of '
+             . 'the pane response and nothing in the browser sets it. Delete '
+             . 'the call, and delete data-nd-title from a layout copy: no '
+             . 'shipped code reads it.',
+  },
+  {
+    name    => 'history-replay',
+    release  => '2.109000',
+    pattern => qr/\bupdate_browser_history\s*\(|\bis_from_state_event\b/,
+    advice  => 'the browser no longer records or replays the search history. '
+             . 'A pane response says where it went with an HX-Push-Url or '
+             . 'HX-Replace-Url header and Back refetches that address, so '
+             . 'delete the call and the replay flag beside it.',
+  },
+  {
+    name    => 'jquery-deserialize',
+    release  => '2.109000',
+    # The plugin shipped for one caller, the popstate replay, so a site naming
+    # either the file or the method is running that replay by hand.
+    pattern => qr/jquery-deserialize\.js|\.\s*deserialize\s*\(/,
+    advice  => 'jquery-deserialize.js was removed with the history replay it '
+             . 'was loaded for. Delete the script tag from a layout copy and '
+             . 'the .deserialize() call from the handler: Back now refetches '
+             . 'the page and the form comes back filled in from the server.',
+  },
+  {
+    name    => 'csv-download-link',
+    release  => '2.109000',
+    pattern => qr/\bupdate_csv_download_link\s*\(|data-nd-csv\b|\bndCsv\b/,
+    advice  => 'the CSV download link now arrives with the pane as an '
+             . 'hx-swap-oob anchor and the browser no longer rebuilds it. '
+             . 'Delete the call and the data-nd-csv attribute from a sidebar '
+             . 'form copy, and keep the id nd_csv-download on the anchor so '
+             . 'the response has somewhere to land.',
+  },
+  {
+    name    => 'htmx-abort-trigger',
+    release  => '2.109000',
+    # anchored on the trigger rather than the event name: the vendored htmx
+    # bundle listens for this event, so a site keeping its own copy of that
+    # file would otherwise be told to change the library
+    pattern => qr/trigger\s*\(\s*[^)]*['"]htmx:abort['"]/,
+    advice  => 'a tab form no longer owns its own request, so triggering '
+             . 'htmx:abort on one cancels nothing. Give each sidebar form '
+             . 'hx-sync="closest .nd_sidebar:replace" and delete the trigger: '
+             . 'htmx then cancels the request the tab being left started.',
+  },
 );
 
 # Rules that fault what a file does NOT contain, so a finding has no line.
 #
-# Both rules here are also what the web application warns about at startup,
-# since scan_shadowed_files runs every FILE_RULE unfiltered. A shadowed tab
-# page or layout reports nothing anywhere else the browser shows, while the
-# @RULES above leave the application serving pages and do_search prints its
-# own console notice.
+# `startup` marks the ones the web application warns about at every worker
+# boot. The bar is that nothing else tells anyone: a shadowed tab page renders
+# an empty pane in silence and a shadowed layout kills every page. The rest
+# degrade something the person can see going wrong, and a warning on every boot
+# for those is noise a site cannot turn off.
 my @FILE_RULES = (
   {
     name     => 'tab-page-shadow',
     release  => '2.105006',
+    startup  => 1,
     paths    => [qw/ device.tt search.tt report.tt /],
     requires => qr/\bhx-get\b/,
     advice   => 'this copy predates the htmx tab transport, so its sidebar '
@@ -136,6 +202,7 @@ my @FILE_RULES = (
   {
     name     => 'layout-shadow',
     release  => '2.109000',
+    startup  => 1,
     paths    => ['layouts/main.tt'],
     requires => qr/data-nd-uri-base/,
     advice   => 'this copy predates data-nd-uri-base and the other body '
@@ -144,6 +211,40 @@ my @FILE_RULES = (
               . 'Re-copy layouts/main.tt from this release and re-apply the '
               . 'local branding: it now carries those settings as body '
               . 'attributes and loads the scripts at the end of the body.',
+  },
+  {
+    name     => 'csv-download-target',
+    release  => '2.109000',
+    paths    => [qw/ device.tt search.tt report.tt admintask.tt /],
+    requires => qr/nd_csv-download/,
+    advice   => 'this copy carries no element with the id nd_csv-download, so '
+              . 'the download link the pane response now sends alongside the '
+              . 'results has nothing to swap into and the page reports the '
+              . 'miss to the console instead of offering a download. Copy the '
+              . 'anchor carrying that id from the shipped template of the same '
+              . 'name.',
+  },
+  {
+    name     => 'sidebar-reset-target',
+    release  => '2.109000',
+    paths    => ['device.tt'],
+    requires => qr/nd_sidebar-reset-link/,
+    advice   => 'this copy carries no element with the id '
+              . 'nd_sidebar-reset-link, so the Reset to Defaults link the '
+              . 'Ports and Network Map panes now send alongside the results '
+              . 'has nothing to swap into. Copy the anchor carrying that id '
+              . 'from the shipped device.tt.',
+  },
+  {
+    name     => 'tab-sync-attribute',
+    release  => '2.109000',
+    paths    => [qw/ device.tt search.tt report.tt admintask.tt /],
+    requires => qr/\bhx-sync\b/,
+    advice   => 'this copy predates hx-sync, so leaving a tab whose results '
+              . 'are still loading neither cancels that request nor takes its '
+              . 'loading indicator down, and the answer can arrive over the '
+              . 'tab moved to. Add hx-sync="closest .nd_sidebar:replace" '
+              . 'beside the hx-get on each sidebar form.',
   },
 );
 
@@ -156,6 +257,11 @@ A finding is a hashref with keys C<kind> (always C<file>), C<path>, C<rule>,
 C<release> and C<advice>. There is no C<line>: the fault is an absence, so
 there is no line to point at.
 
+C<< $args{rules} >> optionally restricts the scan to the named rules.
+C<< $args{startup} >> restricts it to the rules the web application warns
+about at every worker boot, which is how L<App::Netdisco::Web> asks for them:
+the rest are for the person who ran C<checksitelocal> and asked.
+
 Bounded on purpose. This opens at most one file per shipped tab page per
 configured path, because L<App::Netdisco::Web> runs it at every worker startup,
 where C<scan_site_local>'s walk of the whole tree would not be welcome.
@@ -167,7 +273,12 @@ sub scan_shadowed_files {
   my @paths = @{ $args->{paths} || [] };
   my @findings = ();
 
-  foreach my $rule (@FILE_RULES) {
+  my %wanted = map {($_ => 1)} @{ $args->{rules} || [] };
+  my @rules = (keys %wanted)
+    ? (grep { $wanted{ $_->{name} } } @FILE_RULES) : @FILE_RULES;
+  @rules = grep { $_->{startup} } @rules if $args->{startup};
+
+  foreach my $rule (@rules) {
       foreach my $relative (@{ $rule->{paths} }) {
           foreach my $path (@paths) {
               next unless defined $path and length $path;

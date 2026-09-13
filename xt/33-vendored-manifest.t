@@ -104,9 +104,12 @@ my @VENDORED = (
         sha256     => '88e56cd45cad3db88fdc772786d14cce8d0cc1879bc03e4e56be919dfd9ad229',
         pinned_for => '3.1.0',
     },
-    {   package => 'htmx.org',
+    {   # The 4.x builds state the version as a property assignment where the
+        # 2.x builds minified it into an object literal, so this pattern is
+        # tied to the major version and not only to the library.
+        package => 'htmx.org',
         file    => [qw/javascripts htmx.min.js/],
-        banner  => sub { qr/version:"\Q$_[0]\E"/ },
+        banner  => sub { qr/version="\Q$_[0]\E"/ },
     },
     {   package => 'jquery',
         file    => [qw/javascripts jquery-latest.min.js/],

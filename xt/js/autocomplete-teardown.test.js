@@ -82,7 +82,7 @@ function teardown() {
 function beforeRequest() {
   return new Function('window', '$',
     extract('destroyAutocompletesIn')
-    + '; return ' + extractListener('htmx:beforeRequest') + ';')({}, jquery());
+    + '; return ' + extractListener('htmx:before:request') + ';')({}, jquery());
 }
 
 // --- the helper ------------------------------------------------------------
@@ -126,12 +126,16 @@ test('destroyAutocompletesIn__there_is_no_pane__does_nothing', () => {
 });
 
 // --- the listener ----------------------------------------------------------
+//
+// htmx 4 carries the request context in evt.detail.ctx rather than putting the
+// target on the detail itself, and renamed the event, so both are spelled the
+// new way here.
 
 test('htmxBeforeRequest__a_pane_with_autocomplete_fields__destroys_them_before_emptying', () => {
   const calls = [];
   const fields = [field('dev1', true, calls), field('port1', true, calls)];
   const target = pane('topology_pane', fields, calls);
-  beforeRequest()({ detail: { target: target } });
+  beforeRequest()({ detail: { ctx: { target: target } } });
   assert.deepStrictEqual(calls,
     ['query:.ui-autocomplete-input', 'destroy:dev1', 'destroy:port1', 'innerHTML=""'],
     'after the empty the fields are gone and their widgets can no longer be reached');
@@ -140,7 +144,7 @@ test('htmxBeforeRequest__a_pane_with_autocomplete_fields__destroys_them_before_e
 test('htmxBeforeRequest__the_jobqueue_pane__is_left_untouched', () => {
   const calls = [];
   const target = pane('jobqueue_pane', [field('backend', true, calls)], calls);
-  beforeRequest()({ detail: { target: target } });
+  beforeRequest()({ detail: { ctx: { target: target } } });
   assert.deepStrictEqual(calls, [],
     'it refreshes on a timer and is not emptied, so nothing in it is on its way out here');
 });
@@ -148,6 +152,6 @@ test('htmxBeforeRequest__the_jobqueue_pane__is_left_untouched', () => {
 test('htmxBeforeRequest__a_target_that_is_not_a_pane__is_left_untouched', () => {
   const calls = [];
   const target = pane('nd_nodes_box', [field('anything', true, calls)], calls);
-  beforeRequest()({ detail: { target: target } });
+  beforeRequest()({ detail: { ctx: { target: target } } });
   assert.deepStrictEqual(calls, []);
 });

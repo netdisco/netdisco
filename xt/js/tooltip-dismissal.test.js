@@ -57,8 +57,12 @@ function harness({ selfIsTooltip = false, descendants = [], withInstance = () =>
   const $ = () => set([node]);
   const bootstrap = { Tooltip: { getInstance: (el) => (withInstance(el)
     ? { dispose: () => calls.push('dispose:' + (el.name || el.id)) } : null) } };
+  // disposeTooltips goes in with it: the helper delegates the dispose loop to
+  // it, because chrome that is replaced out of band needs the loop without the
+  // hide.
   const fn = new Function('$', 'bootstrap',
-    extract('hideWithTooltip') + '; return hideWithTooltip;')($, bootstrap);
+    extract('disposeTooltips') + extract('hideWithTooltip')
+    + '; return hideWithTooltip;')($, bootstrap);
   return { fn, calls };
 }
 

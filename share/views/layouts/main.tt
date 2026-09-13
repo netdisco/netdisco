@@ -9,7 +9,6 @@
 
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-latest.min.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-ui.min.js?v=[% asset_version | none %]"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/jquery-deserialize.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/bootstrap.min.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/bootstrap-toggle.min.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/force-graph.min.js?v=[% asset_version | none %]"></script>
@@ -45,7 +44,6 @@
 
 <body data-nd-uri-base="[% uri_base | html_entity %]"
       data-nd-page="[% IF device %]device[% ELSIF search %]search[% ELSIF report %]report[% ELSIF task %]admin[% END %]"
-      data-nd-title="[% settings.branding_text | html_entity %]"
       data-nd-check-userlog="[% settings.check_userlog ? 1 : 0 %]"
       data-nd-page-length="[% settings.table_pagesize | html_entity %]"
       data-nd-length-menu="[% table_showrecordsmenu | html_entity %]"
@@ -124,7 +122,7 @@
               [% IF ai == 'divider' %]
               <li><hr class="dropdown-divider"></li>
               [% ELSE %]
-              <li><a class="dropdown-item" href="[% uri_for('/admin/' _ ai) %]">[% settings._admin_tasks.$ai.label | html_entity %]</a></li>
+              <li><a class="dropdown-item" href="[% uri_for('/admin/' _ ai) %]?firstsearch=on">[% settings._admin_tasks.$ai.label | html_entity %]</a></li>
               [% END %]
             [% END %]
           [% END %]
