@@ -30,7 +30,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.108004'
+    version: '2.109000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -564,6 +564,8 @@ provides:
     file: lib/App/Netdisco/Worker/Plugin/Linter.pm
   App::Netdisco::Worker::Plugin::LoadMIBs:
     file: lib/App/Netdisco/Worker/Plugin/LoadMIBs.pm
+  App::Netdisco::Worker::Plugin::LoadMIBsFromOIDs:
+    file: lib/App/Netdisco/Worker/Plugin/LoadMIBsFromOIDs.pm
   App::Netdisco::Worker::Plugin::Location:
     file: lib/App/Netdisco/Worker/Plugin/Location.pm
   App::Netdisco::Worker::Plugin::Macsuck:
@@ -741,5 +743,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.108004'
-x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
+version: '2.109000'
+x_serialization_backend: 'CPAN::Meta::YAML version 0.020'

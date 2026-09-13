@@ -281,6 +281,7 @@ lib/App/Netdisco/Worker/Plugin/Internal/BackendFQDN.pm
 lib/App/Netdisco/Worker/Plugin/Internal/SNMPFastDiscover.pm
 lib/App/Netdisco/Worker/Plugin/Linter.pm
 lib/App/Netdisco/Worker/Plugin/LoadMIBs.pm
+lib/App/Netdisco/Worker/Plugin/LoadMIBsFromOIDs.pm
 lib/App/Netdisco/Worker/Plugin/Location.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck.pm
 lib/App/Netdisco/Worker/Plugin/Macsuck/Hooks.pm
@@ -652,7 +653,7 @@ xt/12-port-order-helper.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t
-xt/31-loadmibs-guard.t
+xt/31-loadmibsfromoids-guard.t
 xt/32-swagger-ui-guard.t
 xt/33-vendored-manifest.t
 xt/34-module-tree-order.t

@@ -154,7 +154,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.108004"
+         "version" : "2.109000"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -955,6 +955,9 @@
       "App::Netdisco::Worker::Plugin::LoadMIBs" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/LoadMIBs.pm"
       },
+      "App::Netdisco::Worker::Plugin::LoadMIBsFromOIDs" : {
+         "file" : "lib/App/Netdisco/Worker/Plugin/LoadMIBsFromOIDs.pm"
+      },
       "App::Netdisco::Worker::Plugin::Location" : {
          "file" : "lib/App/Netdisco/Worker/Plugin/Location.pm"
       },
@@ -1070,6 +1073,6 @@
       "x_IRC" : "irc://irc.libera.chat/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.108004",
+   "version" : "2.109000",
    "x_serialization_backend" : "JSON::PP version 4.16"
 }
