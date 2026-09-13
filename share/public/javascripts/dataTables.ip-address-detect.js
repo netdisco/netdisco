@@ -7,12 +7,22 @@
  *  @author Brad Wasson
  */
 
-jQuery.fn.dataTableExt.aTypes.unshift(
-	function ( sData )
+(function() {
+
+// Named once and returned by the detector, because the name registered here and
+// the name the detector answers with have to be the same string as the one
+// dataTables.ip-address-sort.js registers its order under. Disagree, and every
+// dotted quad in the product falls back to text order with nothing failing.
+var TYPE = 'ip-address';
+
+DataTable.type(TYPE, {
+	detect: function ( data )
 	{
-		if (/^\d{1,3}[\.]\d{1,3}[\.]\d{1,3}[\.]\d{1,3}$/.test(sData)) {
-			return 'ip-address';
+		if (/^\d{1,3}[\.]\d{1,3}[\.]\d{1,3}[\.]\d{1,3}$/.test(data)) {
+			return TYPE;
 		}
-		return null;
+		return false;
 	}
-);
+});
+
+}());

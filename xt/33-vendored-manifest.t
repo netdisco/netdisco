@@ -86,15 +86,22 @@ my @VENDORED = (
         banner  => sub { qr/bootstrap5-toggle v\Q$_[0]\E\b/ },
     },
     {   package => 'datatables.net',
-        file    => [qw/javascripts jquery.dataTables.min.js/],
+        file    => [qw/javascripts dataTables.min.js/],
         banner  => sub { qr/DataTables \Q$_[0]\E\b/ },
     },
     {   # The Bootstrap 5 integration layer states which framework it targets
         # and never which version of itself, so there is nothing to read back.
         package    => 'datatables.net-bs5',
         file       => [qw/javascripts dataTables.bootstrap.js/],
-        sha256     => '5adfe8c7957aaec56ef0403aa9e1fcdf7165785f092c34bb55c9075ea660ddbc',
-        pinned_for => '2.3.8',
+        sha256     => '1806022582576a6ee8a1922881d26c939e85e7c99962ae287ab729e9a4796a33',
+        pinned_for => '3.0.3',
+    },
+    {   # The stylesheet half of the same package states no version either, and
+        # pinning one half without the other lets the two disagree quietly.
+        package    => 'datatables.net-bs5',
+        file       => [qw/css dataTables.bootstrap.css/],
+        sha256     => '02eb90f742a251cd6eac1cc5886b5b7b066a57ae97d28127189f15396d0bf8b3',
+        pinned_for => '3.0.3',
     },
     {   # Two reasons rather than one. The banner reads "@version: 3.1" where
         # the manifest declares 3.1.0, so no exact read is possible, and the
@@ -130,10 +137,6 @@ my @VENDORED = (
     {   package => 'toastr',
         file    => [qw/javascripts toastr.js/],
         banner  => sub { qr/version:\s*'\Q$_[0]\E'/ },
-    },
-    {   package => 'floatthead',
-        file    => [qw/javascripts jquery.floatThead.js/],
-        banner  => sub { qr/jQuery\.floatThead \Q$_[0]\E\b/ },
     },
     {   package => 'force-graph',
         file    => [qw/javascripts force-graph.min.js/],

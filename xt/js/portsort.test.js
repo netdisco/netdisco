@@ -12,31 +12,41 @@ const { describe, test } = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('node:path');
 
-// portsort.js takes jQuery from global scope and registers its comparators as a
-// side effect of being loaded, so the stub has to exist before the require.
-globalThis.jQuery = {
-  extend: Object.assign,
-  fn: { dataTableExt: { oSort: {} } },
+// portsort.js registers with the library as a side effect of being loaded, so
+// the stub has to exist before the require. It records the spec under the name
+// it was registered with, which is what DataTable.type does with it.
+globalThis.DataTable = {
+  registered: {},
+  type(name, spec) { this.registered[name] = spec; },
 };
 
 require(path.join(__dirname, '..', '..', 'share', 'public', 'javascripts', 'portsort.js'));
 
-const sortTypes = globalThis.jQuery.fn.dataTableExt.oSort;
+const sortTypes = globalThis.DataTable.registered.portsort.order;
 
 function assertSortsTo(unordered, expected, because) {
-  assert.deepStrictEqual(unordered.slice().sort(sortTypes['portsort-asc']), expected, because);
+  assert.deepStrictEqual(unordered.slice().sort(sortTypes.asc), expected, because);
 }
 
 describe('registration', () => {
-  test('portSort__loaded_against_a_jquery_stub__registers_both_directions', () => {
-    assert.deepStrictEqual(Object.keys(sortTypes).sort(), ['portsort-asc', 'portsort-desc']);
+  test('portSort__loaded_against_a_library_stub__registers_only_the_port_type', () => {
+    assert.deepStrictEqual(Object.keys(globalThis.DataTable.registered), ['portsort']);
+  });
+
+  // A type registering no comparator at all is not an error the library reports:
+  // it falls back to comparing the cell text, and 1/10 then sorts before 1/2 on
+  // every Ports tab with nothing failing.
+  test('portSort__loaded_against_a_library_stub__registers_both_directions', () => {
+    assert.deepStrictEqual(Object.keys(sortTypes).sort(), ['asc', 'desc']);
+    assert.equal(typeof sortTypes.asc, 'function');
+    assert.equal(typeof sortTypes.desc, 'function');
   });
 
   test('portSortDescending__interface_names__reverses_the_ascending_order', () => {
     const names = ['GigabitEthernet1/2', 'GigabitEthernet1/10', 'GigabitEthernet1/1'];
     assert.deepStrictEqual(
-      names.slice().sort(sortTypes['portsort-desc']),
-      names.slice().sort(sortTypes['portsort-asc']).reverse());
+      names.slice().sort(sortTypes.desc),
+      names.slice().sort(sortTypes.asc).reverse());
   });
 });
 
@@ -220,7 +230,7 @@ describe('interface names by vendor', () => {
 // that breaks agreement with the Perl side fails. Keep the two lists in step.
 describe('agreement with the Perl sort_port', () => {
   function assertAgreesWithSortPort(first, second, expected) {
-    assert.equal(Math.sign(sortTypes['portsort-asc'](first, second)), expected,
+    assert.equal(Math.sign(sortTypes.asc(first, second)), expected,
       `${first} against ${second}`);
   }
 
@@ -261,7 +271,7 @@ describe('agreement with the Perl sort_port', () => {
 // evidence of correctness. The properties below are the part that can be wrong.
 describe('total order over the whole corpus', () => {
   const corpus = require(path.join(__dirname, '..', 'portsort-corpus.json'));
-  const cmp = sortTypes['portsort-asc'];
+  const cmp = sortTypes.asc;
   const byName = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
   const withTiebreak = (a, b) => cmp(a, b) || byName(a, b);
 

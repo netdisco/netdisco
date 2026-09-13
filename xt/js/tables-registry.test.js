@@ -13,13 +13,13 @@ const source = fs.readFileSync(
   path.join(ROOT, 'share', 'public', 'javascripts', 'netdisco-tables.js'), 'utf8');
 
 // Load the file in a scope with the globals it touches stubbed. The three
-// DataTable.render entries mirror the vendored 2.3.8 shapes read from
-// share/public/javascripts/jquery.dataTables.min.js: text() and number()
+// DataTable.render entries mirror the vendored 3.0.3 shapes read from
+// share/public/javascripts/dataTables.min.js: text() and number()
 // return an object keyed by render type (falling back to the raw value for
 // a type they don't name), datetime() returns a callable directly.
 function load({ built = [] } = {}) {
   const DataTable = function (el, config) { built.push({ el, config }); return { api: () => ({}) }; };
-  // Matches the vendored escaper (share/public/javascripts/jquery.dataTables.min.js,
+  // Matches the vendored escaper (share/public/javascripts/dataTables.min.js,
   // the function assigned as both DataTable.util.escapeHtml and the body of
   // render.text()): arrays join with a comma, non-strings pass through
   // unescaped, and no quote entity for an apostrophe.

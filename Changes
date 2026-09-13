@@ -10,13 +10,16 @@
     sooner and the results you replaced never flash up on the way
   * a request whose answer never arrives now gives up after five minutes and
     says so where the results would be, instead of leaving the spinner turning
+  * the arrow marking a sorted column is drawn differently and takes less room,
+    so tables are a little narrower
   * this release needs Safari 16.4, Firefox 101 or Chrome 74, or newer. it is
     the first that will not work on an older browser
   * if you keep site-local templates or JavaScript, run netdisco-do
     checksitelocal after upgrading. this release removes several things a copy
-    may still call, and the report names every file and what to change. a
-    shadowed layout is also reported when the web app starts, because it
-    leaves every page dead and says nothing otherwise
+    may still call, including script files a copy of the layout may still name,
+    and the report names every file and what to change. a shadowed layout is
+    also reported when the web app starts, because it leaves every page dead
+    and says nothing otherwise
 
   [BUG FIXES]
 

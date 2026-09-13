@@ -407,6 +407,61 @@ subtest 'scan_site_local__form_declares_hx_sync__reports_nothing' => sub {
       'the declared cancellation is the replacement, not a finding';
 };
 
+subtest 'scan_site_local__layout_names_the_old_datatables_file__reports_the_rename' => sub {
+    my $tree = site_local_tree(
+      'views/layouts/main.tt' =>
+        q{<script src="/javascripts/jquery.dataTables.min.js"></script>},
+    );
+
+    my @findings = scan_site_local({ paths => ["$tree"] });
+
+    is scalar @findings, 1, 'one finding'
+      or diag explain \@findings;
+    is $findings[0]{rule}, 'datatables-js-renamed', 'attributed to the rename';
+    is $findings[0]{release}, '2.109000', 'naming the release that renamed it';
+    like $findings[0]{advice}, qr/renamed dataTables\.min\.js/,
+      'and naming the current file';
+};
+
+# The new name is the old one with the prefix taken off, so a rule written
+# without the prefix would report every layout including the shipped one.
+subtest 'scan_site_local__layout_names_the_current_datatables_file__reports_nothing' => sub {
+    my $tree = site_local_tree(
+      'views/layouts/main.tt' =>
+        q{<script src="/javascripts/dataTables.min.js"></script>},
+    );
+
+    is_deeply [ scan_site_local({ paths => ["$tree"] }) ], [],
+      'a layout naming the current file is silent';
+};
+
+subtest 'scan_site_local__file_uses_floatthead__reports_the_sticky_header' => sub {
+    my $tree = site_local_tree(
+      'views/layouts/main.tt' =>
+        q{<script src="/javascripts/jquery.floatThead.js"></script>},
+      'views/js/custom.js' => "\$('table.nd_floatinghead').floatThead('reflow');\n",
+    );
+
+    my @findings = scan_site_local({ paths => ["$tree"] });
+
+    is scalar @findings, 2, 'the script tag and the call'
+      or diag explain \@findings;
+    is_deeply [ map { $_->{rule} } @findings ],
+      [ ('floatthead-js') x 2 ], 'both attributed to the removed plug-in';
+    like $findings[1]{advice}, qr/nd_floatinghead/,
+      'advice names the class the stylesheet keys the sticky header on';
+};
+
+subtest 'scan_site_local__table_carries_the_sticky_class__reports_nothing' => sub {
+    my $tree = site_local_tree(
+      'views/ajax/admintask/custom.tt' =>
+        q{<table class="table table-bordered nd_floatinghead">},
+    );
+
+    is_deeply [ scan_site_local({ paths => ["$tree"] }) ], [],
+      'the class the stylesheet sticks is the replacement, not a finding';
+};
+
 subtest 'scan_site_local__several_files_and_rules__sorts_by_path_then_line' => sub {
     my $tree = site_local_tree(
       'views/b.tt' => "he.encode(x);\n",
@@ -447,14 +502,15 @@ subtest 'scan_site_local__path_does_not_exist__returns_nothing_and_lives' => sub
 subtest 'site_local_rules__called__describes_every_rule_the_scan_applies' => sub {
     my @rules = App::Netdisco::Util::SiteLocal::site_local_rules();
 
-    is scalar @rules, 19, 'nineteen rules ship in this release';
+    is scalar @rules, 21, 'twenty-one rules ship in this release';
     is_deeply [ sort map { $_->{name} } @rules ],
       [ 'csv-download-link', 'csv-download-target',
-        'datatabledefaults-include', 'do-search', 'has-sidebar-global',
-        'he-js', 'history-js', 'history-replay', 'htmx-abort-trigger',
-        'jquery-deserialize', 'layout-shadow', 'natural-js', 'nd-submit',
-        'page-script-include', 'page-title-globals', 'portcontrol-js-renamed',
-        'sidebar-reset-target', 'tab-page-shadow', 'tab-sync-attribute' ],
+        'datatabledefaults-include', 'datatables-js-renamed', 'do-search',
+        'floatthead-js', 'has-sidebar-global', 'he-js', 'history-js',
+        'history-replay', 'htmx-abort-trigger', 'jquery-deserialize',
+        'layout-shadow', 'natural-js', 'nd-submit', 'page-script-include',
+        'page-title-globals', 'portcontrol-js-renamed', 'sidebar-reset-target',
+        'tab-page-shadow', 'tab-sync-attribute' ],
       'named as the report cites them, file rules included';
     ok !(grep { !length($_->{advice} || '') } @rules),
       'and every rule carries remediation advice';
