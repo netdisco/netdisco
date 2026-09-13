@@ -2,6 +2,10 @@
 
   [ENHANCEMENTS]
 
+  * this release needs Safari 16.4, Firefox 101, Chrome 74 or Edge 79, or
+    newer. it is the first that will not work on an older browser
+  * pages are now drawn in the display mode the current framework is written
+    for. rows in a table stand a little taller as a result
   * Back and Forward now fetch the page again for the tab and options in the
     address bar, so what you return to is current rather than the results as
     they were when you left them
@@ -10,25 +14,61 @@
     sooner and the results you replaced never flash up on the way
   * a request whose answer never arrives now gives up after five minutes and
     says so where the results would be, instead of leaving the spinner turning
+  * searching the SNMP browser now goes straight to the object, where it used
+    to open the tree a level at a time
+  * the SNMP browser tree and the suggestion lists under the search boxes are
+    drawn by netdisco itself now. they work as they did, and both look a little
+    different
   * the arrow marking a sorted column is drawn differently and takes less room,
     so tables are a little narrower
-  * this release needs Safari 16.4, Firefox 101 or Chrome 74, or newer. it is
-    the first that will not work on an older browser
+  * the date range boxes on Node Search, IP Inventory and Subnet Utilization
+    are now a list of the usual ranges above two ordinary date fields. they
+    send what they always did
+  * the sidebar now opens and closes at once instead of sliding
   * if you keep site-local templates or JavaScript, run netdisco-do
     checksitelocal after upgrading. this release removes several things a copy
-    may still call, including script files a copy of the layout may still name,
-    and the report names every file and what to change. a shadowed layout is
-    also reported when the web app starts, because it leaves every page dead
-    and says nothing otherwise
+    may still call, including script files and a stylesheet a copy of the
+    layout may still name, and the report names every file and what to change.
+    a shadowed layout is also reported when the web app starts, because it
+    leaves every page dead and says nothing otherwise
 
   [BUG FIXES]
 
+  * the archived-node marker is drawn in one color everywhere it appears
+  * the delete button on the Duplicate Devices admin page shows its icon
+    again, rather than red on red
+  * the Neighbor Hops label in the netmap sidebar lines up with its radio
+    button again
   * the Module Inventory, NetBIOS and Node Vendor reports now honor every
-    filter when more than one is given; the second and later were dropped by
-    the table's data request
-  * the ACL editor's Host Preference now follows the address bar; its sidebar
-    options were keyed under a name the web app never looked them up by, so
-    the setting could not be linked to or bookmarked
+    filter when more than one is given, rather than only the first
+  * the ACL editor's Host Preference now follows the address bar, so it can be
+    linked to and bookmarked
+  * choosing an IPv6 prefix from the suggestions in the IP Inventory sidebar
+    now disables the "never" option, which it only did if you typed the prefix
+    out in full
+  * a device name containing an ampersand now reads correctly in the search
+    suggestions
+  * when your session expires you are now taken to the login page and returned
+    to where you were once you log in. a page whose panel refreshes on its own,
+    the Job Queue in particular, used to report a server error and stop
+    refreshing, with nothing to say your session had ended
+  * the job log that appears when you hover a Job Queue row is now dismissed
+    when the table refreshes. one was left behind on every refresh, still
+    showing the job it described, and they piled up over the page and swallowed
+    clicks meant for the rows beneath them
+  * addresses that are links, on Device Inventory and Duplicate Devices, now
+    sort by address. they sorted as text, which put .70 above .4
+  * tooltips and the job log that appears when you hover a Job Queue row are
+    drawn in the same typeface as the rest of the page again. the log had also
+    been set larger, and in a monospaced face, which read as a terminal dropped
+    onto the page
+  * a button in an admin table no longer breaks its label across two lines as
+    the window narrows. "Create ACL" on the User Management page split in two
+    below about 1200 pixels
+  * the Discover box on the front page now says whether your job was queued,
+    and leaves you where you are. a name that does not resolve, a prefix wider
+    than /22, or anything that is not an address, sent you back to the front
+    page with nothing said either way
 
 2.108004 - 2026-09-09
 

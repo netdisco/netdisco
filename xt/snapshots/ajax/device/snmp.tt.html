@@ -1,10 +1,12 @@
 <div class="row">
     <div class="col-md-4">
-        <div id="jstree" class="nd_scrollable" data-nd-device=""></div>
+        <ul id="nd_snmp-tree" class="nd_scrollable nd_snmp-tree">        </ul>
     </div>
     <div id="snmpnodecontainer" class="col-md-8">
 
-        <form id="nd_snmp_search_form">
+        <form id="nd_snmp_search_form"
+              hx-get="/ajax/content/device//snmpsearch"
+              hx-target="#nd_snmp-tree" hx-swap="innerHTML" hx-indicator="#nd_snmp_loading_spinner">
           <span class="form-group">
 
             <span class="nd_snmp_search_controls">
@@ -12,7 +14,10 @@
 
               <input id="nd_snmp_search_text" type="text"
                class="form-control nd_snmp_search_param"
-               name="term" required placeholder="Search for label or OID">
+               name="term" required placeholder="Search for label or OID"
+               autocomplete="off"
+               data-nd-typeahead="/ajax/data/snmp/typeahead" data-nd-typeahead-min="2"
+               data-nd-typeahead-params=".nd_snmp_search_param">
 
               <button type="submit" class="btn btn-secondary">Search</button>
             </span>

@@ -180,7 +180,7 @@ my @RULES = (
   },
   {
     name    => 'datatables-js-renamed',
-    release => '2.109000',
+    release  => '2.109000',
     pattern => qr/jquery\.dataTables\.min\.js/,
     advice  => 'jquery.dataTables.min.js was renamed dataTables.min.js, the '
              . 'library no longer needing jQuery, and a reference to the '
@@ -190,7 +190,7 @@ my @RULES = (
   },
   {
     name    => 'floatthead-js',
-    release => '2.109000',
+    release  => '2.109000',
     # The file name and the method, because the two break differently: a
     # layout copy still loading the plug-in 404s, and a script still calling
     # it throws once the plug-in is not there to define the method.
@@ -201,6 +201,131 @@ my @RULES = (
              . 'table the class nd_floatinghead: netdisco.css sticks the '
              . 'header of a table.nd_floatinghead inside the tab content, '
              . 'which is what the job queue now relies on.',
+  },
+  {
+    name    => 'jquery-ui-autocomplete',
+    release  => '2.109000',
+    # Both the constructor and the method form, since a copy that only calls
+    # the method still throws once the library is gone.
+    # the call alone, not the class the widget adds: a site keeping its own
+    # copy of the library would otherwise be told to change the library, and
+    # both the minified script and its stylesheet carry that class. A site
+    # stylesheet overriding it is left unreported, which is cosmetic; a layout
+    # copy still loading the theme is caught by the rule below.
+    pattern => qr/\.\s*autocomplete\s*\(/,
+    advice  => 'jQuery UI was removed. A field asks for suggestions in its '
+             . 'markup now: give the input a data-nd-typeahead attribute '
+             . 'holding the endpoint path, with data-nd-typeahead-min, '
+             . '-params, -open and -first beside it, and delete the script.',
+  },
+  {
+    name    => 'jquery-ui-removed',
+    release  => '2.109000',
+    # A copied layout names the script and the theme on two separate lines,
+    # and both 404 silently rather than reporting anything.
+    pattern => qr{jquery-ui(?:\.min)?\.(?:js|css)|css/smoothness/},
+    advice  => 'jquery-ui.min.js and the smoothness theme were removed. Drop '
+             . 'both lines from your copy of the layout.',
+  },
+  {
+    name    => 'jstree-removed',
+    release => '2.109000',
+    # the container, the selector that reaches it, and the vendored path. Not
+    # the bare method call: the library contains that itself, in its own jQuery
+    # bridge, so matching it told a site keeping a copy to change the library.
+    # Measured against the real minified file, which this pattern does not hit.
+    pattern => qr{id=["']jstree["']|["']\#jstree["']|javascripts/jstree/},
+    advice  => 'jsTree was removed and the SNMP browser is rendered by the '
+             . 'server. A copy of the pane should hold a ul#nd_snmp-tree that '
+             . 'includes ajax/device/snmptree.tt; delete the container, the '
+             . 'script and stylesheet lines from a layout copy, and any '
+             . 'jstree() call.',
+  },
+  {
+    name    => 'daterangepicker-removed',
+    release => '2.109000',
+    # The three file names together, since a copied layout loses each on its
+    # own line, and the call, since a script keeping it throws once the
+    # library is gone. Measured against the library's own source, which does
+    # not carry this call form: it names itself only inside namespaced event
+    # strings such as click.daterangepicker, never as a call.
+    pattern => qr{javascripts/(?:moment\.min|daterangepicker)\.js
+                  |css/daterangepicker\.css
+                  |\.\s*daterangepicker\s*\(}x,
+    advice  => 'moment.js, daterangepicker.js and daterangepicker.css were '
+             . 'removed. Give the field a container like '
+             . 'share/views/sidebar/_daterange.tt and delete the '
+             . '.daterangepicker() call and the two script tags and the '
+             . 'stylesheet link from a layout copy: netdisco-daterange.js '
+             . 'drives the control now, so add a script tag for it to the '
+             . 'layout copy in their place.',
+  },
+  {
+    name    => 'moment-removed',
+    release => '2.109000',
+    # The rule above catches a layout still loading the file; this catches the
+    # call, since moment was a global on every page for a decade and a site
+    # script formatting a date with it throws once the library is gone. The
+    # vendored DataTables render helper of the same name as the second
+    # alternative requires moment or luxon internally, so a table column
+    # configured with it now fails with neither present.
+    pattern => qr/\bmoment\s*\(|DataTable\.render\.datetime\s*\(/,
+    advice  => 'moment.js was removed and nothing replaces it as a global. '
+             . 'Format the date with native Date or Intl.DateTimeFormat '
+             . 'instead of calling moment, and give a datetime column a '
+             . 'different render function: the DataTable.render.datetime '
+             . 'helper needs moment or luxon and neither is loaded any more.',
+  },
+  {
+    name    => 'daterange-input-id',
+    release => '2.109000',
+    # A site that only customized the sidebar markup never wrote a
+    # .daterangepicker() call or named a removed script, so the two rules
+    # above stay quiet and this id is the only trace left to catch. The id
+    # and the type="text" that went with it sit on different lines in the
+    # old markup, so the id alone is the anchor rather than the pair on one
+    # line. No shipped template sets this id any more.
+    pattern => qr/id=["']daterange["']/,
+    advice  => 'this field carried the daterangepicker widget by its id, '
+             . 'which is gone along with the JavaScript that drove it, so '
+             . 'the field is now a plain text box with nothing behind it. '
+             . 'Replace it with a copy of share/views/sidebar/_daterange.tt: '
+             . 'netdisco-daterange.js drives the control from its markup, '
+             . 'not by id.',
+  },
+  {
+    name    => 'toastr-removed',
+    release => '2.109000',
+    # Anchored on the call rather than toastr.options, which the library's own
+    # source reads from itself, so a site keeping a copy of the library is not
+    # told to change the library.
+    pattern => qr{javascripts/toastr\.js|css/toastr\.css
+                  |toastr\s*\.\s*(?:error|success|info|warning)\s*\(}x,
+    advice  => 'toastr was removed. Use ndToast (success, error and info) '
+             . 'instead: delete the toastr.js script and toastr.css '
+             . 'stylesheet lines from a layout copy and add a script tag '
+             . 'for netdisco-toast.js in their place.',
+  },
+  {
+    name    => 'jquery-removed',
+    release => '2.109000',
+    # Anchored on the exact vendored file name, not a generic jquery*.js glob,
+    # so a site's own copy of jquery-ui.min.js or jquery.dataTables.min.js is
+    # left to the rule that already covers it. Also on the literal jQuery
+    # global and on a "$." method call such as $.ajax( or $.get(, which
+    # covers a site-local script still making jQuery's own request calls.
+    # A bare $( is still not caught: the widget rules above each anchor on
+    # their own call, and a bare $( would report the same line twice against
+    # their own test fixtures.
+    pattern => qr{javascripts/jquery-latest(?:\.min)?\.js|\bjQuery\b|\$\s*\.\s*\w+\s*\(},
+    advice  => 'jQuery must not appear in a site-local script or a copied '
+             . 'layout. Delete the script line naming jquery-latest.min.js '
+             . 'from a layout copy, and rewrite a jQuery call with native '
+             . 'DOM methods: netdisco-request.js carries the request and '
+             . 'form helpers the shipped scripts use. If the reported file '
+             . 'is a copy of a third-party library rather than the site\'s '
+             . 'own script, update that library to a build that needs no '
+             . 'jQuery, or drop it, rather than rewriting its calls.',
   },
 );
 

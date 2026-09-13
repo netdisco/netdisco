@@ -1,6 +1,8 @@
 <div class="row">
     <div class="col-md-4">
-        <div id="jstree" class="nd_scrollable" data-nd-device="[% device | html_entity %]"></div>
+        <ul id="nd_snmp-tree" class="nd_scrollable nd_snmp-tree">
+          [%- INCLUDE 'ajax/device/snmptree.tt' nodes=tree -%]
+        </ul>
     </div>
     <div id="snmpnodecontainer" class="col-md-8">
 [%# This form carries no layout class, and both of the ones it used to are
@@ -10,7 +12,9 @@
     blockifies the one span this form holds, and the span then constrains every
     control inside it. The layout is stated in netdisco.css instead, where the
     old component's own declarations can be reproduced directly. %]
-        <form id="nd_snmp_search_form">
+        <form id="nd_snmp_search_form"
+              hx-get="[% uri_base | none %]/ajax/content/device/[% device | uri %]/snmpsearch"
+              hx-target="#nd_snmp-tree" hx-swap="innerHTML" hx-indicator="#nd_snmp_loading_spinner">
           <span class="form-group">
 [%# The spinner, the field and the button are grouped so they travel together.
     As siblings they broke apart as the pane narrowed, and the spinner leads the
@@ -21,7 +25,10 @@
 
               <input id="nd_snmp_search_text" type="text"
                class="form-control nd_snmp_search_param"
-               name="term" required placeholder="Search for label or OID">
+               name="term" required placeholder="Search for label or OID"
+               autocomplete="off"
+               data-nd-typeahead="/ajax/data/snmp/typeahead" data-nd-typeahead-min="2"
+               data-nd-typeahead-params=".nd_snmp_search_param">
 
               <button type="submit" class="btn btn-secondary">Search</button>
             </span>

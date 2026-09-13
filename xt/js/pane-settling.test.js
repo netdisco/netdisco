@@ -1,6 +1,7 @@
-// Guards holdUntilSettled() in share/public/javascripts/netdisco.js: an
-// indicator that outlives the response, and a pane that stays out of view until
-// its table has been built.
+// Guards the pane hold in share/public/javascripts/netdisco.js, both halves of
+// it: the before-swap listener that hides a pane, and holdUntilSettled(), which
+// keeps the indicator alive past the response and reveals the pane once its
+// table has been built. The two must agree on which panes they apply to.
 //
 // The rule is asserted, not a table library's behaviour, because settling is
 // read from MutationObserver and frames so that it survives the move off jQuery
@@ -137,4 +138,87 @@ test('holdUntilSettled__a_pane_with_no_indicator__is_left_alone', () => {
     'the job queue pane refreshes on a timer and carries no indicator: hiding it '
     + 'on every tick would be the flash this prevents');
   assert.strictEqual(h.pending, 0, 'and nothing is left watching frames');
+});
+
+// The hiding has to start before the answer is put into the pane, not after.
+// htmx paints between inserting a fragment and firing its after-swap event, so
+// hiding there leaves a table the library has not converted on screen: on a
+// device with thousands of ports that is the whole raw table.
+//
+// SOURCE ASSERTIONS. Which frame paints what is a browser question; these stop
+// the mechanism being undone by an edit that looks harmless.
+test('paneSettling__the_answer_arriving__is_hidden_before_it_is_inserted', () => {
+  assert.match(source, /htmx:before:swap/,
+    'nothing hides the pane before the swap, so the raw table paints first');
+  const from = source.indexOf("'htmx:before:swap'");
+  const handler = source.slice(from, source.indexOf('});', from));
+  assert.match(handler, /_pane\$/, 'the pre-swap hide is no longer limited to panes');
+  assert.match(handler, /classList\.add\('nd_pane-settling'\)/,
+    'the pre-swap handler no longer hides the pane');
+});
+
+// Three paths leave the swap handler without ever reaching holdUntilSettled,
+// and each has to show the pane again or it stays invisible for good.
+test('paneSettling__a_path_that_never_settles__shows_the_pane_again', () => {
+  const removals = (source.match(/classList\.remove\('nd_pane-settling'\)/g) || []).length;
+  assert.ok(removals >= 4,
+    'only ' + removals + ' places clear nd_pane-settling; holdUntilSettled plus'
+    + ' the empty result, the error response and the failed request each need to,'
+    + ' or that pane never becomes visible again');
+});
+
+// The job queue is the one pane in netdisco with no indicator: admintask.tt
+// withholds it because the queue refreshes on a timer and the spinner would
+// flash on every tick. holdUntilSettled is what takes nd_pane-settling off a
+// pane, and it declines a pane with no indicator, so whatever hides a pane has
+// to decline the same ones or the pane is hidden for good. The symptom was a
+// queue that drew no rows with every one of them present in the DOM.
+//
+// Runs the shipped listener text rather than a copy, against a document that
+// answers for the indicators a page actually has.
+function preSwapHide(paneId, indicatorIds) {
+  const from = source.indexOf("document.body.addEventListener('htmx:before:swap'");
+  assert.notStrictEqual(from, -1, 'no htmx:before:swap listener in netdisco.js');
+  const open = source.indexOf('function (evt)', from);
+  let depth = 0;
+  let body = null;
+  for (let j = source.indexOf('{', open); j < source.length; j += 1) {
+    if (source[j] === '{') depth += 1;
+    if (source[j] === '}') { depth -= 1; if (depth === 0) { body = source.slice(open, j + 1); break } }
+  }
+  assert.ok(body, 'unbalanced braces in the before-swap listener');
+
+  const classes = new Set();
+  const pane = { id: paneId, classList: { add: (c) => classes.add(c),
+                                          remove: (c) => classes.delete(c),
+                                          contains: (c) => classes.has(c) } };
+  const stubDocument = { getElementById: (id) => (indicatorIds.includes(id) ? {} : null) };
+  new Function('document', 'return ' + body)(stubDocument)({ detail: { ctx: { target: pane } } });
+  return classes;
+}
+
+test('preSwapHide__a_pane_with_no_indicator__leaves_it_visible', () => {
+  const classes = preSwapHide('jobqueue_pane', []);
+  assert.ok(!classes.has('nd_pane-settling'),
+    'the job queue carries no indicator, so holdUntilSettled will decline it and '
+    + 'nothing will ever take this class off again: its rows stay in the DOM behind '
+    + 'visibility:hidden');
+});
+
+test('preSwapHide__a_pane_with_an_indicator__hides_it', () => {
+  const classes = preSwapHide('ports_pane', ['ports_indicator']);
+  assert.ok(classes.has('nd_pane-settling'),
+    'a pane that will be held must be hidden before the fragment is inserted, or '
+    + 'the raw table paints for a frame or two first');
+});
+
+// Belt and braces for the rule above: holdUntilSettled is the only thing that
+// reveals a pane, so it must not walk away from one that is already hidden.
+test('holdUntilSettled__a_hidden_pane_with_no_indicator__is_revealed_again', () => {
+  const h = harness();
+  const pane = h.element();
+  pane.classList.add('nd_pane-settling');
+  h.runWith(pane, null);
+  assert.ok(!pane.classList.contains('nd_pane-settling'),
+    'declining to hold a pane cannot mean leaving it hidden for ever');
 });

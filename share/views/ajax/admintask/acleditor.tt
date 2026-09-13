@@ -30,7 +30,11 @@
       <td></td>
 
       <td>
-        <input class="form-control w-auto d-inline-block nd_acl_host_searcher" size=45 data-form="add" name="left_rule" type="text" placeholder="Hostname, IP, prefix, or property:value">
+        <input class="form-control w-auto d-inline-block nd_acl_host_searcher" size=45 data-form="add" name="left_rule" type="text" placeholder="Hostname, IP, prefix, or property:value"
+         autocomplete="off"
+         data-nd-typeahead="/ajax/data/devices/typeahead"
+         data-nd-typeahead-params=".nd_sidebar-form, self"
+         data-nd-typeahead-open data-nd-typeahead-commit="acl">
       </td>
 
       [% IF params.acl_type != "host" %]
@@ -56,7 +60,11 @@
         [% IF rule.last %]&nbsp;&nbsp;[% rule.last | html_entity %][% END %]
         <input class="nd_left-acl-rule-field" data-form="update" name="left_rule" type="hidden" value="[% loop.count %].[% atob(rule.first) | none %]"><br/>
         [% END %]
-        <input class="form-control w-auto d-inline-block nd_acl-rule nd_acl_host_searcher" size=40 contenteditable="true" data-form="" name="left_rule" type="text" placeholder="add rule">
+        <input class="form-control w-auto d-inline-block nd_acl-rule nd_acl_host_searcher" size=40 contenteditable="true" data-form="" name="left_rule" type="text" placeholder="add rule"
+         autocomplete="off"
+         data-nd-typeahead="/ajax/data/devices/typeahead"
+         data-nd-typeahead-params=".nd_sidebar-form, self"
+         data-nd-typeahead-open data-nd-typeahead-commit="acl">
         </div>
       </td>
 
@@ -75,7 +83,12 @@
           <input class="nd_right-acl-rule-field" data-form="update" name="right_rule" type="hidden" value="[% loop.count %].[% atob(rule) | none %]"><br/>
           [% END %]
         [% END %]
-        <input class="form-control w-auto d-inline-block nd_acl-rule[% IF params.acl_type == "host_host" %] nd_acl_host_searcher[% END %]" size=40 contenteditable="true" data-form="" name="right_rule" type="text" placeholder="add rule">
+        <input class="form-control w-auto d-inline-block nd_acl-rule[% IF params.acl_type == "host_host" %] nd_acl_host_searcher[% END %]" size=40 contenteditable="true" data-form="" name="right_rule" type="text" placeholder="add rule"
+[% IF params.acl_type == "host_host" %]
+         autocomplete="off"
+         data-nd-typeahead="/ajax/data/devices/typeahead"
+         data-nd-typeahead-params=".nd_sidebar-form, self"
+         data-nd-typeahead-open data-nd-typeahead-commit="acl"[% END %]>
         </div>
       </td>
       [% END %]

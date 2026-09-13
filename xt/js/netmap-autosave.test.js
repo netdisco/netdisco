@@ -131,12 +131,12 @@ describe('netmap manual save', () => {
     const body = src.slice(at, src.indexOf('\n    };', at));
     assert.match(
       body,
-      /toastr\.success/,
+      /ndToast\.success/,
       'a manual save has nothing else to confirm it happened, so it must say so'
     );
     assert.match(
       body,
-      /if\s*\([^)]*!\s*autosaveOn[^)]*\)[\s\S]{0,120}?toastr\.success/,
+      /if\s*\([^)]*!\s*autosaveOn[^)]*\)[\s\S]{0,120}?ndToast\.success/,
       'the toast must be suppressed when autosave is on, or the map announces itself ' +
       'at every settle and every drag'
     );

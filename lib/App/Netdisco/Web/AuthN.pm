@@ -259,6 +259,21 @@ any qr{^/(?:login(?:/denied)?)?} => sub {
         return_url => param('return_url'),
       };
     }
+    elsif (request->header('HX-Request')) {
+      # htmx sends HX-Request and not X-Requested-With, so without this branch
+      # an expired session answers a pane with the whole login page and 200,
+      # and htmx swaps that into the pane. HX-Redirect takes the browser to
+      # the login page instead.
+      #
+      # The return_url the before hook computed is the pane's own path, which
+      # is a fragment and not somewhere to send a reader after login. htmx
+      # carries the address bar in HX-Current-URL, which is where they were.
+      my $back = request->header('HX-Current-URL') || param('return_url');
+      header('HX-Redirect' =>
+        uri_for('/login', { return_url => $back })->path_query);
+      status('unauthorized');
+      return '';
+    }
     elsif (defined request->header('X-Requested-With')
            and request->header('X-Requested-With') eq 'XMLHttpRequest') {
       status('unauthorized');

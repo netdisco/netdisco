@@ -13,6 +13,10 @@
 :root {
   --bs-body-font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   --bs-body-font-size: 13px;
+  /* Tooltips and popovers take their face from this rather than from the body,
+     and they are the only two things that read it, so without it they are the
+     one part of the page drawn in the system stack. */
+  --bs-font-sans-serif: "Helvetica Neue", Helvetica, Arial, sans-serif;
   --bs-body-line-height: 18px;
   /* The old body color was #333333 against the replacement's #212529. Both halves
      are stated because other rules read rgba(var(--bs-body-color-rgb), ...). Muted
@@ -454,13 +458,19 @@ a:hover, a:focus {
 
    The placement rule is restated because the replacement scopes its own to
    [data-bs-popper], which only a script sets, so without this the submenu lands
-   over its parent. */
+   over its parent.
+
+   The negative margin has to stay negative. A positive one leaves a strip that
+   belongs to neither the category nor the submenu, and a pointer crossing it
+   slowly enough to land there loses the hover that holds the submenu open. One
+   pixel of overlap also collapses the two adjoining borders into a single
+   line. */
 .dropend > .dropdown-menu {
   top: 0;
   right: auto;
   left: 100%;
   margin-top: 0;
-  margin-left: var(--bs-dropdown-spacer);
+  margin-left: -1px;
 }
 /* Keyboard as well as pointer: the category anchors carry no data-bs-toggle
    (see above), so focus arriving on one is all there is to open a submenu.
@@ -579,6 +589,13 @@ a:hover, a:focus {
 
    No z-index: sticky already paints above the rows, and staying at auto leaves
    the sidebar's z-index above the header, which is where it belongs. */
+/* A button's label is one phrase. These sit in cells whose width the table
+   library decides, and nothing sets a minimum, so a two word label such as
+   "Create ACL" breaks across two lines as the window narrows. */
+#data-table .btn {
+  white-space: nowrap;
+}
+
 div.content > div.tab-content table.nd_floatinghead thead {
   position: sticky;
   top: 40px;
@@ -586,43 +603,38 @@ div.content > div.tab-content table.nd_floatinghead thead {
   background-color: floralWhite;
 }
 
-/* jquery ui autocomplete scrollable */
-.ui-autocomplete {
+/* The suggestion menu. One element on the body for the whole page, so it is
+   never clipped by the sidebar or the SNMP pane, both of which scroll. */
+.nd_typeahead-menu {
+  position: absolute;
+  z-index: 1000;
   max-height: 200px;
   overflow-y: auto;
   overflow-x: hidden;
-}
-
-/* The dropdown's box as the older theme drew it. Two class names rather than
-   one, the border being set by .ui-widget.ui-widget-content, which a single class
-   loses to however late this file loads. */
-.ui-autocomplete.ui-widget-content {
+  margin: 0;
   padding: 2px;
-  border-color: #aaaaaa;
+  list-style: none;
+  background: #ffffff;
+  border: 1px solid #aaaaaa;
   border-radius: 4px;
 }
 
-/* The bar paints above this widget's level, so the navbar menu's border and
-   padding, which reach into the bar, were drawn under it. How far the menu hangs
-   is set in netdisco.js: this widget positions by writing an offset, which
-   compensates for a margin, so a margin here would do nothing. */
-.ui-autocomplete.nd_navbar-suggestions {
-  z-index: 1051;
+.nd_typeahead-menu li {
+  padding: 3px 1em 3px .4em;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
-/* The menu marks its highlighted row ui-state-active where it used to use
-   ui-state-focus, and in this theme active is white, so the highlight vanished on
-   a white menu. These are the theme's own ui-state-focus values. */
-.ui-menu .ui-menu-item-wrapper.ui-state-active {
+/* The theme's own focus colours, which the fifteen non-search fields kept. */
+.nd_typeahead-menu li.nd_typeahead-active {
   border: 1px solid #999999;
-  background: #dadada url(smoothness/images/ui-bg_glass_75_dadada_1x400.png) 50% 50% repeat-x;
+  background: #dadada;
   color: #212121;
 }
 
-/* The two search boxes are the exception above: their old widget drew the picked
-   row in the old framework's blue, and that row is the one Enter takes. Scoped to
-   the marked menus, the theme's gray being right for the other fifteen. */
-.ui-autocomplete.nd_search-suggestions .ui-menu-item-wrapper.ui-state-active {
+/* The two search boxes are the exception: their menu draws the picked row in
+   the older framework's blue, and that row is the one Enter takes. */
+.nd_typeahead-menu.nd_search-suggestions li.nd_typeahead-active {
   border-color: #0077b3;
   background-color: #0081c2;
   background-image: linear-gradient(to bottom, #0088cc, #0077b3);
@@ -630,12 +642,161 @@ div.content > div.tab-content table.nd_floatinghead thead {
   color: #ffffff;
 }
 
-/* jstree scrollable */
+/* The bar paints above this menu's level, and the menu's border and padding
+   reach into the bar, so the border needs lifting with it. The gap is the
+   navbar's alone: this box sits above the bottom of the bar, so a menu hung at
+   its own edge starts its first row inside it. Four pixels rather than the
+   three that meet the edge exactly, the bar being a fraction taller on some
+   platforms. */
+.nd_typeahead-menu.nd_navbar-suggestions {
+  z-index: 1051;
+  margin-top: 4px;
+}
 
+/* The SNMP tree's own scroll box. Nesting and disclosure are the browser's,
+   through the nested lists and <details>; this supplies the indentation the
+   theme used to and keeps each label on its marker's line. */
 .nd_scrollable {
     height: 85vh;
     overflow: auto;
 }
+
+ul.nd_snmp-tree, ul.nd_snmp-children {
+  list-style: none;
+  margin: 0;
+  padding-left: 22px;
+}
+
+ul.nd_snmp-tree { padding-left: 0 }
+
+/* Metrics, colours and the shape of the open/close control are taken from
+   jsTree 3.3.17's proton theme (MIT), the widget this replaced: a 22px label
+   with a pixel above it and two below, so rows step by 25px; 22px per level;
+   #a6a6a6 level lines one pixel wide running through the control; and a 13px
+   rounded control with a #999 border and glyph on white.
+   They are drawn in CSS here rather than loaded from that theme's sprite, so
+   no image is needed.
+
+   The label comes first in the row and the child list follows it inside the
+   <details>, so both sit in normal flow and a nested list is as wide as its
+   row. Only the marker is placed, into the row's left gutter.
+
+   Laying the row out as a grid instead does not work. The summary becomes a
+   grid item, but a browser slots the rest of a <details> into a box of its own,
+   so grid-column never reaches the child list and the list collapses to the
+   width of its own padding. */
+.nd_snmp-row { position: relative }
+
+/* The line down a level, and the tick from it to each row, at the width and
+   colour the sprite drew them: one solid pixel of #a6a6a6, not a dotted rule,
+   which is too faint to see. Both are dropped on the last child so the line
+   stops at the last tick rather than running past it, which is what the sprite
+   did by leaving that node no background. */
+.nd_snmp-row::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid #a6a6a6;
+}
+.nd_snmp-row:last-child::before { bottom: auto; height: 12px }
+.nd_snmp-row::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 12px;
+  width: 12px;
+  border-top: 1px solid #a6a6a6;
+}
+
+/* The control this replaced was a boxed + and -, drawn from a sprite image at
+   these colours, sitting on the level line with its own fill covering it. The
+   browser's own triangle is removed in both spellings it answers to.
+
+   The ::after tick follows this control in tree order, so without the z-index
+   it paints over the box and takes the click at its center. */
+.nd_snmp-row > details > summary {
+  position: absolute;
+  left: 4px;
+  top: 5px;
+  z-index: 1;
+  cursor: pointer;
+  list-style: none;
+}
+.nd_snmp-row > details > summary::-webkit-details-marker { display: none }
+.nd_snmp-row > details > summary::before {
+  content: "";
+  display: block;
+  width: 13px;
+  height: 13px;
+  background: url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%2713%27%20height=%2713%27%3E%3Crect%20x=%27.5%27%20y=%27.5%27%20width=%2712%27%20height=%2712%27%20rx=%272%27%20fill=%27%23fff%27%20stroke=%27%23999%27/%3E%3Cpath%20d=%27M3.5%206.5h6M6.5%203.5v6%27%20fill=%27none%27%20stroke=%27%23999%27/%3E%3C/svg%3E") no-repeat center;
+}
+.nd_snmp-row > details[open] > summary::before {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%2713%27%20height=%2713%27%3E%3Crect%20x=%27.5%27%20y=%27.5%27%20width=%2712%27%20height=%2712%27%20rx=%272%27%20fill=%27%23fff%27%20stroke=%27%23999%27/%3E%3Cpath%20d=%27M3.5%206.5h6%27%20fill=%27none%27%20stroke=%27%23999%27/%3E%3C/svg%3E");
+}
+
+.nd_snmp-label {
+  display: inline-block;
+  height: 22px;
+  line-height: 22px;
+  margin: 1px 0 2px 22px;
+  padding: 0 4px 0 1px;
+  color: #333;
+  text-decoration: none;
+  cursor: pointer;
+}
+/* A search marks the node it found. The widget selected it and styled it as a
+   match at the same time, which is where both halves of this come from. */
+.nd_snmp-label.nd_snmp-found {
+  background-color: #3392e3;
+  border-radius: 3px;
+  color: #8b0000;
+  font-style: italic;
+  font-weight: 700;
+}
+.nd_snmp-label:hover, .nd_snmp-label:focus { color: #333; background-color: #e8eff7 }
+.nd_snmp-label > i { margin-right: .4em }
+
+/* The three states the tree widget this replaced set from JavaScript: in
+   flight, then either a hit or, from an out of band swap, a miss. */
+#nd_snmp_loading_spinner.htmx-request {
+  color: #ffc107;
+  animation: fa-spin 2s infinite linear;
+}
+
+.nd_snmp-empty { list-style: none; color: #6c757d }
+.nd_snmp-empty > i { margin-right: .4em }
+
+/* Notifications. Colours, transparency, box and icons are taken from toastr
+   2.1.4 (MIT), the library this replaced, so an action reports itself the way
+   it always has; the markup underneath is Bootstrap's own toast. The icon is
+   the background of the toast itself, which is why the box carries the padding
+   that keeps text clear of it. */
+.nd_toast-container .toast {
+  --bs-toast-border-width: 0;
+  --bs-toast-box-shadow: 0 0 12px #999999;
+  --bs-toast-color: #ffffff;
+  width: 300px;
+  margin-bottom: 6px;
+  padding: 15px 15px 15px 50px;
+  border-radius: 3px;
+  background-position: 15px center;
+  background-repeat: no-repeat;
+}
+/* Only once shown, so the fade in and out still runs from nothing. */
+.nd_toast-container .toast.show { opacity: 0.8 }
+.nd_toast-container .toast.show:hover {
+  --bs-toast-box-shadow: 0 0 12px #000000;
+  opacity: 1;
+  cursor: pointer;
+}
+/* The box above carries the padding, so the body adds none of its own. */
+.nd_toast-container .toast-body { padding: 0 }
+
+.nd_toast-success { --bs-toast-bg: #51A351; background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADsSURBVEhLY2AYBfQMgf///3P8+/evAIgvA/FsIF+BavYDDWMBGroaSMMBiE8VC7AZDrIFaMFnii3AZTjUgsUUWUDA8OdAH6iQbQEhw4HyGsPEcKBXBIC4ARhex4G4BsjmweU1soIFaGg/WtoFZRIZdEvIMhxkCCjXIVsATV6gFGACs4Rsw0EGgIIH3QJYJgHSARQZDrWAB+jawzgs+Q2UO49D7jnRSRGoEFRILcdmEMWGI0cm0JJ2QpYA1RDvcmzJEWhABhD/pqrL0S0CWuABKgnRki9lLseS7g2AlqwHWQSKH4oKLrILpRGhEQCw2LiRUIa4lwAAAABJRU5ErkJggg==") }
+.nd_toast-error   { --bs-toast-bg: #BD362F; background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHOSURBVEhLrZa/SgNBEMZzh0WKCClSCKaIYOED+AAKeQQLG8HWztLCImBrYadgIdY+gIKNYkBFSwu7CAoqCgkkoGBI/E28PdbLZmeDLgzZzcx83/zZ2SSXC1j9fr+I1Hq93g2yxH4iwM1vkoBWAdxCmpzTxfkN2RcyZNaHFIkSo10+8kgxkXIURV5HGxTmFuc75B2RfQkpxHG8aAgaAFa0tAHqYFfQ7Iwe2yhODk8+J4C7yAoRTWI3w/4klGRgR4lO7Rpn9+gvMyWp+uxFh8+H+ARlgN1nJuJuQAYvNkEnwGFck18Er4q3egEc/oO+mhLdKgRyhdNFiacC0rlOCbhNVz4H9FnAYgDBvU3QIioZlJFLJtsoHYRDfiZoUyIxqCtRpVlANq0EU4dApjrtgezPFad5S19Wgjkc0hNVnuF4HjVA6C7QrSIbylB+oZe3aHgBsqlNqKYH48jXyJKMuAbiyVJ8KzaB3eRc0pg9VwQ4niFryI68qiOi3AbjwdsfnAtk0bCjTLJKr6mrD9g8iq/S/B81hguOMlQTnVyG40wAcjnmgsCNESDrjme7wfftP4P7SP4N3CJZdvzoNyGq2c/HWOXJGsvVg+RA/k2MC/wN6I2YA2Pt8GkAAAAASUVORK5CYII=") }
+.nd_toast-info    { --bs-toast-bg: #2F96B4; background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGwSURBVEhLtZa9SgNBEMc9sUxxRcoUKSzSWIhXpFMhhYWFhaBg4yPYiWCXZxBLERsLRS3EQkEfwCKdjWJAwSKCgoKCcudv4O5YLrt7EzgXhiU3/4+b2ckmwVjJSpKkQ6wAi4gwhT+z3wRBcEz0yjSseUTrcRyfsHsXmD0AmbHOC9Ii8VImnuXBPglHpQ5wwSVM7sNnTG7Za4JwDdCjxyAiH3nyA2mtaTJufiDZ5dCaqlItILh1NHatfN5skvjx9Z38m69CgzuXmZgVrPIGE763Jx9qKsRozWYw6xOHdER+nn2KkO+Bb+UV5CBN6WC6QtBgbRVozrahAbmm6HtUsgtPC19tFdxXZYBOfkbmFJ1VaHA1VAHjd0pp70oTZzvR+EVrx2Ygfdsq6eu55BHYR8hlcki+n+kERUFG8BrA0BwjeAv2M8WLQBtcy+SD6fNsmnB3AlBLrgTtVW1c2QN4bVWLATaIS60J2Du5y1TiJgjSBvFVZgTmwCU+dAZFoPxGEEs8nyHC9Bwe2GvEJv2WXZb0vjdyFT4Cxk3e/kIqlOGoVLwwPevpYHT+00T+hWwXDf4AJAOUqWcDhbwAAAAASUVORK5CYII=") }
 
 .nd_snmp_search_param {
   margin-top: -3px !important;
@@ -667,14 +828,13 @@ div.content > div.tab-content table.nd_floatinghead thead {
 
 /* the job queue log popover. the log is preformatted output, so it keeps its
    own line breaks and takes whatever width it needs rather than the default
-   276px, which would wrap every line. */
+   276px, which would wrap every line. Its type is the theme's, so the log reads
+   as part of the page rather than as a terminal pasted onto it. */
 .nd_jobqueue-popover {
   --bs-popover-max-width: none;
 }
 
 .nd_jobqueue-popover .popover-body {
-  font-size: 15px;
-  font-family: monospace;
   white-space: pre;
 }
 
@@ -1173,6 +1333,31 @@ td > form.nd_inline-form {
   font-size: 14px;
 }
 
+/* The gap stands in for the whitespace flex drops and must be no wider: the
+   caption clears this row by about two pixels. The element in the selector
+   outranks awesome-bootstrap-checkbox's own `.radio label`. */
+.radio label.nd_radio-with-field {
+  display: inline-flex;
+  align-items: center;
+  gap: .25em;
+}
+
+/* The circle carries no `top` and the dot is pinned, so they part by half the
+   caption's height unless both are centered. The offsets are half the vendored
+   19px circle and 11px dot. */
+.radio label.nd_radio-with-field::before {
+  top: 50%;
+  margin-top: -9.5px;
+}
+.radio label.nd_radio-with-field::after {
+  top: 50%;
+  margin-top: -5.5px;
+}
+
+.nd_icon-archived {
+  color: #c09853;
+}
+
 /* port admin up/down control */
 .nd_edit-icon, .nd_hand-icon {
   cursor: pointer;
@@ -1511,7 +1696,8 @@ ul ul, ul ol, ol ol, ol ul {
 }
 #nd_mapshow-hops {
   width: 44px;
-  margin-bottom: -5px;
+  /* Split evenly: its label centers the margin box. */
+  margin: -2.5px 0;
 }
 
 /* netmap maximise icon */
@@ -2062,3 +2248,13 @@ td.nd_nowrap {
 .nd_pane-settling {
   visibility: hidden;
 }
+/* The sidebar column is too narrow for the two fields side by side, so they
+   stack; keeping each label inline with its field, rather than on its own
+   line above it, keeps that stack from growing taller than the sidebar can
+   spare. Hiding this pair with the hidden attribute relies on Bootstrap's
+   reboot marking [hidden] display:none!important; without that rule this
+   display:grid would outrank the browser's own default and the pair would
+   stay visible. */
+.nd_daterange-pair { display: grid; gap: .25em; margin-top: .3em }
+.nd_daterange-addon { width: 3.3em; justify-content: flex-start; font-size: .78rem; padding: .1rem .4rem }
+.nd_daterange-input { font-size: .85rem; padding: .15rem .4rem }

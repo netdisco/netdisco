@@ -84,8 +84,8 @@ jobs:
       - name: The map is posted once per settle and once per drag
         run: node --test xt/js/netmap-autosave.test.js
 
-  autocomplete-teardown:
-    name: autocomplete teardown on swap
+  no-jstree:
+    name: the SNMP tree is server rendered
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -95,8 +95,25 @@ jobs:
           node-version: '22'
 
       # Same naming rule as the jobs above: name the file, never a glob.
-      - name: A pane's autocomplete widgets are destroyed before it is emptied
-        run: node --test xt/js/autocomplete-teardown.test.js
+      - name: No shipped script drives jsTree and the library is gone
+        run: node --test xt/js/no-jstree.test.js
+
+  typeahead:
+    name: the suggestion menus
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      # Same naming rule as the jobs above: name the file, never a glob.
+      - name: The component's logic answers correctly without a browser
+        run: node --test xt/js/typeahead-core.test.js
+
+      - name: The component binds once on the document and builds no markup
+        run: node --test xt/js/typeahead-source.test.js
 
   deferred-nodes:
     name: deferred node list recovery
@@ -241,6 +258,19 @@ jobs:
       - name: Nothing rebuilds the csv or reset link by hand
         run: node --test xt/js/pane-chrome.test.js
 
+  request-helper:
+    name: shared ajax request and serialization helper
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Requests carry the header ajax routes require and fields serialize the way the server expects
+        run: node --test xt/js/request-helper.test.js
+
   sort-types:
     name: version and address sort types
     runs-on: ubuntu-latest
@@ -266,3 +296,123 @@ jobs:
 
       - name: The results table header is stuck by the stylesheet and by no plug-in
         run: node --test xt/js/sticky-header.test.js
+
+  daterange-presets:
+    name: date range preset arithmetic
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Each preset resolves to the right pair of dates
+        run: node --test xt/js/daterange-presets.test.js
+
+  toast:
+    name: Bootstrap toast notifications
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: A toast is built and dismissed without toastr
+        run: node --test xt/js/toast.test.js
+
+  toggle-build:
+    name: sidebar toggle build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: The vendored toggle file draws the widget on its own
+        run: node --test xt/js/toggle-build.test.js
+
+  no-jquery:
+    name: no jQuery in the shipped tree
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      # Same naming rule as the jobs above: name the file, never a glob.
+      - name: No shipped script calls jQuery and the library is gone
+        run: node --test xt/js/no-jquery.test.js
+
+  navbar-submenu:
+    name: reaching a navbar submenu item
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      # Same naming rule as the jobs above: name the file, never a glob.
+      - name: Arrow keys move within a dropend submenu, and the pointer can reach it
+        run: node --test xt/js/navbar-submenu.test.js
+
+  disco-queue:
+    name: queueing from the Discover box
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      # Same naming rule as the jobs above: name the file, never a glob.
+      - name: The Discover box queues over ajax and reports either way
+        run: node --test xt/js/disco-queue.test.js
+
+  snmp-tree-control:
+    name: the SNMP tree's open control
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: The open control is stacked above the lines it sits on
+        run: node --test xt/js/snmp-tree-control.test.js
+
+  snmp-tree-dblclick:
+    name: double-click on an SNMP tree label
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: A double-click toggles the node and asks for the panel once
+        run: node --test xt/js/snmp-tree-dblclick.test.js
+
+  stranded-popovers:
+    name: a job log popover whose row has gone
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: A tip with no trigger left is removed
+        run: node --test xt/js/stranded-popovers.test.js

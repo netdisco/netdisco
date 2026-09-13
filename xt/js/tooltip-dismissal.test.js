@@ -41,28 +41,35 @@ function extract(name) {
   throw new Error('unbalanced braces in ' + name);
 }
 
-// A jQuery stand-in holding only what the helper uses. Every call is recorded
+// A DOM stand-in holding only what the helper uses. Every call is recorded
 // so the ORDER of dispose against hide can be asserted, which is the point:
 // disposing after the hide strands the tip just as surely as not disposing.
+// Both call sites under test pass a selector string, so document.querySelectorAll
+// is the one resolution path exercised here; the element-argument path
+// (a raw node passed straight through) is exercised by the port control
+// helper that shares this shape, not by these two call sites.
 function harness({ selfIsTooltip = false, descendants = [], withInstance = () => true } = {}) {
   const calls = [];
-  const node = { id: 'f_clear_btn', __tip: selfIsTooltip };
-  const set = (members) => ({
-    find: (sel) => { assert.strictEqual(sel, '[rel=tooltip]'); return set(descendants); },
-    addBack: (sel) => { assert.strictEqual(sel, '[rel=tooltip]');
-                        return set(members.concat(node.__tip ? [node] : [])); },
-    each: function (fn) { members.forEach((m) => fn.call(m)); return this; },
-    hide: () => { calls.push('hide'); },
+  const node = {
+    id: 'f_clear_btn',
+    style: {},
+    matches: (sel) => { assert.strictEqual(sel, '[rel=tooltip]'); return selfIsTooltip; },
+    querySelectorAll: (sel) => { assert.strictEqual(sel, '[rel=tooltip]'); return descendants; },
+  };
+  Object.defineProperty(node.style, 'display', {
+    set: (v) => { if (v === 'none') calls.push('hide') },
   });
-  const $ = () => set([node]);
+  const documentMock = {
+    querySelectorAll: (sel) => { assert.match(sel, /^[#.]/); return [node] },
+  };
   const bootstrap = { Tooltip: { getInstance: (el) => (withInstance(el)
     ? { dispose: () => calls.push('dispose:' + (el.name || el.id)) } : null) } };
   // disposeTooltips goes in with it: the helper delegates the dispose loop to
   // it, because chrome that is replaced out of band needs the loop without the
   // hide.
-  const fn = new Function('$', 'bootstrap',
+  const fn = new Function('document', 'bootstrap',
     extract('disposeTooltips') + extract('hideWithTooltip')
-    + '; return hideWithTooltip;')($, bootstrap);
+    + '; return hideWithTooltip;')(documentMock, bootstrap);
   return { fn, calls };
 }
 

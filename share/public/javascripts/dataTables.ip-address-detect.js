@@ -18,7 +18,11 @@ var TYPE = 'ip-address';
 DataTable.type(TYPE, {
 	detect: function ( data )
 	{
-		if (/^\d{1,3}[\.]\d{1,3}[\.]\d{1,3}[\.]\d{1,3}$/.test(data)) {
+		// netdisco links most of the addresses it prints, so the cell reaching
+		// here is markup and the plain pattern never matched: every linked
+		// address in the product fell back to text order, putting .70 above .4.
+		var text = String(data == null ? '' : data).replace(/<[^>]*>/g, '').trim();
+		if (/^\d{1,3}[\.]\d{1,3}[\.]\d{1,3}[\.]\d{1,3}$/.test(text)) {
 			return TYPE;
 		}
 		return false;

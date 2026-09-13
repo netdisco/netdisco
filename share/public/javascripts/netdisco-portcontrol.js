@@ -1,195 +1,384 @@
 // to tell whether bootstrap's modal had Submit button pressed :(
 var nd_save_ok = false;
 
+// Tracks the action after a submitted change without touching data-action,
+// which stays as the server rendered it.
+function getAction(el) {
+  return (el.ndAction !== undefined) ? el.ndAction : el.dataset.action;
+}
+
+/**
+ * Normalizes a request body's fields to what URLSearchParams expects.
+ * Details renders no #nd_portlog-reason or #nd_portlog-log, and a Details
+ * cell carries no data-for-port, so several fields are missing on that tab,
+ * and URLSearchParams stringifies a missing value as the literal text
+ * "undefined", which the server would treat as a real value: every field
+ * passes through here to become the empty string instead.
+ * @param {Record<string, string | undefined | null>} fields
+ * @returns {Record<string, string>}
+ */
+function formValues(fields) {
+  var out = /** @type {Record<string, string>} */ ({});
+  for (var key in fields) {
+    var value = fields[key];
+    out[key] = (value === null || value === undefined) ? '' : value;
+  }
+  return out;
+}
+
+// Resets a cell's editable text to the value the server rendered; a bare
+// control cell carries no .nd_editable-cell-content and is left alone.
+function resetCellContent(td) {
+  var content = td.querySelector('.nd_editable-cell-content');
+  if (content) content.textContent = td.dataset.default;
+}
+
+// event.target is only ever an Element for the events delegated in this
+// file; the guard exists for the type checker, not because a non-Element
+// target has been observed here.
+/**
+ * @param {Event} event
+ * @param {string} selector
+ * @returns {HTMLElement | null}
+ */
+function targetClosest(event, selector) {
+  var target = event.target;
+  if (!(target instanceof Element)) return null;
+  var match = target.closest(selector);
+  return match instanceof HTMLElement ? match : null;
+}
+
+/**
+ * @param {ParentNode} root
+ * @param {string} selector
+ * @returns {HTMLElement | null}
+ */
+function queryElement(root, selector) {
+  var match = root.querySelector(selector);
+  return match instanceof HTMLElement ? match : null;
+}
+
+/**
+ * Updates a port or power icon, its tooltip and its neighbor cell after a
+ * change succeeds, matching the action the server just accepted.
+ * @param {HTMLElement} e the clicked icon
+ * @param {HTMLElement} td the containing editable cell
+ * @returns {void}
+ */
+function applyPortControlResult(e, td) {
+  var action = String(getAction(td) == null ? '' : getAction(td)).trim();
+  if (action == 'down') showPortDown(e, td);
+  else if (action == 'up') showPortUp(e, td);
+  else if (action == 'false') showPowerOff(e, td);
+  else if (action == 'true') showPowerOn(e, td);
+}
+
+/**
+ * Reflects a port that has just been taken down: marks the neighbor cell,
+ * flips the icon to offer re-enabling, and retitles its tooltip.
+ * @param {HTMLElement} e the clicked icon
+ * @param {HTMLElement} td the containing editable cell
+ * @returns {void}
+ */
+function showPortDown(e, td) {
+  var prev = td.previousElementSibling;
+  if (prev && prev.matches('td')) prev.innerHTML = '<i class="fas fa-xmark"></i>';
+  e.classList.toggle('fa-hand-point-down');
+  e.classList.toggle('fa-hand-point-up');
+  var bullseye = e.parentElement && e.parentElement.querySelector('.fa-bullseye');
+  if (bullseye instanceof HTMLElement) bullseye.style.display = 'none';
+  retitleTooltip(e, 'Enable Port');
+  td.ndAction = 'up';
+}
+
+/**
+ * Reflects a port that has just been brought up: marks the neighbor cell
+ * as busy, flips the icon to offer taking it down, and retitles its
+ * tooltip.
+ * @param {HTMLElement} e the clicked icon
+ * @param {HTMLElement} td the containing editable cell
+ * @returns {void}
+ */
+function showPortUp(e, td) {
+  var prev = td.previousElementSibling;
+  if (prev && prev.matches('td')) prev.innerHTML = '<i class="fas fa-arrows-rotate fa-spin"></i>';
+  e.classList.toggle('fa-hand-point-up');
+  e.classList.toggle('fa-hand-point-down');
+  var bullseye = e.parentElement && e.parentElement.querySelector('.fa-bullseye');
+  if (bullseye instanceof HTMLElement) bullseye.style.display = '';
+  retitleTooltip(e, 'Disable Port');
+  td.ndAction = 'down';
+}
+
+/**
+ * Reflects power that has just been switched off: clears the neighbor
+ * badge, flips the icon to offer switching it back on, and retitles its
+ * tooltip.
+ * @param {HTMLElement} e the clicked icon
+ * @param {HTMLElement} td the containing editable cell
+ * @returns {void}
+ */
+function showPowerOff(e, td) {
+  var next = e.nextElementSibling;
+  if (next && next.matches('span')) next.textContent = '';
+  e.classList.toggle('nd_power-on');
+  retitleTooltip(e, 'Enable Power');
+  td.ndAction = 'true';
+}
+
+/**
+ * Reflects power that has just been switched on: flips the icon to offer
+ * switching it back off and retitles its tooltip.
+ * @param {HTMLElement} e the clicked icon
+ * @param {HTMLElement} td the containing editable cell
+ * @returns {void}
+ */
+function showPowerOn(e, td) {
+  e.classList.toggle('nd_power-on');
+  retitleTooltip(e, 'Disable Power');
+  td.ndAction = 'false';
+}
+
 // user clicked or asked for port changes to be submitted via ajax
 function port_control (e) {
-  var td = $(e).closest('td'),
-      reason = $('#nd_portlog-reason').val(),
-      logmessage = $('#nd_portlog-log').val();
-  $('#nd_portlog-log').val('');
+  var td = e.closest('td');
+  var reasonField = document.getElementById('nd_portlog-reason');
+  var logField = document.getElementById('nd_portlog-log');
+  var reason = (reasonField instanceof HTMLSelectElement) ? reasonField.value : '';
+  var logmessage = (logField instanceof HTMLTextAreaElement) ? logField.value : '';
+  if (logField instanceof HTMLTextAreaElement) logField.value = '';
 
   if (nd_save_ok == false) {
-    td.find('.nd_editable-cell-content').text(td.data('default'));
+    resetCellContent(td);
     td.blur();
     return;
   }
   nd_save_ok = false;
 
-  $.ajax({
-    type: 'POST'
-    ,url: uri_base + '/ajax/portcontrol'
-    ,data: {
-      device:  td.data('for-device')
-      ,port:   td.data('for-port')
-      ,field:  td.data('field')
-      ,action: ($(e).data('action') || td.data('action'))
-      ,value:  td.text().trim()
-      ,reason: reason
-      ,log:    logmessage
-    }
-    ,success: function() {
-      toastr.info('Submitted change request');
+  var body = new URLSearchParams(formValues({
+    device: td.dataset.forDevice
+    ,port: td.dataset.forPort
+    ,field: td.dataset.field
+    ,action: (getAction(e) || getAction(td))
+    ,value: td.textContent.trim()
+    ,reason: reason
+    ,log: logmessage
+  }));
 
-      // update all the screen furniture unless bouncing
-      if (! $(e).hasClass('fa-bullseye')) {
-        if ($.trim(td.data('action')) == 'down') {
-          td.prev('td').html('<i class="fas fa-xmark"></i>');
-          $(e).toggleClass('fa-hand-point-down');
-          $(e).toggleClass('fa-hand-point-up');
-          $(e).siblings('.fa-bullseye').hide();
-          retitleTooltip($(e), 'Enable Port');
-          td.data('action', 'up');
-        }
-        else if ($.trim(td.data('action')) == 'up') {
-          td.prev('td').html('<i class="fas fa-arrows-rotate fa-spin"></i>');
-          $(e).toggleClass('fa-hand-point-up');
-          $(e).toggleClass('fa-hand-point-down');
-          $(e).siblings('.fa-bullseye').show();
-          retitleTooltip($(e), 'Disable Port');
-          td.data('action', 'down');
-        }
-        else if ($.trim(td.data('action')) == 'false') {
-          $(e).next('span').text('');
-          $(e).toggleClass('nd_power-on');
-          retitleTooltip($(e), 'Enable Power');
-          td.data('action', 'true');
-        }
-        else if ($.trim(td.data('action')) == 'true') {
-          $(e).toggleClass('nd_power-on');
-          retitleTooltip($(e), 'Disable Power');
-          td.data('action', 'false');
-        }
-      }
-    }
-    ,error: function() {
-      toastr.error('Failed to submit change request');
-      td.find('.nd_editable-cell-content').text(td.data('default'));
+  ndRequest.post(uri_base + '/ajax/portcontrol', body)
+    .then(function (response) {
+      return response.ok ? undefined : Promise.reject(new Error('port control request failed: ' + response.status));
+    })
+    .then(function() {
+      ndToast.info('Submitted change request');
+      if (! e.classList.contains('fa-bullseye')) applyPortControlResult(e, td);
+    }, function() {
+      ndToast.error('Failed to submit change request');
+      resetCellContent(td);
       td.blur();
-    }
-  });
+    });
+}
+
+/**
+ * Opens the confirmation modal for a VLAN change, saving the port once the
+ * user dismisses it.
+ * @param {HTMLElement} cell the contenteditable cell holding the new VLAN
+ * @returns {void}
+ */
+function confirmPvidChange(cell) {
+  var modal = document.getElementById('nd_portlog');
+  if (!(modal instanceof HTMLElement)) return;
+  modal.addEventListener('hidden.bs.modal', function() {
+    port_control(cell); // save
+  }, { once: true });
+  bootstrap.Modal.getOrCreateInstance(modal).show();
+}
+
+/**
+ * Turns an edited ACL rule label into a hidden field the admin form
+ * submits, then presses the row's own update button.
+ * @param {HTMLInputElement} cell the contenteditable field holding the rule label
+ * @param {HTMLElement} td the containing editable cell
+ * @param {string} className the hidden input's class, left or right
+ * @param {string} inputName the hidden input's form field name, left or right
+ * @returns {boolean} whether the field was promoted. An empty field promotes
+ *   nothing, and the caller must return without its usual cleanup in that
+ *   case, matching the original guard that returned from the whole keydown
+ *   handler rather than only from this step.
+ */
+function promoteAclRuleField(cell, td, className, inputName) {
+  if (cell.value.length == 0) return false;
+  var input = document.createElement('input');
+  input.className = className;
+  input.dataset.form = 'update';
+  input.name = inputName;
+  input.type = 'hidden';
+  input.value = Math.floor( Date.now() / 1000 ) + '.' + window.btoa(cell.value);
+  td.appendChild(input);
+  var row = cell.closest('tr');
+  var button = row && row.querySelector('button.nd_adminbutton[name="update"]');
+  if (button instanceof HTMLElement) button.click();
+  return true;
 }
 
 // on load, establish global delegations for now and future
-$(document).ready(function() {
+document.addEventListener('DOMContentLoaded', function() {
   // for growl-like functionality, check for notifications periodically
   if (nd_check_userlog) {
     (function worker() {
-      $.ajax({
-        url: uri_base + '/ajax/userlog'
-        ,success: function(data) {
+      ndRequest.getJSON(uri_base + '/ajax/userlog')
+        .then(function(data) {
           for (var i = 0; i < data['error'].length; i++) {
-            toastr.error(data['error'][i], 'Failed Job:');
+            ndToast.error(data['error'][i], 'Failed Job:');
           }
           for (i = 0; i < data['done'].length; i++) {
-            toastr.success(data['done'][i], 'Successful Job:');
+            ndToast.success(data['done'][i], 'Successful Job:');
           }
           // Schedule next request when the current one's complete
           setTimeout(worker, 5000);
-        }
-        ,error: function() {
+        })
+        .catch(function() {
           // after failure, try less often
           setTimeout(worker, 60000);
-        }
-      });
+        });
     })();
   }
 
+  // Cast once: querySelectorAll's own return type carries only Element, and
+  // that leaves every event registered below untyped for its listener too.
+  var tabContents = /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.tab-content'));
+
   // toggle visibility of port up/down and edit controls
-  $('.tab-content').on('mouseenter', '.nd_editable-cell', function() {
-    $(this).children('.nd_hand-icon').show();
-    if (! $(this).is(':focus')) {
-      $(this).children('.nd_edit-icon').show(); // ports
-      $(this).siblings('td').find('.nd_device-details-edit').show(); // details
-    }
+  tabContents.forEach(function (root) {
+    root.addEventListener('mouseenter', function (event) {
+      var t = targetClosest(event, '.nd_editable-cell');
+      // Native mouseenter/mouseleave fire separately at every ancestor whose
+      // own boundary the pointer crossed, not just the delegate match, so a
+      // move between the cell's own icon children must not retrigger this.
+      if (!t || !root.contains(t) || event.target !== t) return;
+      var hand = queryElement(t, ':scope > .nd_hand-icon');
+      if (hand) hand.style.display = 'inline';
+      if (document.activeElement !== t) {
+        var edit = queryElement(t, ':scope > .nd_edit-icon'); // ports
+        if (edit) edit.style.display = 'inline';
+        var row = t.closest('tr');
+        if (row) row.querySelectorAll('.nd_device-details-edit').forEach(function (el) { if (el instanceof HTMLElement) el.style.display = 'inline' }); // details
+      }
+    }, true);
   });
-  $('.tab-content').on('mouseleave', '.nd_editable-cell', function() {
-    hideWithTooltip($(this).children('.nd_hand-icon'));
-    if (! $(this).is(':focus')) {
-      $(this).children('.nd_edit-icon').hide(); // ports
-      $(this).siblings('td').find('.nd_device-details-edit').hide(); // details
-    }
+  tabContents.forEach(function (root) {
+    root.addEventListener('mouseleave', function (event) {
+      var t = targetClosest(event, '.nd_editable-cell');
+      // Same crossed-boundary reasoning as the mouseenter handler above: a
+      // move between the cell's own icon children must not hide them.
+      if (!t || !root.contains(t) || event.target !== t) return;
+      hideWithTooltip(t.querySelector(':scope > .nd_hand-icon'));
+      if (document.activeElement !== t) {
+        var edit = queryElement(t, ':scope > .nd_edit-icon'); // ports
+        if (edit) edit.style.display = 'none';
+        var row = t.closest('tr');
+        if (row) row.querySelectorAll('.nd_device-details-edit').forEach(function (el) { if (el instanceof HTMLElement) el.style.display = 'none' }); // details
+      }
+    }, true);
   });
-  $('.tab-content').on('focus', '[contenteditable=true]', function() {
-      $(this).children('.nd_edit-icon').hide(); // ports
-      $(this).siblings('td').find('.nd_device-details-edit').hide(); // details
+  tabContents.forEach(function (root) {
+    root.addEventListener('focus', function (event) {
+      var t = targetClosest(event, '[contenteditable=true]');
+      if (!t || !root.contains(t)) return;
+      var edit = queryElement(t, ':scope > .nd_edit-icon'); // ports
+      if (edit) edit.style.display = 'none';
+      var row = t.closest('tr');
+      if (row) row.querySelectorAll('.nd_device-details-edit').forEach(function (el) { if (el instanceof HTMLElement) el.style.display = 'none' }); // details
+    }, true);
   });
 
   // to tell whether bootstrap's modal had Submit button pressed :(
-  $('#ports_pane').on('click', '#nd_portlog-submit', function() {
-    nd_save_ok = true;
-  });
-
-  // activity for port up/down control, power enable/disable control
-  $('#ports_pane').on('click', '.fa-hand-point-up,.fa-hand-point-down,.nd_power-icon,.fa-bullseye', function() {
-    var clicked = this; // create a closure
-    $('#nd_portlog').one('hidden.bs.modal', function() {
-      port_control(clicked); // save
+  const portsPane = document.getElementById('ports_pane');
+  if (portsPane) {
+    portsPane.addEventListener('click', function (event) {
+      var t = targetClosest(event, '#nd_portlog-submit');
+      if (!t || !portsPane.contains(t)) return;
+      nd_save_ok = true;
     });
-    if ($(this).hasClass('fa-hand-point-up')) {
-      $('#nd_portlog-reason').val('resolved');
-    }
-    else {
-      $('#nd_portlog-reason').val('other');
-    }
-    $('#nd_portlog').modal('show');
-  });
+
+    // activity for port up/down control, power enable/disable control
+    portsPane.addEventListener('click', function (event) {
+      var t = targetClosest(event, '.fa-hand-point-up,.fa-hand-point-down,.nd_power-icon,.fa-bullseye');
+      if (!t || !portsPane.contains(t)) return;
+      var clicked = t; // create a closure
+      var modal = document.getElementById('nd_portlog');
+      if (!(modal instanceof HTMLElement)) return;
+      modal.addEventListener('hidden.bs.modal', function() {
+        port_control(clicked); // save
+      }, { once: true });
+      var reasonField = document.getElementById('nd_portlog-reason');
+      if (reasonField instanceof HTMLSelectElement) {
+        if (t.classList.contains('fa-hand-point-up')) {
+          reasonField.value = 'resolved';
+        }
+        else {
+          reasonField.value = 'other';
+        }
+      }
+      bootstrap.Modal.getOrCreateInstance(modal).show();
+    });
+  }
 
   // has cell content changed?
   var dirty = false;
 
   // activity for contenteditable control
-  $('.tab-content').on('keydown', '[contenteditable=true]', function(event) {
-    var cell = this,
-        td = $(cell).closest('td'),
-        esc = event.which == 27,
-        nl  = event.which == 13;
+  tabContents.forEach(function (root) {
+    root.addEventListener('keydown', function (event) {
+      var cell = targetClosest(event, '[contenteditable=true]');
+      if (!cell || !root.contains(cell)) return;
+      var td = cell.closest('td'),
+          esc = event.key === 'Escape',
+          nl  = event.key === 'Enter';
+      if (!td) return;
 
-    if (esc) {
-      $(cell).blur();
-      $(this).val("");
-    }
-    else if (nl) {
-      event.preventDefault();
+      if (esc) {
+        cell.blur();
+        if (cell instanceof HTMLInputElement) cell.value = "";
+      }
+      else if (nl) {
+        event.preventDefault();
 
-      if (td.data('field') == 'c_pvid') {
-        $('#nd_portlog').one('hidden.bs.modal', function() {
+        if (td.dataset.field == 'c_pvid') {
+          confirmPvidChange(cell);
+        }
+        else if (td.dataset.field == 'nd_left-acl-rule-field') {
+          if (!(cell instanceof HTMLInputElement) || !promoteAclRuleField(cell, td, 'nd_left-acl-rule-field', 'left_rule')) return;
+        }
+        else if (td.dataset.field == 'nd_right-acl-rule-field') {
+          if (!(cell instanceof HTMLInputElement) || !promoteAclRuleField(cell, td, 'nd_right-acl-rule-field', 'right_rule')) return;
+        }
+        else {
+          // no confirm for port descr change
+          nd_save_ok = true;
           port_control(cell); // save
-        });
-        $('#nd_portlog').modal('show');
-      }
-      else if (td.data('field') == 'nd_left-acl-rule-field') {
-        if ($(this).val().length == 0) { return }
-        td.append('<input class="nd_left-acl-rule-field" data-form="update" name="left_rule" type="hidden" value="'+
-          Math.floor( Date.now() / 1000 ) + '.' + window.btoa($(this).val()) +'">')
-        $(this).closest('tr').find('button.nd_adminbutton[name="update"]').click();
-      }
-      else if (td.data('field') == 'nd_right-acl-rule-field') {
-        if ($(this).val().length == 0) { return }
-        td.append('<input class="nd_right-acl-rule-field" data-form="update" name="right_rule" type="hidden" value="'+
-          Math.floor( Date.now() / 1000 ) + '.' + window.btoa($(this).val()) +'">')
-        $(this).closest('tr').find('button.nd_adminbutton[name="update"]').click();
+        }
+
+        dirty = false;
+        cell.blur();
       }
       else {
-        // no confirm for port descr change
-        nd_save_ok = true;
-        port_control(cell); // save
+        dirty = true;
       }
-
-      dirty = false;
-      $(cell).blur();
-    }
-    else {
-      dirty = true;
-    }
+    });
   });
 
   // activity for contenteditable control
-  $('.tab-content').on('blur', '[contenteditable=true]', function(event) {
-    if (dirty) {
-      document.execCommand('undo');
-      dirty = false;
-      $(this).blur();
-    }
+  tabContents.forEach(function (root) {
+    root.addEventListener('blur', function (event) {
+      var t = targetClosest(event, '[contenteditable=true]');
+      if (!t || !root.contains(t)) return;
+      if (dirty) {
+        document.execCommand('undo');
+        dirty = false;
+        t.blur();
+      }
+    }, true);
   });
 
 });

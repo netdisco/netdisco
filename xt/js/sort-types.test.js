@@ -64,9 +64,22 @@ describe('registration', () => {
       'the detected name has an order registered against it');
   });
 
+  // netdisco links most of the addresses it prints, so the cell the library
+  // offers is markup. Before this the pattern never matched one, the column
+  // fell back to text, and .70 sorted above .4 wherever the address was a link.
+  test('ipAddressDetect__an_address_the_page_has_linked__is_still_an_address', () => {
+    assert.equal(registered['ip-address'].detect(
+      '<a class="nd_linkcell" href="/device?tab=details&q=10.0.0.9">10.0.0.9</a>'),
+      'ip-address');
+  });
+
   test('ipAddressDetect__anything_that_is_not_a_dotted_quad__answers_false', () => {
     for (const notAnAddress of ['GigabitEthernet1/1', '192.168.0', '1.2.3.4.5',
-                                'v1.2.3.4', '', 'Vlan10']) {
+                                'v1.2.3.4', '', 'Vlan10',
+                                // an address with anything beside it is not one
+                                // this can key on, and must not be claimed
+                                '<a href="/x">10.0.0.9</a> switch-a',
+                                'see 10.0.0.9']) {
       assert.equal(registered['ip-address'].detect(notAnAddress), false,
         notAnAddress + ' is not an address');
     }
@@ -95,6 +108,14 @@ describe('ordering', () => {
     assertOrders('ip-address',
       ['10.0.0.10', '10.0.0.9', '10.0.0.2'],
       ['10.0.0.2', '10.0.0.9', '10.0.0.10']);
+  });
+
+  // The href holds dots of its own, so keying the raw cell keys on the URL.
+  test('ipAddressSort__linked_addresses__order_by_the_address_and_not_the_href', () => {
+    const link = (ip) => '<a class="nd_linkcell" href="/device?tab=details&q=' + ip + '">' + ip + '</a>';
+    assertOrders('ip-address',
+      [link('10.0.0.10'), link('10.0.0.9'), link('10.0.0.2')],
+      [link('10.0.0.2'), link('10.0.0.9'), link('10.0.0.10')]);
   });
 
   test('ipAddressSort__addresses_across_subnets__orders_every_octet_numerically', () => {

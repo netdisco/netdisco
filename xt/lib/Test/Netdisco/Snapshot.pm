@@ -25,6 +25,8 @@ sub _engine {
     PRE_CHOMP    => 1,
     AUTO_FILTER  => 'html_entity',
     ENCODING     => 'utf8',
+    # mirrors share/config.yml: the SNMP tree includes itself per open level
+    RECURSION    => 1,
   });
 }
 
@@ -395,6 +397,22 @@ sub stash_for {
       results => [
         { job => 1, backend => 'localhost', action => 'discover',
           status => 'queued', username => 'demo', duration => '5s' },
+      ],
+    };
+  }
+
+  # The tree renders nothing at all without rows, so its snapshot would be an
+  # empty file guarding nothing. One branch holding one leaf is enough to
+  # capture both shapes a row can take.
+  if ($view eq 'ajax/device/snmptree.tt') {
+    return {
+      device => '192.0.2.1',
+      nodes => [
+        { oid => '.1.3', label => 'org (3)', icon => 'fas fa-folder text-info',
+          has_children => 1, open => 1, children => [
+            { oid => '.1.3.6', label => 'dod (6)', icon => 'fas fa-leaf text-muted',
+              has_children => 0, open => 0, children => [] },
+          ] },
       ],
     };
   }

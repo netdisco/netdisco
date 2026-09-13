@@ -5,6 +5,7 @@ use warnings;
 
 use Test::More 0.88;
 use File::Spec::Functions qw/catfile catdir updir/;
+use File::Basename qw/basename/;
 use FindBin;
 use Digest::SHA qw/sha256_hex/;
 use JSON::PP ();
@@ -103,40 +104,12 @@ my @VENDORED = (
         sha256     => '02eb90f742a251cd6eac1cc5886b5b7b066a57ae97d28127189f15396d0bf8b3',
         pinned_for => '3.0.3',
     },
-    {   # Two reasons rather than one. The banner reads "@version: 3.1" where
-        # the manifest declares 3.1.0, so no exact read is possible, and the
-        # file is patched locally besides, which a version string cannot show.
-        package    => 'daterangepicker',
-        file       => [qw/javascripts daterangepicker.js/],
-        sha256     => '88e56cd45cad3db88fdc772786d14cce8d0cc1879bc03e4e56be919dfd9ad229',
-        pinned_for => '3.1.0',
-    },
     {   # The 4.x builds state the version as a property assignment where the
         # 2.x builds minified it into an object literal, so this pattern is
         # tied to the major version and not only to the library.
         package => 'htmx.org',
         file    => [qw/javascripts htmx.min.js/],
         banner  => sub { qr/version="\Q$_[0]\E"/ },
-    },
-    {   package => 'jquery',
-        file    => [qw/javascripts jquery-latest.min.js/],
-        banner  => sub { qr/jQuery v\Q$_[0]\E\b/ },
-    },
-    {   package => 'jquery-ui',
-        file    => [qw/javascripts jquery-ui.min.js/],
-        banner  => sub { qr/jQuery UI - v\Q$_[0]\E\b/ },
-    },
-    {   package => 'moment',
-        file    => [qw/javascripts moment.min.js/],
-        banner  => sub { qr/version="\Q$_[0]\E"/ },
-    },
-    {   package => 'jstree',
-        file    => [qw/javascripts jstree jstree.min.js/],
-        banner  => sub { qr/jsTree - v\Q$_[0]\E\b/ },
-    },
-    {   package => 'toastr',
-        file    => [qw/javascripts toastr.js/],
-        banner  => sub { qr/version:\s*'\Q$_[0]\E'/ },
     },
     {   package => 'force-graph',
         file    => [qw/javascripts force-graph.min.js/],
@@ -215,6 +188,26 @@ for my $entry (@VENDORED) {
         }
     };
 }
+
+subtest 'MANIFEST__every_xt_js_suite_on_disk__is_listed' => sub {
+    # A suite missing here still runs locally and in CI, since both work
+    # from the checkout rather than a packaged tarball. Nothing short of
+    # building that tarball notices the gap, and by then the suite it
+    # dropped does not ship. This has happened twice.
+    my @suites = sort glob( catfile( $root, 'xt', 'js', '*.test.js' ) );
+
+    ok scalar(@suites) > 0, 'found at least one xt/js/*.test.js suite on disk'
+        or return;
+
+    my %listed = map { $_ => 1 } split /\n/, slurp( catfile( $root, 'MANIFEST' ) );
+
+    for my $suite (@suites) {
+        my $relative = join '/', 'xt', 'js', basename($suite);
+        ok $listed{$relative},
+            "$relative is listed in MANIFEST: add it in sorted position "
+          . "among the other xt/js entries";
+    }
+};
 
 subtest 'vendored_manifest__swagger_ui_drop__carries_a_marker_matching_the_manifest' => sub {
     # The marker is netdisco's own note of what was vendored, added with the

@@ -19,20 +19,23 @@ ndPages.admin = {
   // no admin sidebar form carries the colored-input styling
   // device_form_state applies, so there is nothing to collect here.
   formInputs: function () {
-    return $();
+    return [];
   },
 
   innerView: function (tab) {
     // reload this table every 5 seconds
+    var countdownIcon = document.getElementById('nd_countdown-control-icon');
     if ((tab == 'jobqueue')
-        && $('#nd_countdown-control-icon').hasClass('fa-play')) {
+        && countdownIcon && countdownIcon.classList.contains('fa-play')) {
 
-        $('#nd_countdown').text(timermax);
+        var countdownLabel = document.getElementById('nd_countdown');
+        if (countdownLabel) countdownLabel.textContent = String(timermax);
 
         // add new timers
         for (var i = timercache; i > 0; i--) {
           nd_timers.push(setTimeout(function() {
-            $('#nd_countdown').text(timercache);
+            var label = document.getElementById('nd_countdown');
+            if (label) label.textContent = String(timercache);
             timercache = timercache - 1;
           }, ((timermax * 1000) - (i * 1000)) ));
         }
@@ -51,76 +54,23 @@ ndPages.admin = {
         }, (timermax * 1000)));
     }
 
-    // activate typeahead on the queue filter boxes
-    $('.nd_queue_ta').autocomplete({
-      source: function (request, response)  {
-        var name = $(this.element)[0].name;
-        var query = $(this.element).serialize();
-        return $.get( uri_base + '/ajax/data/queue/typeahead/' + name, query, function (data) {
-          return response(data);
-        });
-      }
-      ,delay: 150
-      ,minLength: 0
-    });
-
-    // activate typeahead on access control list editors
-    $('.nd_acl_host_searcher').autocomplete({
-      source: function (request, response)  {
-        var query = $('.nd_sidebar-form').serializeArray();
-        query.push($(this.element).serializeArray()[0]);
-        return $.get( uri_base + '/ajax/data/devices/typeahead', query, function (data) {
-          return response(data);
-        });
-      }
-      ,select: function( event, ui ) {
-        if (event.which == 13) { return };
+    // Cast once: querySelectorAll's own return type carries only Element,
+    // and that leaves .dataset untyped for the closure below.
+    var extraButtons = /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.nd_jobqueue-extra'));
+    extraButtons.forEach(function (button) {
+      button.addEventListener('click', function(event) {
         event.preventDefault();
-        $(this).val(ui.item.value);
-        $(this).trigger(jQuery.Event('keydown', { which: 13 }));
-      }
-      ,delay: 150
-      ,minLength: 0
-    });
-
-    // activate typeahead on the topo boxes
-    $('.nd_topo_dev').autocomplete({
-      source: uri_base + '/ajax/data/deviceip/typeahead'
-      ,delay: 150
-      ,minLength: 0
-    });
-
-    // activate typeahead on the topo boxes
-    $('.nd_topo_port.nd_topo_dev1').autocomplete({
-      source: function (request, response)  {
-        var query = $('.nd_topo_dev1').serialize();
-        return $.get( uri_base + '/ajax/data/port/typeahead', query, function (data) {
-          return response(data);
-        });
-      }
-      ,delay: 150
-      ,minLength: 0
-    });
-
-    // activate typeahead on the topo boxes
-    $('.nd_topo_port.nd_topo_dev2').autocomplete({
-      source: function (request, response)  {
-        var query = $('.nd_topo_dev2').serialize();
-        return $.get( uri_base + '/ajax/data/port/typeahead', query, function (data) {
-          return response(data);
-        });
-      }
-      ,delay: 150
-      ,minLength: 0
-    });
-
-    $('.nd_jobqueue-extra').click(function(event) {
-      event.preventDefault();
-      var icon = $(this).children('i');
-      $(icon).toggleClass('fa-plus');
-      $(icon).toggleClass('fa-minus');
-      var extra_id = $(this).data('extra');
-      $('#' + extra_id).toggle();
+        var icon = button.querySelector(':scope > i');
+        if (icon) {
+          icon.classList.toggle('fa-plus');
+          icon.classList.toggle('fa-minus');
+        }
+        var extraId = button.dataset.extra;
+        if (extraId) {
+          var extra = document.getElementById(extraId);
+          if (extra) extra.classList.toggle('nd_collapse-pre-hidden');
+        }
+      });
     });
   },
 
@@ -130,37 +80,10 @@ ndPages.admin = {
     timermax = Number((activeForm && activeForm.dataset.ndJobqueueRefresh) || 5);
     timercache = timermax - 1;
 
-    // get autocomplete field on input focus
-    $('.nd_sidebar').on('focus', '.nd_queue_ta', function(e) {
-      $(this).autocomplete('search', '%') });
-    $('.nd_sidebar').on('click', '.nd_topo_dev_caret', function(e) {
-      $(this).siblings('.nd_queue_ta').autocomplete('search', '%') });
-
-    // get all devices on device input focus
-    $('.nd_sidebar').on('focus', '.nd_topo_dev', function(e) {
-      $(this).autocomplete('search', '%') });
-    $('.nd_sidebar').on('click', '.nd_topo_dev_caret', function(e) {
-      $(this).siblings('.nd_topo_dev').autocomplete('search', '%') });
-
-    // get all devices on device input focus
-    $(target).on('focus', '.nd_acl_host_searcher', function(e) {
-      $(this).autocomplete('search', '%') });
-    $(target).on('focus', '.nd_topo_dev', function(e) {
-      $(this).autocomplete('search', '%') });
-    $(target).on('click', '.nd_topo_dev_caret', function(e) {
-      $(this).siblings('.nd_topo_dev').autocomplete('search', '%') });
-
-    // get all ports on port input focus
-    $(target).on('focus', '.nd_topo_port', function(e) {
-      $(this).autocomplete('search') });
-    $(target).on('click', '.nd_topo_port_caret', function(e) {
-      $(this).siblings('.nd_topo_port').val('');
-      $(this).siblings('.nd_topo_port').autocomplete('search');
-    });
-
     // job control sidebar submit should reset timer
     // and update bookmark
-    $('#' + tab + '_submit').click(function(event) {
+    var submitBtn = document.getElementById(tab + '_submit');
+    if (submitBtn) submitBtn.addEventListener('click', function() {
       for (var i = 0; i < nd_timers.length; i++) {
           clearTimeout(nd_timers[i]);
       }
@@ -168,12 +91,15 @@ ndPages.admin = {
       timercache = timermax - 1;
 
       // bookmark
-      var querystr = $('#' + tab + '_form').serialize();
-      $('#nd_jobqueue-bookmark').attr('href',uri_base + '/admin/' + tab + '?' + querystr);
+      var tabForm = document.getElementById(tab + '_form');
+      var querystr = tabForm ? ndRequest.query(tabForm) : '';
+      var bookmark = document.getElementById('nd_jobqueue-bookmark');
+      if (bookmark) bookmark.setAttribute('href', uri_base + '/admin/' + tab + '?' + querystr);
     });
 
     // job control refresh icon should reload the page
-    $('#nd_countdown-refresh').click(function(event) {
+    var refreshBtn = document.getElementById('nd_countdown-refresh');
+    if (refreshBtn) refreshBtn.addEventListener('click', function(event) {
       event.preventDefault();
       for (var i = 0; i < nd_timers.length; i++) {
           clearTimeout(nd_timers[i]);
@@ -185,16 +111,22 @@ ndPages.admin = {
     });
 
     // job control pause/play icon switcheroo
-    $('#nd_countdown-control').click(function(event) {
+    var controlBtn = document.getElementById('nd_countdown-control');
+    if (controlBtn) controlBtn.addEventListener('click', function(event) {
       event.preventDefault();
-      var icon = $('#nd_countdown-control-icon');
-      icon.toggleClass('fa-pause fa-play text-danger text-success');
+      var icon = document.getElementById('nd_countdown-control-icon');
+      if (!icon) return;
+      icon.classList.toggle('fa-pause');
+      icon.classList.toggle('fa-play');
+      icon.classList.toggle('text-danger');
+      icon.classList.toggle('text-success');
 
-      if (icon.hasClass('fa-pause')) {
+      if (icon.classList.contains('fa-pause')) {
         for (var i = 0; i < nd_timers.length; i++) {
             clearTimeout(nd_timers[i]);
         }
-        $('#nd_countdown').text('0');
+        var countdownLabel = document.getElementById('nd_countdown');
+        if (countdownLabel) countdownLabel.textContent = '0';
       }
       else {
         htmx.trigger('#' + tab + '_form', 'submit');
@@ -203,7 +135,12 @@ ndPages.admin = {
 
     // activity for admin task tables
     // dynamically bind to all forms in the table
-    $('.content').on('click', '.nd_adminbutton', function(event) {
+    // const so TypeScript keeps the null-narrowing inside the closure below
+    const content = document.querySelector('.content');
+    if (content) content.addEventListener('click', function(event) {
+      var button = event.target instanceof Element ? event.target.closest('.nd_adminbutton') : null;
+      if (!button || !content.contains(button)) return;
+
       // stop form from submitting normally
       event.preventDefault();
 
@@ -213,7 +150,7 @@ ndPages.admin = {
       }
 
       // what purpose - add/update/del
-      var mode = $(this).attr('name');
+      var mode = button.getAttribute('name');
 
       // admin task name with special case(s)
       var task = tab + '/';
@@ -221,51 +158,68 @@ ndPages.admin = {
         task = '';
       }
 
+      var row = button.closest('tr');
+      if (!row) return;
+
+      // collected before the pane is wiped below, which detaches this row
+      var body = ndRequest.fields(row, 'input[data-form="' + mode + '"],select[data-form="' + mode + '"]');
+
+      if (mode == 'add' || mode == 'delete') {
+        var targetEl = document.querySelector(target);
+        if (targetEl) {
+          targetEl.textContent = '';
+          var alertDiv = document.createElement('div');
+          alertDiv.className = 'col-md-2 alert';
+          alertDiv.textContent = 'Request submitted...';
+          targetEl.appendChild(alertDiv);
+        }
+      }
+
       // submit the query and put results into the tab pane
-      $.ajax({
-        type: 'POST'
-        ,async: true
-        ,dataType: 'html'
-        ,url: uri_base + '/ajax/control/admin/' + task + mode
-        ,data: $(this).closest('tr').find('input[data-form="' + mode + '"],select[data-form="' + mode + '"]').serializeArray()
-        ,beforeSend: function() {
-          if (mode == 'add' || mode == 'delete') {
-            $(target).html(
-              '<div class="col-md-2 alert">Request submitted...</div>'
-            );
+      ndRequest.post(uri_base + '/ajax/control/admin/' + task + mode, body)
+        .then(function (res) {
+          // TODO: fix sanity_ok in Netdisco Web
+          if (!res.ok) {
+            if (mode == 'add') {
+              ndToast.error('Failed to add record');
+              htmx.trigger('#' + tab + '_form', 'submit');
+            }
+            else if (mode == 'delete') {
+              ndToast.error('Failed to delete record');
+              htmx.trigger('#' + tab + '_form', 'submit');
+            }
+            else {
+              ndToast.error('Failed to update record');
+            }
+            return;
           }
-        }
-        ,success: function(data) {
           if (mode == 'add') {
-            toastr.success('Added record');
+            ndToast.success('Added record');
           }
           else if (mode == 'delete') {
-            toastr.success('Deleted record');
+            ndToast.success('Deleted record');
           }
           else {
-            toastr.success('Updated record');
+            ndToast.success('Updated record');
           }
-          // one refresh for every mode. add and delete each asked for their own
-          // as well, which used to race two answers into the pane and, now that
-          // the sidebar cancels its own in-flight request, aborts the first one
-          // and reports the abort to the console.
+          // one refresh for every mode; add and delete also trigger their
+          // own, so both would race into the pane if the sidebar did not
+          // cancel its in-flight request first, and the aborted one logs
+          // to the console.
           htmx.trigger('#' + tab + '_form', 'submit');
-        }
-        // TODO: fix sanity_ok in Netdisco Web
-        ,error: function() {
+        }, function () {
           if (mode == 'add') {
-            toastr.error('Failed to add record');
+            ndToast.error('Failed to add record');
             htmx.trigger('#' + tab + '_form', 'submit');
           }
           else if (mode == 'delete') {
-            toastr.error('Failed to delete record');
+            ndToast.error('Failed to delete record');
             htmx.trigger('#' + tab + '_form', 'submit');
           }
           else {
-            toastr.error('Failed to update record');
+            ndToast.error('Failed to update record');
           }
-        }
-      });
+        });
     });
 
     // show the event log output on hover, delegated from the pane so that rows
@@ -288,6 +242,7 @@ ndPages.admin = {
 // input, then presses the row's update button. The button is found first
 // because the click removes the label the search would start from.
 document.addEventListener('click', function (event) {
+  if (!(event.target instanceof Element)) return;
   var bin = event.target.closest('.nd_delete-me');
   if (!bin) return;
   var row = bin.closest('tr');
@@ -297,16 +252,17 @@ document.addEventListener('click', function (event) {
   var field = label.nextElementSibling;
   if (field && field.matches('input.nd_left-acl-rule-field, input.nd_right-acl-rule-field')) field.remove();
   label.remove();
-  if (button) button.click();
+  if (button instanceof HTMLElement) button.click();
 });
 
 // admin pseudo devices: the layer-3 badge toggles the hidden layers field
 // between "router" and "nothing".
 document.addEventListener('click', function (event) {
+  if (!(event.target instanceof Element)) return;
   var link = event.target.closest('.nd_layer-three-link');
   if (!link) return;
   var badge = link.querySelector('span');
-  var layers = link.parentElement.querySelector('input');
+  var layers = link.parentElement && link.parentElement.querySelector('input');
   if (!badge || !layers) return;
   badge.classList.toggle('text-bg-success');
   layers.setAttribute('value', badge.classList.contains('text-bg-success') ? '00000100' : '00000000');
@@ -331,60 +287,68 @@ function nd_token_fields(select) {
   if (ips) { ips.disabled = !token; if (!token) ips.value = '' }
 }
 document.addEventListener('change', function (event) {
+  if (!(event.target instanceof Element)) return;
   if (event.target.matches('.nd_auth_method')) nd_token_fields(event.target);
 });
 // Registered here at top level rather than inside a ready callback, so
 // this attaches ahead of netdisco.js's own htmx:after:swap listener, which
-// builds the DataTable and runs from $(document).ready. DataTables detaches
-// rows outside the current page from the DOM, and this sync must see every
-// row while they are all still there.
+// builds the DataTable and runs from a DOMContentLoaded listener. DataTables
+// detaches rows outside the current page from the DOM, and this sync must
+// see every row while they are all still there.
 document.body.addEventListener('htmx:after:swap', function (evt) {
+  if (!(evt instanceof CustomEvent)) return;
   // htmx dispatches this on the element that made the request, so the pane is
   // read from the context
   evt.detail.ctx.target.querySelectorAll('.nd_auth_method').forEach(nd_token_fields);
 });
 document.addEventListener('click', function (event) {
+  if (!(event.target instanceof Element)) return;
   var copy = event.target.closest('#nd_token-copy');
   if (!copy) return;
-  navigator.clipboard.writeText(document.getElementById('nd_token-value').value);
+  var tokenValue = document.getElementById('nd_token-value');
+  if (tokenValue instanceof HTMLInputElement) navigator.clipboard.writeText(tokenValue.value);
   copy.innerHTML = '<i class="fas fa-check"></i> Copied';
 });
 
 // admin users: the key icon requests a fresh permanent token for a
 // token-only user. The route is declared with Dancer's ajax keyword, which
-// matches only a request carrying X-Requested-With: XMLHttpRequest; $.get
-// sent that automatically, fetch does not.
+// matches only a request carrying X-Requested-With: XMLHttpRequest, so the
+// request goes through ndRequest.get rather than a bare fetch.
 document.addEventListener('click', function (event) {
+  if (!(event.target instanceof Element)) return;
   var btn = event.target.closest('.nd_tokenbutton');
-  if (!btn) return;
-  var hint = btn.closest('td').querySelector('.nd_token-hint-value');
-  var query = new URLSearchParams({ username: btn.dataset.username, permanent: 1 });
-  fetch(uri_base + '/ajax/control/admin/users/token?' + query,
-    { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+  if (!(btn instanceof HTMLElement)) return;
+  var cell = btn.closest('td');
+  var hint = cell && cell.querySelector('.nd_token-hint-value');
+  var query = new URLSearchParams({ username: btn.dataset.username || '', permanent: '1' });
+  ndRequest.get(uri_base + '/ajax/control/admin/users/token?' + query)
     .then(function (response) { return response.ok ? response.text() : Promise.reject(new Error('token request failed: ' + response.status)) })
     .then(function (apiKey) {
       var key = apiKey.trim();
       if (key && typeof window.nd_show_api_token === 'function') {
-        hint.textContent = '...' + key.slice(-8);
+        if (hint) hint.textContent = '...' + key.slice(-8);
         window.nd_show_api_token(key);
       } else {
-        toastr.error('Could not retrieve token');
+        ndToast.error('Could not retrieve token');
       }
-    })
-    .catch(function () { toastr.error('Could not retrieve token') });
+    }, function () { ndToast.error('Could not retrieve token') });
 });
 
 // Opens the token modal for a freshly issued API token
 window.nd_show_api_token = function(apiKey) {
-  document.getElementById('nd_token-value').value = apiKey;
-  document.getElementById('nd_token-copy').innerHTML = '<i class="fas fa-copy"></i> Copy';
+  var tokenValue = document.getElementById('nd_token-value');
+  if (tokenValue instanceof HTMLInputElement) tokenValue.value = apiKey;
+  var tokenCopy = document.getElementById('nd_token-copy');
+  if (tokenCopy) tokenCopy.innerHTML = '<i class="fas fa-copy"></i> Copy';
   // Name the form rather than building its id from task.tag. This fragment
   // is only ever rendered by the ajax route in Users.pm, which passes no task
   // in its stash, so task.tag was always empty here and the selector was
   // always '#_form', which matches nothing. The tag is 'users' either way:
   // this template is registered for that one admin task.
-  document.getElementById('nd_token-reveal').addEventListener('hidden.bs.modal', function() {
+  var tokenReveal = document.getElementById('nd_token-reveal');
+  if (!tokenReveal) return;
+  tokenReveal.addEventListener('hidden.bs.modal', function() {
     htmx.trigger('#users_form', 'submit');
   }, { once: true });
-  bootstrap.Modal.getOrCreateInstance(document.getElementById('nd_token-reveal')).show();
+  bootstrap.Modal.getOrCreateInstance(tokenReveal).show();
 };

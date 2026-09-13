@@ -61,12 +61,13 @@ test('remainingList__after_the_conversion__is_empty', () => {
   assert.deepStrictEqual(REMAINING, [], 'the conversion is complete; nothing may be added back');
 });
 
-test('ourJavaScript__is_the_six_static_files_and_two_sort_plugins', () => {
+test('ourJavaScript__is_the_ten_static_files_and_two_sort_plugins', () => {
   const dir = path.join(ROOT, 'share', 'public', 'javascripts');
   const ours = fs.readdirSync(dir).filter((f) => /^(netdisco|portsort|versionsort)/.test(f)).sort();
   assert.deepStrictEqual(ours, [
-    'netdisco-admin.js', 'netdisco-deferred-nodes.js', 'netdisco-netmap.js', 'netdisco-portcontrol.js',
-    'netdisco-tables.js', 'netdisco.js', 'portsort.js', 'versionsort.js',
+    'netdisco-admin.js', 'netdisco-daterange.js', 'netdisco-deferred-nodes.js', 'netdisco-netmap.js',
+    'netdisco-portcontrol.js', 'netdisco-request.js', 'netdisco-tables.js', 'netdisco-toast.js',
+    'netdisco-typeahead.js', 'netdisco.js', 'portsort.js', 'versionsort.js',
   ]);
 });
 

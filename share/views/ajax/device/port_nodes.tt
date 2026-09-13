@@ -4,7 +4,7 @@
   [% NEXT IF _node_is_neighbor %]
   <div class="nd_div-closer[% ' nd_div-closer-last' IF loop.last %]">
   [% '<br/>' IF (row.remote_ip OR row.is_uplink) OR NOT loop.first %]
-  [% '<i class="fas fa-book" title="Archived node (inactive)"></i>&nbsp; ' IF NOT node.active %]
+  [% '<i class="fas fa-book nd_icon-archived" title="Archived node (inactive)"></i>&nbsp; ' IF NOT node.active %]
   <i class="fas fa-laptop" title="Client"></i>&nbsp;
   <a href="[% search_node | none %]&q=[% node.net_mac.$mac_format_call | uri %]">
     [% node.net_mac.$mac_format_call | html_entity %]</a>
@@ -40,7 +40,7 @@
     [% ELSE %]
       <br/>&nbsp;
     [% END %]
-    [% '<i class="fas fa-book" title="Archived node (inactive)"></i>&nbsp; ' IF NOT ip.active %]
+    [% '<i class="fas fa-book nd_icon-archived" title="Archived node (inactive)"></i>&nbsp; ' IF NOT ip.active %]
     [% SET dns = ip.dns %]
     [% IF dns %]
       [% IF params.n_dns %]

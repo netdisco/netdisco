@@ -30,8 +30,7 @@ function nd_has_sidebar(tab) {
   // A tab whose sidebar include throws renders the try block's marker (1)
   // and then the catch block's (0); a tab with its own sidebar template that
   // deliberately reports 0 renders that same 1 first, then its own 0. Either
-  // way the last marker in the document is the one that used to win when
-  // this was a plain object assignment.
+  // way, the last marker in the document is the one taken as authoritative.
   var markers = document.querySelectorAll('[data-nd-has-sidebar="' + tab + '"]');
   var marker = markers[markers.length - 1];
   return marker ? marker.value !== '0' : true;
@@ -40,15 +39,19 @@ function nd_has_sidebar(tab) {
 function nd_apply_sidebar (tab) {
   if (!nd_has_sidebar(tab)) {
     hideWithTooltip('.nd_sidebar, #nd_sidebar-toggle-img-out');
-    $('.content').css('margin-right', '10px');
+    document.querySelectorAll('.content').forEach(function (el) { el.style.marginRight = '10px' });
   }
   else {
     if (sidebar_hidden) {
-      $('#nd_sidebar-toggle-img-out').show();
+      // netdisco.css sets #nd_sidebar-toggle-img-out { display: none }, so an
+      // inline style of '' would not override it; the icon is an <i>, whose
+      // own default display is inline.
+      var toggleOut = document.getElementById('nd_sidebar-toggle-img-out');
+      if (toggleOut) toggleOut.style.display = 'inline';
     }
     else {
-      $('.content').css('margin-right', '215px');
-      $('.nd_sidebar').show();
+      document.querySelectorAll('.content').forEach(function (el) { el.style.marginRight = '215px' });
+      document.querySelectorAll('.nd_sidebar').forEach(function (el) { el.style.display = '' });
     }
   }
 }
@@ -74,7 +77,8 @@ function do_search (event, tab) {
   if (form && form.getAttribute('hx-get')) { return }
 
   htmx.ajax('GET',
-    uri_base + '/ajax/content/' + path + '/' + tab + '?' + $('#' + tab + '_form').serialize(),
+    uri_base + '/ajax/content/' + path + '/' + tab + '?'
+      + (form ? ndRequest.query(form) : ''),
     { target: '#' + tab + '_pane',
       headers: { 'X-Requested-With': 'XMLHttpRequest' } });
 }
@@ -84,8 +88,8 @@ function do_search (event, tab) {
  * before any ready callback runs, so this file can drive the page without
  * knowing which pages exist; the layout loads only the current page's script.
  * An entry is an object with up to three members:
- * formInputs() returns the jQuery collection of inputs whose state colors the
- * sidebar form, or an empty collection; innerView(tab) runs after every pane
+ * formInputs() returns the array of inputs whose state colors the
+ * sidebar form, or an empty array; innerView(tab) runs after every pane
  * swap on that page; ready() runs once when the page has loaded, reading the
  * active tab from nd_active_tab and nd_active_target.
  * @type {Object<string, {formInputs?: Function, innerView?: Function, ready?: Function}>}
@@ -110,60 +114,94 @@ var sidebar_hidden = 0;
 // on tab change, hide previous tab's search form and show new tab's
 // search form. also trigger to load the content for the newly active tab.
 function update_content(from, to) {
-  $('#' + from + '_search').toggleClass('active');
-  $('#' + to + '_search').toggleClass('active');
+  var fromSearch = document.getElementById(from + '_search');
+  if (fromSearch) fromSearch.classList.toggle('active');
+  var toSearch = document.getElementById(to + '_search');
+  if (toSearch) toSearch.classList.toggle('active');
 
   var to_form = '#' + to + '_form';
 
   // navbar text decoration special case
   if (to != 'device') {
-    $('#nq').css('text-decoration', 'none');
+    var nq = document.getElementById('nq');
+    if (nq) nq.style.textDecoration = 'none';
   }
   else {
-    form_inputs.each(function() {device_form_state($(this))});
+    form_inputs.forEach(function (input) { device_form_state(input) });
   }
 
   htmx.trigger(to_form, 'submit');
 }
 
 // if any field in Search Options has content, highlight in green
-function device_form_state(e) {
-  var with_val = $.grep(form_inputs,
-                        function(n,i) {return($(n).prop('value') != "")}).length;
-  var with_text = $.grep(form_inputs.not('select'),
-                          function(n,i) {return($(n).val() != "")}).length;
+function device_form_state(field) {
+  var with_val = form_inputs.filter(function (n) { return n.value != "" }).length;
+  var with_text = form_inputs.filter(function (n) {
+    return !n.matches('select') && n.value != "";
+  }).length;
 
-  // by id rather than a selector built from DOM text, which $() may read as
-  // markup
-  var clear_btn = document.getElementById(e.attr('name') + '_clear_btn');
+  // by id rather than a selector built from DOM text: the text can contain
+  // characters a selector would read as syntax rather than literal content
+  var clear_btn = document.getElementById(field.getAttribute('name') + '_clear_btn');
 
-  if (e.prop('value') == "") {
-    e.parent(".clearfix").removeClass('success');
-    hideWithTooltip(clear_btn);
-
-    // if form has no field val, clear strikethough
-    if (with_val == 0) {
-      $('#nq').css('text-decoration', 'none');
-    }
-
-    // for text inputs only, extra formatting
-    if (with_text == 0) {
-      $('.nd_field-copy-icon').show();
-    }
+  if (field.value == "") {
+    nd_clear_field_highlight(field, clear_btn, with_val, with_text);
   }
   else {
-    e.parent(".clearfix").addClass('success');
-    $(clear_btn).show();
+    nd_apply_field_highlight(field, clear_btn, with_val);
+  }
+}
 
-    // if form still has any field val, set strikethough
-    if (e.parents('form[action$="/search"]').length > 0 && with_val != 0) {
-      $('#nq').css('text-decoration', 'line-through');
-    }
+/**
+ * Unmarks a field that has just gone empty: drops its success styling, hides
+ * its clear icon, and clears the navbar strikethrough and copy icons when
+ * nothing else in the form still holds a value.
+ * @param {Element} field the input or select that was cleared
+ * @param {Element|null} clear_btn the field's own clear icon, if it has one
+ * @param {number} with_val how many fields in the form still hold a value
+ * @param {number} with_text how many text fields in the form still hold a value
+ * @returns {void}
+ */
+function nd_clear_field_highlight(field, clear_btn, with_val, with_text) {
+  var parent = field.parentElement;
+  if (parent && parent.matches('.clearfix')) parent.classList.remove('success');
+  hideWithTooltip(clear_btn);
 
-    // if we're text, hide copy icon when we get a val
-    if (e.attr('type') == 'text') {
-      $('.nd_field-copy-icon').hide();
-    }
+  // if form has no field val, clear strikethough
+  if (with_val == 0) {
+    var nqReset = document.getElementById('nq');
+    if (nqReset) nqReset.style.textDecoration = 'none';
+  }
+
+  // for text inputs only, extra formatting
+  if (with_text == 0) {
+    document.querySelectorAll('.nd_field-copy-icon').forEach(function (el) { el.style.display = '' });
+  }
+}
+
+/**
+ * Marks a field that now holds a value: adds its success styling, shows its
+ * clear icon, sets the navbar strikethrough, and hides the copy icon for a
+ * text field once it has something in it.
+ * @param {Element} field the input or select that now holds a value
+ * @param {Element|null} clear_btn the field's own clear icon, if it has one
+ * @param {number} with_val how many fields in the form hold a value
+ * @returns {void}
+ */
+function nd_apply_field_highlight(field, clear_btn, with_val) {
+  var parent = field.parentElement;
+  if (parent && parent.matches('.clearfix')) parent.classList.add('success');
+  if (clear_btn) clear_btn.style.display = '';
+
+  // if form still has any field val, set strikethough
+  if (field.closest('form[action$="/search"]') && with_val != 0) {
+    var nqStrike = document.getElementById('nq');
+    if (nqStrike) nqStrike.style.textDecoration = 'line-through';
+  }
+
+  // if we're text, hide copy icon when we get a val
+  if (field.getAttribute('type') == 'text') {
+    document.querySelectorAll('.nd_field-copy-icon').forEach(function (el) { el.style.display = 'none' });
   }
 }
 
@@ -171,8 +209,9 @@ function device_form_state(e) {
 // per-element instance on first hover and caches it, so an existing
 // instance must be disposed for the new title to be picked up.
 function retitleTooltip(element, title) {
-  $(element).attr('data-bs-title', title);
-  var instance = bootstrap.Tooltip.getInstance($(element)[0]);
+  if (!element) return;
+  element.setAttribute('data-bs-title', title);
+  var instance = bootstrap.Tooltip.getInstance(element);
   if (instance) { instance.dispose(); }
 }
 
@@ -186,30 +225,68 @@ function retitleTooltip(element, title) {
 // below is not enough. The sidebar reset icon is the worst case: its tip is
 // appended to body, so it outlives the anchor a pane response replaces.
 function disposeTooltips(target) {
-  $(target).find('[rel=tooltip]').addBack('[rel=tooltip]').each(function () {
-    var instance = bootstrap.Tooltip.getInstance(this);
-    if (instance) { instance.dispose(); }
+  var roots;
+  if (typeof target === 'string') { roots = document.querySelectorAll(target); }
+  else { roots = target ? [target] : []; }
+  Array.prototype.forEach.call(roots, function (root) {
+    var carriers = Array.prototype.slice.call(root.querySelectorAll('[rel=tooltip]'));
+    if (root.matches('[rel=tooltip]')) carriers.push(root);
+    carriers.forEach(function (el) {
+      var instance = bootstrap.Tooltip.getInstance(el);
+      if (instance) { instance.dispose(); }
+    });
+  });
+}
+
+// A delegated popover puts its instance on the row rather than on the element
+// it was declared against, and appends the tip to body. A pane swap replaces
+// the row and bootstrap dismisses nothing whose trigger has left the document,
+// so the tips pile up one per refresh, keep the text of the job they described,
+// and swallow the pointer for the row beneath them. The tip names its trigger
+// through aria-describedby, which is the only way back to the instance; a tip
+// whose trigger has already gone has none, and is just removed.
+function disposePopovers() {
+  document.querySelectorAll('.popover').forEach(function (el) {
+    var trigger = el.id && document.querySelector('[aria-describedby="' + el.id + '"]');
+    var instance = trigger && bootstrap.Popover.getInstance(trigger);
+    // hide, not dispose: bootstrap reads the instance again when the hide
+    // transition ends, and a disposed one throws there.
+    if (instance) { instance.hide(); }
+    else { el.remove(); }
+  });
+}
+
+// Bootstrap dismisses a tip from events on its trigger, so one whose trigger has
+// gone is dismissed by nothing and popper leaves it where it last drew.
+// disposePopovers runs before the request, too early to catch one raised after.
+function removeStrandedPopovers() {
+  document.querySelectorAll('.popover').forEach(function (el) {
+    var trigger = el.id && document.querySelector('[aria-describedby="' + el.id + '"]');
+    if (!trigger) { el.remove(); }
   });
 }
 
 function hideWithTooltip(target) {
   disposeTooltips(target);
-  $(target).hide();
+  var elements;
+  if (typeof target === 'string') { elements = document.querySelectorAll(target); }
+  else { elements = target ? [target] : []; }
+  Array.prototype.forEach.call(elements, function (el) { el.style.display = 'none' });
 }
 
-// The widget puts its suggestion list and its live region on document.body, and
-// only its own destroy takes them down. That runs from jQuery's removal path,
-// which a pane emptied natively never reaches, so both outlive the field.
-//
-// Matching the class the widget adds, rather than netdisco's own selectors,
-// covers a field a site-local template introduced. Asking for the instance is
-// the guard: every other method name throws on an element it never took over.
-function destroyAutocompletesIn(pane) {
-  if (!pane) return;
-  pane.querySelectorAll('.ui-autocomplete-input').forEach(function (field) {
-    var widget = $(field).autocomplete('instance');
-    if (widget) { widget.destroy(); }
-  });
+// Reveals an element a class or an earlier call hid. Clearing the inline
+// style is not always enough: a class such as nd_collapse-pre-hidden also
+// sets display:none, so a fallback is computed per element rather than
+// assumed, by checking what actually became visible.
+function nd_reveal(el) {
+  el.style.display = '';
+  if (window.getComputedStyle(el).display === 'none') { el.style.display = 'block'; }
+}
+
+function nd_toggle_display(el) {
+  if (!el) return;
+  if (window.getComputedStyle(el).display === 'none') { nd_reveal(el); }
+  else { el.style.display = 'none'; }
 }
 
 // A pointer click focuses the category, which :focus-within then holds open
@@ -220,29 +297,132 @@ document.addEventListener('click', function (event) {
   if (category && event.detail > 0) { category.blur() }
 });
 
-// Bootstrap's own Escape handler builds a Dropdown from the nested list, finds
-// no toggle beside it and throws, leaving the menu open. On window rather than
-// document because Bootstrap registers its delegated handlers as capture
-// listeners on document and loads first, so nothing there can precede them.
+/**
+ * Queues one job for whatever the Discover box names, and says what happened.
+ * The action's own admin route answers 400 for a device it will not take, so
+ * an unresolvable name or too wide a prefix is reported rather than silently
+ * dropped.
+ * @param {string} action the job action to queue, such as discover or pingsweep
+ * @param {string} [extra] the job's extra argument, the latency for a sweep
+ * @returns {void}
+ */
+function nd_queue_disco_job(action, extra) {
+  var box = /** @type {HTMLInputElement|null} */ (document.getElementById('discodevs'));
+  if (!box || !box.value) { return }
+  var target = box.value;
+  var body = new URLSearchParams({ device: target });
+  if (extra) { body.set('extra', extra) }
+
+  ndRequest.post(uri_base + '/ajax/control/admin/' + action, body)
+    .then(function (response) {
+      if (response.ok) { ndToast.info('Queued ' + action + ' for ' + target) }
+      else { ndToast.error('Could not queue ' + action + ' for ' + target) }
+    }, function () {
+      ndToast.error('Could not queue ' + action + ' for ' + target);
+    });
+}
+
+/**
+ * Which item an arrow key should focus within a dropend submenu, given how
+ * many items it holds and which one has focus now. An index of -1 for the
+ * current item means focus is on the submenu itself rather than an item.
+ * @param {number} count how many items the submenu holds
+ * @param {number} index the focused item's position, or -1 for none
+ * @param {string} key the pressed key, 'ArrowUp' or 'ArrowDown'
+ * @returns {number} the item to focus, or -1 to leave for the category above
+ */
+function nd_submenu_focus_index(count, index, key) {
+  var wanted = (key === 'ArrowUp' ? index - 1 : index + 1);
+  if (wanted < 0) { return -1 }
+  // Bootstrap stops at the ends rather than cycling, so the top level and a
+  // submenu feel the same.
+  if (wanted >= count) { return index }
+  return wanted;
+}
+
+// Bootstrap resolves the toggle to drive by looking beside the menu, and a
+// dropend submenu's category link carries the dropdown-toggle class but not
+// the data-bs-toggle attribute, so it finds nothing and throws on Escape and
+// on either arrow. On window rather than document because Bootstrap registers
+// its delegated handlers as capture listeners on document and loads first, so
+// nothing there can precede them; stopping propagation is what keeps them from
+// running, which is also why the arrows have to move focus here.
 window.addEventListener('keydown', function (event) {
-  if (event.key !== 'Escape') { return }
-  if (!event.target.closest('li.dropend > .dropdown-menu')) { return }
+  var row = event.target.closest('li.dropend');
+  if (!row) { return }
+  var submenu = event.target.closest('li.dropend > .dropdown-menu');
+  var category = row.querySelector(':scope > .dropdown-toggle');
+
+  // Sideways is how a menu is meant to be walked: into a list that opens to the
+  // side, and back out of it. The list stays on screen either way, because
+  // focus is still inside the category that :focus-within holds open.
+  if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+    var into = (event.key === 'ArrowRight');
+    if (into && event.target !== category) { return }
+    if (!into && !submenu) { return }
+    var landing = into
+      ? row.querySelector(':scope > .dropdown-menu > li > .dropdown-item')
+      : category;
+    if (!landing) { return }
+    event.preventDefault();
+    event.stopPropagation();
+    landing.focus();
+    return;
+  }
+
+  // On a category, up and down step between the entries of the menu holding it.
+  // Bootstrap walks every visible focusable descendant instead, and the list a
+  // category holds open is one, so it descends into that list and the category
+  // below is never reached. Sideways is how the list is entered.
+  if (event.target === category
+      && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
+    var peers = Array.prototype.slice.call(
+      row.parentElement.querySelectorAll(':scope > li > .dropdown-item'));
+    var peer = nd_submenu_focus_index(
+      peers.length, peers.indexOf(category), event.key);
+    event.preventDefault();
+    event.stopPropagation();
+    if (peer >= 0) { peers[peer].focus() }
+    return;
+  }
+
+  if (!submenu) { return }
+
+  if (event.key === 'Escape') {
+    event.stopPropagation();
+    var toggle = event.target.closest('.nav-item.dropdown');
+    toggle = toggle && toggle.querySelector(':scope > .dropdown-toggle');
+    if (!toggle) { return }
+    toggle.focus();
+    bootstrap.Dropdown.getOrCreateInstance(toggle).hide();
+    return;
+  }
+
+  if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') { return }
+  event.preventDefault();
   event.stopPropagation();
-  var toggle = event.target.closest('.nav-item.dropdown');
-  toggle = toggle && toggle.querySelector(':scope > .dropdown-toggle');
-  if (!toggle) { return }
-  toggle.focus();
-  bootstrap.Dropdown.getOrCreateInstance(toggle).hide();
+
+  var items = Array.prototype.slice.call(
+    submenu.querySelectorAll(':scope > li > .dropdown-item'));
+  var wanted = nd_submenu_focus_index(
+    items.length, items.indexOf(event.target), event.key);
+
+  // Leaving the submenu upward lands on the category that opened it, which is
+  // in the menu Bootstrap can drive itself.
+  var target = (wanted < 0
+    ? submenu.parentElement.querySelector(':scope > .dropdown-toggle')
+    : items[wanted]);
+  if (target) { target.focus() }
 }, true);
 
 // htmx takes the indicator down when the response arrives, but the fragment's
 // own script builds its table from a ready callback afterwards, so the raw
 // full-length table would paint with no indicator until that finishes.
 //
-// Quiet DOM rather than a table library's own event, so this outlives the move
-// off jQuery. Quiet is not enough on its own: the build has gaps of several
-// hundred milliseconds where nothing changes because the thread is busy
-// computing, and revealing in one of those shows a table that is still moving.
+// Quiet DOM rather than a table library's own event. Quiet is not enough on
+// its own: the build has gaps of several hundred milliseconds where nothing
+// changes because the thread is busy computing, and revealing in one of
+// those shows a table that is still moving.
 // A frame that took far longer than a frame should is the evidence of that, so
 // both conditions have to hold, twice running.
 //
@@ -250,7 +430,10 @@ window.addEventListener('keydown', function (event) {
 // a budget: it starts at the swap, so it covers only the browser's own work,
 // never the fetch.
 function holdUntilSettled(pane, indicator) {
-  if (!pane || !indicator) return;
+  if (!pane) return;
+  // This is the only thing that reveals a pane, so declining to hold one cannot
+  // mean leaving it hidden: whatever hid it is waiting on this.
+  if (!indicator) { pane.classList.remove('nd_pane-settling'); return }
   pane.classList.add('nd_pane-settling');
   indicator.classList.add('nd_indicator-held');
 
@@ -275,66 +458,10 @@ function holdUntilSettled(pane, indicator) {
   });
 }
 
-$(document).ready(function() {
+document.addEventListener('DOMContentLoaded', function() {
   // sidebar form fields should change colour and have bin/copy icon
-  $('.nd_field-copy-icon').hide();
+  document.querySelectorAll('.nd_field-copy-icon').forEach(function (el) { el.style.display = 'none' });
   hideWithTooltip('.nd_field-clear-icon');
-
-  // activate typeahead on the main search box, for device names only
-  // the backend has already filtered, and jQuery UI does no client-side
-  // filtering of a function source, so no matcher is needed
-  $('#nq,#nqbody').autocomplete({
-    source: function (request, response) {
-      return $.get( uri_base + '/ajax/data/devicename/typeahead', request, function (data) {
-        return response(data);
-      });
-    }
-    ,delay: 150
-    ,minLength: 3
-    // the widget these boxes used to run opened with its first row picked out,
-    // so Enter took the obvious name. jQuery UI selects nothing unless asked, and
-    // does not write the row into the field: it only does that when a key moved
-    // the focus.
-    ,autoFocus: true
-  });
-
-  // Both boxes ran that widget, so both are marked and the blue highlight is
-  // scoped to the mark; the app's other fifteen keep the theme's own.
-  $('#nq,#nqbody').each(function() {
-    $(this).autocomplete('widget').addClass('nd_search-suggestions');
-  });
-
-  // The navbar's box opens underneath the bar, and a menu hung at the field's
-  // own edge starts its first row inside it. Four pixels rather than the three
-  // that meet the edge exactly, the bar being a fraction taller on some
-  // platforms. The whole object is restated because it replaces the default
-  // rather than extending it, and losing collision:none would let the menu flip
-  // above the field in a short window.
-  $('#nq').autocomplete('option', 'position',
-    { my: 'left top', at: 'left bottom+4', collision: 'none' });
-  // Its border and padding still reach into the bar, which paints above this
-  // widget's level, so the border needs lifting too. The menu is appended to the
-  // document rather than beside its field, so marking the widget here is the only
-  // way to reach one instance from the stylesheet.
-  $('#nq').autocomplete('widget').addClass('nd_navbar-suggestions');
-
-  // the widget this box used to run bolded the letters it matched, which is how
-  // the list shows why each row is in it, and jQuery UI offers no equivalent.
-  // Escaped first and marked second, because this goes in as markup where the
-  // default went in as text and the names come from the database.
-  $('#nq,#nqbody').each(function() {
-    $(this).autocomplete('instance')._renderItem = function(ul, item) {
-      var label = $('<div/>').text(item.label).html();
-      var term = $('<div/>').text(this.term).html()
-        .replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-      var marked = term.length
-        // term was regex-escaped just above
-        // eslint-disable-next-line security/detect-non-literal-regexp
-        ? label.replace(new RegExp('(' + term + ')', 'ig'), '<strong>$1</strong>')
-        : label;
-      return $('<li/>').append($('<div/>').html(marked)).appendTo(ul);
-    };
-  });
 
   // activate tooltips and popovers, delegated from a container so that
   // content injected later is covered without re-initialising. bootstrap
@@ -349,337 +476,234 @@ $(document).ready(function() {
   // stranding it over the content beside a sidebar field. Deliberately not
   // solved by dropping "focus" from the trigger, which would also stop a tooltip
   // appearing for someone tabbing through the form.
-  $(document.body).on('mouseleave', '[rel=tooltip]', function() {
-    var instance = bootstrap.Tooltip.getInstance(this);
+  document.body.addEventListener('mouseleave', function (event) {
+    var eventTarget = event.target;
+    var t = eventTarget instanceof Element ? eventTarget.closest('[rel=tooltip]') : null;
+    // Native mouseenter/mouseleave fire separately at every ancestor whose own
+    // boundary the pointer crossed, not just the delegate match, so a move
+    // between an element's own children must not retrigger this.
+    if (!t || !document.body.contains(t) || event.target !== t) return;
+    var instance = bootstrap.Tooltip.getInstance(t);
     if (instance) { instance.hide(); }
+  }, true);
+
+  
+// bind submission to the navbar go icon
+  var navsearchgo = document.getElementById('navsearchgo');
+  if (navsearchgo) {
+    navsearchgo.addEventListener('click', function () {
+      var form = navsearchgo.closest('form');
+      if (form) form.submit();
+    });
+  }
+  document.querySelectorAll('.nd_navsearchgo-specific').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      event.preventDefault();
+      var form = link.closest('form');
+      if (!form) return;
+
+      var nqbody = document.getElementById('nqbody');
+      if (nqbody && nqbody.value) {
+        var tabField = document.createElement('input');
+        tabField.type = 'hidden';
+        tabField.name = 'tab';
+        tabField.value = link.dataset.tab;
+        form.appendChild(tabField);
+        form.submit();
+        return;
+      }
+      var nq = document.getElementById('nq');
+      if (nq && nq.value) {
+        var tabField2 = document.createElement('input');
+        tabField2.type = 'hidden';
+        tabField2.name = 'tab';
+        tabField2.value = link.dataset.tab;
+        form.appendChild(tabField2);
+        form.submit();
+        return;
+      }
+    });
   });
 
-  // bind submission to the navbar go icon
-  $('#navsearchgo').click(function() {
-    $('#navsearchgo').parents('form').submit();
-  });
-  $('.nd_navsearchgo-specific').click(function(event) {
-    event.preventDefault();
-    if ($('#nqbody').val()) {
-      $(this).parents('form').append(
-        $(document.createElement('input')).attr('type', 'hidden')
-                                          .attr('name', 'tab')
-                                          .attr('value', $(this).data('tab'))
-      ).submit();
-      return;
-    }
-    if ($('#nq').val()) {
-      $(this).parents('form').append(
-        $(document.createElement('input')).attr('type', 'hidden')
-                                          .attr('name', 'tab')
-                                          .attr('value', $(this).data('tab'))
-      ).submit();
-      return;
-    }
-    if ($('#discodevs').val()) {
-      $(this).parents('form').append(
-        $(document.createElement('input')).attr('type', 'hidden')
-                                          .attr('name', 'timeout')
-                                          .attr('value', $(this).data('timeout'))
-      ).append(
-        $(document.createElement('input')).attr('type', 'hidden')
-                                          .attr('name', 'action')
-                                          .attr('value', $(this).data('action'))
-      ).submit();
-      return;
-    }
-  });
+  // The Discover box queues its job over ajax rather than posting the form, so
+  // the answer arrives where the reader is standing. Posting it navigated to
+  // the job queue on success and silently back to this page on failure, which
+  // is the same page a refused job returns to and says nothing about why.
+  //
+  // Its own listeners rather than the search dropdown's: that one finds the box
+  // it fills by asking the document, so a value left in the navbar search took
+  // precedence and submitted this form as a plain discover.
+  var discoForm = document.querySelector('form[action$="/admin/discodevs"]');
+  if (discoForm) {
+    discoForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      nd_queue_disco_job('discover');
+    });
+    discoForm.addEventListener('click', function (event) {
+      var sweep = event.target.closest('.dropdown-item[data-action]');
+      if (!sweep) { return }
+      event.preventDefault();
+      nd_queue_disco_job(sweep.dataset.action, sweep.dataset.timeout);
+    });
+  }
 
   // fix green background on search checkboxes
   // https://github.com/twitter/bootstrap/issues/742
   var syncCheckBox = function() {
-    $(this).parents('.input-group-text').toggleClass('active', $(this).is(':checked'));
+    var container = this.closest('.input-group-text');
+    if (container) container.classList.toggle('active', this.checked);
   };
-  $('.input-group-text :checkbox').each(syncCheckBox).click(syncCheckBox);
+  document.querySelectorAll('.input-group-text input[type="checkbox"]').forEach(function (checkbox) {
+    syncCheckBox.call(checkbox);
+    checkbox.addEventListener('click', function () { syncCheckBox.call(checkbox) });
+  });
 
   // sidebar toggle - pinning
-  $('.nd_sidebar-pin').click(function() {
-    $('.nd_sidebar').toggleClass('nd_sidebar-pinned');
-    $('.nd_sidebar-pin').toggleClass('nd_sidebar-pin-clicked');
-    // update tooltip note for current state
-    if ($('.nd_sidebar-pin').hasClass('nd_sidebar-pin-clicked')) {
-      retitleTooltip($('.nd_sidebar-pin').first(), 'Unpin Sidebar');
-    }
-    else {
-      retitleTooltip($('.nd_sidebar-pin').first(), 'Pin Sidebar');
-    }
+  document.querySelectorAll('.nd_sidebar-pin').forEach(function (pinEl) {
+    pinEl.addEventListener('click', function () {
+      document.querySelectorAll('.nd_sidebar').forEach(function (el) { el.classList.toggle('nd_sidebar-pinned') });
+      var pins = document.querySelectorAll('.nd_sidebar-pin');
+      pins.forEach(function (el) { el.classList.toggle('nd_sidebar-pin-clicked') });
+      // update tooltip note for current state
+      var anyClicked = Array.prototype.some.call(pins, function (el) {
+        return el.classList.contains('nd_sidebar-pin-clicked');
+      });
+      if (anyClicked) {
+        retitleTooltip(pins[0], 'Unpin Sidebar');
+      }
+      else {
+        retitleTooltip(pins[0], 'Pin Sidebar');
+      }
+    });
   });
 
   // sidebar toggle - trigger in/out on image click()
-  $('#nd_sidebar-toggle-img-in').click(function() {
-    $('.nd_sidebar').toggle(250);
-    $('#nd_sidebar-toggle-img-out').toggle();
-    $('.content').css('margin-right', '10px');
-    sidebar_hidden = 1;
-  });
-  $('#nd_sidebar-toggle-img-out').click(function() {
-    $('#nd_sidebar-toggle-img-out').toggle();
-    $('.content').css('margin-right', '215px');
-    $('.nd_sidebar').toggle(250);
-    if (! $('.nd_sidebar').hasClass('nd_sidebar-pinned')) {
-        $(window).scrollTop(0);
-    }
-    sidebar_hidden = 0;
-  });
+  //
+  // This flips the sidebar instantly rather than sliding it over 250ms. No
+  // interaction test exercises that transition (only its resting state, in
+  // interact-sidebar.spec.js), so an instant flip is a deliberate choice
+  // here, not an oversight.
+  var sidebarToggleIn = document.getElementById('nd_sidebar-toggle-img-in');
+  if (sidebarToggleIn) {
+    sidebarToggleIn.addEventListener('click', function () {
+      document.querySelectorAll('.nd_sidebar').forEach(function (el) { el.style.display = 'none' });
+      // netdisco.css sets #nd_sidebar-toggle-img-out { display: none }; the
+      // icon is an <i>, whose own default display is inline.
+      var toggleOut = document.getElementById('nd_sidebar-toggle-img-out');
+      if (toggleOut) toggleOut.style.display = 'inline';
+      document.querySelectorAll('.content').forEach(function (el) { el.style.marginRight = '10px' });
+      sidebar_hidden = 1;
+    });
+  }
+  var sidebarToggleOut = document.getElementById('nd_sidebar-toggle-img-out');
+  if (sidebarToggleOut) {
+    sidebarToggleOut.addEventListener('click', function () {
+      sidebarToggleOut.style.display = 'none';
+      document.querySelectorAll('.content').forEach(function (el) { el.style.marginRight = '215px' });
+      document.querySelectorAll('.nd_sidebar').forEach(function (el) { el.style.display = '' });
+      var anyPinned = Array.prototype.some.call(document.querySelectorAll('.nd_sidebar'), function (el) {
+        return el.classList.contains('nd_sidebar-pinned');
+      });
+      if (!anyPinned) {
+        window.scrollTo(window.scrollX, 0);
+      }
+      sidebar_hidden = 0;
+    });
+  }
 
   // could not get twitter bootstrap tabs to behave, so implemented this
   // but warning! will probably not work for dropdowns in tabs
-  $('#nd_search-results li').delegate('a', 'click', function(event) {
-    event.preventDefault();
-    // Bootstrap 5 reads "active" on the .nav-link, not on the <li>
-    var from_link = $('.nav-tabs').find('> li > .nav-link.active').first();
-    var to_link = $(this);
+  document.querySelectorAll('#nd_search-results li').forEach(function (li) {
+    li.addEventListener('click', function (event) {
+      var eventTarget = event.target;
+      var to_link = eventTarget instanceof Element ? eventTarget.closest('a') : null;
+      if (!to_link || !li.contains(to_link)) return;
+      event.preventDefault();
+      // Bootstrap 5 reads "active" on the .nav-link, not on the <li>
+      var from_link = document.querySelector('.nav-tabs > li > .nav-link.active');
 
-    from_link.toggleClass('active');
-    to_link.toggleClass('active');
+      from_link.classList.toggle('active');
+      to_link.classList.toggle('active');
 
-    var from_id = from_link.attr('href');
-    var to_id = to_link.attr('href');
+      var from_id = from_link.getAttribute('href');
+      var to_id = to_link.getAttribute('href');
 
-    if (from_id == to_id) {
-      return;
-    }
+      if (from_id == to_id) {
+        return;
+      }
 
-    $(from_id).toggleClass('active');
-    $(to_id).toggleClass('active');
+      document.querySelector(from_id).classList.toggle('active');
+      document.querySelector(to_id).classList.toggle('active');
 
-    update_content(
-      from_id.replace(/^#/,"").replace(/_pane$/,""),
-      to_id.replace(/^#/,"").replace(/_pane$/,"")
-    );
+      update_content(
+        from_id.replace(/^#/,"").replace(/_pane$/,""),
+        to_id.replace(/^#/,"").replace(/_pane$/,"")
+      );
+    });
   });
 
   // bootstrap modal mucks about with mouse actions on higher elements
   // so need to bury and raise it when needed
-  $('.tab-pane').on('show.bs.modal', '.nd_modal', function () {
-    $(this).toggleClass('nd_deep-horizon');
+  document.querySelectorAll('.tab-pane').forEach(function (root) {
+    root.addEventListener('show.bs.modal', function (event) {
+      var eventTarget = event.target;
+      var t = eventTarget instanceof Element ? eventTarget.closest('.nd_modal') : null;
+      if (!t || !root.contains(t)) return;
+      t.classList.toggle('nd_deep-horizon');
+    });
+    root.addEventListener('hidden.bs.modal', function (event) {
+      var eventTarget = event.target;
+      var t = eventTarget instanceof Element ? eventTarget.closest('.nd_modal') : null;
+      if (!t || !root.contains(t)) return;
+      t.classList.toggle('nd_deep-horizon');
+    });
   });
-  $('.tab-pane').on('hidden.bs.modal', '.nd_modal', function () {
-    $(this).toggleClass('nd_deep-horizon');
-  });
-
-  // activate daterange plugin
-  $('#daterange').daterangepicker({
-    ranges: {
-      'Today': [moment(), moment()]
-      ,'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')]
-      ,'Last 7 Days': [moment().subtract(6, 'days'), moment()]
-      ,'Last 30 Days': [moment().subtract(29, 'days'), moment()]
-      ,'This Month': [moment().startOf('month'), moment().endOf('month')]
-      ,'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-    }
-    // The plugin seeds its options from this element's data-* attributes and
-    // lets the caller override them, so an unset option is the one a stray
-    // attribute could supply. Both of these reach a jQuery HTML sink, so pin
-    // them here rather than relying on the markup never gaining an attribute.
-    //
-    // The template is copied verbatim from daterangepicker 3.1.0, the version
-    // named in package.json, where the plugin builds it at daterangepicker.js
-    // lines 100 to 116. Re-copy it whenever that version changes: the plugin
-    // queries selectors inside this container, so a stale copy renders a broken
-    // widget with nothing thrown and no test to catch it.
-    ,template:
-      '<div class="daterangepicker">' +
-        '<div class="ranges"></div>' +
-        '<div class="drp-calendar left">' +
-          '<div class="calendar-table"></div>' +
-          '<div class="calendar-time"></div>' +
-        '</div>' +
-        '<div class="drp-calendar right">' +
-          '<div class="calendar-table"></div>' +
-          '<div class="calendar-time"></div>' +
-        '</div>' +
-        '<div class="drp-buttons">' +
-          '<span class="drp-selected"></span>' +
-          '<button class="cancelBtn" type="button"></button>' +
-          '<button class="applyBtn" disabled="disabled" type="button"></button> ' +
-        '</div>' +
-      '</div>'
-    ,parentEl: 'body'
-    ,minDate: '2004-01-01'
-    ,showDropdowns: true
-    ,timePicker: false
-    ,opens: 'left'
-    ,locale: { format: 'YYYY-MM-DD', separator: ' to ' }
-    ,autoUpdateInput: false
-  }
-  ,function(start, end) {
-    $('#daterange').trigger('input');
-  });
-
-  // daterangepicker 3.x writes the picker's own dates into the input on init
-  // unless autoUpdateInput is off, which blanks the server-rendered value. With
-  // it off, nothing updates the input when a range is applied, so do it here.
-  $('#daterange').on('apply.daterangepicker', function (ev, picker) {
-    $(this).val(picker.startDate.format('YYYY-MM-DD')
-      + ' to ' + picker.endDate.format('YYYY-MM-DD'));
-    $(this).trigger('input');
-  });
-
-  // handler for datepicker in node sidebar
-  $('.nd_sidebar').on('input', '#daterange', function() {
-    if ($(this).prop('value') == '') {
-      $('#daterange').parent('.clearfix').removeClass('success');
-    }
-    else {
-      $('#daterange').parent('.clearfix').addClass('success');
-    }
-  });
-  $('#daterange').trigger('input');
 
   // inventory: a very large platform or OS table starts collapsed (see the
   // toggle() below); each Show link expands its own group's rows again.
   document.addEventListener('click', function (event) {
     var link = event.target.closest('.nd_collapse-inventory');
     if (!link) return;
-    $(link.dataset.target).toggle();
-    $(link.dataset.chevron).toggleClass('fa-chevron-up fa-chevron-down');
+    // data-target names a class shared by every row in the group, not a
+    // single id, so all of them must toggle together.
+    document.querySelectorAll(link.dataset.target).forEach(nd_toggle_display);
+    var chevron = document.querySelector(link.dataset.chevron);
+    if (chevron) { chevron.classList.toggle('fa-chevron-up'); chevron.classList.toggle('fa-chevron-down') }
   });
 
   // modules tab: collapsible nested <ul>, root scoped to the swapped pane so
   // a second modules fragment does not rebind the first one's tree.
   function nd_tree(root) {
-    $(root).find('.tree > ul').attr('role', 'tree').find('ul').attr('role', 'group');
-    $(root).find('.tree').find('li:has(ul)').addClass('parent_li').attr('role', 'treeitem').find(' > span').attr('title', 'Collapse this branch').on('click', function (e) {
-      var children = $(this).parent('li.parent_li').find(' > ul > li');
-      if (children.is(':visible')) {
-        children.hide('fast');
-        $(this).attr('title', 'Expand this branch').find(' > i').addClass('fa-circle-plus').removeClass('fa-circle-minus');
-      }
-      else {
-        children.show('fast');
-        $(this).attr('title', 'Collapse this branch').find(' > i').addClass('fa-circle-minus').removeClass('fa-circle-plus');
-      }
-      e.stopPropagation();
+    root.querySelectorAll('.tree > ul').forEach(function (ul) {
+      ul.setAttribute('role', 'tree');
+      ul.querySelectorAll('ul').forEach(function (nested) { nested.setAttribute('role', 'group') });
     });
-  }
-
-  // snmp tab: jsTree browser and its search box.
-  function nd_snmp_browser(pane) {
-    var device = pane.querySelector('#jstree').dataset.ndDevice;
-    var jstree_search_callback = function(str, node) {
-      var pattern = str.toLowerCase();
-      var mib_pat = str.replace(/::.+/,'').toLowerCase();
-      var leaf_pat = str.replace(/.+::/,'').toLowerCase();
-      var mib_lc = node.original.mib.toLowerCase();
-      var leaf_lc = node.original.leaf.toLowerCase();
-      var oid = node.id.toLowerCase();
-
-      if (document.getElementById('nd_snmp_search_deviceonly').checked) {
-        if (node.original.has_value == 0) { return false; }
-      }
-
-      // partial is ticked, check OID base, or mib + leaf root, or just leaf
-      if (document.getElementById('nd_snmp_search_partial').checked) {
-        if (pattern.includes('.')) {
-          if (oid.indexOf(pattern) == 0) { return true; }
-        }
-        else if (pattern.includes('::')) {
-          if ((mib_lc == mib_pat) && (leaf_lc.indexOf(leaf_pat) == 0)) { return true; }
-        }
-        else if (leaf_lc.indexOf(pattern) == 0) {
-          return true;
-        }
-      }
-      // user supplies a qualified leaf
-      else if (pattern.includes('::')) {
-        if ((mib_lc == mib_pat) && (leaf_lc == leaf_pat)) {
-          return true;
-        }
-      }
-      // user supplies an unqualified leaf, or an OID
-      else {
-        if ((leaf_lc == pattern) || (oid == pattern)) {
-          return true;
-        }
-      }
-      return false;
-    };
-
-    $('#jstree').jstree({
-      'core': {
-        'multiple' : false,
-        'themes': {
-          'name': 'proton',
-          'responsive': true
-        },
-        'data' : {
-          'url' : function (node) {
-            return (uri_base + '/ajax/data/device/' + device + '/snmptree/'
-              + (node.id === '#' ? '.1' : node.id));
-          }
-        }
-      },
-      'plugins': ['search'],
-      'search': {
-        'ajax' : {
-          'url' : uri_base + '/ajax/data/snmp/nodesearch',
-          'beforeSend' : function(jqXHR, settings) {
-            $('#nd_snmp_loading_spinner').removeClass('far fa-circle fas fa-circle-exclamation text-success')
-                                         .addClass('fas fa-spinner text-warning fa-spin');
-
-            if (document.getElementById('nd_snmp_search_partial').checked) {
-              settings.url = settings.url + '&partial=on';
-            }
-
-            if (document.getElementById('nd_snmp_search_deviceonly').checked) {
-              settings.url = settings.url + '&deviceonly=on&ip=' + device;
-            }
-
-            return true;
-          },
-          'error' : function() {
-            $('#nd_snmp_loading_spinner').removeClass('fas fa-spinner text-warning fa-spin')
-                                         .addClass('fas fa-circle-exclamation');
-          }
-        },
-        'search_callback' : jstree_search_callback
-      },
-    });
-    $('#snmpnodecontainer').on("change", "#munger", function(e, data) {
-      var ary = $('#jstree').jstree('get_selected');
-      $('#node').load(uri_base + '/ajax/content/device/' + device + '/snmpnode/'
-        + ary[0] + '?munge=' + $('#munger').find(":selected").text());
-    });
-    $('#jstree').on("changed.jstree", function (e, data) {
-      if (data.selected && data.selected != "#") {
-        $('#node').load(uri_base + '/ajax/content/device/' + device + '/snmpnode/' + data.selected);
-      }
-    });
-    $('#jstree').on("search.jstree", function (e, data) {
-      if (data.res.length) {
-        $('#node').load(uri_base + '/ajax/content/device/' + device + '/snmpnode/' + data.res[0]);
-
-        $("#jstree").jstree().deselect_all(true);
-        $('#jstree').jstree('select_node', data.res[0] + '_anchor');
-
-        var node = $('#jstree').jstree("get_selected", true);
-        var nodePath = $('#jstree').jstree().get_path(node[0], false, true);
-        var parent = nodePath[nodePath.length - 2];
-        document.getElementById( parent ).scrollIntoView();
-
-        $('#nd_snmp_loading_spinner').removeClass('fas fa-spinner text-warning fa-spin')
-                                     .addClass('far fa-circle text-success');
-      }
-    });
-    $("#nd_snmp_search_form").submit(function(e) {
-      $("#jstree").jstree("search", $("#nd_snmp_search_text").val());
-      e.preventDefault();
-    });
-    $('#nd_snmp_search_text').autocomplete({
-      source: function (request, response)  {
-        var query = $('.nd_snmp_search_param').serialize();
-        return $.get( uri_base + '/ajax/data/snmp/typeahead', query, function (data) {
-          return response(data);
+    root.querySelectorAll('.tree li:has(ul)').forEach(function (li) {
+      li.classList.add('parent_li');
+      li.setAttribute('role', 'treeitem');
+      var span = li.querySelector(':scope > span');
+      if (!span) return;
+      span.setAttribute('title', 'Collapse this branch');
+      // This flips the branch instantly rather than sliding it, matching
+      // the sidebar's own toggle above.
+      span.addEventListener('click', function (e) {
+        var children = li.querySelectorAll(':scope > ul > li');
+        var icon = span.querySelector(':scope > i');
+        var anyVisible = Array.prototype.some.call(children, function (child) {
+          return window.getComputedStyle(child).display !== 'none';
         });
-      }
-      ,delay: 150
-      ,minLength: 2
+        if (anyVisible) {
+          children.forEach(function (child) { child.style.display = 'none' });
+          span.setAttribute('title', 'Expand this branch');
+          if (icon) { icon.classList.add('fa-circle-plus'); icon.classList.remove('fa-circle-minus') }
+        }
+        else {
+          children.forEach(function (child) { child.style.display = '' });
+          span.setAttribute('title', 'Collapse this branch');
+          if (icon) { icon.classList.add('fa-circle-minus'); icon.classList.remove('fa-circle-plus') }
+        }
+        e.stopPropagation();
+      });
     });
   }
 
@@ -716,19 +740,69 @@ $(document).ready(function() {
     if (!target.id.match(/_pane$/)) return;
     // The status list stopped the swap, so the pane holds the failure message
     // the response-error handler put there and there is nothing to set up.
-    if (ctx.response && ctx.response.status >= 400) return;
+    if (ctx.response && ctx.response.status >= 400) {
+      target.classList.remove('nd_pane-settling');
+      return;
+    }
     var tab = target.id.replace(/_pane$/, '');
     if (target.innerHTML === '') {
       target.innerHTML =
         '<div class="col-md-2 alert alert-info">No matching records.</div>';
+      target.classList.remove('nd_pane-settling');
       return;
     }
     ndTables.init(target);
     if (target.querySelector('.tree')) nd_tree(target);
-    if (target.querySelector('#jstree')) nd_snmp_browser(target);
     holdUntilSettled(target, document.getElementById(tab + '_indicator'));
     inner_view_processing(tab);
   });
+  document.body.addEventListener('htmx:after:swap', function () {
+    removeStrandedPopovers();
+  });
+
+  // A search opens the tree to the node it found and marks it. That tree can
+  // run to thousands of rows, so a mark below the fold says nothing on its own.
+  document.body.addEventListener('htmx:after:swap', function (evt) {
+    var target = evt.detail.ctx.target;
+    if (!target || target.id !== 'nd_snmp-tree') { return }
+    var hit = target.querySelector('.nd_snmp-found');
+    if (hit) { hit.scrollIntoView({ block: 'center' }) }
+  });
+
+  // Double-clicking a label opens its node. htmx binds its handler on the
+  // anchor itself, so stopping the second click in capture on the way down
+  // keeps the panel to one request.
+  document.body.addEventListener('click', function (evt) {
+    var label = evt.target.closest('a.nd_snmp-label');
+    if (label && evt.detail > 1) { evt.stopPropagation(); evt.preventDefault() }
+  }, true);
+
+  document.body.addEventListener('dblclick', function (evt) {
+    var label = evt.target.closest('a.nd_snmp-label');
+    if (!label) return;
+    // A branch the search opened already holds its children and carries no
+    // hx-get, so toggling it must stay a DOM operation.
+    var branch = label.closest('.nd_snmp-row').querySelector(':scope > details');
+    if (branch) { branch.open = !branch.open }
+  });
+
+  // Hide the pane before the answer is put into it, not after. htmx paints
+  // between inserting the fragment and firing its after-swap event, so a table
+  // the library has not converted yet is on screen for a frame or two first: on
+  // a device with 7300 ports that is the whole raw table. Every path that
+  // leaves the handler below without reaching holdUntilSettled has to show the
+  // pane again, or it stays invisible.
+  document.body.addEventListener('htmx:before:swap', function (evt) {
+    var target = evt.detail.ctx.target;
+    if (!target || !target.id || !target.id.match(/_pane$/)) return;
+    // Hide only a pane that will be held. holdUntilSettled declines a pane with
+    // no indicator, and it is what shows a pane again, so hiding one here hides
+    // it for good. The job queue is that pane.
+    var tab = target.id.replace(/_pane$/, '');
+    if (!document.getElementById(tab + '_indicator')) return;
+    target.classList.add('nd_pane-settling');
+  });
+
   // Empty the pane for the duration of the request, so the indicator is the
   // only thing on screen. Leaving the previous results up gives an interactive
   // table that no longer answers the search being run.
@@ -740,6 +814,9 @@ $(document).ready(function() {
     var target = ctx.target;
     if (!target.id.match(/_pane$/)) return;
     nd_latest_pane_request = ctx;
+
+    disposePopovers();
+
     if (target.id === 'jobqueue_pane') return;
 
     // force-graph renders every frame until destroyed, and emptying the pane
@@ -750,12 +827,18 @@ $(document).ready(function() {
       window.graph.fg._destructor();
     }
 
-    destroyAutocompletesIn(target);
     target.innerHTML = '';
   });
   document.body.addEventListener('htmx:response:error', function (evt) {
     var target = evt.detail.ctx.target;
     if (!target.id.match(/_pane$/)) return;
+    // An expired session is not a fault the reader should report to anyone. The
+    // server sends HX-Redirect with it, so this message is what remains on
+    // screen for the moment before the browser leaves, and all that is left for
+    // a request htmx did not make.
+    target.classList.remove('nd_pane-settling');
+    var status = evt.detail.ctx.response && evt.detail.ctx.response.status;
+    if (status === 401 || status === 403) return nd_session_expired(target);
     nd_pane_failure(target, 'server error');
   });
   // htmx puts a failed send, a timed out request, an abandoned request and an
@@ -779,6 +862,16 @@ $(document).ready(function() {
     // long the query takes rather than at the network.
     nd_pane_failure(target, aborted ? 'request timed out' : 'network error');
   });
+  function nd_session_expired(pane) {
+    // every part is a literal
+    // eslint-disable-next-line no-unsanitized/property
+    pane.innerHTML =
+      '<div class="col-md-5 alert alert-warning"><i class="fas fa-right-to-bracket"></i> ' +
+      'Your session has expired. <a href="' + nd_login_url() + '">Log in again</a> to carry on.</div>';
+  }
+  function nd_login_url() {
+    return uri_base + '/login?return_url=' + encodeURIComponent(window.location.pathname + window.location.search);
+  }
   function nd_pane_failure(pane, reason) {
     // every part is a literal, including reason: its three call sites pass one
     // of three fixed strings and nothing here comes from a response
@@ -796,7 +889,7 @@ $(document).ready(function() {
     console.error(message, detail);
     if (ndReported) return;
     ndReported = true;
-    toastr.error('Something on this page failed. The browser console has the details.');
+    ndToast.error('Something on this page failed. The browser console has the details.');
   }
   window.addEventListener('error', function (evt) {
     // a script from another origin reports only the bare "Script error."
@@ -854,8 +947,10 @@ $(document).ready(function() {
 // using {once: true} in place of a stats_loaded flag.
 function nd_statistics_panel() {
   var stats = document.getElementById('nd_stats');
-  $('#nqbody').focus(); // set focus to main search
-  $('#loginuser').focus(); // set focus to login, if it's there
+  var nqbody = document.getElementById('nqbody');
+  if (nqbody) nqbody.focus(); // set focus to main search
+  var loginuser = document.getElementById('loginuser');
+  if (loginuser) loginuser.focus(); // set focus to login, if it's there
 
   var collapseStats = document.getElementById('collapse-stats');
   if (!collapseStats) return;
@@ -865,26 +960,41 @@ function nd_statistics_panel() {
       { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
       .then( response => {
         if (! response.ok) {
-          $('#nd_stats_status').addClass('alert-danger')
-            .html('<i class="fas fa-triangle-exclamation"></i> Failed to retrieve system information (server error).');
+          var status = document.getElementById('nd_stats_status');
+          if (status) {
+            status.classList.add('alert-danger');
+            status.innerHTML = '<i class="fas fa-triangle-exclamation"></i> Failed to retrieve system information (server error).';
+          }
           return;
           // throw new Error('Network response was not ok');
         }
         return response.text();
       })
       .then( content => {
-        $('#nd_stats').html(content);
+        // A response.ok === false above resolves this with undefined; leave
+        // the pane's error message in place rather than blanking it.
+        if (content === undefined) return;
+        var el = document.getElementById('nd_stats');
+        // content is this page's own server-rendered fragment, from the same
+        // route the fetch above just called
+        // eslint-disable-next-line no-unsanitized/property
+        if (el) el.innerHTML = content;
       })
       .catch( error => {
-        $('#nd_stats_status').addClass('alert-danger')
-          .html('<i class="fas fa-triangle-exclamation"></i> Failed to retrieve system information (network error: ' + error + ').');
+        var status = document.getElementById('nd_stats_status');
+        if (status) {
+          status.classList.add('alert-danger');
+          // error is the fetch failure itself, never response content
+          // eslint-disable-next-line no-unsanitized/property
+          status.innerHTML = '<i class="fas fa-triangle-exclamation"></i> Failed to retrieve system information (network error: ' + error + ').';
+        }
         console.error('There has been a problem with your fetch operation:', error);
       });
   }, { once: true });
 }
 
-// called after every ajax-loaded pane finishes settling, for per-page glue
-// that jQuery delegation cannot express. do_search and the htmx glue above
+// called after every ajax-loaded pane finishes settling, so a page's own
+// script can react to the new content. do_search and the htmx glue above
 // both call this unconditionally, so it must exist even on pages with
 // nothing to do here.
 function inner_view_processing(tab) {
@@ -895,21 +1005,305 @@ function inner_view_processing(tab) {
 
 // each sidebar search form has a hidden copy of the main navbar search
 function copy_navbar_to_sidebar (tab) {
-  var form = '#' + tab + '_form';
+  var form = document.getElementById(tab + '_form');
 
   // copy navbar value to currently active sidebar form
-  if ($('#nq').val()) {
-    $(form).find("input[name=q]").val( $('#nq').val() );
+  var nq = document.getElementById('nq');
+  if (nq && nq.value && form) {
+    var activeQ = form.querySelector('input[name=q]');
+    if (activeQ) activeQ.value = nq.value;
   }
   // then copy to all other inactive tab sidebars
-  $('form').find("input[name=q]").each( function() {
-    $(this).val( $(form).find("input[name=q]").val() );
-  });
+  var currentValue = form ? (form.querySelector('input[name=q]') || {}).value : undefined;
+  if (currentValue !== undefined) {
+    document.querySelectorAll('form').forEach(function (otherForm) {
+      otherForm.querySelectorAll('input[name=q]').forEach(function (input) {
+        input.value = currentValue;
+      });
+    });
+  }
 }
 
-$(document).ready(function() {
+/**
+ * Binds the device page's sidebar controls: the port search options form,
+ * its field-state highlighting, the filter box and its clear icon, the
+ * collapser arrows, the port-name resubmit links, the VLANs column
+ * collapser, and the netmap's show/pin/release/zoom/save controls.
+ * @returns {void}
+ */
+function nd_setup_device_sidebar() {
+    // fields in the Device Search Options form (Device tab)
+    form_inputs = Array.prototype.slice.call(document.querySelectorAll(
+      '#ports_form .clearfix input:not([type="checkbox"]), #ports_form .clearfix select'
+    ));
+
+    var portfilter = document.querySelector('#ports_form input[name=f]');
+
+    // sidebar form fields should change colour and have trash/copy icon
+    form_inputs.forEach(function (input) { device_form_state(input) });
+    form_inputs.forEach(function (input) {
+      input.addEventListener('change', function () { device_form_state(input) });
+    });
+
+    // sidebar collapser events trigger change of up/down arrow
+    document.querySelectorAll('.collapse').forEach(function (el) {
+      el.addEventListener('show.bs.collapse', function () {
+        var container = el.parentElement;
+        if (!container) return;
+        Array.prototype.forEach.call(container.children, function (child) {
+          if (child === el) return;
+          child.querySelectorAll('.nd_arrow-up-down-right').forEach(function (arrow) {
+            arrow.classList.toggle('fa-chevron-up'); arrow.classList.toggle('fa-chevron-down');
+          });
+        });
+      });
+
+      el.addEventListener('hide.bs.collapse', function () {
+        var container = el.parentElement;
+        if (!container) return;
+        Array.prototype.forEach.call(container.children, function (child) {
+          if (child === el) return;
+          child.querySelectorAll('.nd_arrow-up-down-right').forEach(function (arrow) {
+            arrow.classList.toggle('fa-chevron-up'); arrow.classList.toggle('fa-chevron-down');
+          });
+        });
+      });
+    });
+
+    // if the user edits the filter box, revert to automagical search
+    var portsForm = document.getElementById('ports_form');
+    if (portsForm) {
+      portsForm.addEventListener('input', function (event) {
+        var eventTarget = event.target;
+        var t = eventTarget instanceof Element ? eventTarget.closest('input[name=f]') : null;
+        if (!t || !portsForm.contains(t)) return;
+        var preferField = document.getElementById('nd_ports-form-prefer-field');
+        if (preferField) preferField.setAttribute('value', '');
+      });
+    }
+
+    // handler for trashcan icon in port filter box
+    document.querySelectorAll('.nd_field-clear-icon').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (portfilter) portfilter.value = '';
+        var preferField = document.getElementById('nd_ports-form-prefer-field');
+        if (preferField) preferField.setAttribute('value', '');
+        htmx.trigger('#ports_form', 'submit');
+        device_form_state(portfilter); // will hide copy icons
+      });
+    });
+
+    // allow port filter to have a preference for port/name/vlan
+    if (portsForm) {
+      portsForm.addEventListener('click', function (event) {
+        var eventTarget = event.target;
+        var t = eventTarget instanceof Element ? eventTarget.closest('.nd_device-port-submit-prefer') : null;
+        if (!t || !portsForm.contains(t)) return;
+        event.preventDefault();
+        var preferField = document.getElementById('nd_ports-form-prefer-field');
+        if (preferField) preferField.setAttribute('value', t.dataset.prefer);
+        htmx.trigger('#ports_form', 'submit');
+      });
+    }
+
+    // clickable device port names can simply resubmit AJAX rather than
+    // fetch the whole page again.
+    var portsPane = document.getElementById('ports_pane');
+    if (portsPane) {
+      portsPane.addEventListener('click', function (event) {
+        var eventTarget = event.target;
+        var t = eventTarget instanceof Element ? eventTarget.closest('.nd_this-port-only') : null;
+        if (!t || !portsPane.contains(t)) return;
+        event.preventDefault(); // link is real so prevent page submit
+
+        var port = (t.textContent || '').trim();
+        if (portfilter) portfilter.value = port;
+        document.querySelectorAll('.nd_field-clear-icon').forEach(function (el) { el.style.display = '' });
+
+        // make sure we're preferring a port filter
+        var preferField = document.getElementById('nd_ports-form-prefer-field');
+        if (preferField) preferField.setAttribute('value', 'port');
+
+        htmx.trigger('#ports_form', 'submit');
+        device_form_state(portfilter); // will hide copy icons
+      });
+
+      // VLANs column list collapser trigger
+      // it's a bit of a faff because we can't easily use Bootstrap's collapser
+      portsPane.addEventListener('click', function (event) {
+        var eventTarget = event.target;
+        var t = eventTarget instanceof Element ? eventTarget.closest('.nd_collapse-vlans') : null;
+        if (!t || !portsPane.contains(t)) return;
+        var nodesTotal = t.closest('.nd_nodes-total');
+        var collapsing = nodesTotal && nodesTotal.nextElementSibling;
+        if (collapsing && collapsing.matches('.nd_collapsing')) { nd_toggle_display(collapsing); }
+        if (t.querySelector('.nd_arrow-up-down-left-down.fa-square-plus')) {
+          t.innerHTML = 'Hide <div class="nd_arrow-up-down-left-up fas fa-square-minus"></div>&nbsp;';
+        }
+        else {
+          t.innerHTML = 'Show <div class="nd_arrow-up-down-left-down fas fa-square-plus"></div>&nbsp;';
+        }
+      });
+    }
+
+    // netmap show controls. Setting any force-graph prop repaints, so
+    // re-setting nodeRelSize to itself is the repaint call.
+    var showIps = document.getElementById('nd_showips');
+    if (showIps) {
+      showIps.addEventListener('change', function () {
+        window.graph.fg.nodeRelSize(window.graph.fg.nodeRelSize());
+      });
+    }
+    var showSpeed = document.getElementById('nd_showspeed');
+    if (showSpeed) {
+      showSpeed.addEventListener('change', function () {
+        window.graph.fg.nodeRelSize(window.graph.fg.nodeRelSize());
+      });
+    }
+
+    // netmap pin/release controls
+    var releaseAll = document.getElementById('nd_netmap-releaseall');
+    if (releaseAll) {
+      releaseAll.addEventListener('click', function (event) {
+        event.preventDefault();
+        window.graph.fg.graphData().nodes.forEach(function (n) { n.fx = undefined; n.fy = undefined });
+        window.graph.fg.d3ReheatSimulation();
+      });
+    }
+    var releaseOnly = document.getElementById('nd_netmap-releaseonly');
+    if (releaseOnly) {
+      releaseOnly.addEventListener('click', function (event) {
+        event.preventDefault();
+        window.graph.fg.graphData().nodes.forEach(function (n) {
+          if (n.selected) { n.fx = undefined; n.fy = undefined }
+        });
+        window.graph.fg.d3ReheatSimulation();
+      });
+    }
+    var pinOnly = document.getElementById('nd_netmap-pinonly');
+    if (pinOnly) {
+      pinOnly.addEventListener('click', function (event) {
+        event.preventDefault();
+        window.graph.fg.graphData().nodes.forEach(function (n) {
+          if (n.selected) { n.fx = n.x; n.fy = n.y }
+        });
+      });
+    }
+    var zoomToDevice = document.getElementById('nd_netmap-zoomtodevice');
+    if (zoomToDevice) {
+      zoomToDevice.addEventListener('click', function (event) {
+        event.preventDefault();
+        var n = window.graph.nodeDataById(window.graph.centernode);
+        window.graph.fg.centerAt(n.x, n.y, 600);
+        window.graph.fg.zoom(4, 600);
+      });
+    }
+    // true marks this as the user asking, which is what netdisco-netmap.js
+    // keys the confirmation toast off
+    var netmapSave = document.querySelector('#nd_netmap-save');
+    if (netmapSave) netmapSave.addEventListener('click', function (event) {
+      event.preventDefault();
+      saveMapPositions(true);
+    });
+}
+
+/**
+ * Binds the report page's sidebar controls: the sidebar-hidden startup state,
+ * the colored-input field highlighting, the trash icon in search forms, the
+ * IP inventory subnet field's effect on the "never" checkbox, and the
+ * add/update/delete forms embedded in the report table.
+ * @param {string} tab the active report's tag, part of its route and form id
+ * @param {string} target the CSS selector for the active report's tab pane
+ * @returns {void}
+ */
+function nd_setup_report_sidebar(tab, target) {
+    // some reports carry bind params but no configured sidebar, so they
+    // start with the sidebar already hidden; mirrors the manual toggle below
+    if (document.querySelector('form[data-nd-hide-sidebar]')) {
+      document.querySelectorAll('.nd_sidebar').forEach(nd_toggle_display);
+      // netdisco.css sets #nd_sidebar-toggle-img-out { display: none }; the
+      // icon is an <i>, whose own default display is inline.
+      var toggleOut = document.getElementById('nd_sidebar-toggle-img-out');
+      if (toggleOut) toggleOut.style.display = 'inline';
+      document.querySelectorAll('.content').forEach(function (el) { el.style.marginRight = '10px' });
+      sidebar_hidden = 1;
+    }
+
+    // colored input fields in the Report Options sidebar forms
+    form_inputs = Array.prototype.slice.call(document.querySelectorAll('.nd_colored-input'));
+
+    // sidebar form fields should change colour and have trash icon
+    form_inputs.forEach(function (input) { device_form_state(input) });
+    form_inputs.forEach(function (input) {
+      input.addEventListener('change', function () { device_form_state(input) });
+    });
+
+    // handler for bin icon in search forms
+    document.querySelectorAll('.nd_field-clear-icon').forEach(function (el) {
+      el.addEventListener('click', function () {
+        var name = el.dataset.btnFor;
+        var matches = document.querySelectorAll('[name=' + name + ']');
+        matches.forEach(function (input) { input.value = ''; });
+        if (matches[0]) device_form_state(matches[0]); // reset input field
+      });
+    });
+
+    var ipinventorySubnet = document.getElementById('nd_ipinventory-subnet');
+    if (ipinventorySubnet instanceof HTMLInputElement) {
+      ipinventorySubnet.addEventListener('input', function () {
+        var never = document.getElementById('never');
+        if (!never) return;
+        if (ipinventorySubnet.value.indexOf(':') != -1) {
+          never.setAttribute('disabled', 'disabled');
+        }
+        else {
+          never.removeAttribute('disabled');
+        }
+      });
+    }
+
+    // dynamically bind to all forms in the table
+    var content = document.querySelector('.content');
+    if (content) {
+      content.addEventListener('click', function (event) {
+        var eventTarget = event.target;
+        var t = eventTarget instanceof Element ? eventTarget.closest('.nd_adminbutton') : null;
+        if (!t || !content.contains(t)) return;
+        // stop form from submitting normally
+        event.preventDefault();
+
+        // what purpose - add/update/del
+        var mode = t.getAttribute('name');
+        var row = t.closest('tr');
+        if (!row) return;
+
+        // collected before the pane is wiped below, which detaches this row
+        var body = ndRequest.fields(row, 'input[data-form="' + mode + '"]');
+
+        var targetEl = document.querySelector(target);
+        if (targetEl) {
+          targetEl.textContent = '';
+          var alertDiv = document.createElement('div');
+          alertDiv.className = 'col-md-2 alert';
+          alertDiv.textContent = 'Request submitted...';
+          targetEl.appendChild(alertDiv);
+        }
+
+        // submit the query and refresh the tab either way
+        // TODO: fix sanity_ok in Netdisco Web, then report a request that
+        // reached the server but failed separately from a network failure
+        function refreshTab() { htmx.trigger('#' + tab + '_form', 'submit'); }
+        ndRequest.post(uri_base + '/ajax/control/report/' + tab + '/' + mode, body)
+          .then(refreshTab, refreshTab);
+      });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
   if (document.getElementById('nd_stats')) { nd_statistics_panel(); }
-  if (document.querySelector('.nd_inventory_collapser')) { $('.nd_inventory_collapser').toggle(); }
+  if (document.querySelector('.nd_inventory_collapser')) {
+    document.querySelectorAll('.nd_inventory_collapser').forEach(nd_toggle_display);
+  }
 
   page = document.body.dataset.ndPage;               // device, search, report, admin
   path = page;                                        // what do_search builds its fragment URL from
@@ -920,289 +1314,131 @@ $(document).ready(function() {
   nd_active_target = target;
 
   if (page === 'device') {
-    // fields in the Device Search Options form (Device tab)
-    form_inputs = $("#ports_form .clearfix input").not('[type="checkbox"]')
-        .add("#ports_form .clearfix select");
-
-    var portfilter = $('#ports_form').find("input[name=f]");
-
-    // sidebar form fields should change colour and have trash/copy icon
-    form_inputs.each(function() {device_form_state($(this))});
-    form_inputs.change(function() {device_form_state($(this))});
-
-    // sidebar collapser events trigger change of up/down arrow
-    $('.collapse').on('show.bs.collapse', function() {
-      $(this).siblings().find('.nd_arrow-up-down-right')
-        .toggleClass('fa-chevron-up fa-chevron-down');
-    });
-
-    $('.collapse').on('hide.bs.collapse', function() {
-      $(this).siblings().find('.nd_arrow-up-down-right')
-        .toggleClass('fa-chevron-up fa-chevron-down');
-    });
-
-    // if the user edits the filter box, revert to automagical search
-    $('#ports_form').on('input', "input[name=f]", function() {
-      $('#nd_ports-form-prefer-field').attr('value', '');
-    });
-
-    // handler for trashcan icon in port filter box
-    $('.nd_field-clear-icon').click(function() {
-      portfilter.val('');
-      $('#nd_ports-form-prefer-field').attr('value', '');
-      htmx.trigger('#ports_form', 'submit');
-      device_form_state(portfilter); // will hide copy icons
-    });
-
-    // allow port filter to have a preference for port/name/vlan
-    $('#ports_form').on('click', '.nd_device-port-submit-prefer', function() {
-      event.preventDefault();
-      $('#nd_ports-form-prefer-field').attr('value', $(this).data('prefer'));
-      htmx.trigger('#ports_form', 'submit');
-    });
-
-    // clickable device port names can simply resubmit AJAX rather than
-    // fetch the whole page again.
-    $('#ports_pane').on('click', '.nd_this-port-only', function(event) {
-      event.preventDefault(); // link is real so prevent page submit
-
-      var port = $(this).text();
-      port = $.trim(port);
-      portfilter.val(port);
-      $('.nd_field-clear-icon').show();
-
-      // make sure we're preferring a port filter
-      $('#nd_ports-form-prefer-field').attr('value', 'port');
-
-      htmx.trigger('#ports_form', 'submit');
-      device_form_state(portfilter); // will hide copy icons
-    });
-
-    // VLANs column list collapser trigger
-    // it's a bit of a faff because we can't easily use Bootstrap's collapser
-    $('#ports_pane').on('click', '.nd_collapse-vlans', function() {
-        $(this).closest('.nd_nodes-total').next('.nd_collapsing').toggle();
-        if ($(this).find('.nd_arrow-up-down-left-down').hasClass('fa-square-plus')) {
-          $(this).html('Hide <div class="nd_arrow-up-down-left-up fas fa-square-minus"></div>&nbsp;');
-        }
-        else {
-          $(this).html('Show <div class="nd_arrow-up-down-left-down fas fa-square-plus"></div>&nbsp;');
-        }
-    });
-
-    // netmap show controls. Setting any force-graph prop repaints, so
-    // re-setting nodeRelSize to itself is the repaint call.
-    $('#nd_showips').change(function () {
-      window.graph.fg.nodeRelSize(window.graph.fg.nodeRelSize());
-    });
-    $('#nd_showspeed').change(function () {
-      window.graph.fg.nodeRelSize(window.graph.fg.nodeRelSize());
-    });
-
-    // netmap pin/release controls
-    $('#nd_netmap-releaseall').on('click', function (event) {
-      event.preventDefault();
-      window.graph.fg.graphData().nodes.forEach(function (n) { n.fx = undefined; n.fy = undefined });
-      window.graph.fg.d3ReheatSimulation();
-    });
-    $('#nd_netmap-releaseonly').on('click', function (event) {
-      event.preventDefault();
-      window.graph.fg.graphData().nodes.forEach(function (n) {
-        if (n.selected) { n.fx = undefined; n.fy = undefined }
-      });
-      window.graph.fg.d3ReheatSimulation();
-    });
-    $('#nd_netmap-pinonly').on('click', function (event) {
-      event.preventDefault();
-      window.graph.fg.graphData().nodes.forEach(function (n) {
-        if (n.selected) { n.fx = n.x; n.fy = n.y }
-      });
-    });
-    $('#nd_netmap-zoomtodevice').on('click', function (event) {
-      event.preventDefault();
-      var n = window.graph.nodeDataById(window.graph.centernode);
-      window.graph.fg.centerAt(n.x, n.y, 600);
-      window.graph.fg.zoom(4, 600);
-    });
-    $('#nd_netmap-save').on('click', function (event) {
-      event.preventDefault();
-      // true marks this as the user asking, which is what netdisco-netmap.js
-      // keys the confirmation toast off
-      saveMapPositions(true);
-    });
+    nd_setup_device_sidebar();
 
     // activity for admin tasks in device details
-    $('#details_pane').on('click', '.nd_adminbutton', function(event) {
-      // stop form from submitting normally
-      event.preventDefault();
+    var detailsPane = document.getElementById('details_pane');
+    if (detailsPane) {
+      detailsPane.addEventListener('click', function (event) {
+        var eventTarget = event.target;
+        var t = eventTarget instanceof Element ? eventTarget.closest('.nd_adminbutton') : null;
+        if (!t || !detailsPane.contains(t)) return;
+        // stop form from submitting normally
+        event.preventDefault();
 
-      // what purpose - discover/macsuck/arpnip
-      var mode = $(this).attr('name');
-      var tr = $(this).closest('tr');
+        // what purpose - discover/macsuck/arpnip
+        var mode = t.getAttribute('name');
+        var row = t.closest('tr');
+        if (!row) return;
 
-      // submit the query
-      $.ajax({
-        type: 'POST'
-        ,async: true
-        ,dataType: 'html'
-        ,url: uri_base + '/ajax/control/admin/' + mode
-        ,data: tr.find('input[data-form="' + mode + '"],textarea[data-form="' + mode + '"]').serializeArray()
-        ,success: function() {
-          if (mode != 'delete') {
-            toastr.info('Requested '+ mode +' for device '+ tr.data('for-device'));
-            if (mode == 'snapshot_del') {
-                $('.nd_snap_btn').toggleClass('btn-success');
-                $('.nd_snap_btn').toggleClass('btn-info');
-                $('.nd_snap_func').toggleClass('disabled');
+        // submit the query
+        ndRequest.post(uri_base + '/ajax/control/admin/' + mode,
+                       ndRequest.fields(row, 'input[data-form="' + mode + '"],textarea[data-form="' + mode + '"]'))
+          .then(
+            function (res) {
+              // skip any error reporting for now
+              // TODO: fix sanity_ok in Netdisco Web
+              if (!res.ok) return ndToast.error('Failed to ' + mode + ' device ' + row.dataset.forDevice);
+              if (mode != 'delete') {
+                ndToast.info('Requested ' + mode + ' for device ' + row.dataset.forDevice);
+                if (mode == 'snapshot_del') {
+                  document.querySelectorAll('.nd_snap_btn').forEach(function (el) {
+                    el.classList.toggle('btn-success');
+                    el.classList.toggle('btn-info');
+                  });
+                  document.querySelectorAll('.nd_snap_func').forEach(function (el) { el.classList.toggle('disabled') });
+                }
+              }
+              else {
+                ndToast.success('Queued job to delete ' + row.dataset.forDevice);
+              }
+            },
+            function () {
+              ndToast.error('Failed to ' + mode + ' device ' + row.dataset.forDevice);
             }
-          }
-          else {
-            toastr.success('Queued job to delete '+ tr.data('for-device'));
-          }
-        }
-        // skip any error reporting for now
-        // TODO: fix sanity_ok in Netdisco Web
-        ,error: function() {
-          toastr.error('Failed to '+ mode +' device '+ tr.data('for-device'));
-        }
+          );
       });
-    });
 
-    $('#details_pane').on('click', '.nd_nonadminbutton', function(event) {
-      // stop form from submitting normally
-      event.preventDefault();
+      detailsPane.addEventListener('click', function (event) {
+        var eventTarget = event.target;
+        var t = eventTarget instanceof Element ? eventTarget.closest('.nd_nonadminbutton') : null;
+        if (!t || !detailsPane.contains(t)) return;
+        // stop form from submitting normally
+        event.preventDefault();
 
-      // what purpose - discover/macsuck/arpnip
-      var mode = $(this).attr('name');
-      var tr = $(this).closest('tr');
+        // what purpose - discover/macsuck/arpnip
+        var mode = t.getAttribute('name');
+        var row = t.closest('tr');
+        if (!row) return;
 
-      // submit the query
-      $.ajax({
-        type: 'POST'
-        ,async: true
-        ,dataType: 'html'
-        ,url: uri_base + '/ajax/control/nonadmin/' + mode
-        ,data: tr.find('input[data-form="' + mode + '"],textarea[data-form="' + mode + '"]').serializeArray()
-        ,success: function() {
-          toastr.info('Requested '+ mode +' for device '+ tr.data('for-device'));
-        }
-        // skip any error reporting for now
-        // TODO: fix sanity_ok in Netdisco Web
-        ,error: function() {
-          toastr.error('Failed to '+ mode +' device '+ tr.data('for-device'));
-        }
+        // submit the query
+        ndRequest.post(uri_base + '/ajax/control/nonadmin/' + mode,
+                       ndRequest.fields(row, 'input[data-form="' + mode + '"],textarea[data-form="' + mode + '"]'))
+          .then(
+            function (res) {
+              // skip any error reporting for now
+              // TODO: fix sanity_ok in Netdisco Web
+              if (!res.ok) return ndToast.error('Failed to ' + mode + ' device ' + row.dataset.forDevice);
+              ndToast.info('Requested ' + mode + ' for device ' + row.dataset.forDevice);
+            },
+            function () {
+              ndToast.error('Failed to ' + mode + ' device ' + row.dataset.forDevice);
+            }
+          );
       });
-    });
 
-    // clear any values in the delete confirm dialog
-    $('#details_pane').on('hidden.bs.modal', '.nd_modal', function () {
-      $('#nd_devdel-log').val('');
-      $('#nd_devdel-archive').attr('checked', false);
-    });
+      // clear any values in the delete confirm dialog
+      detailsPane.addEventListener('hidden.bs.modal', function (event) {
+        var eventTarget = event.target;
+        var t = eventTarget instanceof Element ? eventTarget.closest('.nd_modal') : null;
+        if (!t || !detailsPane.contains(t)) return;
+        var log = document.getElementById('nd_devdel-log');
+        if (log instanceof HTMLTextAreaElement) log.value = '';
+        var archive = document.getElementById('nd_devdel-archive');
+        if (archive instanceof HTMLInputElement) archive.removeAttribute('checked');
+      });
+    }
   }
   else if (page === 'search') {
     // fields in the Device Search Options form (Device tab)
-    form_inputs = $("#device_form .clearfix input").not('[type="checkbox"]')
-        .add("#device_form .clearfix select");
+    form_inputs = Array.prototype.slice.call(document.querySelectorAll(
+      '#device_form .clearfix input:not([type="checkbox"]), #device_form .clearfix select'
+    ));
 
     // sidebar form fields should change colour and have bin/copy icon
-    form_inputs.each(function() {device_form_state($(this))});
-    form_inputs.change(function() {device_form_state($(this))});
+    form_inputs.forEach(function (input) { device_form_state(input) });
+    form_inputs.forEach(function (input) {
+      input.addEventListener('change', function () { device_form_state(input) });
+    });
 
     // handler for copy icon in search option
-    $('.nd_field-copy-icon').click(function() {
-      var name = $(this).data('btn-for');
-      var input = $('#device_form [name=' + name + ']');
-      input.val( $('#nq').val() );
-      device_form_state(input); // will hide copy icons
+    document.querySelectorAll('.nd_field-copy-icon').forEach(function (el) {
+      el.addEventListener('click', function () {
+        var name = el.dataset.btnFor;
+        var input = document.querySelector('#device_form [name=' + name + ']');
+        if (!input) return;
+        var nq = document.getElementById('nq');
+        if (nq) input.value = nq.value;
+        device_form_state(input); // will hide copy icons
+      });
     });
 
     // handler for bin icon in search option
-    $('.nd_field-clear-icon').click(function() {
-      var name = $(this).data('btn-for');
-      var input = $('#device_form [name=' + name + ']');
-      input.val('');
-      device_form_state(input); // will hide copy icons
-    });
-  }
-  else if (page === 'report') {
-    // some reports carry bind params but no configured sidebar, so they
-    // start with the sidebar already hidden; mirrors the manual toggle below
-    if (document.querySelector('form[data-nd-hide-sidebar]')) {
-      $('.nd_sidebar').toggle(0);
-      $('#nd_sidebar-toggle-img-out').toggle();
-      $('.content').css('margin-right', '10px');
-      sidebar_hidden = 1;
-    }
-
-    // colored input fields in the Report Options sidebar forms
-    form_inputs = $(".nd_colored-input");
-
-    // sidebar form fields should change colour and have trash icon
-    form_inputs.each(function() {device_form_state($(this))});
-    form_inputs.change(function() {device_form_state($(this))});
-
-    // handler for bin icon in search forms
-    $('.nd_field-clear-icon').click(function() {
-      var name = $(this).data('btn-for');
-      var input = $('[name=' + name + ']');
-      input.val('');
-      device_form_state(input); // reset input field
-    });
-
-    $('#nd_ipinventory-subnet').on('input', function(event) {
-      if ($(this).val().indexOf(':') != -1) {
-        $('#never').attr('disabled', 'disabled');
-      }
-      else {
-        $('#never').removeAttr('disabled');
-      }
-    });
-
-    // activate typeahead on prefix/subnet box
-    $('#nd_ipinventory-subnet').autocomplete({
-      source: function (request, response) {
-        return $.get( uri_base + '/ajax/data/subnet/typeahead', request, function (data) {
-          return response(data);
-        });
-      }
-      ,delay: 150
-      ,minLength: 3
-    });
-
-    // dynamically bind to all forms in the table
-    $('.content').on('click', '.nd_adminbutton', function(event) {
-      // stop form from submitting normally
-      event.preventDefault();
-
-      // what purpose - add/update/del
-      var mode = $(this).attr('name');
-
-      // submit the query and put results into the tab pane
-      $.ajax({
-        type: 'POST'
-        ,async: true
-        ,dataType: 'html'
-        ,url: uri_base + '/ajax/control/report/' + tab + '/' + mode
-        ,data: $(this).closest('tr').find('input[data-form="' + mode + '"]').serializeArray()
-        ,beforeSend: function() {
-          $(target).html(
-            '<div class="col-md-2 alert">Request submitted...</div>'
-          );
-        }
-        ,success: function() {
-          htmx.trigger('#' + tab + '_form', 'submit');
-        }
-        // skip any error reporting for now
-        // TODO: fix sanity_ok in Netdisco Web
-        ,error: function() {
-          htmx.trigger('#' + tab + '_form', 'submit');
-        }
+    document.querySelectorAll('.nd_field-clear-icon').forEach(function (el) {
+      el.addEventListener('click', function () {
+        var name = el.dataset.btnFor;
+        var input = document.querySelector('#device_form [name=' + name + ']');
+        if (!input) return;
+        input.value = '';
+        device_form_state(input); // will hide copy icons
       });
     });
   }
+  else if (page === 'report') {
+    nd_setup_report_sidebar(tab, target);
+  }
   else if (ndPages[page] && ndPages[page].ready) {
-    form_inputs = ndPages[page].formInputs ? ndPages[page].formInputs() : $();
+    form_inputs = ndPages[page].formInputs ? ndPages[page].formInputs() : [];
     ndPages[page].ready();
   }
 
@@ -1210,10 +1446,10 @@ $(document).ready(function() {
   // This carries the side effects only and must not call preventDefault:
   // htmx's own submit listener does that.
   //
-  // The csv and reset links used to be rebuilt here and now arrive with the
-  // pane. What is left is what no response can answer: the navbar copy writes
-  // into a form the response must never replace, and whether a tab has a
-  // sidebar is declared by the sidebar templates rather than by any route.
+  // What this listener handles is what no response can answer: the navbar
+  // copy writes into a form the response must never replace, and whether a
+  // tab has a sidebar is declared by the sidebar templates rather than by
+  // any route.
   document.addEventListener('submit', function (event) {
     var form = event.target;
     if (!form.matches('form[data-nd-tab]')) return;
@@ -1233,14 +1469,16 @@ $(document).ready(function() {
   }
 
   // tenant change
-  $('.nd_navtenant').click(function(event) {
-    event.preventDefault();
-    var url = new URL(window.location.href);
-    var newpath = url.pathname;
-    newpath = newpath.replace($(this).data('currenttenant'), "");
-    newpath = newpath.replace(document.body.dataset.ndPath, "/");
-    newpath = newpath.replace("//", "/");
-    newpath = $(this).data('tenantpath').concat(newpath, url.search);
-    window.location = newpath;
+  document.querySelectorAll('.nd_navtenant').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      event.preventDefault();
+      var url = new URL(window.location.href);
+      var newpath = url.pathname;
+      newpath = newpath.replace(link.dataset.currenttenant, "");
+      newpath = newpath.replace(document.body.dataset.ndPath, "/");
+      newpath = newpath.replace("//", "/");
+      newpath = link.dataset.tenantpath.concat(newpath, url.search);
+      window.location = newpath;
+    });
   });
 });
