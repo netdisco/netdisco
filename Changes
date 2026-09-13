@@ -1,3 +1,19 @@
+2.109000 - tbd
+
+  [ENHANCEMENTS]
+
+  * if you keep site-local templates or JavaScript, run netdisco-do
+    checksitelocal after upgrading. this release removes several things a copy
+    may still call, and the report names every file and what to change. a
+    shadowed layout is also reported when the web app starts, because it
+    leaves every page dead and says nothing otherwise
+
+  [BUG FIXES]
+
+  * the Module Inventory, NetBIOS and Node Vendor reports now honor every
+    filter when more than one is given; the second and later were dropped by
+    the table's data request
+
 2.108004 - 2026-09-09
 
   [BUG FIXES]

@@ -41,9 +41,9 @@ const path = require('node:path');
 
 const repoRoot = path.join(__dirname, '..', '..');
 const netmapJs = () => fs.readFileSync(
-  path.join(repoRoot, 'share', 'views', 'js', 'netmap.js'), 'utf8');
-const deviceJs = () => fs.readFileSync(
-  path.join(repoRoot, 'share', 'views', 'js', 'device.js'), 'utf8');
+  path.join(repoRoot, 'share', 'public', 'javascripts', 'netdisco-netmap.js'), 'utf8');
+const netdiscoJs = () => fs.readFileSync(
+  path.join(repoRoot, 'share', 'public', 'javascripts', 'netdisco.js'), 'utf8');
 
 // balanced to the handler's own closing paren, so an assertion cannot pass by
 // matching text that belongs to a different handler. A line-indent heuristic
@@ -125,7 +125,10 @@ describe('netmap manual save', () => {
     const src = netmapJs();
     const at = src.indexOf('saveMapPositions = function');
     assert.notEqual(at, -1, 'netmap.js must define saveMapPositions');
-    const body = src.slice(at, src.indexOf('\n  };', at));
+    // netdisco-netmap.js nests this one function deeper than the old
+    // per-fragment script did (inside ndNetmap, itself inside the swap
+    // listener), so its own closing brace sits one indent level further in.
+    const body = src.slice(at, src.indexOf('\n    };', at));
     assert.match(
       body,
       /toastr\.success/,
@@ -146,9 +149,9 @@ describe('netmap manual save', () => {
   });
 
   test('saveButton__on_click__tells_saveMapPositions_it_was_the_user', () => {
-    const src = deviceJs();
+    const src = netdiscoJs();
     const at = src.indexOf("'#nd_netmap-save'");
-    assert.notEqual(at, -1, 'device.js must bind the netmap Save button');
+    assert.notEqual(at, -1, 'netdisco.js must bind the netmap Save button');
     const handler = src.slice(at, at + 260);
     assert.match(
       handler,

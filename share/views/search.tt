@@ -16,15 +16,17 @@
                 hx-get="[% uri_for('/ajax/content/search/' _ tab.tag) | none %]"
                 hx-target="#[% tab.tag | html_entity %]_pane"
                 hx-headers='{"X-Requested-With": "XMLHttpRequest"}'
-                hx-indicator="#[% tab.tag | html_entity %]_indicator">
+                hx-indicator="#[% tab.tag | html_entity %]_indicator"
+                data-nd-tab="[% tab.tag | html_entity %]"
+                data-nd-csv="[% tab.provides_csv ? 1 : 0 %]">
               <input name="tab" value="[% tab.tag | html_entity %]" type="hidden"/>
               [% TRY %]
-              <script type="text/javascript">has_sidebar["[% tab.tag | html_entity %]"] = 1;</script>
+              <input type="hidden" data-nd-has-sidebar="[% tab.tag | html_entity %]" value="1">
               [% INCLUDE "sidebar/search/${tab.tag}.tt" %]
               [% CATCH %]
               <!-- no "[% tab.tag | html_entity %]" search options -->
               <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
-              <script type="text/javascript">has_sidebar["[% tab.tag | html_entity %]"] = 0;</script>
+              <input type="hidden" data-nd-has-sidebar="[% tab.tag | html_entity %]" value="0">
               [% END %]
             </form>
           </div> <!-- /tab-pane -->
@@ -54,7 +56,3 @@
       [% END %]
   </div>
 </div>
-
-<script type="text/javascript">
-[%+ INCLUDE 'js/search.js' -%]
-</script>

@@ -1,7 +1,18 @@
 [% IF results.count == 0 %]
 <div class="col-md-2 alert alert-info">The user activity log is empty.</div>
 [% ELSE %]
-<table id="aul-data-table" class="table table-bordered table-sm table-hover" width="100%" cellspacing="0">
+<table id="aul-data-table" class="table table-bordered table-sm table-hover" width="100%" cellspacing="0"
+  data-nd-table='{
+  "serverSide": true,
+  "order": [[0,"desc"]],
+  "ajax": "[% uri_for("/ajax/control/admin/userlog/data") | html_entity %]",
+  "columns": [
+    {"data":"creation","className":"nd_center-cell","render":"dateTime"},
+    {"data":"username","className":"nd_center-cell","render":"escape"},
+    {"data":"userip","className":"nd_center-cell","render":"escape"},
+    {"data":"event","className":"nd_center-cell","render":"escape"}
+  ]
+}'>
   <thead>
     <tr>
       <th class="nd_center-cell">Creation</th>
@@ -12,40 +23,3 @@
   </thead>
 </table>
 [% END %]
-
-<script>
-$(document).ready(function() {
-  $('#aul-data-table').dataTable( {
-    "serverSide": true,
-    "order": [[ 0, "desc" ]],
-    "ajax": "[% uri_for('/ajax/control/admin/userlog/data') | none %]",
-    "columns": [{
-      "data": 'creation',
-      "className": "nd_center-cell",
-      "render": function(data, type, row, meta) {
-        return moment(data).format('YYYY-MM-DD HH:mm');
-      }
-    }, {
-      "data": 'username',
-      "className": "nd_center-cell",
-      "render": function(data, type, row, meta) {
-        return DataTable.util.escapeHtml(data || '');
-      }
-    }, {
-      "data": 'userip',
-      "className": "nd_center-cell",
-      "render": function(data, type, row, meta) {
-        return DataTable.util.escapeHtml(data || '');
-      }
-    }, {
-      "data": 'event',
-      "className": "nd_center-cell",
-      "render": function(data, type, row, meta) {
-        return DataTable.util.escapeHtml(data || '');
-      }
-    }
-  ],
-[% INCLUDE 'ajax/datatabledefaults.tt' -%]
-  } );
-} );
-</script>

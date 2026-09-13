@@ -146,8 +146,7 @@ function riskySelectors() {
 // about netdisco's markup.
 function ourScripts() {
   const pub = path.join(ROOT, 'share', 'public', 'javascripts');
-  return fs.readdirSync(pub).filter((f) => /^netdisco.*\.js$/.test(f)).map((f) => path.join(pub, f))
-    .concat(walk(path.join(ROOT, 'share', 'views', 'js'), '.js'));
+  return fs.readdirSync(pub).filter((f) => /^netdisco.*\.js$/.test(f)).map((f) => path.join(pub, f));
 }
 
 // A detector that cannot fire reports zero for the same reason a working one

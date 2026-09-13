@@ -1,3 +1,9 @@
+// promoted from a <body> data attribute; the layout carries no inline
+// JavaScript for CodeQL to skip.
+var uri_base = document.body.dataset.ndUriBase;
+var default_pgtitle = document.body.dataset.ndTitle;
+var nd_check_userlog = (document.body.dataset.ndCheckUserlog === '1');
+
 // parameterised for the active tab - submits search form and injects
 // HTML response into the tab pane, or an error/empty-results message
 // dispatch a real submit event so htmx, which listens natively, sees it.
@@ -11,10 +17,21 @@ function nd_submit (form_selector) {
   }
 }
 
-// has_sidebar is set by TT: 0 means the tab ships no sidebar template. Shared
-// with the htmx path, which does not call do_search.
+// a data-nd-has-sidebar="tab" marker of 0 means the tab ships no sidebar
+// template. Shared with the htmx path, which does not call do_search.
+function nd_has_sidebar(tab) {
+  // A tab whose sidebar include throws renders the try block's marker (1)
+  // and then the catch block's (0); a tab with its own sidebar template that
+  // deliberately reports 0 renders that same 1 first, then its own 0. Either
+  // way the last marker in the document is the one that used to win when
+  // this was a plain object assignment.
+  var markers = document.querySelectorAll('[data-nd-has-sidebar="' + tab + '"]');
+  var marker = markers[markers.length - 1];
+  return marker ? marker.value !== '0' : true;
+}
+
 function nd_apply_sidebar (tab) {
-  if (has_sidebar[tab] == 0) {
+  if (!nd_has_sidebar(tab)) {
     hideWithTooltip('.nd_sidebar, #nd_sidebar-toggle-img-out');
     $('.content').css('margin-right', '10px');
   }
@@ -29,10 +46,10 @@ function nd_apply_sidebar (tab) {
   }
 }
 
-// Nothing shipped calls this. It is here for site-local copies of
-// share/views/js/common.js, which call it from their own submit handlers. It
-// forwards with htmx.ajax() rather than nd_submit(), which would re-enter the
-// caller's own submit handler and recurse.
+// Nothing shipped calls this. It is here for site-local code whose own
+// submit handler still calls it; the shipped equivalent is the delegated
+// submit listener in this file. It forwards with htmx.ajax() rather than
+// nd_submit(), which would re-enter the caller's own handler and recurse.
 function do_search (event, tab) {
   event.preventDefault();
   nd_apply_sidebar(tab);
@@ -54,8 +71,32 @@ function do_search (event, tab) {
       headers: { 'X-Requested-With': 'XMLHttpRequest' } });
 }
 
-// keep track of which tabs have a sidebar, for when switching tab
-var has_sidebar = {};
+/**
+ * Registry of page scripts. A page's own file assigns an entry at load time,
+ * before any ready callback runs, so this file can drive the page without
+ * knowing which pages exist; the layout loads only the current page's script.
+ * An entry is an object with up to three members:
+ * formInputs() returns the jQuery collection of inputs whose state colors the
+ * sidebar form, or an empty collection; innerView(tab) runs after every pane
+ * swap on that page; ready() runs once when the page has loaded, reading the
+ * active tab from nd_active_tab and nd_active_target.
+ * @type {Object<string, {formInputs?: Function, innerView?: Function, ready?: Function}>}
+ */
+var ndPages = {};
+
+// page, path, activeForm and form_inputs are set from the active page's
+// ready block further down (device, search, report or admin), and read as
+// globals here, in inner_view_processing, and by a registered page's own
+// script. nd_active_tab and nd_active_target carry that ready block's local
+// tab and target the same way, under names a registered page's ready() can
+// read without shadowing the many local tab/target of the same name
+// elsewhere in this file.
+var page;
+var path;
+var activeForm;
+var nd_active_tab;
+var nd_active_target;
+var form_inputs;
 var sidebar_hidden = 0;
 
 // set while replaying a history entry, so the tab click that replay fakes does
@@ -81,7 +122,7 @@ function update_content(from, to) {
   // page title
   var pgtitle = default_pgtitle;
   if ($('#nd_device-name').text().length) {
-    var pgtitle = $.trim($('#nd_device-name').text()) +' - '+ $('#'+ to + '_link').text();
+    pgtitle = $.trim($('#nd_device-name').text()) +' - '+ $('#'+ to + '_link').text();
   }
 
   // navbar text decoration special case
@@ -156,11 +197,6 @@ function device_form_state(e) {
       $('.nd_field-copy-icon').hide();
     }
   }
-}
-
-//utility function for views
-function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 // retitle a tooltip which is delegated from body. the delegate builds a
@@ -317,8 +353,10 @@ $(document).ready(function() {
     $(this).autocomplete('instance')._renderItem = function(ul, item) {
       var label = $('<div/>').text(item.label).html();
       var term = $('<div/>').text(this.term).html()
-        .replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
+        .replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
       var marked = term.length
+        // term was regex-escaped just above
+        // eslint-disable-next-line security/detect-non-literal-regexp
         ? label.replace(new RegExp('(' + term + ')', 'ig'), '<strong>$1</strong>')
         : label;
       return $('<li/>').append($('<div/>').html(marked)).appendTo(ul);
@@ -381,7 +419,7 @@ $(document).ready(function() {
 
   // fix green background on search checkboxes
   // https://github.com/twitter/bootstrap/issues/742
-  syncCheckBox = function() {
+  var syncCheckBox = function() {
     $(this).parents('.input-group-text').toggleClass('active', $(this).is(':checked'));
   };
   $('.input-group-text :checkbox').each(syncCheckBox).click(syncCheckBox);
@@ -531,6 +569,169 @@ $(document).ready(function() {
   });
   $('#daterange').trigger('input');
 
+  // inventory: a very large platform or OS table starts collapsed (see the
+  // toggle() below); each Show link expands its own group's rows again.
+  document.addEventListener('click', function (event) {
+    var link = event.target.closest('.nd_collapse-inventory');
+    if (!link) return;
+    $(link.dataset.target).toggle();
+    $(link.dataset.chevron).toggleClass('fa-chevron-up fa-chevron-down');
+  });
+
+  // modules tab: collapsible nested <ul>, root scoped to the swapped pane so
+  // a second modules fragment does not rebind the first one's tree.
+  function nd_tree(root) {
+    $(root).find('.tree > ul').attr('role', 'tree').find('ul').attr('role', 'group');
+    $(root).find('.tree').find('li:has(ul)').addClass('parent_li').attr('role', 'treeitem').find(' > span').attr('title', 'Collapse this branch').on('click', function (e) {
+      var children = $(this).parent('li.parent_li').find(' > ul > li');
+      if (children.is(':visible')) {
+        children.hide('fast');
+        $(this).attr('title', 'Expand this branch').find(' > i').addClass('fa-circle-plus').removeClass('fa-circle-minus');
+      }
+      else {
+        children.show('fast');
+        $(this).attr('title', 'Collapse this branch').find(' > i').addClass('fa-circle-minus').removeClass('fa-circle-plus');
+      }
+      e.stopPropagation();
+    });
+  }
+
+  // snmp tab: jsTree browser and its search box.
+  function nd_snmp_browser(pane) {
+    var device = pane.querySelector('#jstree').dataset.ndDevice;
+    var jstree_search_callback = function(str, node) {
+      var pattern = str.toLowerCase();
+      var mib_pat = str.replace(/::.+/,'').toLowerCase();
+      var leaf_pat = str.replace(/.+::/,'').toLowerCase();
+      var mib_lc = node.original.mib.toLowerCase();
+      var leaf_lc = node.original.leaf.toLowerCase();
+      var oid = node.id.toLowerCase();
+
+      if (document.getElementById('nd_snmp_search_deviceonly').checked) {
+        if (node.original.has_value == 0) { return false; }
+      }
+
+      // partial is ticked, check OID base, or mib + leaf root, or just leaf
+      if (document.getElementById('nd_snmp_search_partial').checked) {
+        if (pattern.includes('.')) {
+          if (oid.indexOf(pattern) == 0) { return true; }
+        }
+        else if (pattern.includes('::')) {
+          if ((mib_lc == mib_pat) && (leaf_lc.indexOf(leaf_pat) == 0)) { return true; }
+        }
+        else if (leaf_lc.indexOf(pattern) == 0) {
+          return true;
+        }
+      }
+      // user supplies a qualified leaf
+      else if (pattern.includes('::')) {
+        if ((mib_lc == mib_pat) && (leaf_lc == leaf_pat)) {
+          return true;
+        }
+      }
+      // user supplies an unqualified leaf, or an OID
+      else {
+        if ((leaf_lc == pattern) || (oid == pattern)) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    $('#jstree').jstree({
+      'core': {
+        'multiple' : false,
+        'themes': {
+          'name': 'proton',
+          'responsive': true
+        },
+        'data' : {
+          'url' : function (node) {
+            return (uri_base + '/ajax/data/device/' + device + '/snmptree/'
+              + (node.id === '#' ? '.1' : node.id));
+          }
+        }
+      },
+      'plugins': ['search'],
+      'search': {
+        'ajax' : {
+          'url' : uri_base + '/ajax/data/snmp/nodesearch',
+          'beforeSend' : function(jqXHR, settings) {
+            $('#nd_snmp_loading_spinner').removeClass('far fa-circle fas fa-circle-exclamation text-success')
+                                         .addClass('fas fa-spinner text-warning fa-spin');
+
+            if (document.getElementById('nd_snmp_search_partial').checked) {
+              settings.url = settings.url + '&partial=on';
+            }
+
+            if (document.getElementById('nd_snmp_search_deviceonly').checked) {
+              settings.url = settings.url + '&deviceonly=on&ip=' + device;
+            }
+
+            return true;
+          },
+          'error' : function() {
+            $('#nd_snmp_loading_spinner').removeClass('fas fa-spinner text-warning fa-spin')
+                                         .addClass('fas fa-circle-exclamation');
+          }
+        },
+        'search_callback' : jstree_search_callback
+      },
+    });
+    $('#snmpnodecontainer').on("change", "#munger", function(e, data) {
+      var ary = $('#jstree').jstree('get_selected');
+      $('#node').load(uri_base + '/ajax/content/device/' + device + '/snmpnode/'
+        + ary[0] + '?munge=' + $('#munger').find(":selected").text());
+    });
+    $('#jstree').on("changed.jstree", function (e, data) {
+      if (data.selected && data.selected != "#") {
+        $('#node').load(uri_base + '/ajax/content/device/' + device + '/snmpnode/' + data.selected);
+      }
+    });
+    $('#jstree').on("search.jstree", function (e, data) {
+      if (data.res.length) {
+        $('#node').load(uri_base + '/ajax/content/device/' + device + '/snmpnode/' + data.res[0]);
+
+        $("#jstree").jstree().deselect_all(true);
+        $('#jstree').jstree('select_node', data.res[0] + '_anchor');
+
+        var node = $('#jstree').jstree("get_selected", true);
+        var nodePath = $('#jstree').jstree().get_path(node[0], false, true);
+        var parent = nodePath[nodePath.length - 2];
+        document.getElementById( parent ).scrollIntoView();
+
+        $('#nd_snmp_loading_spinner').removeClass('fas fa-spinner text-warning fa-spin')
+                                     .addClass('far fa-circle text-success');
+      }
+    });
+    $("#nd_snmp_search_form").submit(function(e) {
+      $("#jstree").jstree("search", $("#nd_snmp_search_text").val());
+      e.preventDefault();
+    });
+    $('#nd_snmp_search_text').autocomplete({
+      source: function (request, response)  {
+        var query = $('.nd_snmp_search_param').serialize();
+        return $.get( uri_base + '/ajax/data/snmp/typeahead', query, function (data) {
+          return response(data);
+        });
+      }
+      ,delay: 150
+      ,minLength: 2
+    });
+  }
+
+  // admintask orphaned devices: the chevron on an accordion header flips to
+  // show which section is expanded. Bootstrap fires these as native events on
+  // the collapsing element itself, so a body listener sees them regardless of
+  // which accordion swapped in.
+  document.body.addEventListener('show.bs.collapse', nd_accordion_chevron);
+  document.body.addEventListener('hide.bs.collapse', nd_accordion_chevron);
+  function nd_accordion_chevron(event) {
+    var header = event.target.closest('.accordion') && event.target.previousElementSibling;
+    var icon = header && header.classList.contains('accordion-header') && header.querySelector('a i');
+    if (icon) { icon.classList.toggle('fa-chevron-up'); icon.classList.toggle('fa-chevron-down') }
+  }
+
   // htmx glue. Converted panes get the same empty-result, error and
   // after-swap handling do_search gives the unconverted ones, so the two
   // transports are indistinguishable to a user. Keyed on any *_pane, not just
@@ -544,6 +745,9 @@ $(document).ready(function() {
         '<div class="col-md-2 alert alert-info">No matching records.</div>';
       return;
     }
+    ndTables.init(target);
+    if (target.querySelector('.tree')) nd_tree(target);
+    if (target.querySelector('#jstree')) nd_snmp_browser(target);
     holdUntilSettled(target, document.getElementById(tab + '_indicator'));
     $('div.content > div.tab-content table.nd_floatinghead').floatThead({
       top: 40
@@ -562,8 +766,8 @@ $(document).ready(function() {
     if (!target.id.match(/_pane$/) || target.id === 'jobqueue_pane') return;
 
     // force-graph renders every frame until destroyed, and emptying the pane
-    // only detaches its canvas. netmap.js destroys the previous instance as
-    // well, but not until the new fragment's script runs.
+    // only detaches its canvas. netdisco-netmap.js destroys the previous
+    // instance too, but not until its own swap listener re-initializes.
     if (target.id === 'netmap_pane' && window.graph && window.graph.fg
         && typeof window.graph.fg._destructor === 'function') {
       window.graph.fg._destructor();
@@ -586,60 +790,492 @@ $(document).ready(function() {
       '<div class="col-md-5 alert alert-danger"><i class="fas fa-triangle-exclamation"></i> ' +
       'Search failed! Please contact your site administrator (network error).</div>';
   });
+
+  // A script error otherwise fails silently: htmx fires an event nobody
+  // listens to, and an exception inside one of our own handlers reaches
+  // nobody. One toast per page load; the console carries the detail.
+  var ndReported = false;
+  function nd_report_script_error(message, detail) {
+    console.error(message, detail);
+    if (ndReported) return;
+    ndReported = true;
+    toastr.error('Something on this page failed. The browser console has the details.');
+  }
+  window.addEventListener('error', function (evt) {
+    // a script from another origin reports only the bare "Script error."
+    if (!evt.error && evt.message === 'Script error.') return;
+    nd_report_script_error(evt.message, evt.error);
+  });
+  window.addEventListener('unhandledrejection', function (evt) {
+    nd_report_script_error('Unhandled rejection', evt.reason);
+  });
+  document.body.addEventListener('htmx:swapError', function (evt) {
+    nd_report_script_error('Response could not be displayed', evt.detail);
+  });
 });
 
-// temporarily disable datatables paging
-// returns [current_page_length, current_page_index]
-function dataTablesDisablePaging() {
-  $.fn.dataTable.ext.search.pop();
-  var plen = $('#dp-data-table').DataTable().page.len();
-  var pnum = $('#dp-data-table').DataTable().page();
-  $('#dp-data-table').DataTable().page.len(-1).draw(true);
-  return [plen, pnum];
+
+// index.tt: load System Information once its accordion is first opened,
+// using {once: true} in place of a stats_loaded flag.
+function nd_statistics_panel() {
+  var stats = document.getElementById('nd_stats');
+  $('#nqbody').focus(); // set focus to main search
+  $('#loginuser').focus(); // set focus to login, if it's there
+
+  var collapseStats = document.getElementById('collapse-stats');
+  if (!collapseStats) return;
+
+  collapseStats.addEventListener('show.bs.collapse', function() {
+    fetch( stats.dataset.ndUrl,
+      { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then( response => {
+        if (! response.ok) {
+          $('#nd_stats_status').addClass('alert-danger')
+            .html('<i class="fas fa-triangle-exclamation"></i> Failed to retrieve system information (server error).');
+          return;
+          // throw new Error('Network response was not ok');
+        }
+        return response.text();
+      })
+      .then( content => {
+        $('#nd_stats').html(content);
+      })
+      .catch( error => {
+        $('#nd_stats_status').addClass('alert-danger')
+          .html('<i class="fas fa-triangle-exclamation"></i> Failed to retrieve system information (network error: ' + error + ').');
+        console.error('There has been a problem with your fetch operation:', error);
+      });
+  }, { once: true });
 }
 
-// restore the datatables pagination and page number
-function dataTablesRestorePage(plen, pnum) {
-  $('#dp-data-table').DataTable().page.len(plen).draw(true);
-  $('#dp-data-table').DataTable().page(pnum).draw(false);
+// called after every ajax-loaded pane finishes settling, for per-page glue
+// that jQuery delegation cannot express. do_search and the htmx glue above
+// both call this unconditionally, so it must exist even on pages with
+// nothing to do here.
+function inner_view_processing(tab) {
+  if (page === 'device') {
+    // LT wanted the page title to reflect what's on the page :)
+    document.title = $('#nd_device-name').text()
+      +' - '+ $('#'+ tab + '_link').text();
+  }
+  else if (ndPages[page] && ndPages[page].innerView) {
+    ndPages[page].innerView(tab);
+  }
+  // search and report have nothing to do here now that tooltips and popovers
+  // are delegated, but do_search and the htmx glue call this unconditionally.
 }
 
-// install our row filter for datatables row group toggle
-function dataTablesPushRowGroupVisibilityFilter() {
-  $.fn.dataTable.ext.search.push(
-    function(settings, data, dataIndex) {
-        var row = $($('#dp-data-table').DataTable().row(dataIndex).node());
-        if (! row.data('collapsed-group')) { return true; }
-        return row.attr('data-is-collapsed') == 'false';
-    }
-  );
+// csv download icon on any table page
+// needs to be dynamically updated to use current search options
+function update_csv_download_link (type, tab, show) {
+  var form = '#' + tab + '_form';
+  var query = $(form).serialize();
+
+  if (show.length) {
+    $('#nd_csv-download')
+      .attr('href', uri_base + '/ajax/content/' + type + '/' + tab + '?' + query)
+      .attr('download', 'netdisco-' + type + '-' + tab + '.csv')
+      .show();
+  }
+  else {
+    hideWithTooltip('#nd_csv-download');
+  }
 }
 
-// onclick handler
-// toggles visibility of a group of datatables rows
-// clicked element has the group name as data-collapsed-group
-var dataTablesRowGroupVisibilityToggle = function () {
-  var groupname = $(this).data('collapsed-group');
-  var [plen, pnum] = dataTablesDisablePaging();
+// page title includes tab name and possibly device name
+// this is nice for when you have multiple netdisco pages open in the
+// browser
+function update_page_title (tab) {
+  var pgtitle = default_pgtitle;
+  if ($.trim($('#nd_device-name').text()).length) {
+    pgtitle = $.trim($('#nd_device-name').text()) +' - '+ $('#'+ tab + '_link').text();
+  }
+  return pgtitle;
+}
 
-  // groupname is not in a class selector due to port name characters
-  $('tr.nd_collapsible').each(function(index) { 
-      if ($(this).data('collapsed-group') == groupname) {
-          if ($(this).attr('data-is-collapsed') == 'true') {
-            $(this).attr('data-is-collapsed', 'false');
+// update browser search history with the new query.
+// support history add (push) or replace via push parameter
+function update_browser_history (tab, pgtitle, push) {
+  var form = '#' + tab + '_form';
+  var query = $(form).serialize();
+  if (query.length) { query = '?' + query }
+
+  // pushState and replaceState ignore their title argument, so set the title
+  // beside each call and keep it in the state for popstate to restore
+  var state = {name: tab, fields: $(form).serializeArray(), title: pgtitle};
+
+  if (push.length) {
+    var target = uri_base + '/' + path + '/' + tab + query;
+    if (location.pathname == target) { return };
+    document.title = pgtitle;
+    history.pushState(state, '', target);
+  }
+  else {
+    document.title = pgtitle;
+    history.replaceState(state, '', uri_base + '/' + path + query);
+  }
+}
+
+// each sidebar search form has a hidden copy of the main navbar search
+function copy_navbar_to_sidebar (tab) {
+  var form = '#' + tab + '_form';
+
+  // copy navbar value to currently active sidebar form
+  if ($('#nq').val()) {
+    $(form).find("input[name=q]").val( $('#nq').val() );
+  }
+  // then copy to all other inactive tab sidebars
+  $('form').find("input[name=q]").each( function() {
+    $(this).val( $(form).find("input[name=q]").val() );
+  });
+}
+
+$(document).ready(function() {
+  if (document.getElementById('nd_stats')) { nd_statistics_panel(); }
+  if (document.querySelector('.nd_inventory_collapser')) { $('.nd_inventory_collapser').toggle(); }
+
+  page = document.body.dataset.ndPage;               // device, search, report, admin
+  path = page;                                        // what update_content builds URLs from
+  activeForm = document.querySelector('.tab-pane.active form[data-nd-tab]');
+  var tab = activeForm ? activeForm.dataset.ndTab : '';
+  var target = '#' + tab + '_pane';
+  nd_active_tab = tab;
+  nd_active_target = target;
+
+  if (page === 'device') {
+    // fields in the Device Search Options form (Device tab)
+    form_inputs = $("#ports_form .clearfix input").not('[type="checkbox"]')
+        .add("#ports_form .clearfix select");
+
+    var portfilter = $('#ports_form').find("input[name=f]");
+
+    // sidebar form fields should change colour and have trash/copy icon
+    form_inputs.each(function() {device_form_state($(this))});
+    form_inputs.change(function() {device_form_state($(this))});
+
+    // sidebar collapser events trigger change of up/down arrow
+    $('.collapse').on('show.bs.collapse', function() {
+      $(this).siblings().find('.nd_arrow-up-down-right')
+        .toggleClass('fa-chevron-up fa-chevron-down');
+    });
+
+    $('.collapse').on('hide.bs.collapse', function() {
+      $(this).siblings().find('.nd_arrow-up-down-right')
+        .toggleClass('fa-chevron-up fa-chevron-down');
+    });
+
+    // if the user edits the filter box, revert to automagical search
+    $('#ports_form').on('input', "input[name=f]", function() {
+      $('#nd_ports-form-prefer-field').attr('value', '');
+    });
+
+    // handler for trashcan icon in port filter box
+    $('.nd_field-clear-icon').click(function() {
+      portfilter.val('');
+      $('#nd_ports-form-prefer-field').attr('value', '');
+      nd_submit('#ports_form');
+      device_form_state(portfilter); // will hide copy icons
+    });
+
+    // allow port filter to have a preference for port/name/vlan
+    $('#ports_form').on('click', '.nd_device-port-submit-prefer', function() {
+      event.preventDefault();
+      $('#nd_ports-form-prefer-field').attr('value', $(this).data('prefer'));
+      nd_submit('#ports_form');
+    });
+
+    // clickable device port names can simply resubmit AJAX rather than
+    // fetch the whole page again.
+    $('#ports_pane').on('click', '.nd_this-port-only', function(event) {
+      event.preventDefault(); // link is real so prevent page submit
+
+      var port = $(this).text();
+      port = $.trim(port);
+      portfilter.val(port);
+      $('.nd_field-clear-icon').show();
+
+      // make sure we're preferring a port filter
+      $('#nd_ports-form-prefer-field').attr('value', 'port');
+
+      nd_submit('#ports_form');
+      device_form_state(portfilter); // will hide copy icons
+    });
+
+    // VLANs column list collapser trigger
+    // it's a bit of a faff because we can't easily use Bootstrap's collapser
+    $('#ports_pane').on('click', '.nd_collapse-vlans', function() {
+        $(this).closest('.nd_nodes-total').next('.nd_collapsing').toggle();
+        if ($(this).find('.nd_arrow-up-down-left-down').hasClass('fa-square-plus')) {
+          $(this).html('Hide <div class="nd_arrow-up-down-left-up fas fa-square-minus"></div>&nbsp;');
+        }
+        else {
+          $(this).html('Show <div class="nd_arrow-up-down-left-down fas fa-square-plus"></div>&nbsp;');
+        }
+    });
+
+    // netmap show controls. Setting any force-graph prop repaints, so
+    // re-setting nodeRelSize to itself is the repaint call.
+    $('#nd_showips').change(function () {
+      window.graph.fg.nodeRelSize(window.graph.fg.nodeRelSize());
+    });
+    $('#nd_showspeed').change(function () {
+      window.graph.fg.nodeRelSize(window.graph.fg.nodeRelSize());
+    });
+
+    // netmap pin/release controls
+    $('#nd_netmap-releaseall').on('click', function (event) {
+      event.preventDefault();
+      window.graph.fg.graphData().nodes.forEach(function (n) { n.fx = undefined; n.fy = undefined });
+      window.graph.fg.d3ReheatSimulation();
+    });
+    $('#nd_netmap-releaseonly').on('click', function (event) {
+      event.preventDefault();
+      window.graph.fg.graphData().nodes.forEach(function (n) {
+        if (n.selected) { n.fx = undefined; n.fy = undefined }
+      });
+      window.graph.fg.d3ReheatSimulation();
+    });
+    $('#nd_netmap-pinonly').on('click', function (event) {
+      event.preventDefault();
+      window.graph.fg.graphData().nodes.forEach(function (n) {
+        if (n.selected) { n.fx = n.x; n.fy = n.y }
+      });
+    });
+    $('#nd_netmap-zoomtodevice').on('click', function (event) {
+      event.preventDefault();
+      var n = window.graph.nodeDataById(window.graph.centernode);
+      window.graph.fg.centerAt(n.x, n.y, 600);
+      window.graph.fg.zoom(4, 600);
+    });
+    $('#nd_netmap-save').on('click', function (event) {
+      event.preventDefault();
+      // true marks this as the user asking, which is what netdisco-netmap.js
+      // keys the confirmation toast off
+      saveMapPositions(true);
+    });
+
+    // activity for admin tasks in device details
+    $('#details_pane').on('click', '.nd_adminbutton', function(event) {
+      // stop form from submitting normally
+      event.preventDefault();
+
+      // what purpose - discover/macsuck/arpnip
+      var mode = $(this).attr('name');
+      var tr = $(this).closest('tr');
+
+      // submit the query
+      $.ajax({
+        type: 'POST'
+        ,async: true
+        ,dataType: 'html'
+        ,url: uri_base + '/ajax/control/admin/' + mode
+        ,data: tr.find('input[data-form="' + mode + '"],textarea[data-form="' + mode + '"]').serializeArray()
+        ,success: function() {
+          if (mode != 'delete') {
+            toastr.info('Requested '+ mode +' for device '+ tr.data('for-device'));
+            if (mode == 'snapshot_del') {
+                $('.nd_snap_btn').toggleClass('btn-success');
+                $('.nd_snap_btn').toggleClass('btn-info');
+                $('.nd_snap_func').toggleClass('disabled');
+            }
           }
           else {
-            $(this).attr('data-is-collapsed', 'true');
+            toastr.success('Queued job to delete '+ tr.data('for-device'));
           }
+        }
+        // skip any error reporting for now
+        // TODO: fix sanity_ok in Netdisco Web
+        ,error: function() {
+          toastr.error('Failed to '+ mode +' device '+ tr.data('for-device'));
+        }
+      });
+    });
+
+    $('#details_pane').on('click', '.nd_nonadminbutton', function(event) {
+      // stop form from submitting normally
+      event.preventDefault();
+
+      // what purpose - discover/macsuck/arpnip
+      var mode = $(this).attr('name');
+      var tr = $(this).closest('tr');
+
+      // submit the query
+      $.ajax({
+        type: 'POST'
+        ,async: true
+        ,dataType: 'html'
+        ,url: uri_base + '/ajax/control/nonadmin/' + mode
+        ,data: tr.find('input[data-form="' + mode + '"],textarea[data-form="' + mode + '"]').serializeArray()
+        ,success: function() {
+          toastr.info('Requested '+ mode +' for device '+ tr.data('for-device'));
+        }
+        // skip any error reporting for now
+        // TODO: fix sanity_ok in Netdisco Web
+        ,error: function() {
+          toastr.error('Failed to '+ mode +' device '+ tr.data('for-device'));
+        }
+      });
+    });
+
+    // clear any values in the delete confirm dialog
+    $('#details_pane').on('hidden.bs.modal', '.nd_modal', function () {
+      $('#nd_devdel-log').val('');
+      $('#nd_devdel-archive').attr('checked', false);
+    });
+  }
+  else if (page === 'search') {
+    // fields in the Device Search Options form (Device tab)
+    form_inputs = $("#device_form .clearfix input").not('[type="checkbox"]')
+        .add("#device_form .clearfix select");
+
+    // sidebar form fields should change colour and have bin/copy icon
+    form_inputs.each(function() {device_form_state($(this))});
+    form_inputs.change(function() {device_form_state($(this))});
+
+    // handler for copy icon in search option
+    $('.nd_field-copy-icon').click(function() {
+      var name = $(this).data('btn-for');
+      var input = $('#device_form [name=' + name + ']');
+      input.val( $('#nq').val() );
+      device_form_state(input); // will hide copy icons
+    });
+
+    // handler for bin icon in search option
+    $('.nd_field-clear-icon').click(function() {
+      var name = $(this).data('btn-for');
+      var input = $('#device_form [name=' + name + ']');
+      input.val('');
+      device_form_state(input); // will hide copy icons
+    });
+  }
+  else if (page === 'report') {
+    // some reports carry bind params but no configured sidebar, so they
+    // start with the sidebar already hidden; mirrors the manual toggle below
+    if (document.querySelector('form[data-nd-hide-sidebar]')) {
+      $('.nd_sidebar').toggle(0);
+      $('#nd_sidebar-toggle-img-out').toggle();
+      $('.content').css('margin-right', '10px');
+      $('div.content > div.tab-content table.nd_floatinghead').floatThead('destroy');
+      $('div.content > div.tab-content table.nd_floatinghead').floatThead({
+        top: 40
+        ,position: 'fixed'
+      });
+      sidebar_hidden = 1;
+    }
+
+    // colored input fields in the Report Options sidebar forms
+    form_inputs = $(".nd_colored-input");
+
+    // sidebar form fields should change colour and have trash icon
+    form_inputs.each(function() {device_form_state($(this))});
+    form_inputs.change(function() {device_form_state($(this))});
+
+    // handler for bin icon in search forms
+    $('.nd_field-clear-icon').click(function() {
+      var name = $(this).data('btn-for');
+      var input = $('[name=' + name + ']');
+      input.val('');
+      device_form_state(input); // reset input field
+    });
+
+    $('#nd_ipinventory-subnet').on('input', function(event) {
+      if ($(this).val().indexOf(':') != -1) {
+        $('#never').attr('disabled', 'disabled');
       }
+      else {
+        $('#never').removeAttr('disabled');
+      }
+    });
+
+    // activate typeahead on prefix/subnet box
+    $('#nd_ipinventory-subnet').autocomplete({
+      source: function (request, response) {
+        return $.get( uri_base + '/ajax/data/subnet/typeahead', request, function (data) {
+          return response(data);
+        });
+      }
+      ,delay: 150
+      ,minLength: 3
+    });
+
+    // dynamically bind to all forms in the table
+    $('.content').on('click', '.nd_adminbutton', function(event) {
+      // stop form from submitting normally
+      event.preventDefault();
+
+      // what purpose - add/update/del
+      var mode = $(this).attr('name');
+
+      // submit the query and put results into the tab pane
+      $.ajax({
+        type: 'POST'
+        ,async: true
+        ,dataType: 'html'
+        ,url: uri_base + '/ajax/control/report/' + tab + '/' + mode
+        ,data: $(this).closest('tr').find('input[data-form="' + mode + '"]').serializeArray()
+        ,beforeSend: function() {
+          $(target).html(
+            '<div class="col-md-2 alert">Request submitted...</div>'
+          );
+        }
+        ,success: function() {
+          nd_submit('#' + tab + '_form');
+        }
+        // skip any error reporting for now
+        // TODO: fix sanity_ok in Netdisco Web
+        ,error: function() {
+          nd_submit('#' + tab + '_form');
+        }
+      });
+    });
+  }
+  else if (ndPages[page] && ndPages[page].ready) {
+    form_inputs = ndPages[page].formInputs ? ndPages[page].formInputs() : $();
+    ndPages[page].ready();
+  }
+
+  // Every sidebar form loads its own pane over htmx, declared by its hx-get.
+  // This carries the side effects only and must not call preventDefault:
+  // htmx's own submit listener does that.
+  document.addEventListener('submit', function (event) {
+    var form = event.target;
+    if (!form.matches('form[data-nd-tab]')) return;
+    var submittedTab = form.dataset.ndTab;
+    var pgtitle = update_page_title(submittedTab);
+    if (page === 'search' || page === 'device') copy_navbar_to_sidebar(submittedTab);
+    if (page !== 'admin') update_browser_history(submittedTab, pgtitle, page === 'report' ? '1' : '');
+    update_csv_download_link(page, submittedTab, form.dataset.ndCsv === '1' ? '1' : '');
+    var resetLink = document.getElementById('nd_sidebar-reset-link');
+    if (resetLink && page === 'device' && submittedTab === 'ports') {
+      resetLink.href = uri_base + '/device?tab=ports&reset=on&firstsearch=on&'
+        + $('#ports_form').find('input[name="q"],input[name="f"],input[name="partial"],input[name="invert"]').serialize();
+    }
+    if (resetLink && page === 'device' && submittedTab === 'netmap') {
+      resetLink.href = uri_base + '/device?tab=netmap&reset=on&firstsearch=on&'
+        + $('#netmap_form').find('input[name="q"]').serialize();
+    }
+    nd_apply_sidebar(submittedTab);
   });
 
-  dataTablesPushRowGroupVisibilityFilter();
-  dataTablesRestorePage(plen, pnum);
+  // on page load, load the content for the active tab
+  var active = document.body.dataset.ndActiveTab;
+  if (active) {
+    if (active === 'ipinventory' || active === 'subnets') {
+      var submitEl = document.getElementById(active + '_submit');
+      if (submitEl) submitEl.click();
+    }
+    else nd_submit('#' + active + '_form');
+  }
 
-  var icon = $(this).find('i');
-  icon.toggleClass(
-    "fa-list-ol fa-arrow-up-wide-short fa-rotate-180"
-  );
-};
-
+  // tenant change
+  $('.nd_navtenant').click(function(event) {
+    event.preventDefault();
+    var url = new URL(window.location.href);
+    var newpath = url.pathname;
+    newpath = newpath.replace($(this).data('currenttenant'), "");
+    newpath = newpath.replace(document.body.dataset.ndPath, "/");
+    newpath = newpath.replace("//", "/");
+    newpath = $(this).data('tenantpath').concat(newpath, url.search);
+    window.location = newpath;
+  });
+});

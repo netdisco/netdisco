@@ -1,6 +1,34 @@
 [% USE url %]
 [% IF opt %]
-  <table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0">
+  <table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0"
+    data-nd-urls='{
+    "device": "[% uri_for('/device') | html_entity %]",
+    "report_moduleinventory": "[% report_moduleinventory | html_entity %]"
+  }'
+    data-nd-table='{
+    "serverSide": true,
+    "searching": false,
+    "order": [[0,"desc"]],
+    "ajax": "[% uri_for("/ajax/content/report/moduleinventory/data") | html_entity %]?[% url(params("query").hash) | none %]",
+    "columns": [
+      {
+        "data": "ip",
+        "render": {"name":"deviceLink","tab":"modules","label":{"dns":"device.dns","name":"device.name","ip":"ip"}}
+      },
+      {"data":"description","render":{"name":"reportLink","report":"report_moduleinventory","param":"description"}},
+      {"data":"name","render":{"name":"reportLink","report":"report_moduleinventory","param":"name"}},
+      {
+        "data": "class",
+        "render": {"name":"reportLink","report":"report_moduleinventory","param":"class","capitalize":true}
+      },
+      {"data":"type","render":{"name":"reportLink","report":"report_moduleinventory","param":"type"}},
+      {"data":"model","render":{"name":"reportLink","report":"report_moduleinventory","param":"model"}},
+      {"data":"serial","render":{"name":"reportLink","report":"report_moduleinventory","param":"serial"}},
+      {"data":"hw_ver","render":"escape"},
+      {"data":"sw_ver","render":"escape"},
+      {"data":"fw_ver","render":"escape"}
+    ]
+  }'>
     <thead>
       <tr>
         <th>Device</th>
@@ -17,7 +45,20 @@
     </thead>
   </table>
 [% ELSE %]
-  <table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0">
+<script type="application/json" id="nd-results-report-moduleinventory">[% results.replace('<', '\u003c') | none %]</script>
+  <table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0"
+    data-nd-data="#nd-results-report-moduleinventory"
+    data-nd-urls='{"report_moduleinventory":"[% report_moduleinventory | html_entity %]"}'
+    data-nd-table='{
+    "deferRender": true,
+    "columns": [
+      {
+        "data": "class",
+        "render": {"name":"reportLink","report":"report_moduleinventory","param":"class","capitalize":true}
+      },
+      {"data":"count","render":"number"}
+    ]
+  }'>
     <thead>
       <tr>
         <th>Class</th>
@@ -26,86 +67,3 @@
     </thead>
   </table>
 [% END %]
-
-<script type="text/javascript">
-$(document).ready(function() {
-  var table = $('#data-table').dataTable({
-    [% IF opt %] 
-    "serverSide": true,
-    "searching": false,
-    "order": [[ 0, "desc" ]],
-    "ajax": "[% uri_for('/ajax/content/report/moduleinventory/data') | none %]?[% url(params('query').hash) | none %]",
-    "columns": [
-      {
-      "data": 'ip',
-      "render": function(data, type, row, meta) {
-        return '<a href="[% uri_for('/device') | none %]?tab=modules&q=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(row.device.dns || row.device.name || row.ip) + '</a>';
-        }
-      }, {
-        "data": 'description',
-        "render": function(data, type, row, meta) {
-          return '<a href="[% report_moduleinventory | none %]&description=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(data || '') + '</a>';
-        }
-      }, {
-        "data": 'name',
-        "render": function(data, type, row, meta) {
-          return '<a href="[% report_moduleinventory | none %]&name=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(data || '') + '</a>';
-        }
-      }, {
-        "data": 'class',
-        "render": function(data, type, row, meta) {
-          return '<a href="[% report_moduleinventory | none %]&class=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(capitalizeFirstLetter(data + '')) + '</a>';
-        }
-      }, {
-        "data": 'type',
-        "render": function(data, type, row, meta) {
-          return '<a href="[% report_moduleinventory | none %]&type=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(data || '') + '</a>';
-        }
-      }, {
-        "data": 'model',
-        "render": function(data, type, row, meta) {
-          return '<a href="[% report_moduleinventory | none %]&model=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(data || '') + '</a>';
-        }
-      }, {
-        "data": 'serial',
-        "render": function(data, type, row, meta) {
-          return '<a href="[% report_moduleinventory | none %]&serial=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(data || '') + '</a>';
-        }
-      }, {
-        "data": 'hw_ver',
-        "render": function(data, type, row, meta) {
-          return DataTable.util.escapeHtml(data || '');
-        }
-      }, {
-        "data": 'sw_ver',
-        "render": function(data, type, row, meta) {
-          return DataTable.util.escapeHtml(data || '');
-        }
-      }, {
-        "data": 'fw_ver',
-        "render": function(data, type, row, meta) {
-          return DataTable.util.escapeHtml(data || '');
-        }
-      }
-    ],
-    [% ELSE %]
-    "deferRender": true,
-    "data": [% results | none %],
-    "columns": [
-      {
-        "data": 'class',
-        "render": function(data, type, row, meta) {
-          return '<a href="[% report_moduleinventory | none %]&class=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(capitalizeFirstLetter(data + '')) + '</a>';
-        }
-      }, {
-        "data": 'count',
-        "render": function(data, type, row, meta) {
-          return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
-      }
-    ],
-      [% END %]
-[% INCLUDE 'ajax/datatabledefaults.tt' -%]
-  });
-});
-</script>

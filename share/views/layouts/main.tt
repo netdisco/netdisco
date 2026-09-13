@@ -25,20 +25,6 @@
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/portsort.js?v=[% asset_version | none %]"></script>
   <script type="text/javascript" src="[% uri_base | none %]/javascripts/versionsort.js?v=[% asset_version | none %]"></script>
 
-  <script type="text/javascript">
-    var uri_base = '[% uri_base | none %]';
-    var nd_check_userlog = '[% settings.check_userlog | html_entity %]';
-    var default_pgtitle = '[% settings.branding_text | none %]';
-  </script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/htmx.min.js?v=[% asset_version | none %]"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco.js?v=[% asset_version | none %]"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-deferred-nodes.js?v=[% asset_version | none %]"></script>
-  <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco_portcontrol.js?v=[% asset_version | none %]"></script>
-
-  [% FOREACH add_js IN settings._additional_javascript %]
-  <script type="text/javascript" src="[% uri_base | none %]/plugin/[% add_js | none %]/[% add_js | none %].js?v=[% asset_version | none %]"></script>
-  [% END %]
-
   <link rel="stylesheet" href="[% uri_base | none %]/css/bootstrap.min.css?v=[% asset_version | none %]"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/bootstrap-toggle.min.css?v=[% asset_version | none %]"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/awesome-bootstrap-checkbox.css?v=[% asset_version | none %]"/>
@@ -57,7 +43,14 @@
   [% END %]
 </head>
 
-<body>
+<body data-nd-uri-base="[% uri_base | html_entity %]"
+      data-nd-page="[% IF device %]device[% ELSIF search %]search[% ELSIF report %]report[% ELSIF task %]admin[% END %]"
+      data-nd-title="[% settings.branding_text | html_entity %]"
+      data-nd-check-userlog="[% settings.check_userlog ? 1 : 0 %]"
+      data-nd-page-length="[% settings.table_pagesize | html_entity %]"
+      data-nd-length-menu="[% table_showrecordsmenu | html_entity %]"
+      data-nd-active-tab="[% params.tab | html_entity %]"
+      data-nd-path="[% settings.path | html_entity %]">
 <nav class="navbar navbar-expand navbar-dark bg-dark fixed-top">
   <div class="container">
     <a class="navbar-brand" href="[% uri_for('') | none %]">[% settings.branding_text | none %]</a>
@@ -212,22 +205,17 @@
 
 [% content | none %]
 
-<script type="text/javascript">
-[%+ INCLUDE 'js/common.js' -%]
+<script type="text/javascript" src="[% uri_base | none %]/javascripts/htmx.min.js?v=[% asset_version | none %]"></script>
+<script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco.js?v=[% asset_version | none %]"></script>
+[% IF task %]<script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-admin.js?v=[% asset_version | none %]"></script>[% END %]
+<script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-tables.js?v=[% asset_version | none %]"></script>
+<script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-netmap.js?v=[% asset_version | none %]"></script>
+<script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-deferred-nodes.js?v=[% asset_version | none %]"></script>
+<script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-portcontrol.js?v=[% asset_version | none %]"></script>
 
-  // tenant change
-  $('.nd_navtenant').click(function(event) {
-    event.preventDefault();
-    var url = new URL(window.location.href);
-    var newpath = url.pathname;
-    newpath = newpath.replace($(this).data('currenttenant'), "");
-    newpath = newpath.replace("[% settings.path %]", "/");
-    newpath = newpath.replace("//", "/");
-    newpath = $(this).data('tenantpath').concat(newpath, url.search);
-    window.location = newpath;
-  });
-
-</script>
+[% FOREACH add_js IN settings._additional_javascript %]
+<script type="text/javascript" src="[% uri_base | none %]/plugin/[% add_js | none %]/[% add_js | none %].js?v=[% asset_version | none %]"></script>
+[% END %]
 
 </body>
 </html>

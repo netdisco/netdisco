@@ -139,6 +139,108 @@ subtest 'scan_site_local__handler_calls_do_search__reports_the_htmx_attributes' 
       'and pointing at the attributes that replace it';
 };
 
+subtest 'scan_site_local__fragment_includes_datatabledefaults__reports_the_removal' => sub {
+    my $tree = site_local_tree(
+      'views/ajax/report/custom.tt' => join("\n",
+        '<table data-nd-table=\'{}\'>',
+        "[% INCLUDE 'ajax/datatabledefaults.tt' %]",
+      ),
+    );
+
+    my @findings = scan_site_local({ paths => ["$tree"] });
+
+    is scalar @findings, 1, 'one finding'
+      or diag explain \@findings;
+    is $findings[0]{rule}, 'datatabledefaults-include',
+      'attributed to the removed fragment';
+    like $findings[0]{advice}, qr/data-nd-table/,
+      'and pointing at its replacement';
+};
+
+subtest 'scan_site_local__fragment_moved_its_options_into_data_nd_table__reports_nothing' => sub {
+    my $tree = site_local_tree(
+      'views/ajax/report/custom.tt' =>
+        q{<table data-nd-table='{"columns":[{"data":"ip","render":"escape"}]}'></table>},
+    );
+
+    is_deeply [ scan_site_local({ paths => ["$tree"] }) ], [],
+      'a migrated fragment is silent';
+};
+
+subtest 'scan_site_local__template_reads_has_sidebar__reports_the_removed_global' => sub {
+    my $tree = site_local_tree(
+      'views/sidebar/report/custom.tt' =>
+        q{[% IF has_sidebar['custom'] %]shown[% END %]},
+    );
+
+    my @findings = scan_site_local({ paths => ["$tree"] });
+
+    is scalar @findings, 1, 'one finding'
+      or diag explain \@findings;
+    is $findings[0]{rule}, 'has-sidebar-global', 'attributed to the removed global';
+    like $findings[0]{advice}, qr/data-nd-has-sidebar/,
+      'and naming its replacement';
+};
+
+subtest 'scan_site_local__template_uses_the_hidden_input_marker__reports_nothing' => sub {
+    my $tree = site_local_tree(
+      'views/sidebar/report/custom.tt' =>
+        q{<input type="hidden" data-nd-has-sidebar="custom" value="0">},
+    );
+
+    is_deeply [ scan_site_local({ paths => ["$tree"] }) ], [],
+      'a migrated sidebar marker is silent';
+};
+
+subtest 'scan_site_local__page_template_includes_a_js_page_script__reports_the_removal' => sub {
+    my $tree = site_local_tree(
+      'views/device.tt' => "[% INCLUDE 'js/device.js' %]",
+    );
+
+    my @findings = scan_site_local({ paths => ["$tree"] });
+
+    is scalar @findings, 1, 'one finding'
+      or diag explain \@findings;
+    is $findings[0]{rule}, 'page-script-include',
+      'attributed to the removed page scripts';
+    like $findings[0]{advice}, qr/netdisco\.js/,
+      'and naming where the scripts live now';
+};
+
+subtest 'scan_site_local__page_template_includes_no_script__reports_nothing' => sub {
+    my $tree = site_local_tree(
+      'views/device.tt' => qq{<form id="ports_form" hx-get="/ajax/content/device/ports">\n</form>\n},
+    );
+
+    is_deeply [ scan_site_local({ paths => ["$tree"] }) ], [],
+      'a page template carrying no script include is silent';
+};
+
+subtest 'scan_site_local__layout_names_the_old_portcontrol_file__reports_the_rename' => sub {
+    my $tree = site_local_tree(
+      'views/layouts/main.tt' =>
+        q{<script src="/javascripts/netdisco_portcontrol.js"></script>},
+    );
+
+    my @findings = scan_site_local({ paths => ["$tree"] });
+
+    is scalar @findings, 1, 'one finding'
+      or diag explain \@findings;
+    is $findings[0]{rule}, 'portcontrol-js-renamed', 'attributed to the rename';
+    like $findings[0]{advice}, qr/netdisco-portcontrol\.js/,
+      'and naming the current file';
+};
+
+subtest 'scan_site_local__layout_names_the_current_portcontrol_file__reports_nothing' => sub {
+    my $tree = site_local_tree(
+      'views/layouts/main.tt' =>
+        q{<script src="/javascripts/netdisco-portcontrol.js"></script>},
+    );
+
+    is_deeply [ scan_site_local({ paths => ["$tree"] }) ], [],
+      'a layout naming the current file is silent';
+};
+
 subtest 'scan_site_local__several_files_and_rules__sorts_by_path_then_line' => sub {
     my $tree = site_local_tree(
       'views/b.tt' => "he.encode(x);\n",
@@ -179,9 +281,11 @@ subtest 'scan_site_local__path_does_not_exist__returns_nothing_and_lives' => sub
 subtest 'site_local_rules__called__describes_every_rule_the_scan_applies' => sub {
     my @rules = App::Netdisco::Util::SiteLocal::site_local_rules();
 
-    is scalar @rules, 5, 'five rules ship in this release';
+    is scalar @rules, 10, 'ten rules ship in this release';
     is_deeply [ sort map { $_->{name} } @rules ],
-      [ 'do-search', 'he-js', 'history-js', 'natural-js', 'tab-page-shadow' ],
+      [ 'datatabledefaults-include', 'do-search', 'has-sidebar-global',
+        'he-js', 'history-js', 'layout-shadow', 'natural-js',
+        'page-script-include', 'portcontrol-js-renamed', 'tab-page-shadow' ],
       'named as the report cites them, file rules included';
     ok !(grep { !length($_->{advice} || '') } @rules),
       'and every rule carries remediation advice';
@@ -191,8 +295,9 @@ subtest 'site_local_rules__called__describes_every_rule_the_scan_applies' => sub
 # the web application's startup check cannot drift apart. site_local_files is off by default,
 # and when it is off the nd-site-local directories are not scanned even if they
 # exist, because the app is not reading them either.
-# This is the rule warned about at startup, so a false positive is noise on
-# every worker boot at every site. Hence the two clean cases below.
+# Both file rules below are warned about at startup, so a false positive is
+# noise on every worker boot at every site. Hence the clean cases alongside
+# each.
 
 subtest 'scan_shadowed_files__tab_page_copy_without_hx_get__reports_the_empty_pane' => sub {
     my $tree = site_local_tree(
@@ -220,6 +325,28 @@ subtest 'scan_shadowed_files__no_tab_page_shadowed__reports_nothing' => sub {
 
     is scalar scan_shadowed_files({ paths => ["$tree"] }), 0,
       'silence is the normal case, and this runs at every worker startup';
+};
+
+subtest 'scan_shadowed_files__layout_copy_without_uri_base__reports_the_dead_layout' => sub {
+    my $tree = site_local_tree(
+      'layouts/main.tt' => qq{<body>\n<script src="/javascripts/netdisco.js"></script>\n</body>\n});
+
+    my @findings = scan_shadowed_files({ paths => ["$tree"] });
+
+    is scalar @findings, 1, 'one finding for the shadowed layout';
+    is $findings[0]{rule}, 'layout-shadow', 'named the rule';
+    is $findings[0]{kind}, 'file', 'reported as a file rule, so it carries no line';
+    ok !exists $findings[0]{line}, 'and really has no line to cite';
+    like $findings[0]{advice}, qr/data-nd-uri-base/,
+      'advice names the missing attribute';
+};
+
+subtest 'scan_shadowed_files__layout_copy_carrying_uri_base__reports_nothing' => sub {
+    my $tree = site_local_tree(
+      'layouts/main.tt' => qq{<body data-nd-uri-base="">\n</body>\n});
+
+    is scalar scan_shadowed_files({ paths => ["$tree"] }), 0,
+      'a copy that adopted the body attributes is not a finding';
 };
 
 subtest 'scan_shadowed_files__every_tab_page__is_checked' => sub {

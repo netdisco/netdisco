@@ -80,7 +80,7 @@ $(document).ready(function() {
           for (var i = 0; i < data['error'].length; i++) {
             toastr.error(data['error'][i], 'Failed Job:');
           }
-          for (var i = 0; i < data['done'].length; i++) {
+          for (i = 0; i < data['done'].length; i++) {
             toastr.success(data['done'][i], 'Successful Job:');
           }
           // Schedule next request when the current one's complete

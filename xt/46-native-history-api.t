@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Test::More 0.88;
+use File::Basename 'basename';
 use File::Spec::Functions qw/catfile catdir updir/;
 use File::Find ();
 use FindBin;
@@ -25,16 +26,13 @@ sub slurp {
 
 # netdisco's own scripts and templates only. The vendored libraries beside them
 # are third-party bytes and are not ours to assert about.
-my @ours = (
-    catfile($root, qw/share public javascripts netdisco.js/),
-    catfile($root, qw/share public javascripts netdisco_portcontrol.js/),
-);
+my @ours = ();
+File::Find::find({ no_chdir => 1, wanted => sub {
+    push @ours, $File::Find::name if -f $File::Find::name and basename($File::Find::name) =~ /^netdisco.*\.js$/;
+} }, catdir($root, qw/share public javascripts/));
 File::Find::find({ no_chdir => 1, wanted => sub {
     push @ours, $File::Find::name if -f $File::Find::name and /\.tt$/;
 } }, catdir($root, qw/share views/));
-File::Find::find({ no_chdir => 1, wanted => sub {
-    push @ours, $File::Find::name if -f $File::Find::name and /\.js$/;
-} }, catdir($root, qw/share views js/));
 
 subtest 'sharedTree__after_the_polyfill_went__names_no_window_History' => sub {
     my @offenders = ();

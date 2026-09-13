@@ -16,9 +16,11 @@
                 hx-get=""
                 hx-target="#_pane"
                 hx-headers='{"X-Requested-With": "XMLHttpRequest"}'
-                hx-indicator="#_indicator">
-              <script type="text/javascript">has_sidebar[""] = 1;</script>
-              <script type="text/javascript">has_sidebar[""] = 0;</script>
+                hx-indicator="#_indicator"
+                data-nd-tab=""
+                data-nd-csv="1">
+              <input type="hidden" data-nd-has-sidebar="" value="1">
+              <input type="hidden" data-nd-has-sidebar="" value="0">
 
             </form>
           </div> <!-- /tab-pane -->
@@ -39,88 +41,3 @@
       <div class="tab-pane active" id="_pane"></div>
   </div>
 </div>
-
-<script type="text/javascript">
-  // used by the tabbing interface to make sure the correct
-  // ajax content is loaded
-  var path = 'report';
-
-  // colored input fields in the Report Options sidebar forms
-  var form_inputs = $(".nd_colored-input");
-
-  // called by do_search after new content is injected. nothing to do here
-  // now that tooltips and popovers are delegated, but do_search calls it
-  // unconditionally so it must exist.
-  function inner_view_processing(tab) {
-  }
-
-  // on load, check initial Report Options form state,
-  // and on each change to the form fields
-  $(document).ready(function() {
-    var tab = ''
-    var target = '#' + tab + '_pane';
-
-    // sidebar form fields should change colour and have trash icon
-    form_inputs.each(function() {device_form_state($(this))});
-    form_inputs.change(function() {device_form_state($(this))});
-
-    // handler for bin icon in search forms
-    $('.nd_field-clear-icon').click(function() {
-      var name = $(this).data('btn-for');
-      var input = $('[name=' + name + ']');
-      input.val('');
-      device_form_state(input); // reset input field
-    });
-
-    $('#nd_ipinventory-subnet').on('input', function(event) {
-      if ($(this).val().indexOf(':') != -1) {
-        $('#never').attr('disabled', 'disabled');
-      }
-      else {
-        $('#never').removeAttr('disabled');
-      }
-    });
-
-    // activate typeahead on prefix/subnet box
-    $('#nd_ipinventory-subnet').autocomplete({
-      source: function (request, response) {
-        return $.get( uri_base + '/ajax/data/subnet/typeahead', request, function (data) {
-          return response(data);
-        });
-      }
-      ,delay: 150
-      ,minLength: 3
-    });
-
-    // dynamically bind to all forms in the table
-    $('.content').on('click', '.nd_adminbutton', function(event) {
-      // stop form from submitting normally
-      event.preventDefault();
-
-      // what purpose - add/update/del
-      var mode = $(this).attr('name');
-
-      // submit the query and put results into the tab pane
-      $.ajax({
-        type: 'POST'
-        ,async: true
-        ,dataType: 'html'
-        ,url: uri_base + '/ajax/control/report/' + tab + '/' + mode
-        ,data: $(this).closest('tr').find('input[data-form="' + mode + '"]').serializeArray()
-        ,beforeSend: function() {
-          $(target).html(
-            '<div class="col-md-2 alert">Request submitted...</div>'
-          );
-        }
-        ,success: function() {
-          nd_submit('#' + tab + '_form');
-        }
-        // skip any error reporting for now
-        // TODO: fix sanity_ok in Netdisco Web
-        ,error: function() {
-          nd_submit('#' + tab + '_form');
-        }
-      });
-    });
-  });
-</script>

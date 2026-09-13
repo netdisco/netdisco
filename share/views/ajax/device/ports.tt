@@ -1,5 +1,14 @@
 [% PROCESS 'externallinks.tt' -%]
-<table id="dp-data-table" class="table table-bordered table-striped" width="100%" cellspacing="0">
+<table id="dp-data-table" class="table table-bordered table-striped" width="100%" cellspacing="0"
+  data-nd-table='{
+  "columnDefs": [
+    {"sortable":false,"targets":0},
+    {"searchable":false,"targets":0},
+    {"type":"portsort","targets":["portsort"]}
+  ],
+  "order": [[1,"asc"]],
+  "initComplete": "portsCollapse"
+}'>
   <thead>
     <tr>
       <th></th>
@@ -548,25 +557,3 @@
 </div>
 [% END %]
 
-<script>
-$(document).ready(function() {
-    $('#dp-data-table').dataTable({
-        "columnDefs": [
-            { "sortable": false, "targets": 0 },
-            { "searchable": false, "targets": 0 },
-            { "type": 'portsort', "targets": [ 'portsort' ] }
-        ],
-        "order": [[ 1, 'asc' ]],
-[% INCLUDE 'ajax/datatabledefaults.tt' -%]
-    } );
-
-    // always rebind datatables row visibility toggle on tab load
-    var [iplen, ipnum] = dataTablesDisablePaging();
-    $('.nd_row-collapser-toggle').unbind('click', dataTablesRowGroupVisibilityToggle);
-    $('.nd_row-collapser-toggle').bind('click', dataTablesRowGroupVisibilityToggle);
-
-    // install row group filter and restore paging
-    dataTablesPushRowGroupVisibilityFilter();
-    dataTablesRestorePage(iplen, ipnum);
-} );
-</script>
