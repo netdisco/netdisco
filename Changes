@@ -31,6 +31,9 @@
     layout may still name, and the report names every file and what to change.
     a shadowed layout is also reported when the web app starts, because it
     leaves every page dead and says nothing otherwise
+  * the loadmibs action now loads the SQL bundled with netdisco-mibs. the
+    previous behavior, building the table from the OID reports, is now the
+    loadmibsfromoids action
 
   [BUG FIXES]
 
@@ -83,6 +86,11 @@
     and leaves you where you are. a name that does not resolve, a prefix wider
     than /22, or anything that is not an address, sent you back to the front
     page with nothing said either way
+  * #1610 loadmibs silently skipped every vendor report when the mibhome path
+    contained a dot
+  * #1611 loadmibs -e <vendor> replaced the entire snmp_object table, and the
+    single-vendor load now always includes rfc_oids, net-snmp_oids and
+    cisco_oids
 
 2.108004 - 2026-09-09
 
