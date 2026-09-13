@@ -1,3 +1,11 @@
+2.109001 - tbd
+
+  [BUG FIXES]
+
+  * the "Ports on Hosts" choice when creating an Access Control List made a
+    Host to Host mapping instead, so a port control rule using that list never
+    applied. the list also then showed the other type's name
+
 2.109000 - 2026-09-13
 
   [ENHANCEMENTS]
