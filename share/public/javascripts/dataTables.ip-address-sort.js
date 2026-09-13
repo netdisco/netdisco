@@ -24,7 +24,7 @@ DataTable.type('ip-address', {
 			// Same reason as the detector strips markup: an anchor's href holds
 			// dots of its own, so splitting the raw cell keys on the URL rather
 			// than on the address.
-			var text = String(a == null ? '' : a).replace(/<[^>]*>/g, '').trim();
+			var text = DataTable.util.stripHtml(String(a == null ? '' : a)).trim();
 			var m = text.split("."), x = "";
 
 			for(var i = 0; i < m.length; i++) {

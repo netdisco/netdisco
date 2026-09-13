@@ -21,7 +21,7 @@ DataTable.type(TYPE, {
 		// netdisco links most of the addresses it prints, so the cell reaching
 		// here is markup and the plain pattern never matched: every linked
 		// address in the product fell back to text order, putting .70 above .4.
-		var text = String(data == null ? '' : data).replace(/<[^>]*>/g, '').trim();
+		var text = DataTable.util.stripHtml(String(data == null ? '' : data)).trim();
 		if (/^\d{1,3}[\.]\d{1,3}[\.]\d{1,3}[\.]\d{1,3}$/.test(text)) {
 			return TYPE;
 		}

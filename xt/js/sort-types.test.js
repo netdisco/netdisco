@@ -1,16 +1,10 @@
-// Coverage for the three sort plug-ins that had no test at all:
-// versionsort.js, dataTables.ip-address-sort.js and
-// dataTables.ip-address-detect.js. portsort.js has its own suite.
+// A sort plug-in fails silently: a type nothing registers is not an error the
+// library reports, it compares the cell text instead and every page still
+// renders. No template names the address type either, so the library reaches
+// it only by detecting a dotted quad.
 //
-// A sort plug-in fails silently. A type nothing registers is not an error the
-// library reports: it compares the cell text instead, so 10.0.0.10 sorts before
-// 10.0.0.9 and every page still renders. The address plug-ins are quieter
-// again, because no template names their type and the library reaches them only
-// by detecting a dotted quad, so there is nothing in the markup to notice.
-//
-// Whether the library actually consults any of this is a browser question and
-// is answered by the Playwright harness. These checks only stop the
-// registration going away, or the two address files drifting apart.
+// Whether the library consults any of this is a browser question, answered by
+// the Playwright harness.
 
 'use strict';
 
@@ -21,15 +15,24 @@ const path = require('node:path');
 
 const JS_DIR = path.join(__dirname, '..', '..', 'share', 'public', 'javascripts');
 
-// DataTable.type writes only the keys the spec carries, which is what lets the
-// detect file and the sort file register the same type from two files. A stub
-// that replaced the whole entry would hide a real registration losing half of
-// itself.
+// Merges rather than replaces, because the detect file and the sort file
+// register the same type from two files.
 globalThis.DataTable = {
   registered: {},
   type(name, spec) {
     const entry = this.registered[name] || (this.registered[name] = {});
     for (const key of Object.keys(spec)) entry[key] = spec[key];
+  },
+  // Mirrors dataTables.min.js: one sweep of the tag pattern, then a fixpoint
+  // on the literal "<script", which one sweep cannot do because a removal can
+  // splice two halves of it together. Kept in step by hand.
+  util: {
+    stripHtml(value) {
+      let out = String(value).replace(/<([^>]*>)/g, '');
+      let previous;
+      do { previous = out; out = out.replace(/<script/i, ''); } while (out !== previous);
+      return out;
+    },
   },
 };
 
@@ -55,29 +58,33 @@ describe('registration', () => {
       ['asc', 'desc', 'pre']);
   });
 
-  // The detection function is the only route to the address type, so its name
-  // and the name the order is registered under have to be one string. They are
-  // written in two files, which is where they can drift.
+  // Detection is the only route to the type, so the name it answers with and
+  // the name the order registers under are one string written in two files.
   test('ipAddressDetect__a_dotted_quad__answers_with_the_name_the_order_is_registered_under', () => {
     assert.equal(registered['ip-address'].detect('192.168.0.1'), 'ip-address');
     assert.ok(registered['ip-address'].order,
       'the detected name has an order registered against it');
   });
 
-  // netdisco links most of the addresses it prints, so the cell the library
-  // offers is markup. Before this the pattern never matched one, the column
-  // fell back to text, and .70 sorted above .4 wherever the address was a link.
+  // netdisco links most of the addresses it prints, so the cell is markup.
   test('ipAddressDetect__an_address_the_page_has_linked__is_still_an_address', () => {
     assert.equal(registered['ip-address'].detect(
       '<a class="nd_linkcell" href="/device?tab=details&q=10.0.0.9">10.0.0.9</a>'),
       'ip-address');
   });
 
+  // An unterminated tag never matches <([^>]*>), so a single sweep leaves it
+  // in the text. Not markup the product emits, but the case a sweep cannot
+  // reach.
+  test('ipAddressDetect__an_address_followed_by_an_unterminated_tag__is_still_an_address', () => {
+    assert.equal(registered['ip-address'].detect('10.0.0.9<script'), 'ip-address');
+  });
+
   test('ipAddressDetect__anything_that_is_not_a_dotted_quad__answers_false', () => {
     for (const notAnAddress of ['GigabitEthernet1/1', '192.168.0', '1.2.3.4.5',
                                 'v1.2.3.4', '', 'Vlan10',
-                                // an address with anything beside it is not one
-                                // this can key on, and must not be claimed
+                                // anything beside the address and it cannot
+                                // be keyed on, so it must not be claimed
                                 '<a href="/x">10.0.0.9</a> switch-a',
                                 'see 10.0.0.9']) {
       assert.equal(registered['ip-address'].detect(notAnAddress), false,
@@ -125,10 +132,8 @@ describe('ordering', () => {
   });
 });
 
-// The registration moved off jQuery ahead of the library upgrade, so that the
-// upgrade and the removal of jQuery are two changes rather than one. A file
-// reaching back for the old API compiles and registers nothing once jQuery is
-// gone, which is the silent failure above.
+// A file reaching back for the old jQuery API compiles and registers nothing,
+// which is the silent failure above.
 describe('no jQuery', () => {
   for (const file of ['portsort.js', 'versionsort.js', 'dataTables.ip-address-sort.js',
                       'dataTables.ip-address-detect.js']) {
