@@ -68,7 +68,7 @@
       // Swagger-hosted service on every page load, publishing an internal
       // hostname. It cannot be caught in local testing: the badge suppresses
       // itself when the URL contains localhost or 127.0.0.1.
-      validatorUrl: null,
+      validatorUrl: null
     };
   }
 
