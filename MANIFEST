@@ -375,13 +375,13 @@ share/public/javascripts/netdisco-portcontrol.js
 share/public/javascripts/netdisco-request.js
 share/public/javascripts/netdisco-tables.js
 share/public/javascripts/netdisco-toast.js
+share/public/javascripts/netdisco-swagger.js
 share/public/javascripts/netdisco-typeahead.js
 share/public/javascripts/netdisco.js
 share/public/javascripts/portsort.js
 share/public/javascripts/versionsort.js
 share/public/swagger-ui/favicon-16x16.png
 share/public/swagger-ui/favicon-32x32.png
-share/public/swagger-ui/index.html
 share/public/swagger-ui/LICENSE
 share/public/swagger-ui/NOTICE
 share/public/swagger-ui/oauth2-redirect.html
@@ -625,6 +625,7 @@ share/views/password.tt
 share/views/plugin.tt
 share/views/report.tt
 share/views/search.tt
+share/views/swagger-ui.tt
 share/views/sidebar/_daterange.tt
 share/views/sidebar/admintask/acleditor.tt
 share/views/sidebar/admintask/jobqueue.tt
@@ -728,6 +729,7 @@ xt/js/sort-types.test.js
 xt/js/sticky-header.test.js
 xt/js/stranded-popovers.test.js
 xt/js/submit-dispatch.test.js
+xt/js/swagger-spec-url.test.js
 xt/js/tab-request-sync.test.js
 xt/js/tables-registry.test.js
 xt/js/toast.test.js

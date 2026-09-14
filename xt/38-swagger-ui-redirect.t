@@ -125,4 +125,25 @@ subtest 'swaggerUiDirectory__given_a_url_parameter_anyway__still_serves_the_page
     is $response->status, 200, 'a url parameter is accepted and ignored, not rejected';
 };
 
+subtest 'swaggerUiIndexHtml__the_old_entry_point__redirects_to_the_directory' => sub {
+    # Netdisco serves its own entry point and vendors none of upstream's, so
+    # this path has no file behind it. Answered rather than left to 404 because
+    # deployments and bookmarks link to it.
+    my $response = dancer_response( GET => "$base/index.html" );
+
+    is $response->status, 302, 'the old entry point redirects';
+
+    my $location = $response->header('Location');
+    $location =~ s{^https?://[^/]+}{};
+    is $location, "$base/", 'it points at the directory netdisco serves';
+};
+
+subtest 'swaggerUiDirectory__a_vendored_asset__is_still_served' => sub {
+    # The redirect above is scoped to one name; everything else still comes off
+    # disk, or the UI loads no bundle.
+    my $response = dancer_response( GET => "$base/swagger-ui.css" );
+
+    is $response->status, 200, 'the vendored stylesheet is served';
+};
+
 done_testing;

@@ -1,5 +1,10 @@
 2.109001 - tbd
 
+  [ENHANCEMENTS]
+
+  * netdisco's own configuration of the API browser is no longer kept inside
+    the vendored Swagger UI files, so updating them cannot quietly revert it
+
   [BUG FIXES]
 
   * the "Ports on Hosts" choice when creating an Access Control List made a

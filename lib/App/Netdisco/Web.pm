@@ -596,13 +596,21 @@ get $swagger_base.'/' => sub {
     # The ?url= this used to require was dropped with the guard that enforced
     # it: the 5.x page resolves its own definition. Reinstating either alone
     # makes the two routes redirect to each other, so they move together.
-    send_file( 'swagger-ui/index.html' );
+    template 'swagger-ui', {}, { layout => undef };
 };
 
 # omg the plugin uses system_path and we don't want to go there
 get $swagger_base.'/**' => sub {
     Dancer::Plugin::Swagger->instance->doc->{schemes} = [ request->scheme ];
-    send_file( join '/', 'swagger-ui', @{ (splat())[0] } );
+    my @path = @{ (splat())[0] };
+
+    # Netdisco serves its own entry point, so nothing under swagger-ui/ answers
+    # for index.html. Answered rather than left to 404 because deployments and
+    # bookmarks link to it.
+    return redirect uri_for($swagger_base)->path . '/'
+      if @path == 1 and $path[0] eq 'index.html';
+
+    send_file( join '/', 'swagger-ui', @path );
 };
 
 # htmx applies a <title> found at the top level of a swapped response, the
