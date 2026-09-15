@@ -14,7 +14,7 @@ our @EXPORT_OK = qw/render_template all_templates snapshot_path stash_for
 use constant VIEW_ROOT     => 'share/views';
 use constant SNAPSHOT_ROOT => 'xt/snapshots';
 
-# Mirrors share/config.yml:1005-1015. If that block changes, change this.
+# Mirrors share/config.yml:1026-1044. If that block changes, change this.
 sub _engine {
   return Template::AutoFilter->new({
     INCLUDE_PATH => [ VIEW_ROOT ],
@@ -27,6 +27,8 @@ sub _engine {
     ENCODING     => 'utf8',
     # mirrors share/config.yml: the SNMP tree includes itself per open level
     RECURSION    => 1,
+    # mirrors share/config.yml's PLUGINS mapping
+    PLUGINS      => { csv => 'App::Netdisco::Template::Plugin::CSV' },
   });
 }
 

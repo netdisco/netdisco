@@ -141,6 +141,7 @@ lib/App/Netdisco/SSHCollector/Platform/NXOS.pm
 lib/App/Netdisco/SSHCollector/Platform/OS10.pm
 lib/App/Netdisco/SSHCollector/Platform/PaloAlto.pm
 lib/App/Netdisco/SSHCollector/Platform/VOSS.pm
+lib/App/Netdisco/Template/Plugin/CSV.pm
 lib/App/Netdisco/Transport/Python.pm
 lib/App/Netdisco/Transport/SNMP.pm
 lib/App/Netdisco/Transport/SSH.pm
@@ -705,7 +706,9 @@ xt/76-tenant-segment-validation.t
 xt/77-portcontrol-field-allowlist.t
 xt/78-device-serializable-columns.t
 xt/79-nonadmin-job-target.t
+xt/80-acl-type-options.t
 xt/81-token-entropy.t
+xt/83-csv-formula-neutralization.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/daterange-presets.test.js

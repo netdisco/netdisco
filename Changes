@@ -13,6 +13,8 @@
   * the session cookie key and API tokens are now minted from the operating
     system's random source, not the database's. the netdisco-deploy manual
     page says how to replace a key minted by the old code
+  * fix a stored CSV formula injection in CSV downloads: a cell that would be
+    read as a spreadsheet formula is now written as plain text
 
 2.109000 - 2026-09-13
 

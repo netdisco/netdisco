@@ -1037,6 +1037,11 @@ engines:
     # the SNMP tree includes itself for each level it renders open, and the
     # guard this lifts exists to catch a template that never terminates
     RECURSION: 1
+    # every [% USE CSV %] template resolves to this instead of the CPAN
+    # plugin, so CSV formula injection is closed in one place rather than in
+    # each template; see App::Netdisco::Template::Plugin::CSV
+    PLUGINS:
+      csv: 'App::Netdisco::Template::Plugin::CSV'
 layout: 'noop'
 plugins:
   Swagger:
