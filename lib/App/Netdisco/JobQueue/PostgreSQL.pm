@@ -43,6 +43,7 @@ sub _compute_supported_actions {
     if ($p =~ m/::Plugin::([^:]+)(?:::|$)/i) {
       my $action = lc $1;
       next if $action eq 'internal';
+      next if scalar grep {$_ eq $action} @supported;
       push @supported, $action;
     }
   }
@@ -97,11 +98,9 @@ sub jq_getsome {
   my @returned = ();
 
   my $tasty = schema(vars->{'tenant'})->resultset('Virtual::TastyJobs')
-    ->search({
-      action => { '-in' => [ @{ _get_supported_actions() } ] },
-    }
-    ,{ bind => [
-      setting('workers')->{'BACKEND'}, setting('job_prio')->{'high'},
+    ->search(undef, { bind => [
+      setting('workers')->{'BACKEND'}, _get_supported_actions(),
+      setting('job_prio')->{'high'},
       setting('workers')->{'BACKEND'}, setting('workers')->{'max_deferrals'},
       setting('workers')->{'retry_after'}, $num_slots,
     ]});
