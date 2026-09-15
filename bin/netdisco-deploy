@@ -42,6 +42,7 @@ use Dancer ':script';
 use Dancer::Plugin::DBIC 'schema';
 use Dancer::Plugin::Passphrase;
 use App::Netdisco::Util::Statistics ();
+use App::Netdisco::Util::Token 'random_token';
 
 info "App::Netdisco $App::Netdisco::VERSION loaded.";
 
@@ -87,6 +88,35 @@ your config remains compatible.
 Before each upgrade also review the
 L<Release notes|https://github.com/netdisco/netdisco/wiki/Release-Notes> since
 additional steps might be required!
+
+=head1 SESSION COOKIE KEY
+
+Deploying the database stores the key which encrypts and authenticates every
+Netdisco web session cookie, in the C<sessions> table under the id
+C<dancer_session_cookie_key>. The key is read from the operating system random
+source using L<Crypt::URandom>.
+
+It is written only when that row is absent, so running this script again,
+including on upgrade, never replaces the key and never signs anybody out.
+
+To rotate the key, for instance if you believe it has been disclosed, delete
+the row:
+
+  DELETE FROM sessions WHERE id = 'dancer_session_cookie_key';
+
+then run this script again and answer yes to the database deployment, and
+restart the Netdisco web service. Every logged-in user is signed out and must
+log in again.
+
+An earlier release took this key from PostgreSQL's C<random()>, which is not a
+cryptographically secure generator. Such a key is 32 characters long where a
+key from this release is 64, so:
+
+  SELECT length(a_session) FROM sessions
+    WHERE id = 'dancer_session_cookie_key';
+
+reports which of the two your deployment holds. Rotate as above if it reports
+32.
 
 =cut
 
@@ -205,7 +235,7 @@ sub deploy_db {
 
   # set initial dancer web session cookie key
   schema('netdisco')->resultset('Session')->find_or_create(
-    {id => 'dancer_session_cookie_key', a_session => \'md5(random()::text)'},
+    {id => 'dancer_session_cookie_key', a_session => random_token()},
     {key => 'primary'},
   );
 }

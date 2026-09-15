@@ -10,6 +10,9 @@
   * the "Ports on Hosts" choice when creating an Access Control List made a
     Host to Host mapping instead, so a port control rule using that list never
     applied. the list also then showed the other type's name
+  * the session cookie key and API tokens are now minted from the operating
+    system's random source, not the database's. the netdisco-deploy manual
+    page says how to replace a key minted by the old code
 
 2.109000 - 2026-09-13
 

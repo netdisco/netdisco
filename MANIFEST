@@ -166,6 +166,7 @@ lib/App/Netdisco/Util/SiteLocal.pm
 lib/App/Netdisco/Util/Snapshot.pm
 lib/App/Netdisco/Util/SNMP.pm
 lib/App/Netdisco/Util/Statistics.pm
+lib/App/Netdisco/Util/Token.pm
 lib/App/Netdisco/Util/Web.pm
 lib/App/Netdisco/Util/Worker.pm
 lib/App/Netdisco/Web.pm
@@ -704,6 +705,7 @@ xt/76-tenant-segment-validation.t
 xt/77-portcontrol-field-allowlist.t
 xt/78-device-serializable-columns.t
 xt/79-nonadmin-job-target.t
+xt/81-token-entropy.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/daterange-presets.test.js

@@ -5,6 +5,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Swagger;
 use Dancer::Plugin::Auth::Extensible;
 
+use App::Netdisco::Util::Token 'random_token';
 use Try::Tiny;
 
 swagger_path {
@@ -101,7 +102,7 @@ swagger_path {
     token_no_expire => ($want_permanent ? \"true" : \"false"),
     (defined $token_acl ? (token_acl => $token_acl) : ()),
     ($provider->validate_api_token($user->token)
-      ? () : (token => \'md5(random()::text)')),
+      ? () : (token => random_token())),
   })->discard_changes();
 
   return to_json {

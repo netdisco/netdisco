@@ -6,6 +6,7 @@ use Dancer::Plugin::Auth::Extensible;
 use Dancer::Plugin::Swagger;
 
 use App::Netdisco; # a safe noop but needed for standalone testing
+use App::Netdisco::Util::Token 'random_token';
 use App::Netdisco::Util::Web 'request_is_api';
 use MIME::Base64;
 use Try::Tiny;
@@ -169,7 +170,7 @@ post '/login' => sub {
               token_no_expire => ($want_permanent ? \"true" : \"false"),
               ($token_acl ? (token_acl => $token_acl) : ()),
               ($provider->validate_api_token($user->token)
-                ? () : (token => \'md5(random()::text)')),
+                ? () : (token => random_token())),
             })->discard_changes();
 
             return to_json {
