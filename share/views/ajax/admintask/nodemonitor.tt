@@ -13,13 +13,13 @@
   <tbody>
     <tr>
       <td class="nd_center-cell"></td>
-      <td class="nd_center-cell"><input data-form="add" name="mac" type="text"></td>
+      <td class="nd_center-cell"><input class="form-control" data-form="add" name="mac" type="text"></td>
       <td class="nd_center-cell"><input data-form="add" name="matchoui" type="checkbox"></td>
       <td class="nd_center-cell"><input data-form="add" name="active" type="checkbox" checked></td>
-      <td class="nd_center-cell"><input data-form="add" name="why" type="text"></td>
-      <td class="nd_center-cell"><input data-form="add" name="cc"  type="email"></td>
+      <td class="nd_center-cell"><input class="form-control" data-form="add" name="why" type="text"></td>
+      <td class="nd_center-cell"><input class="form-control" data-form="add" name="cc"  type="email"></td>
       <td class="nd_center-cell">
-        <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
+        <button class="btn btn-sm nd_adminbutton" name="add" type="submit"><i class="fas fa-circle-plus"></i> Add</button>
       </td>
     </tr>
 
@@ -29,7 +29,7 @@
     <tr>
       <td class="nd_center-cell">[% row.date | html_entity %]</td>
       <td class="nd_center-cell">
-        <input data-form="update" name="mac" type="text" value="[% row.mac | html_entity %]">
+        <input class="form-control" data-form="update" name="mac" type="text" value="[% row.mac | html_entity %]">
       </td>
       <td class="nd_center-cell">
         <input data-form="update" name="matchoui" type="checkbox" [% ' checked="checked"' IF row.matchoui %]>
@@ -38,33 +38,37 @@
         <input data-form="update" name="active" type="checkbox" [% ' checked="checked"' IF row.active %]>
       </td>
       <td class="nd_center-cell">
-        <input data-form="update" name="why" type="text" value="[% row.why | html_entity %]">
+        <input class="form-control" data-form="update" name="why" type="text" value="[% row.why | html_entity %]">
       </td>
       <td class="nd_center-cell">
-        <input data-form="update" name="cc" type="email" value="[% row.cc | html_entity %]">
+        <input class="form-control" data-form="update" name="cc" type="email" value="[% row.cc | html_entity %]">
       </td>
 
       <td class="nd_center-cell">
-        <button class="btn nd_adminbutton" name="update" type="submit"><i class="icon-save text-warning"></i></button>
+        <button class="btn nd_adminbutton" name="update" type="submit"><i class="far fa-floppy-disk text-warning"></i></button>
 
-        <button class="btn" data-toggle="modal"
-          data-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="icon-trash text-error"></i></button>
+        <button class="btn" data-bs-toggle="modal"
+          data-bs-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="fas fa-trash-can text-danger"></i></button>
 
-        <div id="nd_devdel-[% count | html_entity %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
+        <div id="nd_devdel-[% count | html_entity %]" class="nd_modal nd_deep-horizon modal fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devdel-label-[% count | html_entity %]" aria-hidden="true">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-            <h3 id="nd_devdel-label-[% count | html_entity %]">Are you sure?</h3>
-          </div>
-          <div class="modal-body">
-            <blockquote>
-              <p class="text-info">Monitor for &quot;[% row.mac | html_entity %]&quot; will be removed.</p>
-            </blockquote>
-            <input data-form="del" name="mac" type="hidden" value="[% row.mac | html_entity %]">
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-success" data-dismiss="modal" aria-hidden="true">Cancel</button>
-            <button class="btn btn-danger nd_adminbutton" name="del" data-dismiss="modal">Confirm</button>
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h3 id="nd_devdel-label-[% count | html_entity %]">Are you sure?</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <blockquote>
+                  <p class="text-info">Monitor for &quot;[% row.mac | html_entity %]&quot; will be removed.</p>
+                </blockquote>
+                <input data-form="del" name="mac" type="hidden" value="[% row.mac | html_entity %]">
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-success" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
+                <button class="btn btn-danger nd_adminbutton" name="del" data-bs-dismiss="modal">Confirm</button>
+              </div>
+            </div>
           </div>
         </div>
       </td>

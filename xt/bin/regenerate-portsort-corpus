@@ -1,0 +1,68 @@
+#!/usr/bin/env node
+
+// Rewrites xt/portsort-corpus.json, the shared corpus the JavaScript and Perl
+// port-order tests both read. Run this after adding a case to
+// xt/js/portsort.test.js, then review the resulting diff before committing.
+//
+// The names are captured from that suite rather than transcribed, so the corpus
+// cannot drift from the cases the suite actually exercises. The expected order
+// is portsort.js's own output, which makes the fixture a golden file: it pins
+// the order so a change to portsort.js shows up as a diff, and it is the oracle
+// the SQL sort key is measured against. It is not evidence that portsort.js is
+// correct, and no test should present it as such.
+
+'use strict';
+
+const fs = require('node:fs');
+const path = require('node:path');
+const Module = require('node:module');
+
+const XT = path.join(__dirname, '..');
+const SUITE = path.join(XT, 'js', 'portsort.test.js');
+const CORPUS = path.join(XT, 'portsort-corpus.json');
+
+// Captured at assertSortsTo rather than at the comparator: its two arguments are
+// the unordered input and the expected order, which together are every value the
+// suite has an opinion about. node:test schedules describe/test asynchronously,
+// so they are stubbed to run inline; the suite's own require of portsort.js is
+// left real.
+const captured = [];
+globalThis.__capture = (unordered, expected) => captured.push({ unordered, expected });
+
+const source = fs.readFileSync(SUITE, 'utf8')
+  .replace('function assertSortsTo(unordered, expected, because) {',
+    'function assertSortsTo(unordered, expected, because) { __capture(unordered, expected);')
+  .replace(/const \{ describe, test \} = require\('node:test'\);/,
+    'const describe = (n, f) => f(), test = (n, f) => f();');
+
+if (!source.includes('__capture')) {
+  throw new Error(`assertSortsTo's signature has changed in ${SUITE}; this script patches it by exact text and found nothing to patch`);
+}
+
+const suite = new Module(SUITE, null);
+suite.filename = SUITE;
+suite.paths = Module._nodeModulePaths(path.dirname(SUITE));
+suite._compile(source, SUITE);
+
+// The comparator is read back from the suite's own jQuery stub, after it has
+// run. Requiring portsort.js here instead would register against a stub the
+// suite then replaces with its own, leaving nothing to sort with.
+const portSort = globalThis.jQuery.fn.dataTableExt.oSort['portsort-asc'];
+
+// Deduplicated on the string form, not on the value: the suite deliberately
+// sorts the number 1 against the string '1', and a text column cannot hold that
+// distinction. Everything downstream of here is text.
+const names = [...new Set(captured.flatMap((c) => c.unordered.concat(c.expected)).map(String))];
+
+const byName = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+const order = names.slice().sort((a, b) => portSort(a, b) || byName(a, b));
+
+fs.writeFileSync(CORPUS, JSON.stringify({
+  _source: 'Every distinct value xt/js/portsort.test.js sorts, as text. Captured from that suite by xt/bin/regenerate-portsort-corpus, never transcribed.',
+  _order: 'share/public/javascripts/portsort.js ascending, ties broken on the raw name. The tiebreak is what makes the sequence single valued, and it is the same tiebreak the SQL sort key carries.',
+  _regenerate: 'xt/bin/regenerate-portsort-corpus',
+  names: names.slice().sort(byName),
+  order,
+}, null, 1) + '\n');
+
+process.stdout.write(`wrote ${names.length} names to xt/portsort-corpus.json from ${captured.length} assertSortsTo calls\n`);

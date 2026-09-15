@@ -186,7 +186,7 @@ swagger_path {
             action => {
               type => 'string',
               required => 1,
-              description => 'Job action. Known actions: discover, macsuck, arpnip, nbtstat, delete. Unknown actions are accepted but will fail silently in the backend.',
+              description => 'Job action. Unknown actions are accepted but will fail silently in the backend.',
             },
             device => {
               type => 'string',
@@ -199,7 +199,7 @@ swagger_path {
             extra => {
               type => 'string',
               required => 0,
-              description => 'Optional job parameter. For discover: a plain string or JSON object. Plain string is treated as device_auth_tag_hint. Supported JSON params: device_auth_tag_hint (string, must match a tag in device_auth), snmptimeout (integer, microseconds, overrides global snmptimeout), snmpretries (integer, overrides global snmpretries), bulkwalk_repeaters (integer, overrides global bulkwalk_repeaters), skip_neighbor_queue (bool, store topology but do not queue new discovers for unknown neighbors). Example: {"device_auth_tag_hint": "site-a", "snmptimeout": 3000000, "skip_neighbor_queue": true}.',
+              description => 'Optional job parameter.',
             }
           }
         }

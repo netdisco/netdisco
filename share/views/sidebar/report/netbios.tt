@@ -1,9 +1,9 @@
 
             <p class="nd_sidebar-title"><em>NetBIOS Domain</em></p>
             <div class="clearfix">
-              <select class="nd_side-select nd_colored-input" size="[% domain_list.size > 8 ? 8 : domain_list.size %]"
+              <select class="nd_side-select nd_colored-input form-select" size="[% domain_list.size > 8 ? 8 : domain_list.size %]"
                 multiple name="domain"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="Domain">
+                rel="tooltip" data-bs-placement="left" data-bs-title="Domain">
                 [% FOREACH opt IN domain_list %]
                   [% UNLESS opt == '' %]
                     <option[% ' selected="selected"' IF domain_lkp.exists(opt) %]>[% opt | html_entity %]</option>
@@ -15,5 +15,5 @@
             </div>
 
             <button id="[% report.tag | html_entity %]_submit" type="submit" class="btn btn-info">
-             <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search NetBIOS</button>
+             <i class="fas fa-magnifying-glass fa-lg float-start nd_navbar-icon"></i> Search NetBIOS</button>
 

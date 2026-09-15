@@ -1,5 +1,5 @@
 [% IF NOT results.size %]
-<div class="span2 alert alert-info">The job queue is empty.</div>
+<div class="col-md-2 alert alert-info">The job queue is empty.</div>
 [% ELSE %]
 <div class="alert alert-info">
   Backends: [% num_backends | html_entity %] /
@@ -11,7 +11,7 @@
   Stale: [% jq_stale | html_entity %] /
   Total: [% jq_total | html_entity %]
 </div>
-<table class="table table-bordered table-condensed table-hover nd_floatinghead">
+<table class="table table-bordered table-sm table-hover nd_floatinghead">
   <thead>
     <tr>
       <th class="nd_center-cell">Backend</th>
@@ -27,9 +27,9 @@
   <tbody>
     [% FOREACH row IN results %]
     <tr
-      [% ' class="nd_jobqueueitem success"' IF row.status == 'done' %]
-      [% ' class="nd_jobqueueitem error"'   IF row.status == 'error' %]
-      [% ' class="nd_jobqueueitem info"'    IF (row.status == 'queued' AND row.backend != '') %]
+      [% ' class="nd_jobqueueitem table-success"' IF row.status == 'done' %]
+      [% ' class="nd_jobqueueitem table-danger"'   IF row.status == 'error' %]
+      [% ' class="nd_jobqueueitem table-info"'    IF (row.status == 'queued' AND row.backend != '') %]
       data-content="[% row.log | html_entity %]"
     >
       <td class="nd_center-cell">[% row.backend | html_entity %]</td>
@@ -63,19 +63,19 @@
       <td class="nd_center-cell">[% row.duration | html_entity %]</td>
 
       <td class="nd_center-cell">
-        <button class="btn nd_jobqueue-extra" data-extra="nd_jobqueue_[% row.job | html_entity %]"><i class="icon-plus"></i></button>
+        <button class="btn nd_jobqueue-extra" data-extra="nd_jobqueue_[% row.job | html_entity %]"><i class="fas fa-plus"></i></button>
       </td>
 
       <td class="nd_center-cell">
         <input data-form="del" name="job" type="hidden" value="[% row.job | html_entity %]">
-        <button class="btn nd_adminbutton" name="del" type="submit"><i class="icon-trash text-error"></i></button>
+        <button class="btn nd_adminbutton" name="del" type="submit"><i class="fas fa-trash-can text-danger"></i></button>
       </td>
     </tr>
 
     <tr id="nd_jobqueue_[% row.job | html_entity %]" class="nd_collapse-pre-hidden">
       <td colspan="8">
         <table>
-        <tr><td class="span2">ID</td><td> [% row.job | html_entity %] </td></tr>
+        <tr><td class="col-md-2">ID</td><td> [% row.job | html_entity %] </td></tr>
         <tr><td>Entered</td><td> [% row.entered_stamp | html_entity %] </td></tr>
         <tr><td>Started</td><td> [% row.started_stamp | html_entity %] </td></tr>
         <tr><td>Finished</td><td> [% row.finished_stamp | html_entity %] </td></tr>

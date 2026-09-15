@@ -2,8 +2,10 @@ package App::Netdisco::Configuration;
 
 use App::Netdisco::Environment;
 use App::Netdisco::Util::DeviceAuth ();
+use App::Netdisco::Util::Configuration 'parse_params_to_config';
 use Dancer ':script';
 
+use Try::Tiny;
 use FindBin;
 use File::Spec;
 use Path::Class 'dir';
@@ -158,6 +160,10 @@ config->{'community'} = ($ENV{NETDISCO_RO_COMMUNITY} ?
   [split ',', $ENV{NETDISCO_RO_COMMUNITY}] : config->{'community'});
 config->{'community_rw'} = ($ENV{NETDISCO_RW_COMMUNITY} ?
   [split ',', $ENV{NETDISCO_RW_COMMUNITY}] : config->{'community_rw'});
+
+# bring in any configuration from NETDISCO_WITH_CONFIGURATION environment
+# can be overriden by command-line or scheduled job subaction/extra
+parse_params_to_config($ENV{NETDISCO_WITH_CONFIGURATION});
 
 # if snmp_auth and device_auth not set, add defaults to community{_rw}
 if ((setting('snmp_auth') and 0 == scalar @{ setting('snmp_auth') })
@@ -335,6 +341,10 @@ foreach my $name (qw/discover_only macsuck_only arpnip_only nbtstat_only/) {
   push @{setting($name)}, @{ setting('devices_only') };
 }
 
+# skip_neighbor_queue is an undocumented inverse override of queue_neighbors
+config->{'queue_neighbors'} = ! setting('skip_neighbor_queue')
+  if exists config->{'skip_neighbor_queue'};
+
 # legacy config item names
 
 # rename snmp_field_protection to just be field_protection
@@ -342,12 +352,22 @@ config->{'field_protection'} = config->{'snmp_field_protection'}
   if exists config->{'snmp_field_protection'};
 
 # if user has previously configured too_many_devices away from 1000 default,
-# then copy it into netmap_performance_limit_max_devices
-config->{'netmap_performance_limit_max_devices'} =
+# then copy it into netmap->max_devices
+config->{'netmap'}->{'max_devices'} =
   config->{'sidebar_defaults'}->{'device_netmap'}->{'too_many_devices'}->{'default'}
   if config->{'sidebar_defaults'}->{'device_netmap'}->{'too_many_devices'}->{'default'}
     and config->{'sidebar_defaults'}->{'device_netmap'}->{'too_many_devices'}->{'default'} != 1000;
 delete config->{'sidebar_defaults'}->{'device_netmap'}->{'too_many_devices'};
+
+# netmap settings moved into a netmap tree. These names are gone from
+# config.yml, so exists() means the site set them, and being explicit they win
+# over the too_many_devices fallback above.
+config->{'netmap'}->{'max_devices'} =
+  config->{'netmap_performance_limit_max_devices'}
+  if exists config->{'netmap_performance_limit_max_devices'};
+
+config->{'netmap'}->{'custom_fields'} = config->{'netmap_custom_fields'}
+  if exists config->{'netmap_custom_fields'};
 
 config->{'devport_vlan_limit'} =
   config->{'deviceport_vlan_membership_threshold'}

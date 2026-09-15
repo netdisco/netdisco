@@ -413,6 +413,12 @@ sub renumber {
     device => $old_ip,
   })->delete;
 
+  $schema->resultset('AccessControlList')->search({
+    rules => { '&&' => \[ 'ARRAY[?]', $old_ip ] }
+  })->update({
+    rules => \[ 'ARRAY_REPLACE(rules, ?, ?)', $old_ip, $new_ip ] 
+  });
+
   $device->update({
     ip  => $new_ip,
     dns => (hostname_from_ip($new_ip)

@@ -86,18 +86,19 @@ ajax '/ajax/data/queue/typeahead/status' => require_role admin => sub {
 };
 
 ajax '/ajax/data/devicename/typeahead' => require_login sub {
+    content_type 'application/json';
     return '[]' unless setting('navbar_autocomplete');
 
-    my $q = param('query') || param('term');
+    my $q = (param('query') || param('term')) or return '[]';
     my $set = schema(vars->{'tenant'})->resultset('Device')
       ->search_fuzzy($q)->search(undef, {rows => setting('max_typeahead_rows')});
 
-    content_type 'application/json';
     to_json [map {encode_entities($_->dns || $_->name || $_->ip)} $set->all];
 };
 
 ajax '/ajax/data/deviceip/typeahead' => require_login sub {
-    my $q = param('query') || param('term');
+    content_type 'application/json';
+    my $q = (param('query') || param('term')) or return '[]';
     my $set = schema(vars->{'tenant'})->resultset('Device')
       ->search_fuzzy($q)->search(undef, {rows => setting('max_typeahead_rows')});
 
@@ -116,13 +117,13 @@ ajax '/ajax/data/deviceip/typeahead' => require_login sub {
 };
 
 ajax '/ajax/data/devices/typeahead' => require_login sub {
+    content_type 'application/json';
     my $q = (param('left_rule') || param('right_rule')) or return '[]';
     my $mode = param('aclhost') || 'ip';
     if ($mode eq 'dynamic') {
         $mode = (($q =~ m/^\d/ or $q =~ m/:/) ? 'ip' : 'name');
     }
 
-    content_type 'application/json';
     my @data = ();
 
     # TODO add in entries from the database

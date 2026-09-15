@@ -39,52 +39,52 @@ $(document).ready(function() {
       {
       "data": 'ip',
       "render": function(data, type, row, meta) {
-        return '<a href="[% uri_for('/device') | none %]?tab=modules&q=' + encodeURIComponent(data) + '">' + he.encode(row.device.dns || row.device.name || row.ip) + '</a>';
+        return '<a href="[% uri_for('/device') | none %]?tab=modules&q=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(row.device.dns || row.device.name || row.ip) + '</a>';
         }
       }, {
         "data": 'description',
         "render": function(data, type, row, meta) {
-          return '<a href="[% report_moduleinventory | none %]&description=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
+          return '<a href="[% report_moduleinventory | none %]&description=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(data || '') + '</a>';
         }
       }, {
         "data": 'name',
         "render": function(data, type, row, meta) {
-          return '<a href="[% report_moduleinventory | none %]&name=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
+          return '<a href="[% report_moduleinventory | none %]&name=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(data || '') + '</a>';
         }
       }, {
         "data": 'class',
         "render": function(data, type, row, meta) {
-          return '<a href="[% report_moduleinventory | none %]&class=' + encodeURIComponent(data) + '">' + he.encode(capitalizeFirstLetter(data + '')) + '</a>';
+          return '<a href="[% report_moduleinventory | none %]&class=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(capitalizeFirstLetter(data + '')) + '</a>';
         }
       }, {
         "data": 'type',
         "render": function(data, type, row, meta) {
-          return '<a href="[% report_moduleinventory | none %]&type=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
+          return '<a href="[% report_moduleinventory | none %]&type=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(data || '') + '</a>';
         }
       }, {
         "data": 'model',
         "render": function(data, type, row, meta) {
-          return '<a href="[% report_moduleinventory | none %]&model=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
+          return '<a href="[% report_moduleinventory | none %]&model=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(data || '') + '</a>';
         }
       }, {
         "data": 'serial',
         "render": function(data, type, row, meta) {
-          return '<a href="[% report_moduleinventory | none %]&serial=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
+          return '<a href="[% report_moduleinventory | none %]&serial=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(data || '') + '</a>';
         }
       }, {
         "data": 'hw_ver',
         "render": function(data, type, row, meta) {
-          return he.encode(data || '');
+          return DataTable.util.escapeHtml(data || '');
         }
       }, {
         "data": 'sw_ver',
         "render": function(data, type, row, meta) {
-          return he.encode(data || '');
+          return DataTable.util.escapeHtml(data || '');
         }
       }, {
         "data": 'fw_ver',
         "render": function(data, type, row, meta) {
-          return he.encode(data || '');
+          return DataTable.util.escapeHtml(data || '');
         }
       }
     ],
@@ -95,7 +95,7 @@ $(document).ready(function() {
       {
         "data": 'class',
         "render": function(data, type, row, meta) {
-          return '<a href="[% report_moduleinventory | none %]&class=' + encodeURIComponent(data) + '">' + he.encode(capitalizeFirstLetter(data + '')) + '</a>';
+          return '<a href="[% report_moduleinventory | none %]&class=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(capitalizeFirstLetter(data + '')) + '</a>';
         }
       }, {
         "data": 'count',

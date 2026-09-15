@@ -128,10 +128,9 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     }
 
     if (! is_discoverable($device_ports->{$port}->remote_ip, $remote_type, $remote_cap)) {
-
         $properties{ $port }->{remote_is_discoverable} = 'false';
-        debug sprintf ' [%s] properties/lldpcap - remote on port %s is denied discovery',
-          $device->ip, $port;
+        debug sprintf ' [%s] properties/lldpcap - remote on port %s is not discoverable (ip:%s type:%s cap:%s)',
+          $device->ip, $port, ($device_ports->{$port}->remote_ip || ''), ($remote_type || ''), ($remote_cap || '');
     }
 
     next unless scalar grep {defined && m/^inventory$/} @{ $rem_media_cap->{$idx} };

@@ -2,50 +2,50 @@
             <p class="nd_sidebar-title"><em>Module Search</em></p>
             <div class="clearfix">
               <i id="device_clear_btn" data-btn-for="device"
-                class="nd_field-clear-icon icon-trash icon-large"></i>
-              <input class="nd_side-input nd_colored-input" placeholder="Device"
+                class="nd_field-clear-icon far fa-trash-can fa-lg"></i>
+              <input class="nd_side-input nd_colored-input form-control" placeholder="Device"
                 type="text" name="device" value="[% params.dns | html_entity %]"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="Device IP, DNS, Description, Name, Location, Serial, or Contact"/>
+                rel="tooltip" data-bs-placement="left" data-bs-title="Device IP, DNS, Description, Name, Location, Serial, or Contact"/>
             </div>
             <div class="clearfix">
               <i id="description_clear_btn" data-btn-for="description"
-                class="nd_field-clear-icon icon-trash icon-large"></i>
-              <input class="nd_side-input nd_colored-input" placeholder="Module Description"
+                class="nd_field-clear-icon far fa-trash-can fa-lg"></i>
+              <input class="nd_side-input nd_colored-input form-control" placeholder="Module Description"
                 type="text" name="description" value="[% params.description | html_entity %]"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="Module Description"/>
+                rel="tooltip" data-bs-placement="left" data-bs-title="Module Description"/>
             </div>
             <div class="clearfix">
               <i id="name_clear_btn" data-btn-for="name"
-                class="nd_field-clear-icon icon-trash icon-large"></i>
-              <input class="nd_side-input nd_colored-input" placeholder="Module Name"
+                class="nd_field-clear-icon far fa-trash-can fa-lg"></i>
+              <input class="nd_side-input nd_colored-input form-control" placeholder="Module Name"
                 type="text" name="name" value="[% params.name | html_entity %]"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="Module Name"/>
+                rel="tooltip" data-bs-placement="left" data-bs-title="Module Name"/>
             </div>
             <div class="clearfix">
               <i id="type_clear_btn" data-btn-for="type"
-                class="nd_field-clear-icon icon-trash icon-large"></i>
-              <input class="nd_side-input nd_colored-input" placeholder="Module Type"
+                class="nd_field-clear-icon far fa-trash-can fa-lg"></i>
+              <input class="nd_side-input nd_colored-input form-control" placeholder="Module Type"
                 type="text" name="type" value="[% params.type | html_entity %]"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="Module Type"/>
+                rel="tooltip" data-bs-placement="left" data-bs-title="Module Type"/>
             </div>
             <div class="clearfix">
               <i id="model_clear_btn" data-btn-for="model"
-                class="nd_field-clear-icon icon-trash icon-large"></i>
-              <input class="nd_side-input nd_colored-input" placeholder="Module Model"
+                class="nd_field-clear-icon far fa-trash-can fa-lg"></i>
+              <input class="nd_side-input nd_colored-input form-control" placeholder="Module Model"
                 type="text" name="model" value="[% params.model | html_entity %]"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="Module Model"/>
+                rel="tooltip" data-bs-placement="left" data-bs-title="Module Model"/>
             </div>
             <div class="clearfix">
               <i id="serial_clear_btn" data-btn-for="serial"
-                class="nd_field-clear-icon icon-trash icon-large"></i>
-              <input class="nd_side-input nd_colored-input" placeholder="Module Serial"
+                class="nd_field-clear-icon far fa-trash-can fa-lg"></i>
+              <input class="nd_side-input nd_colored-input form-control" placeholder="Module Serial"
                 type="text" name="serial" value="[% params.serial | html_entity %]"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="Module Serial"/>
+                rel="tooltip" data-bs-placement="left" data-bs-title="Module Serial"/>
             </div>
             <div class="clearfix">
-              <select class="nd_side-select nd_colored-input" size="[% class_list.size > 5 ? 5 : class_list.size %]"
+              <select class="nd_side-select nd_colored-input form-select" size="[% class_list.size > 5 ? 5 : class_list.size %]"
                 multiple name="class"
-                rel="tooltip" data-placement="left" data-offset="5" data-title="Module Class">
+                rel="tooltip" data-bs-placement="left" data-bs-title="Module Class">
                 [% FOREACH opt IN class_list %]
                 <option[% ' selected="selected"' IF class_lkp.exists(opt) %]>[% opt | html_entity %]</option>
                 [% END %]
@@ -55,24 +55,24 @@
               <legend class="nd_sidebar-legend">
                 <label><em><strong>Options</strong></em></label>
               </legend>
-            <div class="clearfix input-prepend">
-              <label class="add-on">
+            <div class="clearfix input-group">
+              <label class="input-group-text">
                 <input type="checkbox" id="fruonly"
                   name="fruonly"[% ' checked="checked"' IF (params.fruonly OR vars.sidebar_defaults.report_moduleinventory.fruonly) %]/>
               </label>
               <label class="nd_checkboxlabel" for="fruonly">
-                <span class="nd_searchcheckbox uneditable-input">FRU Only</span>
+                <span class="nd_searchcheckbox form-control-plaintext">FRU Only</span>
               </label>
             </div>
-            <div class="clearfix input-prepend">
-              <label class="add-on">
+            <div class="clearfix input-group">
+              <label class="input-group-text">
                 <input type="checkbox" id="matchall"
                   name="matchall"[% ' checked="checked"' IF (params.matchall OR vars.sidebar_defaults.report_moduleinventory.matchall) %]/>
               </label>
               <label class="nd_checkboxlabel" for="matchall">
-                <span class="nd_searchcheckbox uneditable-input">Match All Options</span>
+                <span class="nd_searchcheckbox form-control-plaintext">Match All Options</span>
               </label>
             </div>
             </fieldset>
             <button id="[% tab.tag | html_entity %]_submit" type="submit" class="btn btn-info">
-              <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search Modules</button>
+              <i class="fas fa-magnifying-glass fa-lg float-start nd_navbar-icon"></i> Search Modules</button>

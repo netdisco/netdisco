@@ -22,14 +22,14 @@
         <label for="nd_aclhost-dynamic">Follow what you type</label>
     </div>
     <div class="clearfix nd_netmap-sidebar">
-        <ul class="muted nd_netmap-sidebar-help">
+        <ul class="text-muted nd_netmap-sidebar-help">
         <li>Uses IP if you search by IP, or DNS/Host if you search by name.</li>
         </ul>
     </div>
 
     <label><span id="">Rules may contain:</span></label>
     <div class="clearfix nd_netmap-sidebar">
-        <ul class="muted nd_netmap-sidebar-help">
+        <ul class="text-muted nd_netmap-sidebar-help">
         <li>Hostname, IP address, IP prefix (i.e. subnet)</li>
         <li>IP address range, using a hyphen on the last octet/hextet</li>
         <li>port:regexp to match the complete name of an interface or port</li>
@@ -43,4 +43,4 @@
     </div>
 
     <label><span id=""><a href="https://github.com/netdisco/netdisco/wiki/Configuration#access-control-lists" target="_blank">ACL Reference
-        <i class="icon-external-link"></i></a></span></label>
+        <i class="fas fa-up-right-from-square"></i></a></span></label>

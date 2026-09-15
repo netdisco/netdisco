@@ -5,9 +5,9 @@
                 <label><em><strong>Vendor</strong></em></label>
               </legend>
               <div class="clearfix">
-                <select class="nd_side-select nd_colored-input" size="[% vendor_list.size > 8 ? 8 : vendor_list.size %]"
+                <select class="nd_side-select nd_colored-input form-select" size="[% vendor_list.size > 8 ? 8 : vendor_list.size %]"
                   multiple name="vendor"
-                  rel="tooltip" data-placement="left" data-offset="5" data-title="Vendor">
+                  rel="tooltip" data-bs-placement="left" data-bs-title="Vendor">
                   [% FOREACH opt IN vendor_list %]
                     [% NEXT IF opt == '' %]
                     <option[% ' selected="selected"' IF vendor_lkp.exists(opt) %]>[% opt | html_entity %]</option>
@@ -20,18 +20,18 @@
               <legend class="nd_sidebar-legend">
                 <label><em><strong>Options</strong></em></label>
               </legend>
-                <div class="clearfix input-prepend"
-                    rel="tooltip" data-placement="left" data-offset="5" data-title="Include Archived Data">
-                  <label class="add-on">
+                <div class="clearfix input-group"
+                    rel="tooltip" data-bs-placement="left" data-bs-title="Include Archived Data">
+                  <label class="input-group-text">
                   <input type="checkbox" id="archived"
                     name="archived"[% ' checked="checked"' IF params.archived %]/>
                   </label>
                   <label class="nd_checkboxlabel" for="archived">
-                    <span class="nd_searchcheckbox uneditable-input">Archived Data</span>
+                    <span class="nd_searchcheckbox form-control-plaintext">Archived Data</span>
                   </label>
                 </div>
             </fieldset>
 
             <button id="[% report.tag | html_entity %]_submit" type="submit" class="btn btn-info">
-             <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search Vendors</button>
+             <i class="fas fa-magnifying-glass fa-lg float-start nd_navbar-icon"></i> Search Vendors</button>
 

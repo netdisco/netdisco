@@ -14,18 +14,18 @@
       <td></td>
 
       <td>
-        <input class="span3 nd_acl_host_searcher" data-form="add" name="left_rule" type="text" placeholder="Hostname, IP, prefix, or property:value">
+        <input class="form-control w-auto d-inline-block nd_acl_host_searcher" data-form="add" name="left_rule" type="text" placeholder="Hostname, IP, prefix, or property:value">
       </td>
 
       [% IF params.acl_type != "host" %]
       <td>
-        <input class="span3" data-form="add" name="right_rule" type="text" placeholder="[% SWITCH params.acl_type %][% CASE "host_port" %]port:name, IP, or property:value[% CASE %]Hostname, IP, prefix, or property:value[% END %]">
+        <input class="form-control w-auto d-inline-block" data-form="add" name="right_rule" type="text" placeholder="[% SWITCH params.acl_type %][% CASE "host_port" %]port:name, IP, or property:value[% CASE %]Hostname, IP, prefix, or property:value[% END %]">
       </td>
       [% END %]
 
       <td class="nd_center-cell">
         <input data-form="add" name="acl_name" type="hidden" value="[% acl_name | html_entity %]">
-        <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
+        <button class="btn btn-sm nd_adminbutton" name="add" type="submit"><i class="fas fa-circle-plus"></i> Add</button>
       </td>
     </tr>
 
@@ -36,11 +36,11 @@
       <td class="nd_acl-rule-list" data-field="nd_left-acl-rule-field">
         <div class="nd_acl-rule-list">
         [% FOREACH rule IN pair.left_acl_with_dns.ruleset %]
-        <span class="label label-inverse nd_left-acl-rule-label">[% rule.first | html_entity %] <a class="nd_delete-me" href="#"><i class="icon-remove-sign"></i></a></span>
+        <span class="badge text-bg-dark nd_left-acl-rule-label">[% rule.first | html_entity %] <a class="nd_delete-me" href="#"><i class="fas fa-circle-xmark"></i></a></span>
         [% IF rule.last %]&nbsp;&nbsp;[% rule.last | html_entity %][% END %]
         <input class="nd_left-acl-rule-field" data-form="update" name="left_rule" type="hidden" value="[% loop.count %].[% atob(rule.first) | none %]"><br/>
         [% END %]
-        <input class="span3 nd_acl-rule nd_acl_host_searcher" contenteditable="true" data-form="" name="left_rule" type="text" placeholder="add rule">
+        <input class="form-control w-auto d-inline-block nd_acl-rule nd_acl_host_searcher" contenteditable="true" data-form="" name="left_rule" type="text" placeholder="add rule">
         </div>
       </td>
 
@@ -49,17 +49,17 @@
         <div class="nd_acl-rule-list">
         [% IF params.acl_type == "host_host" %]
           [% FOREACH rule IN pair.right_acl_with_dns.ruleset %]
-          <span class="label label-inverse nd_right-acl-rule-label">[% rule.first | html_entity %] <a class="nd_delete-me" href="#"><i class="icon-remove-sign"></i></a></span>
+          <span class="badge text-bg-dark nd_right-acl-rule-label">[% rule.first | html_entity %] <a class="nd_delete-me" href="#"><i class="fas fa-circle-xmark"></i></a></span>
           [% IF rule.last %]&nbsp;&nbsp;[% rule.last | html_entity %][% END %]
           <input class="nd_right-acl-rule-field" data-form="update" name="right_rule" type="hidden" value="[% loop.count %].[% atob(rule.first) | none %]"><br/>
           [% END %]
         [% ELSE %]
           [% FOREACH rule IN pair.right_acl.rules %]
-          <span class="label label-info nd_right-acl-rule-label">[% rule | html_entity %] <a class="nd_delete-me" href="#"><i class="icon-remove-sign"></i></a></span>
+          <span class="badge text-bg-info nd_right-acl-rule-label">[% rule | html_entity %] <a class="nd_delete-me" href="#"><i class="fas fa-circle-xmark"></i></a></span>
           <input class="nd_right-acl-rule-field" data-form="update" name="right_rule" type="hidden" value="[% loop.count %].[% atob(rule) | none %]"><br/>
           [% END %]
         [% END %]
-        <input class="span3 nd_acl-rule[% IF params.acl_type == "host_host" %] nd_acl_host_searcher[% END %]" contenteditable="true" data-form="" name="right_rule" type="text" placeholder="add rule">
+        <input class="form-control w-auto d-inline-block nd_acl-rule[% IF params.acl_type == "host_host" %] nd_acl_host_searcher[% END %]" contenteditable="true" data-form="" name="right_rule" type="text" placeholder="add rule">
         </div>
       </td>
       [% END %]
@@ -67,30 +67,34 @@
       <td class="nd_center-cell">
         <input data-form="update" name="id" type="hidden" value="[% pair.id | html_entity %]">
         <input data-form="update" name="acl_name" type="hidden" value="[% acl_name | html_entity %]">
-        <button class="btn nd_adminbutton nd_disabled-feature" name="update" type="submit"><i class="icon-save text-warning"></i></button>
+        <button class="btn nd_adminbutton nd_disabled-feature" name="update" type="submit"><i class="far fa-floppy-disk text-warning"></i></button>
 
-        <button class="btn" data-toggle="modal"
-          data-target="#nd_devdel-[% pair.id | html_entity %]" type="button"><i class="icon-trash text-error"></i></button>
+        <button class="btn" data-bs-toggle="modal"
+          data-bs-target="#nd_devdel-[% pair.id | html_entity %]" type="button"><i class="fas fa-trash-can text-danger"></i></button>
 
-        <div id="nd_devdel-[% pair.id | html_entity %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
+        <div id="nd_devdel-[% pair.id | html_entity %]" class="nd_modal nd_deep-horizon modal fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devdel-label-[% pair.id | html_entity %]" aria-hidden="true">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-            <h3 id="nd_devdel-label-[% pair.id | html_entity %]">Are you sure?</h3>
-          </div>
-          <div class="modal-body">
-            <blockquote>
-              <p class="text-info">
-                This ruleset with ID &quot;[% pair.id | html_entity %]&quot; will be deleted.</p>
-            </blockquote>
-            <input data-form="delete" name="id" type="hidden" value="[% pair.id | html_entity %]">
-            <input data-form="delete" name="acl_name" type="hidden" value="[% acl_name | html_entity %]">
-            <input data-form="delete" name="acl_type" type="hidden" value="[% params.acl_type | html_entity %]">
-          </div>
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h3 id="nd_devdel-label-[% pair.id | html_entity %]">Are you sure?</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <blockquote>
+                  <p class="text-info">
+                    This ruleset with ID &quot;[% pair.id | html_entity %]&quot; will be deleted.</p>
+                </blockquote>
+                <input data-form="delete" name="id" type="hidden" value="[% pair.id | html_entity %]">
+                <input data-form="delete" name="acl_name" type="hidden" value="[% acl_name | html_entity %]">
+                <input data-form="delete" name="acl_type" type="hidden" value="[% params.acl_type | html_entity %]">
+              </div>
 
-          <div class="modal-footer">
-            <button class="btn btn-success" data-dismiss="modal" aria-hidden="true">Cancel</button>
-            <button class="btn btn-danger nd_adminbutton" name="delete" data-dismiss="modal">Confirm</button>
+              <div class="modal-footer">
+                <button class="btn btn-success" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
+                <button class="btn btn-danger nd_adminbutton" name="delete" data-bs-dismiss="modal">Confirm</button>
+              </div>
+            </div>
           </div>
         </div>
       </td>

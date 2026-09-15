@@ -5,45 +5,45 @@
             </div>
             <div class="clearfix">
 
-            <em class="muted">Backend:</em><br/>
-            <div class="input-append">
-              <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown" name="backend" type="text" value="[% params.backend | html_entity %]">
-              <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+            <em class="text-muted">Backend:</em><br/>
+            <div class="input-group">
+              <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown form-control" name="backend" type="text" value="[% params.backend | html_entity %]">
+              <span class="input-group-text nd_topo_dev_caret"><i class="fas fa-caret-down fa-lg"></i></span>
             </div>
 
-            <em class="muted">Action:</em><br/>
-            <div class="input-append">
-              <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown" name="action" type="text" value="[% params.action | html_entity %]">
-              <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+            <em class="text-muted">Action:</em><br/>
+            <div class="input-group">
+              <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown form-control" name="action" type="text" value="[% params.action | html_entity %]">
+              <span class="input-group-text nd_topo_dev_caret"><i class="fas fa-caret-down fa-lg"></i></span>
             </div>
 
-            <em class="muted">Device:</em><br/>
-            <div class="input-append">
-              <input data-form="filter" class="nd_topo_dev nd_sidebar-dropdown" name="device" type="text" value="[% params.device | html_entity %]">
-              <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+            <em class="text-muted">Device:</em><br/>
+            <div class="input-group">
+              <input data-form="filter" class="nd_topo_dev nd_sidebar-dropdown form-control" name="device" type="text" value="[% params.device | html_entity %]">
+              <span class="input-group-text nd_topo_dev_caret"><i class="fas fa-caret-down fa-lg"></i></span>
             </div>
 
-            <em class="muted">Submitted by:</em><br/>
-            <div class="input-append">
-              <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown" name="username" type="text" value="[% params.username | html_entity %]">
-              <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+            <em class="text-muted">Submitted by:</em><br/>
+            <div class="input-group">
+              <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown form-control" name="username" type="text" value="[% params.username | html_entity %]">
+              <span class="input-group-text nd_topo_dev_caret"><i class="fas fa-caret-down fa-lg"></i></span>
             </div>
 
-            <em class="muted">Job status:</em><br/>
-            <div class="input-append">
-              <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown" name="status" type="text" value="[% params.status | html_entity %]">
-              <span class="add-on nd_topo_dev_caret"><i class="icon-caret-down icon-large"></i></span>
+            <em class="text-muted">Job status:</em><br/>
+            <div class="input-group">
+              <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown form-control" name="status" type="text" value="[% params.status | html_entity %]">
+              <span class="input-group-text nd_topo_dev_caret"><i class="fas fa-caret-down fa-lg"></i></span>
             </div>
 
-            <em class="muted">Duration:</em><br/>
+            <em class="text-muted">Duration:</em><br/>
             <label><span id="nd_vlan-label-text">Longer than </span>
-              <input name="duration" class="nd_sidebar-narrow-dropdown" type="number" placeholder="0"
+              <input name="duration" class="nd_sidebar-narrow-dropdown form-control d-inline-block" type="number" placeholder="0"
                 value="[% params.duration | html_entity %]" type="text"/> mins
             </label>
 
             </div>
 
             <button id="[% task.tag | html_entity %]_submit" type="submit" class="btn btn-info">
-                <i class="icon-search icon-large pull-left nd_navbar-icon"></i>
+                <i class="fas fa-magnifying-glass fa-lg float-start nd_navbar-icon"></i>
             Filter</button>
 

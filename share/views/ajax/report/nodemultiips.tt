@@ -20,17 +20,17 @@ $(document).ready(function() {
       {
         "data": 'mac',
         "render": function(data, type, row, meta) {
-          return '<a href="[% search_node | none %]&q=' + encodeURIComponent(data) + '">' + he.encode(data.toUpperCase()) + '</a>';
+          return '<a href="[% search_node | none %]&q=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(data.toUpperCase()) + '</a>';
         }
       }, {
         "data": 'vendor',
         "render": function(data, type, row, meta) {
-          return he.encode(data || '');
+          return DataTable.util.escapeHtml(data || '');
         }
       }, {
         "data": 'port',
         "render": function(data, type, row, meta) {
-          return '<a href="[% device_ports | none %]&q=' + encodeURIComponent(row.switch) + '&f=' + encodeURIComponent(data) + '&c_nodes=on">' + he.encode(row.dns || row.name || row.switch) + '(' + he.encode(data) + ')</a>';
+          return '<a href="[% device_ports | none %]&q=' + encodeURIComponent(row.switch) + '&f=' + encodeURIComponent(data) + '&c_nodes=on">' + DataTable.util.escapeHtml(row.dns || row.name || row.switch) + '(' + DataTable.util.escapeHtml(data) + ')</a>';
         }
       }, {
         "data": 'ip_count',

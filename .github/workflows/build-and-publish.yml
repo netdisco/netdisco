@@ -62,7 +62,7 @@ jobs:
         run: echo "127.0.0.1 localhost" >> /etc/hosts
 
       - name: Check out latest code
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v7
         with:
           path: 'netdisco'
           ref: ${{ github.ref }}
@@ -72,7 +72,7 @@ jobs:
 
       - name: Install Perl deps
         run: |
-          sudo -u netdisco /home/netdisco/bin/localenv cpanm --notest Env::Path Test::Compile CPAN::Uploader Test::Pod
+          sudo -u netdisco /home/netdisco/bin/localenv cpanm --notest Test::Compile CPAN::Uploader Test::Pod
           sudo -u netdisco /home/netdisco/bin/localenv cpanm --notest --installdeps ${GITHUB_WORKSPACE}/netdisco
 
       - name: Run Tests
@@ -91,6 +91,33 @@ jobs:
           sudo -u netdisco /home/netdisco/bin/localenv ./Build distmeta
           sudo -u netdisco /home/netdisco/bin/localenv ./Build dist
 
+      # Assertions, so no continue-on-error here. The upload below keeps it
+      # because a PAUSE hiccup is worth tolerating, but swallowing these two is
+      # how 2.105002 reported green without ever reaching CPAN.
+      - name: Check the release before uploading
+        if: steps.build_and_run_tests.outcome == 'success' && startsWith(github.ref, 'refs/tags/')
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          cd ${GITHUB_WORKSPACE}/netdisco
+          RELEASE="App-Netdisco-${TAG}.tar.gz"
+
+          # The tarball is named from $VERSION, which distmeta takes from the
+          # newest block in Changes. The tag is not an input anywhere else.
+          if [ ! -f "$RELEASE" ]; then
+            echo "tag ${TAG} but ./Build dist produced:"
+            ls -1 App-Netdisco-*.tar.gz || echo "  (no tarball at all)"
+            echo "the version comes from the newest block in Changes; the two must agree"
+            exit 1
+          fi
+
+          if curl -sLI --fail -o /dev/null "https://cpan.metacpan.org/authors/id/O/OL/OLIVER/${RELEASE}"; then
+            echo "${RELEASE} is already on CPAN, refusing to upload it a second time"
+            exit 1
+          fi
+
+          echo "${RELEASE} matches the tag and is not yet on CPAN"
+
       - name: Upload to CPAN
         if: steps.build_and_run_tests.outcome == 'success' && startsWith(github.ref, 'refs/tags/')
         continue-on-error: true
@@ -99,7 +126,6 @@ jobs:
           PAUSE_PASSWORD: ${{ secrets.PAUSE_PASSWORD }}
         run: |
           cd ${GITHUB_WORKSPACE}/netdisco
-          bash -c 'RELEASENAME=(App-Netdisco-*.tar.gz) && ! curl -LI --fail https://cpan.metacpan.org/authors/id/O/OL/OLIVER/${RELEASENAME}'
           sudo -u netdisco /home/netdisco/bin/localenv cpan-upload -u '${{ env.PAUSE_USERNAME }}' -p '${{ env.PAUSE_PASSWORD }}' App-Netdisco-*.tar.gz
 
       - name: Setup tmate session
@@ -135,7 +161,7 @@ jobs:
           echo "BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4.2.0
+        uses: docker/setup-buildx-action@v4.3.0
 
       - name: Create staging area
         run: |
@@ -305,9 +331,9 @@ jobs:
       - name: Download db content
         run: |
           cd ${GITHUB_WORKSPACE}
-          curl -LO https://raw.githubusercontent.com/netdisco/netdisco2-demo/refs/heads/master/netdisco2-demo-cumulus-clean.db.sql
-          curl -LO https://raw.githubusercontent.com/netdisco/upstream-sources/refs/heads/master/bootstrap/netdisco-lookup-tables.sql
-          curl -LO https://raw.githubusercontent.com/netdisco/netdisco2-demo/refs/heads/master/netdisco2-demo-snmp-object-data.sql.gz
+          curl -LO https://github.com/netdisco/netdisco2-demo/raw/refs/heads/master/netdisco2-demo-cumulus-clean.db.sql
+          curl -LO https://github.com/netdisco/upstream-sources/raw/refs/heads/master/bootstrap/netdisco-lookup-tables.sql
+          curl -LO https://github.com/netdisco/netdisco2-demo/raw/refs/heads/master/netdisco2-demo-snmp-object-data.sql.gz
           gunzip netdisco2-demo-snmp-object-data.sql.gz
 
       - name: Upload cumulus demo
@@ -387,7 +413,7 @@ jobs:
 
     steps:
       - name: Check out latest dockerfile
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v7
         with:
           repository: 'netdisco/netdisco2-demo'
           path: 'netdisco2-demo'

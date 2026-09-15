@@ -40,6 +40,7 @@ register_worker({ phase => 'main' }, sub {
       $action, ('scheduled-'. $sched->{label}),
       setting('workers')->{'max_deferrals'},
       setting('workers')->{'retry_after'},
+      '', 0,
     ]})->get_column('ip')->all;
 
   jq_insert([

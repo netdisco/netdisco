@@ -2,7 +2,7 @@
 [% INCLUDE print_line item=item %]
   [% IF nodes.$item.children.defined -%]
   <ul>
-  [% FOREACH kidtype IN nodes.$item.children.keys -%]
+  [% FOREACH kidtype IN nodes.$item.children.keys.sort -%]
     [%- FOREACH kid IN nodes.$item.children.$kidtype -%]
       [%- IF kid -%]
         [% INCLUDE recurse item=kid %]
@@ -16,9 +16,9 @@
 [% BLOCK print_line -%]
 <li>
 [% IF nodes.$item.children.defined -%]
-<span><i class="icon-minus-sign text-info"></i>&nbsp;
+<span><i class="fas fa-circle-minus text-info"></i>&nbsp;
 [%- ELSE -%]
-<span><i class="icon-leaf"></i>&nbsp;
+<span><i class="fas fa-leaf"></i>&nbsp;
 [%- END -%]
  <a href="[% uri_for('/report/moduleinventory') | none %]?description=[% nodes.$item.module.description | uri %]">[% nodes.$item.module.description -%]</a>
 [%- IF nodes.$item.module.name -%]

@@ -1,7 +1,7 @@
 [% IF results.count == 0 %]
-<div class="span2 alert alert-info">The user activity log is empty.</div>
+<div class="col-md-2 alert alert-info">The user activity log is empty.</div>
 [% ELSE %]
-<table id="aul-data-table" class="table table-bordered table-condensed table-hover" width="100%" cellspacing="0">
+<table id="aul-data-table" class="table table-bordered table-sm table-hover" width="100%" cellspacing="0">
   <thead>
     <tr>
       <th class="nd_center-cell">Creation</th>
@@ -29,19 +29,19 @@ $(document).ready(function() {
       "data": 'username',
       "className": "nd_center-cell",
       "render": function(data, type, row, meta) {
-        return he.encode(data || '');
+        return DataTable.util.escapeHtml(data || '');
       }
     }, {
       "data": 'userip',
       "className": "nd_center-cell",
       "render": function(data, type, row, meta) {
-        return he.encode(data || '');
+        return DataTable.util.escapeHtml(data || '');
       }
     }, {
       "data": 'event',
       "className": "nd_center-cell",
       "render": function(data, type, row, meta) {
-        return he.encode(data || '');
+        return DataTable.util.escapeHtml(data || '');
       }
     }
   ],

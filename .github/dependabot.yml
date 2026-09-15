@@ -20,3 +20,29 @@ updates:
       github-actions-dependencies:
         patterns:
           - "*"             # Bundles ALL GitHub Actions into one PR
+
+  - package-ecosystem: "npm"
+    # The vendored frontend libraries in share/public, declared in package.json
+    directory: "/"
+    schedule:
+      interval: "daily"
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"             # Bundles ALL npm dependencies into one PR
+    ignore:
+      # package.json is a manifest of what share/public already ships, not a
+      # build input: nothing regenerates those files from it. A version bump
+      # here changes the declaration and not one shipped byte, leaving the
+      # manifest claiming a version the repository does not contain. Upgrading
+      # a vendored library means replacing the files and the version together,
+      # by hand, which is not work a bot can do.
+      #
+      # This silences the update PRs only. The dependency graph and the
+      # Security tab come from package.json being in the repository rather than
+      # from this config, so advisories still surface, and retire.js still runs
+      # in CI reading the vendored bytes themselves.
+      #
+      # xt/33-vendored-manifest.t is the half that cannot be ignored: it fails
+      # the build if a declared version and its file ever disagree.
+      - dependency-name: "*"

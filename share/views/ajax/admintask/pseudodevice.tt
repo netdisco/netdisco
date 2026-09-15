@@ -10,16 +10,16 @@
   </thead>
   <tbody>
     <tr>
-      <td class="nd_center-cell"><input data-form="add" name="name" type="text"></td>
-      <td class="nd_center-cell"><input data-form="add" name="ip" type="text"></td>
-      <td class="nd_center-cell"><input data-form="add" name="ports" type="number" value="1"></td>
+      <td class="nd_center-cell"><input class="form-control" data-form="add" name="name" type="text"></td>
+      <td class="nd_center-cell"><input class="form-control" data-form="add" name="ip" type="text"></td>
+      <td class="nd_center-cell"><input class="form-control" data-form="add" name="ports" type="number" value="1"></td>
       <td class="nd_center-cell">
-        <span class="badge">&nbsp;</span><span class="badge">&nbsp;</span>
-        <a class="nd_layer-three-link" href="#" rel="tooltip" data-placement="bottom" data-offset="3" data-title="Enable Arpnip"><span class="badge">3</span></a><span class="badge">&nbsp;</span><span class="badge">&nbsp;</span><span class="badge">&nbsp;</span><span class="badge">&nbsp;</span>
+        <span class="badge text-bg-secondary">&nbsp;</span><span class="badge text-bg-secondary">&nbsp;</span>
+        <a class="nd_layer-three-link" href="#" rel="tooltip" data-bs-placement="bottom" data-bs-title="Enable Arpnip"><span class="badge text-bg-secondary">3</span></a><span class="badge text-bg-secondary">&nbsp;</span><span class="badge text-bg-secondary">&nbsp;</span><span class="badge text-bg-secondary">&nbsp;</span><span class="badge text-bg-secondary">&nbsp;</span>
         <input data-form="add" name="layers" type="hidden" value="00000000">
       </td>
       <td class="nd_center-cell">
-        <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
+        <button class="btn btn-sm nd_adminbutton" name="add" type="submit"><i class="fas fa-circle-plus"></i> Add</button>
       </td>
     </tr>
     [% SET count = 0 %]
@@ -30,37 +30,41 @@
         href="[% uri_for('/device') | none %]?q=[% row.ip | uri %]">[% row.name | html_entity %]</a></td>
       <td class="nd_center-cell">[% row.ip | html_entity %]</td>
       <td class="nd_center-cell">
-        <input data-form="update" name="ports" type="number" value="[% row.port_count | html_entity %]">
+        <input class="form-control" data-form="update" name="ports" type="number" value="[% row.port_count | html_entity %]">
       </td>
       <td class="nd_center-cell">
-        <span class="badge[% ' badge-success' IF row.layers.substr(7,1) %]">[% row.layers.substr(7,1) ? '1' : '&nbsp;' | none %]</span><span class="badge[% ' badge-success' IF row.layers.substr(6,1) %]">[% row.layers.substr(6,1) ? '2' : '&nbsp;' | none %]</span>
-        <a class="nd_layer-three-link" href="#" rel="tooltip" data-placement="bottom" data-offset="3" data-title="Enable Arpnip"><span class="badge[% ' badge-success' IF row.layers.substr(5,1) %]">3</span></a><span class="badge[% ' badge-success' IF row.layers.substr(4,1) %]">[% row.layers.substr(4,1) ? '4' : '&nbsp;' | none %]</span><span class="badge[% ' badge-success' IF row.layers.substr(3,1) %]">[% row.layers.substr(3,1) ? '5' : '&nbsp;' | none %]</span><span class="badge[% ' badge-success' IF row.layers.substr(2,1) %]">[% row.layers.substr(2,1) ? '6' : '&nbsp;' | none %]</span><span class="badge[% ' badge-success' IF row.layers.substr(1,1) %]">[% row.layers.substr(1,1) ? '7' : '&nbsp;' | none %]</span>
+        <span class="badge [% row.layers.substr(7,1) ? 'text-bg-success' : 'text-bg-secondary' %]">[% row.layers.substr(7,1) ? '1' : '&nbsp;' | none %]</span><span class="badge [% row.layers.substr(6,1) ? 'text-bg-success' : 'text-bg-secondary' %]">[% row.layers.substr(6,1) ? '2' : '&nbsp;' | none %]</span>
+        <a class="nd_layer-three-link" href="#" rel="tooltip" data-bs-placement="bottom" data-bs-title="Enable Arpnip"><span class="badge [% row.layers.substr(5,1) ? 'text-bg-success' : 'text-bg-secondary' %]">3</span></a><span class="badge [% row.layers.substr(4,1) ? 'text-bg-success' : 'text-bg-secondary' %]">[% row.layers.substr(4,1) ? '4' : '&nbsp;' | none %]</span><span class="badge [% row.layers.substr(3,1) ? 'text-bg-success' : 'text-bg-secondary' %]">[% row.layers.substr(3,1) ? '5' : '&nbsp;' | none %]</span><span class="badge [% row.layers.substr(2,1) ? 'text-bg-success' : 'text-bg-secondary' %]">[% row.layers.substr(2,1) ? '6' : '&nbsp;' | none %]</span><span class="badge [% row.layers.substr(1,1) ? 'text-bg-success' : 'text-bg-secondary' %]">[% row.layers.substr(1,1) ? '7' : '&nbsp;' | none %]</span>
         <input data-form="update" name="layers" type="hidden" value="[% row.layers | html_entity %]">
       </td>
       <td class="nd_center-cell">
         <input data-form="update" name="name" type="hidden" value="[% row.name | html_entity %]">
         <input data-form="update" name="ip" type="hidden" value="[% row.ip | html_entity %]">
-        <button class="btn nd_adminbutton" name="update" type="submit"><i class="icon-save text-warning"></i></button>
+        <button class="btn nd_adminbutton" name="update" type="submit"><i class="far fa-floppy-disk text-warning"></i></button>
 
-        <button class="btn" data-toggle="modal"
-          data-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="icon-trash text-error"></i></button>
+        <button class="btn" data-bs-toggle="modal"
+          data-bs-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="fas fa-trash-can text-danger"></i></button>
 
-        <div id="nd_devdel-[% count | html_entity %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
+        <div id="nd_devdel-[% count | html_entity %]" class="nd_modal nd_deep-horizon modal fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devdel-label-[% count | html_entity %]" aria-hidden="true">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-            <h3 id="nd_devdel-label-[% count | html_entity %]">Are you sure?</h3>
-          </div>
-          <div class="modal-body">
-            <blockquote>
-              <p class="text-info">
-                Pseudo-device &quot;[% row.name | html_entity %] / [% row.ip | html_entity %]&quot; will be deleted.</p>
-            </blockquote>
-            <input data-form="delete" name="device" type="hidden" value="[% row.ip | html_entity %]">
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-success" data-dismiss="modal" aria-hidden="true">Cancel</button>
-            <button class="btn btn-danger nd_adminbutton" name="delete" data-dismiss="modal">Confirm</button>
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h3 id="nd_devdel-label-[% count | html_entity %]">Are you sure?</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <blockquote>
+                  <p class="text-info">
+                    Pseudo-device &quot;[% row.name | html_entity %] / [% row.ip | html_entity %]&quot; will be deleted.</p>
+                </blockquote>
+                <input data-form="delete" name="device" type="hidden" value="[% row.ip | html_entity %]">
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-success" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
+                <button class="btn btn-danger nd_adminbutton" name="delete" data-bs-dismiss="modal">Confirm</button>
+              </div>
+            </div>
           </div>
         </div>
       </td>
@@ -82,8 +86,8 @@ $(document).ready(function() {
   $('.nd_layer-three-link').click(function() {
     var badge = $(this).children('span').first();
     var layers = $(this).parent().children('input').first();
-    $(badge).toggleClass('badge-success');
-    if ($(badge).hasClass('badge-success')) {
+    $(badge).toggleClass('text-bg-success');
+    if ($(badge).hasClass('text-bg-success')) {
       $(layers).attr('value', '00000100');
     }
     else {

@@ -4,7 +4,10 @@
 
   // keep track of timers so we can kill them
   var nd_timers  = new Array();
-  var timermax   = [% settings.jobqueue_refresh || 5 | html_entity %];
+  // quoted so the file stays valid JavaScript for CodeQL, which reads this
+  // template rather than its output, and so a setting cannot land in expression
+  // position: html_entity escapes for HTML, not for JavaScript
+  var timermax   = Number('[% settings.jobqueue_refresh || 5 | html_entity %]');
   var timercache = timermax - 1;
 
   // this is called by do_search to support local code
@@ -14,7 +17,7 @@
 
     // reload this table every 5 seconds
     if ((tab == 'jobqueue')
-        && $('#nd_countdown-control-icon').hasClass('icon-play')) {
+        && $('#nd_countdown-control-icon').hasClass('fa-play')) {
 
         $('#nd_countdown').text(timermax);
 
@@ -36,7 +39,7 @@
           timercache = timermax - 1;
 
           // reload the tab content in...
-          $('#' + tab + '_form').trigger('submit');
+          nd_submit('#' + tab + '_form');
         }, (timermax * 1000)));
     }
 
@@ -106,15 +109,11 @@
     $('.nd_jobqueue-extra').click(function(event) {
       event.preventDefault();
       var icon = $(this).children('i');
-      $(icon).toggleClass('icon-plus');
-      $(icon).toggleClass('icon-minus');
+      $(icon).toggleClass('fa-plus');
+      $(icon).toggleClass('fa-minus');
       var extra_id = $(this).data('extra');
       $('#' + extra_id).toggle();
     });
-
-    // activate modals and tooltips
-    $('.nd_modal').modal({show: false});
-    $("[rel=tooltip]").tooltip({live: true});
   }
 
   // on load, establish global delegations for now and future
@@ -173,23 +172,23 @@
       // reset the timer cache
       timercache = timermax - 1;
       // and reload content
-      $('#' + tab + '_form').trigger('submit');
+      nd_submit('#' + tab + '_form');
     });
 
     // job control pause/play icon switcheroo
     $('#nd_countdown-control').click(function(event) {
       event.preventDefault();
       var icon = $('#nd_countdown-control-icon');
-      icon.toggleClass('icon-pause icon-play text-error text-success');
+      icon.toggleClass('fa-pause fa-play text-danger text-success');
 
-      if (icon.hasClass('icon-pause')) {
+      if (icon.hasClass('fa-pause')) {
         for (var i = 0; i < nd_timers.length; i++) {
             clearTimeout(nd_timers[i]);
         }
         $('#nd_countdown').text('0');
       }
       else {
-        $('#' + tab + '_form').trigger('submit');
+        nd_submit('#' + tab + '_form');
       }
     });
 
@@ -223,7 +222,7 @@
         ,beforeSend: function() {
           if (mode == 'add' || mode == 'delete') {
             $(target).html(
-              '<div class="span2 alert">Request submitted...</div>'
+              '<div class="col-md-2 alert">Request submitted...</div>'
             );
           }
         }
@@ -231,31 +230,31 @@
           var apiKey = $(data).filter('[data-nd-api-key]').attr('data-nd-api-key');
           if (apiKey && typeof window.nd_show_api_token === 'function') {
             window.nd_show_api_token(apiKey);
-            $('#' + tab + '_form').trigger('submit');
+            nd_submit('#' + tab + '_form');
             return;
           }
           if (mode == 'add') {
             toastr.success('Added record');
-            $('#' + tab + '_form').trigger('submit');
+            nd_submit('#' + tab + '_form');
           }
           else if (mode == 'delete') {
             toastr.success('Deleted record');
-            $('#' + tab + '_form').trigger('submit');
+            nd_submit('#' + tab + '_form');
           }
           else {
             toastr.success('Updated record');
           }
-          $('#' + tab + '_form').trigger('submit');
+          nd_submit('#' + tab + '_form');
         }
         // TODO: fix sanity_ok in Netdisco Web
         ,error: function() {
           if (mode == 'add') {
             toastr.error('Failed to add record');
-            $('#' + tab + '_form').trigger('submit');
+            nd_submit('#' + tab + '_form');
           }
           else if (mode == 'delete') {
             toastr.error('Failed to delete record');
-            $('#' + tab + '_form').trigger('submit');
+            nd_submit('#' + tab + '_form');
           }
           else {
             toastr.error('Failed to update record');
@@ -264,26 +263,17 @@
       });
     });
 
-    // bind qtip2 to show the event log output
-    $(target).on('mouseover', '.nd_jobqueueitem', function(event) {
-      $(this).qtip({
-        overwrite: false,
-        content: {
-          text: $('<span/>').text( $(this).attr("data-content") ).html()
-        },
-        show: {
-          event: event.type,
-          ready: true,
-          delay: 100
-        },
-        position: {
-          my: 'top center',
-          at: 'bottom center',
-          target: false
-        },
-        style: {
-          classes: 'qtip-cluetip qtip-rounded nd_qtip-unconstrained'
-        }
-      });
+    // show the event log output on hover, delegated from the pane so that rows
+    // the table redraws are covered without re-initialising. the rows carry
+    // their log in data-content, which the backend writes and bootstrap does
+    // not read, so the content comes from a callback rather than renaming the
+    // attribute. html is left off, so the log is inserted as text.
+    new bootstrap.Popover(target, {
+      selector: '.nd_jobqueueitem',
+      content: function() { return this.getAttribute('data-content'); },
+      trigger: 'hover',
+      placement: 'bottom',
+      delay: { show: 100, hide: 0 },
+      customClass: 'nd_jobqueue-popover'
     });
   });

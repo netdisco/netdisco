@@ -1,0 +1,229 @@
+
+
+
+
+
+
+<table class="table table-sm table-striped">
+  <tbody>
+    <tr>
+      <td>System Name</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Canonical IP</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Location
+      <i class="far fa-pen-to-square nd_edit-icon nd_device-details-edit"></i>
+      </td>
+      <td class="nd_editable-cell" contenteditable="true"
+        data-field="location" data-for-device="">
+      </td>
+    </tr>
+    <tr>
+      <td>Contact
+      <i class="far fa-pen-to-square nd_edit-icon nd_device-details-edit"></i>
+      </td>
+      <td class="nd_editable-cell" contenteditable="true"
+        data-field="contact" data-for-device="">
+      </td>
+    </tr>
+    <tr>
+      <td>Vendor / Model</td>
+      <td>
+        <a rel="tooltip" data-bs-placement="top" data-bs-title="Find Similar Devices"
+        href="&q=&vendor="></a>
+        /
+        <a rel="tooltip" data-bs-placement="top" data-bs-title="Find Similar Devices"
+        href="&q=&model="></a>
+      </td>
+    </tr>
+    <tr>
+      <td>OS / Version</td>
+      <td>
+        <a rel="tooltip" data-bs-placement="top" data-bs-title="Find Similar Devices"
+        href="&q=&os="></a>
+        /
+        <a rel="tooltip" data-bs-placement="top" data-bs-title="Find Similar Devices"
+        href="&q=&os_ver="></a>
+      </td>
+    </tr>
+    <tr>
+      <td>Serial Number(s)</td>
+      <td>
+      </td>
+    </tr>
+    <tr>
+      <td>Chassis ID</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Description</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Tags</td>
+      <td>
+        <span class="badge text-bg-success">core</span>
+      </td>
+    </tr>
+    <tr>
+      <td>External Links</td>
+      <td>
+        <a href="ssh://" target="_blank">
+          <span class="badge text-bg-info"><i class="fas fa-keyboard"></i> SSH</span></a>
+        <a href="telnet://" target="_blank">
+          <span class="badge text-bg-info"><i class="fas fa-keyboard"></i> Telnet</span></a>
+        <a href="https:///" target="_blank">
+          <span class="badge text-bg-info"><i class="fas fa-up-right-from-square"></i> Web</span></a>
+      </td>
+    </tr>
+    <tr>
+      <td>SNMP Class</td>
+      <td><a target="_blank" href="https://metacpan.org/pod/"></a></td>
+    </tr>
+    <tr>
+      <td>Uptime</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Layers</td>
+      <td><span class="badge text-bg-success">1</span><span class="badge text-bg-secondary">&nbsp;</span><span class="badge text-bg-success">3</span><span class="badge text-bg-secondary">&nbsp;</span><span class="badge text-bg-success">5</span><span class="badge text-bg-secondary">&nbsp;</span><span class="badge text-bg-success">7</span>
+      </td>
+    </tr>
+    <tr>
+      <td>First Discovered</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Latest Discover</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Latest Arpnip</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Latest Macsuck</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>NAC / 802.1X</td>
+      <td> <i class="fas fa-circle-check text-success"></i> Enabled </td>
+    </tr>
+    <tr>
+      <td>Hardware Status</td>
+      <td>Fan: 
+        <br/>PS1 []: 
+        <br/>PS2 []: </td>
+    </tr>
+    <tr>
+      <td>MAC Address</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>VTP Status</td>
+      <td>Mode: n/a<br />Domain: n/a</td>
+    </tr>
+    <tr data-for-device="">
+      <td>Admin Tasks</td>
+      <td>
+        <input type="hidden" data-form="discover" value="" name="device"/>
+        <button class="btn btn-info btn-sm nd_adminbutton" name="discover">Discover</button>
+
+        <input type="hidden" data-form="arpnip" value="" name="device"/>
+        <button class="btn btn-info btn-sm nd_adminbutton" name="arpnip">Arpnip</button>
+
+        <button class="btn btn-secondary btn-sm disabled">Macsuck</button>
+
+        <button class="btn btn-secondary btn-sm disabled">NBTstat</button>
+
+        <span class="dropdown">
+          <button class="nd_snap_btn btn btn-info btn-sm dropdown-toggle" type="button" id="snapshotmenu" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            Snapshot
+          </button>
+          <ul class="dropdown-menu" aria-labelledby="snapshotmenu">
+            <input type="hidden" data-form="snapshot_req" value="" name="device"/>
+            <li><a href="#" class="dropdown-item nd_adminbutton" name="snapshot_req"><i class="far fa-pen-to-square"></i> Create</a></li>
+
+            <li class='nd_snap_func disabled'><a class="dropdown-item" href="?device="><i class="fas fa-download"></i> Download</a></li>
+
+            <input type="hidden" data-form="snapshot_del" value="" name="device"/>
+            <li class='nd_snap_func disabled'><a href="#" class="dropdown-item nd_adminbutton" name="snapshot_del"><i class="fas fa-trash-can"></i> Delete</a></li>
+          </ul>
+        </span>
+
+        <button class="btn btn-danger btn-sm float-end"
+          data-bs-toggle="modal" data-bs-target="#nd_devdel" type="button">Delete</button>
+
+        <button class="btn btn-danger btn-sm float-end nd_pull-right-admin-button"
+          data-bs-toggle="modal" data-bs-target="#nd_devrenumber" type="button">Change IP</button>
+
+
+        <div id="nd_devdel" class="nd_modal nd_deep-horizon modal fade" tabindex="-1"
+          role="dialog" aria-labelledby="nd_devdel-label" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h3 id="nd_devdel-label">Confirm Delete: </h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <blockquote>
+                  <ul>
+                    <li><p>A job will be queued to delete the device</p></li>
+                    <li><p>All associated Nodes may be removed from the database</p></li>
+                  </ul>
+                </blockquote>
+                <textarea id="nd_devdel-log" class="form-control" rows="2" data-form="delete"
+                  placeholder="Enter a log message" name="extra"></textarea>
+                <label class="form-check">
+                  <input id="nd_devdel-archive" type="checkbox" data-form="delete" name="port">
+                  <h4 class="nd_unbolden">Archive Nodes</h4>
+                </label>
+                <input type="hidden" data-form="delete" value="" name="device"/>
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-success" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
+                <button class="btn btn-danger nd_adminbutton" name="delete" data-bs-dismiss="modal">Confirm</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="nd_devrenumber" class="nd_modal nd_deep-horizon modal fade" tabindex="-1"
+          role="dialog" aria-labelledby="nd_devrenumber-label" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h3 id="nd_devrenumber-label">Confirm Renumber: </h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <blockquote>
+                  <ul>
+                    <li><p>This will change the primary IP of a device to support migrations.</p></li>
+                    <li><p>You can to change to an existing interface IP or a new IP</p></li>
+                    <li><p>No check is made as to whether the new IP is reachable</p></li>
+                    <li><p>The change is queued as a backend job</p></li>
+                    <li><p>The <a href="https://github.com/netdisco/netdisco/wiki/Configuration#device_identity"><code>device_identity</code></a> setting is safer and may work better</p></li>
+                  </ul>
+                </blockquote>
+                <label>Enter new IP address: <input class="form-control w-auto d-inline-block" list="interfaces" name="newip" data-form="renumber"/></label>
+                <datalist id="interfaces">
+                </datalist>
+                <input type="hidden" data-form="renumber" value="" name="device"/>
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-success" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
+                <button class="btn btn-danger nd_adminbutton" name="renumber" data-bs-dismiss="modal">Confirm</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>

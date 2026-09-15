@@ -1,7 +1,7 @@
 <table class="table table-bordered">
   <tbody>
     <tr>
-      <th scope="row" class="span1">OID</th>
+      <th scope="row" class="col-md-1">OID</th>
       <td>[% node.snmp_object.oid | html_entity %]</td>
     </tr>
     <tr>
@@ -28,7 +28,7 @@
       <th scope="row">Index</th>
       <td>
       [% IF node.snmp_object.index.size > 0 %]
-        <table class="table table-condensed table-bordered">
+        <table class="table table-sm table-bordered">
           [% FOREACH idx IN node.snmp_object.index %]
           <tr><td>[% idx | html_entity %]</td></tr>
           [% END %]
@@ -40,7 +40,7 @@
       <th scope="row">Filter</th>
       <td>
       [% IF node.value %]
-      <select name="munger" id="munger">
+      <select class="form-select w-auto d-inline-block" name="munger" id="munger">
         [% UNLESS munge %]<option value="" selected disabled hidden>None applied</option>[% END %]
         [% FOREACH m IN mungers %]
         <option [% 'selected' IF m == munge %] value="[% m | uri %]">[% m | html_entity %]</option>
@@ -53,7 +53,7 @@
       <th scope="row">Enum Syntax</th>
       <td>
       [% IF node.snmp_object.enum.size > 0 %]
-        <table class="table table-condensed table-bordered">
+        <table class="table table-sm table-bordered">
           [% FOREACH idx IN node.snmp_object.enum %]
           <tr><td>[% idx.replace('(\w)\(', '$1 (') | html_entity %]</td></tr>
           [% END %]

@@ -1,0 +1,37 @@
+
+<div class="col-md-4 alert alert-info">No duplicate devices found.</div>
+
+<script>
+$(document).ready(function() {
+  $('#data-table').dataTable({
+    "processing": true
+    ,"stateSave": true
+    ,"pageLength": 
+    ,"lengthMenu": 
+    ,"dom": '<"top"l<"nd_datatables-pager"p>f>rit<"bottom"><"clear">'
+
+    ,"pagingType": 'simple_numbers'
+    ,"language": {
+
+      "processing": 'Processing...'
+      ,"search": '_INPUT_'
+      ,"searchPlaceholder": 'Filter records...'
+      ,"lengthMenu": "Show _MENU_ records."
+      ,"info":         "&nbsp;Showing _START_ to _END_ of _TOTAL_"
+      ,"infoFiltered": "(filtered from _MAX_ total)"
+      ,"infoEmpty":    "&nbsp;No matching entries"
+
+      ,"paginate": {
+        "previous": '&larr; Previous'
+        ,"next":    'Next &rarr;'
+      }
+    }
+    ,"stateSaveParams": function (settings, data) {
+      // make sure filter is never saved
+      data.search.search = "";
+      // make sure paging position is not saved
+      data.start = 0;
+    }
+  } );
+} );
+</script>

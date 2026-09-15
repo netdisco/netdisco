@@ -4,13 +4,32 @@
     ,"pageLength": [% settings.table_pagesize | none %]
     ,"lengthMenu": [% table_showrecordsmenu | none %]
     ,"dom": '<"top"l<"nd_datatables-pager"p>f>rit<"bottom"><"clear">'
+[%# stated rather than left to the library, whose default changed from
+    simple_numbers to full_numbers. netdisco never asked for the first and last
+    buttons the newer default adds. A template comment, not a JavaScript one:
+    this file is inlined into a script block on 46 templates, so anything left
+    in the output ships on every page that draws a table. %]
+    ,"pagingType": 'simple_numbers'
     ,"language": {
-      "search": '_INPUT_'
+[%# the library used to say "Processing..." and now defaults to an empty
+    string, drawing an animated row of dots from CSS in its place. Naming the
+    words brings the text back; the dots are hidden in netdisco.css, since
+    setting this alone leaves both showing at once. %]
+      "processing": 'Processing...'
+      ,"search": '_INPUT_'
       ,"searchPlaceholder": 'Filter records...'
       ,"lengthMenu": "Show _MENU_ records."
       ,"info":         "&nbsp;Showing _START_ to _END_ of _TOTAL_"
       ,"infoFiltered": "(filtered from _MAX_ total)"
       ,"infoEmpty":    "&nbsp;No matching entries"
+[%# the words are the library's own, but the arrows came from the integration
+    file that used to ship beside it, which wrapped them in markup itself. Its
+    replacement emits chevron glyphs instead, so the labels are stated here
+    rather than patched into a vendored file. %]
+      ,"paginate": {
+        "previous": '&larr; Previous'
+        ,"next":    'Next &rarr;'
+      }
     }
     ,"stateSaveParams": function (settings, data) {
       // make sure filter is never saved

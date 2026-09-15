@@ -31,32 +31,32 @@ function port_control (e) {
       toastr.info('Submitted change request');
 
       // update all the screen furniture unless bouncing
-      if (! $(e).hasClass('icon-bullseye')) {
+      if (! $(e).hasClass('fa-bullseye')) {
         if ($.trim(td.data('action')) == 'down') {
-          td.prev('td').html('<i class="icon-remove"></i>');
-          $(e).toggleClass('icon-hand-down');
-          $(e).toggleClass('icon-hand-up');
-          $(e).siblings('.icon-bullseye').hide();
-          $(e).data('tooltip').options.title = 'Enable Port';
+          td.prev('td').html('<i class="fas fa-xmark"></i>');
+          $(e).toggleClass('fa-hand-point-down');
+          $(e).toggleClass('fa-hand-point-up');
+          $(e).siblings('.fa-bullseye').hide();
+          retitleTooltip($(e), 'Enable Port');
           td.data('action', 'up');
         }
         else if ($.trim(td.data('action')) == 'up') {
-          td.prev('td').html('<i class="icon-refresh icon-spin"></i>');
-          $(e).toggleClass('icon-hand-up');
-          $(e).toggleClass('icon-hand-down');
-          $(e).siblings('.icon-bullseye').show();
-          $(e).data('tooltip').options.title = 'Disable Port';
+          td.prev('td').html('<i class="fas fa-arrows-rotate fa-spin"></i>');
+          $(e).toggleClass('fa-hand-point-up');
+          $(e).toggleClass('fa-hand-point-down');
+          $(e).siblings('.fa-bullseye').show();
+          retitleTooltip($(e), 'Disable Port');
           td.data('action', 'down');
         }
         else if ($.trim(td.data('action')) == 'false') {
           $(e).next('span').text('');
           $(e).toggleClass('nd_power-on');
-          $(e).data('tooltip').options.title = 'Enable Power';
+          retitleTooltip($(e), 'Enable Power');
           td.data('action', 'true');
         }
         else if ($.trim(td.data('action')) == 'true') {
           $(e).toggleClass('nd_power-on');
-          $(e).data('tooltip').options.title = 'Disable Power';
+          retitleTooltip($(e), 'Disable Power');
           td.data('action', 'false');
         }
       }
@@ -120,12 +120,12 @@ $(document).ready(function() {
   });
 
   // activity for port up/down control, power enable/disable control
-  $('#ports_pane').on('click', '.icon-hand-up,.icon-hand-down,.nd_power-icon,.icon-bullseye', function() {
+  $('#ports_pane').on('click', '.fa-hand-point-up,.fa-hand-point-down,.nd_power-icon,.fa-bullseye', function() {
     var clicked = this; // create a closure
-    $('#nd_portlog').one('hidden', function() {
+    $('#nd_portlog').one('hidden.bs.modal', function() {
       port_control(clicked); // save
     });
-    if ($(this).hasClass('icon-hand-up')) {
+    if ($(this).hasClass('fa-hand-point-up')) {
       $('#nd_portlog-reason').val('resolved');
     }
     else {
@@ -152,7 +152,7 @@ $(document).ready(function() {
       event.preventDefault();
 
       if (td.data('field') == 'c_pvid') {
-        $('#nd_portlog').one('hidden', function() {
+        $('#nd_portlog').one('hidden.bs.modal', function() {
           port_control(cell); // save
         });
         $('#nd_portlog').modal('show');

@@ -39,7 +39,7 @@ ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
       text => 'No data for this device. Admins can request a snapshot in the Details tab.',
       children => \0,
       state => { disabled => \1 },
-      icon => 'icon-search',
+      icon => 'fas fa-magnifying-glass',
     }] unless $device->oids->count;
 
     # snapshot should run a loadmibs, but just in case that didn't happen...
@@ -47,7 +47,7 @@ ajax '/ajax/data/device/:ip/snmptree/:base' => require_login sub {
       text => 'No MIB objects. Please run a loadmibs job.',
       children => \0,
       state => { disabled => \1 },
-      icon => 'icon-search',
+      icon => 'fas fa-magnifying-glass',
     }] unless schema(vars->{'tenant'})->resultset('SNMPObject')->count();
 
     my $items = _get_snmp_data($device->ip, $base);
@@ -177,16 +177,16 @@ sub _get_snmp_data {
         text => ($meta{$_}->{leaf} .' ('. $meta{$_}->{oid_parts}->[-1] .')'),
         has_value => $meta{$_}->{browser},
 
-        ($meta{$_}->{browser} ? (icon => 'icon-folder-close text-info')
-                              : (icon => 'icon-folder-close-alt muted')),
+        ($meta{$_}->{browser} ? (icon => 'fas fa-folder text-info')
+                              : (icon => 'far fa-folder text-muted')),
 
         (scalar @{$meta{$_}->{index}}
-          ? (icon => 'icon-th'.($meta{$_}->{browser} ? ' text-info' : ' muted')) : ()),
+          ? (icon => 'fas fa-table-cells'.($meta{$_}->{browser} ? ' text-info' : ' text-muted')) : ()),
 
         (($meta{$_}->{num_children} == 0 and ($meta{$_}->{type}
                                               or $meta{$_}->{access} =~ m/^(?:read|write)/
                                               or $meta{$_}->{oid_parts}->[-1] == 0))
-          ? (icon => 'icon-leaf'.($meta{$_}->{browser} ? ' text-info' : ' muted')) : ()),
+          ? (icon => 'fas fa-leaf'.($meta{$_}->{browser} ? ' text-info' : ' text-muted')) : ()),
 
         # jstree will async call to expand these, and while it's possible
         # for us to prefetch by calling _get_snmp_data() and passing to

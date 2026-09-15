@@ -1,41 +1,41 @@
 
             <p class="nd_sidebar-title"><em>Port Search Options</em></p>
             <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
-            <div class="clearfix input-prepend">
-              <label class="add-on">
+            <div class="clearfix input-group">
+              <label class="input-group-text">
                 <input type="checkbox" id="port_partial"
                   name="partial"[% ' checked="checked"' IF vars.sidebar_defaults.search_port.partial %]/>
               </label>
               <label class="nd_checkboxlabel" for="port_partial">
-                <span class="nd_searchcheckbox uneditable-input">Partial Match</span>
+                <span class="nd_searchcheckbox form-control-plaintext">Partial Match</span>
               </label>
             </div>
-            <div class="clearfix input-prepend">
-              <label class="add-on">
+            <div class="clearfix input-group">
+              <label class="input-group-text">
                 <input type="checkbox" id="port_uplink"
                   name="uplink"[% ' checked="checked"' IF vars.sidebar_defaults.search_port.uplink %]/>
               </label>
               <label class="nd_checkboxlabel" for="port_uplink">
-                <span class="nd_searchcheckbox uneditable-input">Include Uplinks</span>
+                <span class="nd_searchcheckbox form-control-plaintext">Include Uplinks</span>
               </label>
             </div>
-            <div class="clearfix input-prepend">
-              <label class="add-on">
+            <div class="clearfix input-group">
+              <label class="input-group-text">
                 <input type="checkbox" id="port_descr"
                   name="descr"[% ' checked="checked"' IF vars.sidebar_defaults.search_port.descr %]/>
               </label>
               <label class="nd_checkboxlabel" for="port_descr">
-                <span class="nd_searchcheckbox uneditable-input">Search Description</span>
+                <span class="nd_searchcheckbox form-control-plaintext">Search Description</span>
               </label>
             </div>
-            <div class="clearfix input-prepend">
-              <label class="add-on">
+            <div class="clearfix input-group">
+              <label class="input-group-text">
                 <input type="checkbox" id="port_ethernet"
                   name="ethernet"[% ' checked="checked"' IF vars.sidebar_defaults.search_port.ethernet %]/>
               </label>
               <label class="nd_checkboxlabel" for="port_ethernet">
-                <span class="nd_searchcheckbox uneditable-input">Ethernet Only</span>
+                <span class="nd_searchcheckbox form-control-plaintext">Ethernet Only</span>
               </label>
             </div>
             <button id="[% tab.tag | html_entity %]_submit" type="submit" class="btn btn-info">
-              <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search Ports</button>
+              <i class="fas fa-magnifying-glass fa-lg float-start nd_navbar-icon"></i> Search Ports</button>

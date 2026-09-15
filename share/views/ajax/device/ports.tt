@@ -43,29 +43,29 @@
 
       <td class="nd_center-cell nd_devport-icon">
         [% IF row.up_admin != 'up' %]
-        <i class="icon-remove icon-large" title="Port disabled (admin down)"></i>
+        <i class="fas fa-xmark fa-lg" title="Port disabled (admin down)"></i>
         [% ELSIF row.up == 'up' AND row.stp == 'blocking' AND vlans.$portname.vlan_count < 2 %]
-        <i class="icon-ban-circle text-info icon-large" title="STP blocking"></i>
+        <i class="fas fa-ban text-info fa-lg" title="STP blocking"></i>
         [% ELSIF row.error_disable_cause %]
-        <i class="icon-exclamation-sign text-error icon-large" title="Error disabled: [% row.error_disable_cause | html_entity %]"></i>
+        <i class="fas fa-circle-exclamation text-danger fa-lg" title="Error disabled: [% row.error_disable_cause | html_entity %]"></i>
         [% ELSIF row.has_column_loaded('is_free') AND row.is_free %]
-        <i class="icon-circle-arrow-down text-success icon-large" title="Port free (no active nodes)"></i>
+        <i class="fas fa-circle-arrow-down text-success fa-lg" title="Port free (no active nodes)"></i>
         [% ELSIF row.up_admin == 'up' AND (row.up != 'up' AND row.up != 'dormant') %]
           [% IF params.port_state == 'free' %]
-          <i class="icon-circle-arrow-down text-success icon-large" title="Port free (no active nodes)"></i>
+          <i class="fas fa-circle-arrow-down text-success fa-lg" title="Port free (no active nodes)"></i>
           [% ELSE %]
-          <i class="icon-arrow-down text-error icon-large" title="Port down (link lost)"></i>
+          <i class="fas fa-arrow-down text-danger fa-lg" title="Port down (link lost)"></i>
           [% END %]
         [% ELSE %]
-        <i class="icon-angle-up text-success icon-large" title="Port up"></i>
+        <i class="fas fa-angle-up text-success fa-lg" title="Port up"></i>
         [% END %]
         [% IF row.slave_of %]<br/>
           [% IF row.get_column('agg_master_up_admin') != 'up' %]
-            <small><i class="icon-group muted" title="LAG member — aggregate disabled"></i></small>
+            <small><i class="fas fa-users text-muted" title="LAG member: aggregate disabled"></i></small>
           [% ELSIF row.get_column('agg_master_up') == 'up' %]
-            <small><i class="icon-group text-success" title="LAG member — aggregate up"></i></small>
+            <small><i class="fas fa-users text-success" title="LAG member: aggregate up"></i></small>
           [% ELSE %]
-            <small><i class="icon-group text-error" title="LAG member — aggregate down"></i></small>
+            <small><i class="fas fa-users text-danger" title="LAG member: aggregate down"></i></small>
           [% END %]
         [% END %]
       </td>
@@ -86,46 +86,46 @@
       [% END %]
         <a class="nd_log-icon"
           href="[% uri_for('/report/portlog') | none %]?q=[% device.ip | uri %]&f=[% row.port | uri %]">
-          <i class="icon-file-text-alt"
-            rel="tooltip" data-placement="top" data-offset="3"
-            data-animation="" data-title="View Port Log"></i>
+          <i class="far fa-file-lines"
+            rel="tooltip" data-bs-placement="top"
+            data-bs-animation="false" data-bs-title="View Port Log"></i>
         </a>
         [% IF row.has_subinterface_group %]
         <span class="nd_log-icon nd_row-collapser-toggle" data-collapsed-group="[% row.port %]">
           [% IF (params.p_fold_dotzero AND row.has_only_dot_zero_subinterface)
               OR params.p_fold_subinterfaces %]
-          <i class="icon-list-ol"
+          <i class="fas fa-list-ol"
           [% ELSE %]
-          <i class="icon-sort-by-attributes-alt icon-rotate-180"
+          <i class="fas fa-arrow-up-wide-short fa-rotate-180"
           [% END %]
-            rel="tooltip" data-placement="top" data-offset="3"
-            data-animation="" data-title="Toggle Subinterfaces"></i>
+            rel="tooltip" data-bs-placement="top"
+            data-bs-animation="false" data-bs-title="Toggle Subinterfaces"></i>
         </span>
         [% END %]
       [% IF params.c_admin AND row.port_acl_service %]
       [% IF row.up_admin == 'up' %]
         <span class="nd_hand-icon">
-          <i class="icon-bullseye" data-action="bounce"
-            rel="tooltip" data-placement="top" data-offset="3"
-            data-animation="" data-title="Bounce Port"></i>
-          <i class="icon-hand-down"
-            rel="tooltip" data-placement="top" data-offset="3"
-            data-animation="" data-title="Disable Port"></i>
+          <i class="fas fa-bullseye" data-action="bounce"
+            rel="tooltip" data-bs-placement="top"
+            data-bs-animation="false" data-bs-title="Bounce Port"></i>
+          <i class="fas fa-hand-point-down"
+            rel="tooltip" data-bs-placement="top"
+            data-bs-animation="false" data-bs-title="Disable Port"></i>
         </span>
       [% ELSE %]
         <span class="nd_hand-icon">
-          <i class="icon-bullseye" data-action="bounce" style="display: none"
-            rel="tooltip" data-placement="top" data-offset="3"
-            data-animation="" data-title="Bounce Port"></i>
-          <i class="icon-hand-up"
-            rel="tooltip" data-placement="top" data-offset="3"
-            data-animation="" data-title="Enable Port"></i>
+          <i class="fas fa-bullseye" data-action="bounce" style="display: none"
+            rel="tooltip" data-bs-placement="top"
+            data-bs-animation="false" data-bs-title="Bounce Port"></i>
+          <i class="fas fa-hand-point-up"
+            rel="tooltip" data-bs-placement="top"
+            data-bs-animation="false" data-bs-title="Enable Port"></i>
         </span>
       [% END %]
       [% END %]
         <a class="nd_this-port-only nd_port-only-first" href="[% device_ports | none %]&q=[% params.q | uri %]&f=[% row.port | uri %]&prefer=port">
           [% IF row.is_master OR row.has_subinterfaces %]
-            <small><i class="icon-group muted"></i></small>&nbsp;
+            <small><i class="fas fa-users text-muted"></i></small>&nbsp;
           [% END %]
         [% row.port | html_entity %]</a>
         [% IF row.slave_of %]<br/>
@@ -159,7 +159,7 @@
       [% IF params.c_admin AND row.port_acl_name %]
       <td nowrap class="nd_editable-cell" contenteditable="true"
           data-field="c_name" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
-      <i class="icon-edit nd_edit-icon"></i>
+      <i class="far fa-pen-to-square nd_edit-icon"></i>
       [% ELSE %]
       <td nowrap class="nd_editable-cell">
       [% END %]
@@ -172,7 +172,7 @@
       [% IF params.c_tags %]
       <td>
         [% FOREACH t IN row.filtered_tags.sort %]
-        <span class="badge badge-success">[% t | html_entity %]</span>
+        <span class="badge text-bg-success">[% t | html_entity %]</span>
         [% END %]
       </td>
       [% END %]
@@ -191,7 +191,7 @@
           [% IF params.c_admin AND config.editable AND row.port_acl_name %]
             <td nowrap class="nd_editable-cell" contenteditable="true"
                 data-field="[% config.field | html_entity %]" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
-            <i class="icon-edit nd_edit-icon"></i>
+            <i class="far fa-pen-to-square nd_edit-icon"></i>
           [% ELSE %]
             <td nowrap class="nd_editable-cell">
           [% END %]
@@ -244,7 +244,7 @@
       [% IF params.c_admin AND row.port_acl_pvid %]
       <td class="nd_editable-cell" contenteditable="true" data-default="[% row.vlan | html_entity %]"
         data-field="c_pvid" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
-      <i class="icon-edit nd_edit-icon"></i>
+      <i class="far fa-pen-to-square nd_edit-icon"></i>
       <div class="nd_editable-cell-content">
         [% IF row.vlan AND row.vlan > 0 %][% row.vlan | html_entity %][% END %]
       </div>
@@ -276,7 +276,7 @@
             <div class="nd_nodes-total">
               <strong>[% vlan_count %] VLANs</strong>
               <span class="nd_collapse-vlans">
-                Show <div class="nd_arrow-up-down-left-down icon-plus-sign-alt"></div>&nbsp;
+                Show <div class="nd_arrow-up-down-left-down fas fa-square-plus"></div>&nbsp;
               </span>
             </div>
             <div class="nd_collapsing nd_collapse-pre-hidden">
@@ -289,7 +289,7 @@
             </div>
           [% END %]
         [% ELSE %]
-        <i class="icon-asterisk text-warning"></i> ([% vlans.$portname.vlan_count %] is too many to list)
+        <i class="fas fa-asterisk text-warning"></i> ([% vlans.$portname.vlan_count %] is too many to list)
         [% END %]
         [% END %]
       </td>
@@ -303,12 +303,12 @@
                 data-field="c_power" data-for-device="[% device.ip | html_entity %]"
                 data-for-port="[% row.port | html_entity %]">
 
-                <i class="icon-off nd_power-icon nd_power-on"
-                  rel="tooltip" data-placement="top" data-offset="3"
-                  data-animation="" data-title="Disable Power"></i>
+                <i class="fas fa-power-off nd_power-icon nd_power-on"
+                  rel="tooltip" data-bs-placement="top"
+                  data-bs-animation="false" data-bs-title="Disable Power"></i>
             [% ELSE %]
               <td nowrap>
-                <i class="icon-off nd_power-on"></i>
+                <i class="fas fa-power-off nd_power-on"></i>
             [% END %]
                 <span>
                 [% IF row.power.power AND row.power.power > 0 %]
@@ -323,12 +323,12 @@
                 data-field="c_power" data-for-device="[% device.ip | html_entity %]"
                 data-for-port="[% row.port | html_entity %]">
 
-                <i class="icon-off nd_power-icon"
-                  rel="tooltip" data-placement="top" data-offset="3"
-                  data-animation="" data-title="Enable Power"></i>
+                <i class="fas fa-power-off nd_power-icon"
+                  rel="tooltip" data-bs-placement="top"
+                  data-bs-animation="false" data-bs-title="Enable Power"></i>
             [% ELSE %]
               <td>
-                <i class="icon-off"></i>
+                <i class="fas fa-power-off"></i>
             [% END %]
           [% END %]
               </td>
@@ -344,11 +344,11 @@
       [% IF params.c_nac_summary %]
       <td>
       [% IF row.up == 'up' AND (row.pae_authconfig_port_status OR row.pae_authconfig_state) %]
-        <i class="icon-[% row.pae_authconfig_port_status == 'authorized' ? 'ok-sign' : 'ban-circle' %]"
-          rel="tooltip" data-placement="top" data-offset="3" data-animation="" data-title="[% row.pae_authconfig_port_status %]"></i>
-        <i class="icon-[% row.pae_authconfig_state == 'authenticated' ? 'link' : 'unlink' %]"
-          rel="tooltip" data-placement="top" data-offset="3" data-animation="" data-title="[% row.pae_authconfig_state %]"></i>
-        <i class="icon-[% row.pae_authsess_mab ? 'laptop' : 'user' %]" title="[% row.pae_authsess_mab ? 'MAC Authentication Bypass (MAB)' : '802.1X user authentication' %]"></i>
+        <i class="fas [% row.pae_authconfig_port_status == 'authorized' ? 'fa-circle-check' : 'fa-ban' %]"
+          rel="tooltip" data-bs-placement="top" data-bs-animation="false" data-bs-title="[% (row.pae_authconfig_port_status || 'unknown') | html_entity %]"></i>
+        <i class="fas [% row.pae_authconfig_state == 'authenticated' ? 'fa-link' : 'fa-link-slash' %]"
+          rel="tooltip" data-bs-placement="top" data-bs-animation="false" data-bs-title="[% (row.pae_authconfig_state || 'unknown') | html_entity %]"></i>
+        <i class="fas [% row.pae_authsess_mab ? 'fa-laptop' : 'fa-user' %]" title="[% row.pae_authsess_mab ? 'MAC Authentication Bypass (MAB)' : '802.1X user authentication' %]"></i>
         [% SET sessuser = (row.pae_authsess_user_net_mac.$mac_format_call || row.pae_authsess_user.remove(settings.domain_suffix)) %]
         <a href="[% search_node | none %]&q=[% sessuser | uri %]">[% sessuser | html_entity %]</a>
       [% END %]
@@ -369,7 +369,7 @@
           [% IF params.c_admin AND config.editable AND row.port_acl_name %]
             <td nowrap class="nd_editable-cell" contenteditable="true"
                 data-field="[% config.field | html_entity %]" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
-            <i class="icon-edit nd_edit-icon"></i>
+            <i class="far fa-pen-to-square nd_edit-icon"></i>
           [% ELSE %]
             <td nowrap class="nd_editable-cell">
           [% END %]
@@ -393,11 +393,11 @@
         [% END %]
         [% IF params.c_neighbors AND (row.remote_ip OR row.is_uplink) %]
           [% IF row.get_column('neighbor_ip') %]
-            <i class="icon-link[% ' text-warning' IF row.manual_topo %]" title="[% row.manual_topo ? 'Manually configured topology link' : 'Discovered neighbor' %]"></i>
+            <i class="fas fa-link[% ' text-warning' IF row.manual_topo %]" title="[% row.manual_topo ? 'Manually configured topology link' : 'Discovered neighbor' %]"></i>
             [% IF row.remote_is_phone %]
-              <i class="icon-phone" title="VoIP Phone"></i>&nbsp;
+              <i class="fas fa-phone" title="VoIP Phone"></i>&nbsp;
             [% ELSIF row.remote_is_wap %]
-              <i class="icon-rss" title="Wireless Access Point"></i>&nbsp;
+              <i class="fas fa-rss" title="Wireless Access Point"></i>&nbsp;
             [% END %]
             <a href="[% device_ports | none %]&q=[% row.get_column('neighbor_ip') | uri %]">
                 [% row.get_column('neighbor_dns').remove(settings.domain_suffix) || row.get_column('neighbor_ip') | html_entity %]</a>
@@ -418,12 +418,12 @@
               [% ' type: '_ row.remote_type IF row.remote_type %])<br/>
             [% END %]
           [% ELSIF row.remote_ip %]
-            <i class="icon-[% row.remote_is_discoverable ? 'unlink' : 'eye-close' %] text-error"
+            <i class="fas [% row.remote_is_discoverable ? 'fa-link-slash' : 'fa-eye-slash' %] text-danger"
                title="[% row.remote_is_discoverable ? 'Neighbor not yet discovered' : 'Not discoverable (WAP/phone discovery disabled)' %]"></i>&nbsp;
             [% IF row.remote_is_phone %]
-              <i class="icon-phone" title="VoIP Phone"></i>&nbsp;
+              <i class="fas fa-phone" title="VoIP Phone"></i>&nbsp;
             [% ELSIF row.remote_is_wap %]
-              <i class="icon-rss" title="Wireless Access Point"></i>&nbsp;
+              <i class="fas fa-rss" title="Wireless Access Point"></i>&nbsp;
             [% END %]
             <a href="[% search_node | none %]&q=[% row.remote_ip | uri %]">[% row.remote_dns || row.remote_ip | html_entity %]</a>
               [% IF row.remote_port AND NOT (row.remote_is_wap OR row.remote_is_phone) %]
@@ -444,7 +444,7 @@
               [% ' type: '_ row.remote_type IF row.remote_type %])<br/>
             [% END %]
           [% ELSE %]
-            <i class="icon-unlink text-error" title="Possible uplink — neighbor seen but no IP recorded"></i>&nbsp; (possible uplink)
+            <i class="fas fa-link-slash text-danger" title="Possible uplink: neighbor seen but no IP recorded"></i>&nbsp; (possible uplink)
           [% END %]
         [% END %]
         [% IF params.c_nodes %]
@@ -452,7 +452,7 @@
         <div class="nd_nodes-total">
           <strong>[% row.$nodes.size %] nodes</strong>
           <span class="nd_collapse-vlans">
-            Show <div class="nd_arrow-up-down-left-down icon-plus-sign-alt"></div>&nbsp;
+            Show <div class="nd_arrow-up-down-left-down fas fa-square-plus"></div>&nbsp;
           </span>
         </div>
         <div class="nd_collapsing nd_collapse-pre-hidden">
@@ -463,8 +463,8 @@
           [% NEXT IF _node_is_neighbor %]
           <div class="nd_div-closer[% ' nd_div-closer-last' IF loop.last %]">
           [% '<br/>' IF (row.remote_ip OR row.is_uplink) OR NOT loop.first %]
-          [% '<i class="icon-book" title="Archived node (inactive)"></i>&nbsp; ' IF NOT node.active %]
-          <i class="icon-laptop" title="Client"></i>&nbsp;
+          [% '<i class="fas fa-book" title="Archived node (inactive)"></i>&nbsp; ' IF NOT node.active %]
+          <i class="fas fa-laptop" title="Client"></i>&nbsp;
           <a href="[% search_node | none %]&q=[% node.net_mac.$mac_format_call | uri %]">
             [% node.net_mac.$mac_format_call | html_entity %]</a>
           [% IF (node.vlan > 0) && (node.vlan != row.vlan) %]
@@ -484,7 +484,7 @@
             <div class="nd_nodes-total">
               &nbsp;&nbsp;<strong>[% node.$ips.size %] IPs</strong>
               <span class="nd_collapse-vlans">
-                Show <div class="nd_arrow-up-down-left-down icon-plus-sign-alt"></div>&nbsp;
+                Show <div class="nd_arrow-up-down-left-down fas fa-square-plus"></div>&nbsp;
               </span>
             </div>
             <div class="nd_collapsing nd_collapse-pre-hidden">
@@ -499,7 +499,7 @@
             [% ELSE %]
               <br/>&nbsp;
             [% END %]
-            [% '<i class="icon-book" title="Archived node (inactive)"></i>&nbsp; ' IF NOT ip.active %]
+            [% '<i class="fas fa-book" title="Archived node (inactive)"></i>&nbsp; ' IF NOT ip.active %]
             [% SET dns = ip.dns %]
             [% IF dns %]
               [% IF params.n_dns %]
@@ -532,9 +532,9 @@
         [% IF params.c_admin AND settings.portctl_topology AND row.port_acl_service %]
         <a class="nd_log-icon"
           href="[% uri_for('/admin/topology') | none %]?dev1=[% device.ip | uri %]&port1=[% row.port | uri %]">
-          <i class="icon-link text-warning"
-            rel="tooltip" data-placement="top" data-offset="3"
-            data-animation="" data-title="Manual Topology"></i>
+          <i class="fas fa-link text-warning"
+            rel="tooltip" data-bs-placement="top"
+            data-bs-animation="false" data-bs-title="Manual Topology"></i>
         </a>
         [% END %]
       </td>
@@ -564,7 +564,7 @@
           [% IF params.c_admin AND config.editable AND row.port_acl_name %]
             <td nowrap class="nd_editable-cell" contenteditable="true"
                 data-field="[% config.field | html_entity %]" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
-            <i class="icon-edit nd_edit-icon"></i>
+            <i class="far fa-pen-to-square nd_edit-icon"></i>
           [% ELSE %]
             <td nowrap class="nd_editable-cell">
           [% END %]
@@ -581,24 +581,28 @@
 </table>
 
 [% IF params.c_admin AND user_has_role('port_control', device.ip) %]
-<div id="nd_portlog" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
+<div id="nd_portlog" class="nd_modal nd_deep-horizon modal fade" tabindex="-1"
     role="dialog" aria-hidden="true">
-  <div class="modal-body">
-    <blockquote>
-      <ul><li><p>Please provide a reason for changing the Port Configuration</p></li></ul>
-    </blockquote>
-    <select id="nd_portlog-reason" class="input-block-level" name="reason">
-      [% FOREACH pair IN settings.port_control_reasons.pairs %]
-        <option[% ' selected="selected"' IF pair.key == 'other' %] value="[% pair.key | html_entity %]">
-          [% pair.value | html_entity %]</option>
-      [% END %]
-    </select>
-    <textarea id="nd_portlog-log" class="input-block-level" rows="2" name="log"
-      placeholder="Enter a log message"></textarea>
-  </div>
-  <div class="modal-footer">
-    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-    <button id="nd_portlog-submit" class="btn btn-info" data-dismiss="modal">Continue</button>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
+        <blockquote>
+          <ul><li><p>Please provide a reason for changing the Port Configuration</p></li></ul>
+        </blockquote>
+        <select id="nd_portlog-reason" class="form-select" name="reason">
+          [% FOREACH pair IN settings.port_control_reasons.pairs %]
+            <option[% ' selected="selected"' IF pair.key == 'other' %] value="[% pair.key | html_entity %]">
+              [% pair.value | html_entity %]</option>
+          [% END %]
+        </select>
+        <textarea id="nd_portlog-log" class="form-control" rows="2" name="log"
+          placeholder="Enter a log message"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
+        <button id="nd_portlog-submit" class="btn btn-info" data-bs-dismiss="modal">Continue</button>
+      </div>
+    </div>
   </div>
 </div>
 [% END %]

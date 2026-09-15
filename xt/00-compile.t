@@ -19,9 +19,9 @@ BEGIN {
 
 # for netdisco app config
 use App::Netdisco;
-use Test::Compile;
+use Test::Compile::Internal;
 
-my $test = Test::Compile->new();
+my $test = Test::Compile::Internal->new();
 
 my @plfiles = grep {$_ !~ m/(?:graph)/i} $test->all_pl_files();
 my @pmfiles = grep {$_ !~ m/(?:graph)/i} $test->all_pm_files();

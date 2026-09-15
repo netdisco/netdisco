@@ -1,0 +1,109 @@
+<div class="container">
+  <div class="row nd_hero-row">
+    <div class="col-md-8 offset-md-2">
+      <div class="alert alert-danger alert-dismissible fade show">
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        Incorrect username or password, please try again.
+      </div>
+      <div class="alert alert-dismissible fade show">
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        Sorry, page not found.&nbsp;
+          <a href="https://github.com/netdisco/netdisco/issues/new" target="_blank"><i class="fas fa-bug"></i>&nbsp;Report a Bug?</a>
+      </div>
+      <div class="p-5 mb-4 bg-body-tertiary rounded-3">
+        <h2>Welcome to Netdisco</h2>
+        <small>Netdisco is an Open Source management tool designed for network administrators.</small>
+          <p></p> <p></p>
+          <form class="" method="get" action="">
+            <div class="d-flex align-items-center">
+              <input placeholder="Find Anything" class="form-control" id="nqbody" name="q" type="search" autocomplete="off"/>
+              <input name="firstsearch" type="hidden" value="on">
+              <div class="btn-group">
+                <button type="submit" class="btn btn-primary">Search</button>
+                <button class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                </button>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item nd_navsearchgo-specific" href="" data-tab="device">Search Devices</a></li>
+                  <li><a class="dropdown-item nd_navsearchgo-specific" href="" data-tab="node">Search Nodes</a></li>
+                  <li><a class="dropdown-item nd_navsearchgo-specific" href="" data-tab="vlan">Search VLANs</a></li>
+                  <li><a class="dropdown-item nd_navsearchgo-specific" href="" data-tab="port">Search Ports</a></li>
+                </ul>
+              </div>
+            </div>
+          </form>
+          <form class="nd_login-form" method="post" action="">
+            <div class="d-flex align-items-center">
+              <input placeholder="Device hostname, IP address, or IPv4 prefix >= /22" class="form-control" id="discodevs" name="device" required="required" value="" type="text"/>
+              <div class="btn-group">
+                <button type="submit" class="btn btn-info">Discover</button>
+                <button class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                </button>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item nd_navsearchgo-specific" href="" data-action="pingsweep" data-timeout="0.1">Ping Sweep with Default Latency 50ms</a></li>
+                  <li><a class="dropdown-item nd_navsearchgo-specific" href="" data-action="pingsweep" data-timeout="0.5">Ping Sweep with High Latency 250ms</a></li>
+                </ul>
+              </div>
+              <a target="_blank" href="https://github.com/netdisco/netdisco/wiki/Concepts#discovery-and-ping-sweep">
+                <i class="fas fa-circle-question fa-lg nd_stealth-link nd_text-align-top"
+                  rel="tooltip" data-bs-placement="bottom" data-bs-title="What does this do?"></i>
+              </a>
+            </div>
+          </form>
+      </div>
+    </div>
+  </div>
+  <div class="accordion" id="accordion-statistics">
+    <div class="accordion-item">
+      <div class="accordion-header nd_sysinfo-heading">
+          <a class="d-block px-3 py-2" data-bs-toggle="collapse" data-bs-target="#collapse-stats" href="#">
+            <i class="fas fa-chevron-up nd_chevron"></i> System Information
+          </a>
+      </div>
+      <div id="collapse-stats" class="accordion-collapse collapse">
+        <div class="accordion-body">
+          <div id="nd_stats">
+            <div id="nd_stats_status" class="col-md-2 offset-md-4 alert">
+              <i class="fas fa-spinner fa-spin"></i> Compiling statistics...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> <!-- /container -->
+
+<script type="text/javascript">
+  var stats_loaded = 0;
+  $('#nqbody').focus(); // set focus to main search
+  $('#loginuser').focus(); // set focus to login, if it's there
+
+  $('.collapse').on('show.bs.collapse', function() {
+    $('.nd_chevron').toggleClass('fa-chevron-up fa-chevron-down');
+
+    if (! stats_loaded) {
+      fetch( "",
+        { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then( response => {
+          if (! response.ok) {
+            $('#nd_stats_status').addClass('alert-danger')
+              .html('<i class="fas fa-triangle-exclamation"></i> Failed to retrieve system information (server error).');
+            return;
+            // throw new Error('Network response was not ok');
+          }
+          return response.text();
+        })
+        .then( content => {
+          $('#nd_stats').html(content);
+        })
+        .catch( error => {
+          $('#nd_stats_status').addClass('alert-danger')
+            .html('<i class="fas fa-triangle-exclamation"></i> Failed to retrieve system information (network error: ' + error + ').');
+          console.error('There has been a problem with your fetch operation:', error);
+        });
+      stats_loaded = 1;
+    }
+  });
+
+  $('.collapse').on('hide.bs.collapse', function() {
+    $('.nd_chevron').toggleClass('fa-chevron-up fa-chevron-down');
+  });
+</script>

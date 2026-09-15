@@ -1,0 +1,8 @@
+[
+  {
+    "component": "DOMPurify",
+    "version": "3.4.12",
+    "identifiers": { "githubID": "GHSA-55q2-fjhq-7xh7" },
+    "justification": "DOMPurify is bundled inside share/public/swagger-ui/swagger-ui-bundle.js by swagger-ui-dist 5.32.12; netdisco does not depend on it directly and cannot upgrade it independently. The advisory requires DOMPurify to be called with IN_PLACE: true and to have a sanitize hook removed. Neither happens in this build: the only IN_PLACE reference is DOMPurify's own config read, the single sanitize() call site passes no IN_PLACE, and removeHook is defined but never called. Fixed in DOMPurify 3.4.13, which swagger-ui-dist has not shipped as of 2026-08-09, when 5.32.12 was the newest release. The entry deliberately names no path: retire treats path and component as alternatives rather than as a conjunction, so adding one would discard the component, version and advisory pins and suppress every present and future finding in that bundle. As written, a change to any of the three reopens this one."
+  }
+]

@@ -33,7 +33,7 @@ $(document).ready(function() {
       {
       "data": 'ip',
       "render": function(data, type, row, meta) {
-        return '<a href="[% device_ports | none %]&q=' + encodeURIComponent(data) + '&f=' + encodeURIComponent(row.port.port) + '&c_nodes=on&n_ssid=on">' + he.encode(row.device.dns || row.device.name || row.ip) + '(' + he.encode(row.port.port) + ')</a>';
+        return '<a href="[% device_ports | none %]&q=' + encodeURIComponent(data) + '&f=' + encodeURIComponent(row.port.port) + '&c_nodes=on&n_ssid=on">' + DataTable.util.escapeHtml(row.device.dns || row.device.name || row.ip) + '(' + DataTable.util.escapeHtml(row.port.port) + ')</a>';
         }
       }, {
         "data": 'broadcast',
@@ -43,19 +43,19 @@ $(document).ready(function() {
       }, {
         "data": 'device.model',
         "render": function(data, type, row, meta) {
-          return he.encode(data || '');
+          return DataTable.util.escapeHtml(data || '');
         }
       }, {
         "data": 'ssid',
         "searchable": false,
         "orderable": false,
         "render": function(data, type, row, meta) {
-          return he.encode(data || '');
+          return DataTable.util.escapeHtml(data || '');
         }
       }, {
         "data": 'device.vendor',
         "render": function(data, type, row, meta) {
-          return he.encode(data || '');
+          return DataTable.util.escapeHtml(data || '');
         }
       }
     ],
@@ -64,7 +64,7 @@ $(document).ready(function() {
       {
         "data": 'ssid',
         "render": function(data, type, row, meta) {
-          return '<a href="[% uri_for('/report/portssid') | none %]?ssid=' + encodeURIComponent(data) + '">' + he.encode(data || '') + '</a>';
+          return '<a href="[% uri_for('/report/portssid') | none %]?ssid=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(data || '') + '</a>';
         }
       }, {
         "data": 'broadcast',

@@ -10,11 +10,11 @@
   <tbody>
     <tr>
       <td class="nd_center-cell">
-      <input data-form="add" name="acl_name" type="text">
+      <input class="form-control w-auto d-inline-block" data-form="add" name="acl_name" type="text">
       </td>
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="span2 form-control" data-form="add" name="acl_type">
+          <select class="form-select w-auto d-inline-block" data-form="add" name="acl_type">
             <option value="host">Host Group</option>
             <option value="host_host">Host to Host mapping</option>
             <option value="host_host">Ports on Hosts</option>
@@ -23,7 +23,7 @@
       </td>
       <td></td>
       <td class="nd_center-cell">
-        <button class="btn btn-small nd_adminbutton" name="add" type="submit"><i class="icon-plus-sign"></i> Add</button>
+        <button class="btn btn-sm nd_adminbutton" name="add" type="submit"><i class="fas fa-circle-plus"></i> Add</button>
       </td>
     </tr>
 
@@ -32,12 +32,12 @@
     [% SET count = count + 1 %]
     <tr>
       <td class="nd_center-cell">
-        <input data-form="update" name="acl_name" type="text" value="[% acl.acl_name | html_entity %]">
+        <input class="form-control w-auto d-inline-block" data-form="update" name="acl_name" type="text" value="[% acl.acl_name | html_entity %]">
       </td>
 
       <td class="nd_center-cell">
         <div class="form-group">
-          <select class="span2 form-control" data-form="update" name="acl_type">
+          <select class="form-select w-auto d-inline-block" data-form="update" name="acl_type">
             <option[% ' selected' IF acl.acl_type == "host" %] value="host">Host Group</option>
             <option[% ' selected' IF acl.acl_type == "host_host" %] value="host_host">Host to Host mapping</option>
             <option[% ' selected' IF acl.acl_type == "host_port" %] value="host_port">Ports on Hosts</option>
@@ -46,32 +46,36 @@
       </td>
 
       <td class="nd_center-cell"><a class="btn"
-        href="[% uri_for('/admin/acleditor') | none %]?acl_name=[% acl.acl_name | uri %]&acl_type=[% acl.acl_type | uri %]"><i class="icon-list-ul icon-large icon-border"></i> Edit Rules</a></td>
+        href="[% uri_for('/admin/acleditor') | none %]?acl_name=[% acl.acl_name | uri %]&acl_type=[% acl.acl_type | uri %]"><i class="fas fa-list-ul fa-lg fa-border"></i> Edit Rules</a></td>
 
       <td class="nd_center-cell">
         <input data-form="update" name="old-acl_name" type="hidden" value="[% acl.acl_name | html_entity %]">
-        <button class="btn nd_adminbutton" name="update" type="submit"><i class="icon-save text-warning"></i></button>
+        <button class="btn nd_adminbutton" name="update" type="submit"><i class="far fa-floppy-disk text-warning"></i></button>
 
-        <button class="btn" data-toggle="modal"
-          data-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="icon-trash text-error"></i></button>
+        <button class="btn" data-bs-toggle="modal"
+          data-bs-target="#nd_devdel-[% count | html_entity %]" type="button"><i class="fas fa-trash-can text-danger"></i></button>
 
-        <div id="nd_devdel-[% count | html_entity %]" class="nd_modal nd_deep-horizon modal hide fade" tabindex="-1"
+        <div id="nd_devdel-[% count | html_entity %]" class="nd_modal nd_deep-horizon modal fade" tabindex="-1"
           role="dialog" aria-labelledby="nd_devdel-label-[% count | html_entity %]" aria-hidden="true">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-            <h3 id="nd_devdel-label-[% count | html_entity %]">Are you sure?</h3>
-          </div>
-          <div class="modal-body">
-            <blockquote>
-              <p class="text-info">
-                The ACL &quot;[% acl.acl_name | html_entity %]&quot; will be deleted.</p>
-            </blockquote>
-            <input data-form="delete" name="acl_name" type="hidden" value="[% acl.acl_name | html_entity %]">
-          </div>
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h3 id="nd_devdel-label-[% count | html_entity %]">Are you sure?</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <blockquote>
+                  <p class="text-info">
+                    The ACL &quot;[% acl.acl_name | html_entity %]&quot; will be deleted.</p>
+                </blockquote>
+                <input data-form="delete" name="acl_name" type="hidden" value="[% acl.acl_name | html_entity %]">
+              </div>
 
-          <div class="modal-footer">
-            <button class="btn btn-success" data-dismiss="modal" aria-hidden="true">Cancel</button>
-            <button class="btn btn-danger nd_adminbutton" name="delete" data-dismiss="modal">Confirm</button>
+              <div class="modal-footer">
+                <button class="btn btn-success" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
+                <button class="btn btn-danger nd_adminbutton" name="delete" data-bs-dismiss="modal">Confirm</button>
+              </div>
+            </div>
           </div>
         </div>
       </td>

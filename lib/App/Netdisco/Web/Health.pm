@@ -9,6 +9,10 @@ if (my $path = setting('health_path')) {
   get $path => sub {
     content_type 'application/json';
 
+    # Deflater has no minimum size, and gzipping a body this small makes it
+    # bigger. Probes hit this every few seconds.
+    request->env->{'psgix.no-compress'} = 1;
+
     my $db_ok = try {
       schema('netdisco')->storage->dbh->ping;
       1;

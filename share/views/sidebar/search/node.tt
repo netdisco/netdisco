@@ -1,75 +1,75 @@
 
             <p class="nd_sidebar-title"><em>Node Search Options</em></p>
             <input name="q" value="[% params.q | html_entity %]" type="hidden"/>
-            <div class="clearfix input-prepend">
-              <label class="add-on">
+            <div class="clearfix input-group">
+              <label class="input-group-text">
                 <input type="checkbox" id="stamps"
                   name="stamps"[% ' checked="checked"' IF vars.sidebar_defaults.search_node.stamps %]/>
               </label>
               <label class="nd_checkboxlabel" for="stamps">
-                <span class="nd_searchcheckbox uneditable-input">Time Stamps</span>
+                <span class="nd_searchcheckbox form-control-plaintext">Time Stamps</span>
               </label>
             </div>
-            <div class="clearfix input-prepend">
-              <label class="add-on">
+            <div class="clearfix input-group">
+              <label class="input-group-text">
                 <input type="checkbox" id="deviceports"
                   name="deviceports"[% ' checked="checked"' IF vars.sidebar_defaults.search_node.deviceports %]/>
               </label>
               <label class="nd_checkboxlabel" for="deviceports">
-                <span class="nd_searchcheckbox uneditable-input">Device Ports</span>
+                <span class="nd_searchcheckbox form-control-plaintext">Device Ports</span>
               </label>
             </div>
-            <div class="clearfix input-prepend">
-              <label class="add-on">
+            <div class="clearfix input-group">
+              <label class="input-group-text">
                 <input type="checkbox" id="show_vendor"
                   name="show_vendor"[% ' checked="checked"' IF vars.sidebar_defaults.search_node.show_vendor %]/>
               </label>
               <label class="nd_checkboxlabel" for="show_vendor">
-                <span class="nd_searchcheckbox uneditable-input">Vendor</span>
+                <span class="nd_searchcheckbox form-control-plaintext">Vendor</span>
               </label>
             </div>
-            <div class="clearfix input-prepend">
-              <label class="add-on">
+            <div class="clearfix input-group">
+              <label class="input-group-text">
                 <input type="checkbox" id="archived"
                   name="archived"[% ' checked="checked"' IF vars.sidebar_defaults.search_node.archived %]/>
               </label>
               <label class="nd_checkboxlabel" for="archived">
-                <span class="nd_searchcheckbox uneditable-input">
-                  Archived Data &nbsp;<i class="icon-book text-warning"></i></span>
+                <span class="nd_searchcheckbox form-control-plaintext">
+                  Archived Data &nbsp;<i class="fas fa-book text-warning"></i></span>
               </label>
             </div>
-            <div class="clearfix input-prepend"
-              rel="tooltip" data-placement="left" data-offset="5" data-title="Only for IEEE format MACs">
-              <label class="add-on nd_sidebar-legend">
+            <div class="clearfix input-group"
+              rel="tooltip" data-bs-placement="left" data-bs-title="Only for IEEE format MACs">
+              <label class="input-group-text nd_sidebar-legend">
                 <input type="checkbox" id="node_partial"
                   name="partial"[% ' checked="checked"' IF vars.sidebar_defaults.search_node.partial %]/>
               </label>
               <label class="nd_checkboxlabel" for="node_partial">
-                <span class="nd_searchcheckbox uneditable-input">Partial Match</span>
+                <span class="nd_searchcheckbox form-control-plaintext">Partial Match</span>
               </label>
             </div>
             <div class="clearfix">
-              <em class="muted">Date Range:</em><br/>
-              <div class="clearfix input-prepend">
-                <label class="add-on">
+              <em class="text-muted">Date Range:</em><br/>
+              <div class="clearfix input-group">
+                <label class="input-group-text">
                   <input type="checkbox" id="age_invert"
                     name="age_invert"[% ' checked="checked"' IF vars.sidebar_defaults.search_node.age_invert %]/>
                 </label>
                 <label class="nd_checkboxlabel" for="age_invert">
-                  <span class="nd_searchcheckbox uneditable-input">Not within...</span>
+                  <span class="nd_searchcheckbox form-control-plaintext">Not within...</span>
                 </label>
               </div>
-              <input class="nd_side-input" id="daterange"
+              <input class="nd_side-input form-control" id="daterange"
                 type="text" name="daterange" value="[% vars.sidebar_defaults.search_node.daterange | html_entity %]"/>
             </div>
             <div class="clearfix">
-              <em class="muted">MAC address display as:</em><br/>
-              <select id="nd_node-mac-format" name="mac_format">
+              <em class="text-muted">MAC address display as:</em><br/>
+              <select id="nd_node-mac-format" class="form-select" name="mac_format">
                 [% FOREACH format IN [ 'IEEE', 'Cisco', 'Microsoft', 'Sun' ] %]
                 <option[% ' selected="selected"' IF vars.sidebar_defaults.search_node.mac_format == format %]>[% format | html_entity %]</option>
                 [% END %]
               </select>
             </div>
             <button id="[% tab.tag | html_entity %]_submit" type="submit" class="btn btn-info">
-              <i class="icon-search icon-large pull-left nd_navbar-icon"></i> Search Nodes</button>
+              <i class="fas fa-magnifying-glass fa-lg float-start nd_navbar-icon"></i> Search Nodes</button>
 

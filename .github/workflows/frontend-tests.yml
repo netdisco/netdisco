@@ -1,0 +1,85 @@
+name: "Frontend unit tests"
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  portsort:
+    name: portsort.js
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      # Name the test files rather than globbing them: `node --test` exits 0
+      # when a glob matches nothing, so a moved or renamed file would leave this
+      # job green with no tests run. Naming them makes that a hard failure.
+      - name: Sort order for network interface names
+        run: node --test xt/js/portsort.test.js
+
+  view-templates:
+    name: share/views/js scannability
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      # Its own job rather than a step above, so a failure reads as "a view
+      # template dropped out of code scanning" rather than as a port sorting
+      # regression. Same naming rule as that job: name the file, never a glob.
+      - name: Every view template parses or is excluded from code scanning
+        run: node --test xt/js/view-templates.test.js
+
+  netmap-loading:
+    name: netmap first paint indicator
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      # Same naming rule as the jobs above: name the file, never a glob.
+      - name: The netmap pane announces its wait for the first paint
+        run: node --test xt/js/netmap-loading.test.js
+
+  netmap-legend:
+    name: netmap legend containment
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      # Same naming rule as the jobs above: name the file, never a glob.
+      - name: The colorby legend stays inside the map
+        run: node --test xt/js/netmap-legend.test.js
+
+  netmap-autosave:
+    name: netmap autosave frequency
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      # Same naming rule as the jobs above: name the file, never a glob.
+      - name: The map is posted once per settle and once per drag
+        run: node --test xt/js/netmap-autosave.test.js

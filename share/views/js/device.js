@@ -18,11 +18,6 @@
     // used for contenteditable cells to find out whether the user has made
     // changes, and only reset when they submit or cancel the change
     var dirty = false;
-
-    // activate modals, tooltips and popovers
-    $('.nd_modal').modal({show: false});
-    $("[rel=tooltip]").tooltip({live: true});
-    $("[rel=popover]").popover({live: true});
   }
 
   // on load, establish global delegations for now and future
@@ -36,14 +31,14 @@
     form_inputs.change(function() {device_form_state($(this))});
 
     // sidebar collapser events trigger change of up/down arrow
-    $('.collapse').on('show', function() {
+    $('.collapse').on('show.bs.collapse', function() {
       $(this).siblings().find('.nd_arrow-up-down-right')
-        .toggleClass('icon-chevron-up icon-chevron-down');
+        .toggleClass('fa-chevron-up fa-chevron-down');
     });
 
-    $('.collapse').on('hide', function() {
+    $('.collapse').on('hide.bs.collapse', function() {
       $(this).siblings().find('.nd_arrow-up-down-right')
-        .toggleClass('icon-chevron-up icon-chevron-down');
+        .toggleClass('fa-chevron-up fa-chevron-down');
     });
 
     // if the user edits the filter box, revert to automagical search
@@ -55,7 +50,7 @@
     $('.nd_field-clear-icon').click(function() {
       portfilter.val('');
       $('#nd_ports-form-prefer-field').attr('value', '');
-      $('#ports_form').trigger('submit');
+      nd_submit('#ports_form');
       device_form_state(portfilter); // will hide copy icons
     });
 
@@ -63,7 +58,7 @@
     $('#ports_form').on('click', '.nd_device-port-submit-prefer', function() {
       event.preventDefault();
       $('#nd_ports-form-prefer-field').attr('value', $(this).data('prefer'));
-      $(this).parents('form').submit();
+      nd_submit('#ports_form');
     });
 
     // clickable device port names can simply resubmit AJAX rather than
@@ -79,7 +74,7 @@
       // make sure we're preferring a port filter
       $('#nd_ports-form-prefer-field').attr('value', 'port');
 
-      $('#ports_form').trigger('submit');
+      nd_submit('#ports_form');
       device_form_state(portfilter); // will hide copy icons
     });
 
@@ -87,67 +82,53 @@
     // it's a bit of a faff because we can't easily use Bootstrap's collapser
     $('#ports_pane').on('click', '.nd_collapse-vlans', function() {
         $(this).closest('.nd_nodes-total').next('.nd_collapsing').toggle();
-        if ($(this).find('.nd_arrow-up-down-left-down').hasClass('icon-plus-sign-alt')) {
-          $(this).html('Hide <div class="nd_arrow-up-down-left-up icon-minus-sign-alt"></div>&nbsp;');
+        if ($(this).find('.nd_arrow-up-down-left-down').hasClass('fa-square-plus')) {
+          $(this).html('Hide <div class="nd_arrow-up-down-left-up fas fa-square-minus"></div>&nbsp;');
         }
         else {
-          $(this).html('Show <div class="nd_arrow-up-down-left-down icon-plus-sign-alt"></div>&nbsp;');
+          $(this).html('Show <div class="nd_arrow-up-down-left-down fas fa-square-plus"></div>&nbsp;');
         }
     });
 
-    // refresh tooltips when the datatables table is updated
-    $('#ports_pane').on('draw.dt', function() {
-        $("[rel=tooltip]").tooltip({live: true});
+    // netmap show controls. Setting any force-graph prop repaints, so
+    // re-setting nodeRelSize to itself is the repaint call.
+    $('#nd_showips').change(function () {
+      window.graph.fg.nodeRelSize(window.graph.fg.nodeRelSize());
     });
-
-    // netmap show controls
-    $('#nd_showips').change(function() {
-      if ($(this).prop('checked')) {
-        graph.inspect().main.nodes.each(function(n) {
-          if (n['ORIG_LABEL'] != n['ID']) {
-            n['LABEL'] = n['ORIG_LABEL'] + ' ' + n['ID'];
-          }
-        });
-        graph.wrapLabels(true).start();
-      } else {
-        graph.inspect().main.nodes.each(function(n) {
-          n['LABEL'] = n['ORIG_LABEL'];
-        });
-        graph.wrapLabels(false).start();
-      }
-    });
-    $('#nd_showspeed').change(function() {
-      $('.nd_netmap-linklabel').css('fill',
-        ($(this).prop('checked') ? 'black' : 'none')
-      );
+    $('#nd_showspeed').change(function () {
+      window.graph.fg.nodeRelSize(window.graph.fg.nodeRelSize());
     });
 
     // netmap pin/release controls
-    $('#nd_netmap-releaseall').on('click', function(event) {
+    $('#nd_netmap-releaseall').on('click', function (event) {
       event.preventDefault();
-      graph.releaseFixedNodes().resume();
+      window.graph.fg.graphData().nodes.forEach(function (n) { n.fx = undefined; n.fy = undefined });
+      window.graph.fg.d3ReheatSimulation();
     });
-    $('#nd_netmap-releaseonly').on('click', function(event) {
+    $('#nd_netmap-releaseonly').on('click', function (event) {
       event.preventDefault();
-      graph.inspect().main.nodes
-        .filter(function(n) { return n.selected })
-        .each(function(n) { n.fixed = false });
-      graph.resume();
+      window.graph.fg.graphData().nodes.forEach(function (n) {
+        if (n.selected) { n.fx = undefined; n.fy = undefined }
+      });
+      window.graph.fg.d3ReheatSimulation();
     });
-    $('#nd_netmap-pinonly').on('click', function(event) {
+    $('#nd_netmap-pinonly').on('click', function (event) {
       event.preventDefault();
-      graph.inspect().main.nodes
-        .filter(function(n) { return n.selected })
-        .each(function(n) { n.fixed = true });
+      window.graph.fg.graphData().nodes.forEach(function (n) {
+        if (n.selected) { n.fx = n.x; n.fy = n.y }
+      });
     });
-    $('#nd_netmap-zoomtodevice').on('click', function(event) {
+    $('#nd_netmap-zoomtodevice').on('click', function (event) {
       event.preventDefault();
-      var node = graph.nodeDataById( graph['nd2']['centernode'] );
-      graph.zoomSmooth(node.x, node.y, node.radius * 125);
+      var n = window.graph.nodeDataById(window.graph.centernode);
+      window.graph.fg.centerAt(n.x, n.y, 600);
+      window.graph.fg.zoom(4, 600);
     });
-    $('#nd_netmap-save').on('click', function(event) {
+    $('#nd_netmap-save').on('click', function (event) {
       event.preventDefault();
-      saveMapPositions();
+      // true marks this as the user asking, which is what netmap.js keys the
+      // confirmation toast off
+      saveMapPositions(true);
     });
 
     // activity for admin tasks in device details
@@ -214,7 +195,7 @@
     });
 
     // clear any values in the delete confirm dialog
-    $('#details_pane').on('hidden', '.nd_modal', function () {
+    $('#details_pane').on('hidden.bs.modal', '.nd_modal', function () {
       $('#nd_devdel-log').val('');
       $('#nd_devdel-archive').attr('checked', false);
     });

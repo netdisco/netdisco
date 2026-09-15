@@ -29,19 +29,19 @@ $(document).ready(function() {
         "width": "unset",
         "render": function(data, type, row, meta) {
           if (row.up_admin != "up") {
-            return'<i class="icon-remove"></i>';
+            return'<i class="fas fa-xmark"></i>';
           }
           else if (row.up_admin == "up" && (row.up != "up" && row.up != "dormant")) {
-            return '<i class="icon-arrow-down text-error"></i>';
+            return '<i class="fas fa-arrow-down text-danger"></i>';
           }
           else {
-            return '<i class="icon-angle-up text-success"></i>';
+            return '<i class="fas fa-angle-up text-success"></i>';
           }
         }
       }, {
         "data": 'name',
         "render": function(data, type, row, meta) {
-          return he.encode(data || '');
+          return DataTable.util.escapeHtml(data || '');
         }
       }, {
         "data": 'ip',
@@ -49,11 +49,11 @@ $(document).ready(function() {
         "render": function(data, type, row, meta) {
           var ddns = '';
           if (row.device.dns || row.device.name) {
-            ddns = '<br>(' + he.encode(row.device.dns || row.device.name)  + ')';
+            ddns = '<br>(' + DataTable.util.escapeHtml(row.device.dns || row.device.name)  + ')';
           }
           return '<a href="[% device_ports | none %]&q=' + encodeURIComponent(data)
-            + '&f=' + encodeURIComponent(row.port) + '">' + he.encode(data)
-            + ' [' + he.encode(row.port) + ']</a>' + ddns;
+            + '&f=' + encodeURIComponent(row.port) + '">' + DataTable.util.escapeHtml(data)
+            + ' [' + DataTable.util.escapeHtml(row.port) + ']</a>' + ddns;
         }
       }, {
         "data": 'vlan_agg',
