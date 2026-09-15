@@ -9,8 +9,309 @@ use App::Netdisco::Util::Port qw/port_acl_service port_acl_pvid port_acl_name/;
 use App::Netdisco::Web::Plugin;
 
 use List::MoreUtils 'singleton';
+use NetAddr::MAC ();
+use DBIx::Class::ResultClass::HashRefInflator;
+use URI::Escape 'uri_escape';
 
 register_device_tab({ tag => 'ports', label => 'Ports', provides_csv => 1 });
+
+# $nodes_name names a has_many relation, but the source it reads from is a
+# different name again.
+my %node_result_class = (
+    nodes                 => 'Node',
+    active_nodes          => 'Virtual::ActiveNode',
+    nodes_with_age        => 'Virtual::NodeWithAge',
+    active_nodes_with_age => 'Virtual::ActiveNodeWithAge',
+);
+
+# Fetches nodes for one device and groups them by port name. Split out from
+# the route so xt can call it without a session, the route being require_login.
+#
+# HashRefInflator returns plain hashrefs, and Template Toolkit's FOREACH over
+# a bare hashref iterates its key/value pairs instead of treating it as one
+# item, so manufacturer (belongs_to) and netbios (might_have) are wrapped in
+# an arrayref to restore the one-row-or-none shape the template expects.
+# wireless is has_many and arrives as an arrayref already.
+sub _stitch_nodes {
+    my ($schema, $device_ip, $rows, $nodes_name, $ips_name, $node_order,
+        $extra_prefetch, $only_ports) = @_;
+
+    my %cond = (switch => $device_ip);
+    $cond{port} = { -in => $only_ports }
+      if $only_ports and scalar @$only_ports;
+
+    my $node_rs = $schema->resultset($node_result_class{$nodes_name})
+      ->search(\%cond, {
+        order_by => $node_order,
+        prefetch => [ $ips_name, @{ $extra_prefetch || [] } ],
+      });
+    $node_rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
+
+    my %nodes_by_port = ();
+    for my $node ($node_rs->all) {
+        $node->{stitched_ips} = delete $node->{$ips_name} || [];
+        $node->{net_mac} = NetAddr::MAC->new(mac => ($node->{mac} || ''));
+        $node->{manufacturer} = [ $node->{manufacturer} ] if $node->{manufacturer};
+        $node->{netbios} = [ $node->{netbios} ] if $node->{netbios};
+        push @{ $nodes_by_port{ $node->{port} } }, $node;
+    }
+
+    # attached here rather than by the caller, so a test exercises the same
+    # key the template reads.
+    $_->{stitched_nodes} = ($nodes_by_port{ $_->port } || []) for @$rows;
+    return;
+}
+
+# Decides whether to fetch nodes for this view, and how widely, as the
+# $only_ports argument to _stitch_nodes. Kept free of param() so xt can pin
+# the decision without a session.
+#
+# The neighbors-only branch is the shipped default, c_neighbors being checked
+# in config.yml and c_nodes not. It reads node data only to name the MAC
+# behind a port's remote_ip, so it fetches nothing when no port carries one,
+# and only those ports when some do.
+#
+# Returns undef to fetch nothing, or an arrayref for $only_ports: empty means
+# the whole device, non-empty scopes the fetch to those ports. The c_nodes
+# branch's empty arrayref only reaches the CSV export as written: the HTML
+# path narrows it again via _threshold_scope before any fetch runs.
+sub _node_fetch_scope {
+    my ($want_nodes, $want_neighbors, $rows) = @_;
+
+    return [] if $want_nodes;
+    return undef if not $want_neighbors;
+
+    my @neighbor_ports = map { $_->port } grep { $_->remote_ip } @$rows;
+    return undef if not scalar @neighbor_ports;
+    return \@neighbor_ports;
+}
+
+# n_archived swaps $nodes_name to nodes, which is the whole table rather than
+# the archived half, so a shadow built with active = 0 there would drop the
+# active nodes back out and a MAC visible on screen would stop being findable.
+# Derived from $nodes_name so this and %node_result_class cannot drift apart.
+sub _shadow_active_fragment {
+    my ($nodes_name) = @_;
+    return $nodes_name =~ m/^active/ ? 'AND n.active' : '';
+}
+
+# Builds the DataTables search shadow: one string per port carrying every
+# node's mac, ip, dns and vlan text, plus ssid and netbios when asked for, so
+# the filter can find a node whose markup this response does not render.
+# Built in one statement rather than by concatenating the fetched rows in
+# Perl, which costs more than the render it exists to save.
+#
+# The node_ip lateral's "active = n.active" mirrors Node's ips relationship,
+# which joins foreign.active => self.active, so an archived node gets archived
+# IPs. Get it wrong and the filter matches archived IPs that are not on
+# screen. node_wireless and node_nbt are keyed on mac alone, with no active
+# condition, so their laterals match that instead.
+#
+# vlan has no n_* guard in the template and is always included. ssid, netbios
+# and vendor are joined only under their own guards: a field the cell does not
+# render need not be findable, and each join has a real cost.
+sub _attach_search_shadow {
+    my ($schema, $device_ip, $rows, $active_fragment, $want_ssid, $want_netbios,
+        $mac_format, $want_vendor) = @_;
+
+    my ($ssid_select, $ssid_join) = ('', '');
+    if ($want_ssid) {
+        $ssid_select = q{ || ' ' || COALESCE(w.txt, '')};
+        $ssid_join = q{
+          LEFT JOIN LATERAL (
+            SELECT string_agg(ssid, ' ') AS txt
+              FROM node_wireless WHERE mac = n.mac) w ON true};
+    }
+
+    # nbuser is a logged-in user rather than the machine's own NetBIOS
+    # hostname, so nbname does not cover it, and nbt.ip is not always one of
+    # the node's own IPs, so the node_ip lateral does not either. The
+    # '[No User]' fallback the template renders is left out: it would match
+    # every node that has no NetBIOS user.
+    my ($netbios_select, $netbios_join) = ('', '');
+    if ($want_netbios) {
+        $netbios_select = q{ || ' ' || COALESCE(b.txt, '')};
+        $netbios_join = q{
+          LEFT JOIN LATERAL (
+            SELECT string_agg(COALESCE(nbname, '') || ' ' || COALESCE(domain, '')
+                 || ' ' || COALESCE(nbuser, '') || ' ' || COALESCE(ip::text, ''), ' ') AS txt
+              FROM node_nbt WHERE mac = n.mac) b ON true};
+    }
+
+    # manufacturer is belongs_to on the node's oui, so at most one row and a
+    # plain LEFT JOIN rather than a lateral. abbrev, not company, because
+    # abbrev is what the cell renders.
+    my ($vendor_select, $vendor_join) = ('', '');
+    if ($want_vendor) {
+        $vendor_select = q{ || ' ' || COALESCE(m.abbrev, '')};
+        $vendor_join = q{
+          LEFT JOIN manufacturer m ON m.base = n.oui};
+    }
+
+    # The cell renders the MAC through mac_format_call, so on any setting but
+    # IEEE the string on screen is not the one Postgres stores and a filter on
+    # the visible MAC would miss. The displayed form is carried beside the
+    # canonical one rather than instead of it, so a pasted IEEE address keeps
+    # working whatever the setting. IEEE needs no entry here: it is exactly
+    # what mac::text already gives. Kept in step with NetAddr::MAC's as_cisco,
+    # as_microsoft and as_sun, which is what the template calls.
+    my %mac_as = (
+        cisco     => q{regexp_replace(replace(n.mac::text, ':', ''),
+                         '(.{4})(.{4})(.{4})', '\1.\2.\3')},
+        microsoft => q{replace(n.mac::text, ':', '-')},
+        sun       => q{replace(regexp_replace(n.mac::text,
+                         '(^|:)0([0-9a-f])', '\1\2', 'g'), ':', '-')},
+    );
+    my $mac_select = '';
+    if ($mac_format and my $expr = $mac_as{ lc $mac_format }) {
+        $mac_select = qq{ || ' ' || $expr};
+    }
+
+    my $sql = sprintf(q{
+        SELECT n.port,
+               string_agg(n.mac::text || ' ' || COALESCE(n.vlan, '') || ' '
+                 || COALESCE(i.txt, '')%s%s%s%s, ' ') AS s
+          FROM node n
+          LEFT JOIN LATERAL (
+            SELECT string_agg(ip::text || ' ' || COALESCE(dns, ''), ' ') AS txt
+              FROM node_ip WHERE mac = n.mac AND active = n.active) i ON true
+          %s%s%s
+         WHERE n.switch = ? %s
+         GROUP BY n.port
+    }, $ssid_select, $netbios_select, $vendor_select, $mac_select,
+       $ssid_join, $netbios_join, $vendor_join, $active_fragment);
+
+    my $shadow = $schema->storage->dbh_do(sub {
+      my (undef, $dbh) = @_;
+      $dbh->selectall_arrayref($sql, undef, $device_ip);
+    });
+
+    my %shadow_by_port = map {; $_->[0] => ($_->[1] || '') } @$shadow;
+    $_->{nodes_search} = ($shadow_by_port{ $_->port } || '') for @$rows;
+    return;
+}
+
+# The nodes cell and the neighbors cell are one <td>, and data-search on a
+# <td> replaces that cell's whole search text rather than adding to it, so a
+# port's own neighbor identity has to be appended or it stops being findable
+# once c_nodes is on.
+#
+# remote_ip, remote_port, remote_dns, remote_id and remote_type are
+# device_port columns (remote_dns via the with_properties join the route
+# always applies) and are safe to read whatever the params say. neighbor_ip
+# and neighbor_dns come from a +select added only under c_neighbors, and
+# get_column dies for a column that was never selected. remote_inventory is a
+# method, not a column: it reads columns only with_remote_inventory selects,
+# which the route applies only under n_inventory, so it dies the same way
+# unless guarded on that flag.
+sub _augment_neighbor_search {
+    my ($rows, $want_neighbors, $want_inventory) = @_;
+
+    for my $row (@$rows) {
+        my @extra = grep { defined and length }
+          ($row->remote_ip, $row->remote_port, $row->remote_dns,
+           $row->remote_id, $row->remote_type);
+        push @extra, grep { defined and length }
+          ($row->get_column('neighbor_ip'), $row->get_column('neighbor_dns'))
+          if $want_neighbors;
+        if ($want_inventory) {
+            my $inventory = $row->remote_inventory;
+            push @extra, $inventory if defined $inventory and length $inventory;
+        }
+
+        next unless @extra;
+        $row->{nodes_search} = join ' ', grep { length } ($row->{nodes_search}, @extra);
+    }
+    return;
+}
+
+# Shared with the one-port route below: the node source and the ordering and
+# prefetch terms must not drift between the two, or the deferred fetch draws
+# its rows in a different order than the eager path would have. Kept free of
+# the c_nodes/c_neighbors gate the main route used to apply to the ordering
+# and prefetch terms, because the deferred fetch never sends either param and
+# an empty @node_order would leave it unordered.
+sub _node_display_options {
+    my $nodes_name = (param('n_archived') ? 'nodes' : 'active_nodes');
+    $nodes_name .= '_with_age' if param('n_age');
+
+    my $ips_name = ((param('n_ip4') and param('n_ip6')) ? 'ips'
+                   : param('n_ip4') ? 'ip4s'
+                   : 'ip6s');
+
+    my @node_order = (
+      \qq{regexp_replace(COALESCE(me.vlan, '0'), '[^0-9]*' ,'0') :: integer},
+      'me.mac',
+      "${ips_name}.ip",
+    );
+
+    my @extra_prefetch = ();
+    push @extra_prefetch, 'wireless' if param('n_ssid');
+    push @extra_prefetch, 'netbios' if param('n_netbios');
+    push @extra_prefetch, 'manufacturer' if param('n_vendor');
+
+    return ($nodes_name, $ips_name, \@node_order, \@extra_prefetch);
+}
+
+# One query, run once per c_nodes request rather than once per row: reads the
+# same table _attach_search_shadow does, under the same active fragment, so a
+# port cannot say "N nodes" here and expand to a different number there.
+sub _count_nodes_by_port {
+    my ($schema, $device_ip, $rows, $active_fragment) = @_;
+
+    my $sql = sprintf(q{
+        SELECT n.port, count(*) AS n
+          FROM node n
+         WHERE n.switch = ? %s
+         GROUP BY n.port
+    }, $active_fragment);
+
+    my $counts = $schema->storage->dbh_do(sub {
+      my (undef, $dbh) = @_;
+      $dbh->selectall_arrayref($sql, undef, $device_ip);
+    });
+
+    my %count_by_port = map {; $_->[0] => $_->[1] } @$counts;
+    $_->{node_count} = ($count_by_port{ $_->port } || 0) for @$rows;
+    return \%count_by_port;
+}
+
+# Carries the display options that change how a node row renders, built once
+# here rather than in the template, so the deferred fetch draws the same
+# markup the eager path would have. mac_format feeds mac_format_call in
+# Web.pm, which every node's MAC is rendered through. Kept free of param()
+# so xt can pin the querystring without a session.
+sub _deferred_node_params {
+    my ($n_ip4, $n_ip6, $n_dns, $n_age, $n_ssid, $n_vendor, $n_netbios,
+        $n_archived, $mac_format) = @_;
+
+    my $qs = '';
+    $qs .= '&n_ip4=1' if $n_ip4;
+    $qs .= '&n_ip6=1' if $n_ip6;
+    $qs .= '&n_dns=1' if $n_dns;
+    $qs .= '&n_age=1' if $n_age;
+    $qs .= '&n_ssid=1' if $n_ssid;
+    $qs .= '&n_vendor=1' if $n_vendor;
+    $qs .= '&n_netbios=1' if $n_netbios;
+    $qs .= '&n_archived=1' if $n_archived;
+    $qs .= '&mac_format=' . uri_escape($mac_format) if $mac_format;
+    return $qs;
+}
+
+# Ports at or under the threshold get their own row fetched; a port over it
+# still gets one when it might carry a neighbor's own MAC, since the
+# Neighbors column reads stitched_nodes for that regardless of the node
+# list's own threshold, but only under c_neighbors: that carve-out is what
+# makes neighbor_mac renderable at all, and stitching every node of an
+# over-threshold trunk port just to throw the render away is expensive on
+# exactly the ports a core switch has the most of. Kept free of param() and
+# setting() so xt can pin the decision without a session.
+sub _threshold_scope {
+    my ($threshold, $want_neighbors, $count_by_port, $rows) = @_;
+    return [ map { $_->port }
+      grep { ($count_by_port->{ $_->port } || 0) <= $threshold
+             or ($want_neighbors and $_->remote_ip) } @$rows ];
+}
 
 # device ports with a description (er, name) matching
 get '/ajax/content/device/ports' => require_login sub {
@@ -151,39 +452,16 @@ get '/ajax/content/device/ports' => require_login sub {
     # make sure query asks for formatted timestamps when needed
     $set = $set->with_times if param('c_lastchange');
 
-    # what kind of nodes are we interested in?
-    my $nodes_name = (param('n_archived') ? 'nodes' : 'active_nodes');
-    $nodes_name .= '_with_age' if param('n_age');
-
-    my $ips_name = ((param('n_ip4') and param('n_ip6')) ? 'ips'
-                   : param('n_ip4') ? 'ip4s'
-                   : 'ip6s');
-
-    # Ordering terms that follow the port name, never replace it: see
-    # DevicePort's order_by_port_name for why the port key has to lead.
-    my @node_order = ();
-
-    if (param('c_nodes')) {
-        # retrieve active/all connected nodes, if asked for
-        $set = $set->search({}, { prefetch => [{$nodes_name => $ips_name}] });
-        @node_order = (
-          \qq{regexp_replace(COALESCE(${nodes_name}.vlan, '0'), '[^0-9]*' ,'0') :: integer},
-          "${nodes_name}.mac",
-          "${ips_name}.ip",
-        );
-
-        # retrieve wireless SSIDs, if asked for
-        $set = $set->search({}, { prefetch => [{$nodes_name => 'wireless'}] })
-          if param('n_ssid');
-
-        # retrieve NetBIOS, if asked for
-        $set = $set->search({}, { prefetch => [{$nodes_name => 'netbios'}] })
-          if param('n_netbios');
-
-        # retrieve vendor, if asked for
-        $set = $set->search({}, { prefetch => [{$nodes_name => 'manufacturer'}] })
-          if param('n_vendor');
-    }
+    # what kind of nodes are we interested in? node_order is qualified
+    # against the node source, never $set: see DevicePort's
+    # order_by_port_name for why the port key has to lead there. Fetched
+    # separately and joined by port name below, not prefetched: one prefetch
+    # of ports to nodes to IPs returns the product of all three and DBIC
+    # inflates every row of it. _stitch_nodes still prefetches IPs and
+    # wireless together off the node, which reintroduces that product, but
+    # scoped to one node's own rows rather than every port's.
+    my ($nodes_name, $ips_name, $node_order, $extra_prefetch)
+      = _node_display_options();
 
     # retrieve SSID, if asked for
     $set = $set->search({}, { prefetch => 'ssid' })
@@ -208,11 +486,63 @@ get '/ajax/content/device/ports' => require_login sub {
 
     # Ordered in the database rather than after the fetch. The order is
     # portsort.js's, which is the one the browser shows, so this replaces a
-    # sort_port pass whose result the browser overwrote anyway.
-    $set = $set->order_by_port_name(\@node_order);
+    # sort_port pass whose result the browser overwrote anyway. $node_order
+    # must not be added here: $set has its own mac and vlan columns and would
+    # silently order by those instead.
+    $set = $set->order_by_port_name();
 
     # run query
     my @results = $set->all;
+
+    # fetch and attach nodes by port name, rather than prefetching them
+    my $node_fetch_scope = _node_fetch_scope(
+      scalar param('c_nodes'), scalar param('c_neighbors'), \@results);
+
+    my $deferred_node_params = '';
+
+    if (defined $node_fetch_scope) {
+        my $only_ports = $node_fetch_scope;
+        my $skip_stitch = 0;
+
+        # ports_csv.tt has no collapse threshold and reads every port's
+        # stitched_nodes unconditionally, so this scoping only applies to
+        # the HTML fragment: a CSV export still gets the whole device.
+        if (param('c_nodes') and request->is_ajax) {
+            my $count_by_port = _count_nodes_by_port(schema(vars->{'tenant'}),
+              $device->ip, \@results, _shadow_active_fragment($nodes_name));
+
+            # Ports over the threshold render a count and an empty div that
+            # fetches its own rows; fetching them here would build markup
+            # that netdisco.css hides on arrival.
+            $only_ports = _threshold_scope(
+              setting('devport_nodes_collapse_threshold'),
+              scalar param('c_neighbors'), $count_by_port, \@results);
+            $skip_stitch = 1 unless scalar @$only_ports;
+
+            $deferred_node_params = _deferred_node_params(
+              scalar param('n_ip4'), scalar param('n_ip6'),
+              scalar param('n_dns'), scalar param('n_age'),
+              scalar param('n_ssid'), scalar param('n_vendor'),
+              scalar param('n_netbios'), scalar param('n_archived'),
+              scalar param('mac_format'));
+        }
+
+        _stitch_nodes(schema(vars->{'tenant'}), $device->ip, \@results,
+          $nodes_name, $ips_name, $node_order, $extra_prefetch, $only_ports)
+          unless $skip_stitch;
+    }
+
+    # Gated on c_nodes alone, not c_neighbors like the stitch above: the
+    # template emits data-search only under c_nodes, so the neighbors-only
+    # view would build this for nothing.
+    if (param('c_nodes')) {
+        _attach_search_shadow(schema(vars->{'tenant'}), $device->ip, \@results,
+          _shadow_active_fragment($nodes_name),
+          scalar param('n_ssid'), scalar param('n_netbios'),
+          scalar param('mac_format'), scalar param('n_vendor'));
+        _augment_neighbor_search(\@results, scalar param('c_neighbors'),
+          scalar param('n_inventory'));
+    }
 
     # filter for tagged vlan using existing agg query,
     # which is better than join inflation
@@ -330,10 +660,15 @@ get '/ajax/content/device/ports' => require_login sub {
     if (request->is_ajax) {
         template 'ajax/device/ports.tt', {
           results => \@results,
+          # kept for site-local template overrides that may still read
+          # row.$nodes or row.$ips: site-local template compatibility is
+          # a project commitment, even though the shipped template no
+          # longer reads them itself
           nodes => $nodes_name,
           ips   => $ips_name,
           device => $device,
           vlans  => $vlans,
+          deferred_node_params => $deferred_node_params,
         }, { layout => 'noop' };
     }
     else {
@@ -346,6 +681,25 @@ get '/ajax/content/device/ports' => require_login sub {
           vlans  => $vlans,
         }, { layout => 'noop' };
     }
+};
+
+# one collapsed port's node list, fetched only when the caller opens it
+get '/ajax/content/device/port/nodes' => require_login sub {
+    my $device = schema(vars->{'tenant'})->resultset('Device')
+      ->search_for_device(param('q')) or send_error('Bad device', 400);
+    my $port = param('port') or send_error('Bad port', 400);
+    my $row = $device->ports->find({ port => $port })
+      or send_error('Bad port', 400);
+
+    my ($nodes_name, $ips_name, $node_order, $extra_prefetch)
+      = _node_display_options();
+
+    _stitch_nodes(schema(vars->{'tenant'}), $device->ip, [$row],
+      $nodes_name, $ips_name, $node_order, $extra_prefetch, [$port]);
+
+    template 'ajax/device/port_nodes.tt', {
+      row => $row, device => $device,
+    }, { layout => 'noop' };
 };
 
 true;

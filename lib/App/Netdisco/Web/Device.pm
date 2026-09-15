@@ -9,7 +9,7 @@ use URI ();
 use URL::Encode 'url_params_mixed';
 use App::Netdisco::Util::Device 'match_to_setting';
 use App::Netdisco::Util::Port 'sync_portctl_roles';
-use App::Netdisco::Util::Web 'request_is_device';
+use App::Netdisco::Util::Web qw/device_display_name request_is_device/;
 
 # build view settings for port connected nodes and devices
 set('connected_properties' => [
@@ -85,15 +85,12 @@ get '/device' => require_login sub {
         return redirect uri_for('/', {nosuchdevice => 1, device => $q})->path_query;
     }
 
-    # if passed dns, need to check for duplicates
-    # and use only ip for q param, if there are duplicates.
     my $first = $dev->first;
-    my $others = ($devices->search({dns => $first->dns})->count() - 1);
 
     params->{'tab'} ||= 'details';
     template 'device', {
       netdisco_device => $first,
-      display_name => ($others ? $first->ip : ($first->dns || $first->ip)),
+      display_name => device_display_name($first),
       device_count => schema(vars->{'tenant'})->resultset('Device')->count(),
       lgroup_list => [ schema(vars->{'tenant'})->resultset('Device')->get_distinct_col('location') ],
       hgroup_list => setting('host_group_displaynames'),

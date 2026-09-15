@@ -3,28 +3,38 @@
               <input id="nd_ipinventory-subnet" class="nd_sidebar-topinput nd_colored-input form-control"
                 placeholder="0.0.0.0/0" required="required"
                 name="subnet" value="" type="text" autocomplete="off"
+                data-nd-typeahead="/ajax/data/subnet/typeahead" data-nd-typeahead-min="3"
                 rel="tooltip" data-bs-placement="left" data-bs-title="Prefix/Subnet in CIDR Format"/>
             </div>
 
             <fieldset>
               <legend class="nd_sidebar-legend">
                 <label><em><strong>Date Range</strong></em></label>
-              </legend>
-              <!--
-              <div class="clearfix input-group">
-                <label class="input-group-text">
-                  <input type="checkbox" id="age_invert"
-                    name="age_invert"/>
-                </label>
-                <label class="nd_checkboxlabel" for="age_invert">
-                  <span class="nd_searchcheckbox form-control-plaintext">Not within...</span>
-                </label>
-              </div>
-              -->
-              <div class="clearfix">
-                <input class="nd_side-input form-control" id="daterange" required="required"
-                  type="text" name="daterange" value=""/>
-              </div>
+              </legend><div class="nd_daterange" data-nd-daterange-all="">
+  <select class="form-select nd_daterange-preset" data-nd-daterange>
+    <option value="all" selected="selected">All dates</option>
+    <option value="today">Today</option>
+    <option value="yesterday">Yesterday</option>
+    <option value="last7">Last 7 days</option>
+    <option value="last30">Last 30 days</option>
+    <option value="thismonth">This month</option>
+    <option value="lastmonth">Last month</option>
+    <option value="custom">Custom range</option>
+  </select>
+  <div class="nd_daterange-pair" hidden="hidden">
+    <div class="input-group input-group-sm">
+      <span class="input-group-text nd_daterange-addon" aria-hidden="true">From</span>
+      <input type="date" class="form-control nd_daterange-input"
+             aria-label="From" value="" required="required"/>
+    </div>
+    <div class="input-group input-group-sm">
+      <span class="input-group-text nd_daterange-addon" aria-hidden="true">To</span>
+      <input type="date" class="form-control nd_daterange-input"
+             aria-label="To" value="" required="required"/>
+    </div>
+  </div>
+  <input type="hidden" name="daterange" value=""/>
+</div>
             </fieldset>
 
             <button id="_submit" type="submit" class="btn btn-info">

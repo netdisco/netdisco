@@ -124,7 +124,7 @@ $j1 = run_dumpconfig_for(q{unchanged});
 is_deeply($j1->subaction, q{unchanged}, "string subaction is unchanged");
 
 =over 4
-=item * C<'"unchanged"'>
+=item * C<'"parsed"'>
 =cut
 
 $j1 = run_dumpconfig_for(q{"parsed"});
@@ -200,6 +200,13 @@ is_deeply(from_json($j1->log), 7000000, "subaction perl hash sets config");
 
 $j1 = run_dumpconfig_for('{"snmptimeout": 8000000}', 'snmptimeout');
 is_deeply(from_json($j1->log), 8000000, "subaction JSON dict sets config");
+
+=over 4
+=item * C<'eyJzbm1wdGltZW91dCI6IDgwMDAwMDB9Cg=='> as C<'{"snmptimeout": 8000000}'>
+=cut
+
+$j1 = run_dumpconfig_for('eyJzbm1wdGltZW91dCI6IDgwMDAwMDB9Cg==', 'snmptimeout');
+is_deeply(from_json($j1->log), 8000000, "subaction base64 JSON dict sets config");
 
 =over 4
 =item * C<snmptimeout=9000000>

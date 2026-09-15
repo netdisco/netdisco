@@ -1,5 +1,16 @@
 
-<table id="aul-data-table" class="table table-bordered table-sm table-hover" width="100%" cellspacing="0">
+<table id="aul-data-table" class="table table-bordered table-sm table-hover" width="100%" cellspacing="0"
+  data-nd-table='{
+  "serverSide": true,
+  "order": [[0,"desc"]],
+  "ajax": "",
+  "columns": [
+    {"data":"creation","className":"nd_center-cell","render":"dateTime"},
+    {"data":"username","className":"nd_center-cell","render":"escape"},
+    {"data":"userip","className":"nd_center-cell","render":"escape"},
+    {"data":"event","className":"nd_center-cell","render":"escape"}
+  ]
+}'>
   <thead>
     <tr>
       <th class="nd_center-cell">Creation</th>
@@ -9,67 +20,3 @@
     </tr>
   </thead>
 </table>
-
-<script>
-$(document).ready(function() {
-  $('#aul-data-table').dataTable( {
-    "serverSide": true,
-    "order": [[ 0, "desc" ]],
-    "ajax": "",
-    "columns": [{
-      "data": 'creation',
-      "className": "nd_center-cell",
-      "render": function(data, type, row, meta) {
-        return moment(data).format('YYYY-MM-DD HH:mm');
-      }
-    }, {
-      "data": 'username',
-      "className": "nd_center-cell",
-      "render": function(data, type, row, meta) {
-        return DataTable.util.escapeHtml(data || '');
-      }
-    }, {
-      "data": 'userip',
-      "className": "nd_center-cell",
-      "render": function(data, type, row, meta) {
-        return DataTable.util.escapeHtml(data || '');
-      }
-    }, {
-      "data": 'event',
-      "className": "nd_center-cell",
-      "render": function(data, type, row, meta) {
-        return DataTable.util.escapeHtml(data || '');
-      }
-    }
-  ],
-    "processing": true
-    ,"stateSave": true
-    ,"pageLength": 
-    ,"lengthMenu": 
-    ,"dom": '<"top"l<"nd_datatables-pager"p>f>rit<"bottom"><"clear">'
-
-    ,"pagingType": 'simple_numbers'
-    ,"language": {
-
-      "processing": 'Processing...'
-      ,"search": '_INPUT_'
-      ,"searchPlaceholder": 'Filter records...'
-      ,"lengthMenu": "Show _MENU_ records."
-      ,"info":         "&nbsp;Showing _START_ to _END_ of _TOTAL_"
-      ,"infoFiltered": "(filtered from _MAX_ total)"
-      ,"infoEmpty":    "&nbsp;No matching entries"
-
-      ,"paginate": {
-        "previous": '&larr; Previous'
-        ,"next":    'Next &rarr;'
-      }
-    }
-    ,"stateSaveParams": function (settings, data) {
-      // make sure filter is never saved
-      data.search.search = "";
-      // make sure paging position is not saved
-      data.start = 0;
-    }
-  } );
-} );
-</script>

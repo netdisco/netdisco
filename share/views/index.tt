@@ -42,12 +42,12 @@
         <small>Netdisco is an Open Source management tool designed for network administrators.</small>
         [% IF NOT session.logged_in_user %]
         <form class="nd_login-form" method="post" action="[% uri_for('/login') | none %]">
-          <div class="d-flex align-items-center">
+          <div class="d-flex align-items-center flex-wrap">
             <input id='loginuser' placeholder="Username" class="form-control" name="username" type="text" required="required"/>
             <input placeholder="Password" class="form-control" name="password" type="password" required="required"/>
             <button type="submit" class="btn btn-info">Log In</button>
             [% IF settings.login_logo %]
-            <img src="[% settings.login_logo | none %]" alt="Login Logo" />
+            <img class="img-fluid" src="[% settings.login_logo | none %]" alt="Login Logo" />
             [% END %]
           </div>
           [% IF params.return_url %]
@@ -58,7 +58,10 @@
           <p></p> <p></p>
           <form class="" method="get" action="[% uri_for('/search') | none %]">
             <div class="d-flex align-items-center">
-              <input placeholder="Find Anything" class="form-control" id="nqbody" name="q" type="search" autocomplete="off"/>
+              <input placeholder="Find Anything" class="form-control" id="nqbody" name="q" type="search" autocomplete="off"
+               data-nd-typeahead="/ajax/data/devicename/typeahead"
+               data-nd-typeahead-min="3" data-nd-typeahead-first
+               data-nd-typeahead-menu="nd_search-suggestions"/>
               <input name="firstsearch" type="hidden" value="on">
               <div class="btn-group">
                 <button type="submit" class="btn btn-primary">Search</button>
@@ -107,7 +110,7 @@
       </div>
       <div id="collapse-stats" class="accordion-collapse collapse">
         <div class="accordion-body">
-          <div id="nd_stats">
+          <div id="nd_stats" data-nd-url="[% uri_for('/ajax/content/statistics') | html_entity %]">
             <div id="nd_stats_status" class="col-md-2 offset-md-4 alert">
               <i class="fas fa-spinner fa-spin"></i> Compiling statistics...</div>
           </div>
@@ -118,41 +121,3 @@
   [% END %]
 </div> <!-- /container -->
 
-[% IF session.logged_in_user %]
-<script type="text/javascript">
-  var stats_loaded = 0;
-  $('#nqbody').focus(); // set focus to main search
-  $('#loginuser').focus(); // set focus to login, if it's there
-
-  $('.collapse').on('show.bs.collapse', function() {
-    $('.nd_chevron').toggleClass('fa-chevron-up fa-chevron-down');
-
-    if (! stats_loaded) {
-      fetch( "[% uri_for('/ajax/content/statistics') | none %]",
-        { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-        .then( response => {
-          if (! response.ok) {
-            $('#nd_stats_status').addClass('alert-danger')
-              .html('<i class="fas fa-triangle-exclamation"></i> Failed to retrieve system information (server error).');
-            return;
-            // throw new Error('Network response was not ok');
-          }
-          return response.text();
-        })
-        .then( content => {
-          $('#nd_stats').html(content);
-        })
-        .catch( error => {
-          $('#nd_stats_status').addClass('alert-danger')
-            .html('<i class="fas fa-triangle-exclamation"></i> Failed to retrieve system information (network error: ' + error + ').');
-          console.error('There has been a problem with your fetch operation:', error);
-        });
-      stats_loaded = 1;
-    }
-  });
-
-  $('.collapse').on('hide.bs.collapse', function() {
-    $('.nd_chevron').toggleClass('fa-chevron-up fa-chevron-down');
-  });
-</script>
-[% END %]

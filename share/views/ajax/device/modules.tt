@@ -54,7 +54,3 @@
 [%- END -%]
 </ul>
 </div>
-
-<script type="text/javascript">
-[%+ INCLUDE 'js/bootstrap-tree.js' -%]
-</script>

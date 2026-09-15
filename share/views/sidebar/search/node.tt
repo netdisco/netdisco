@@ -35,7 +35,7 @@
               </label>
               <label class="nd_checkboxlabel" for="archived">
                 <span class="nd_searchcheckbox form-control-plaintext">
-                  Archived Data &nbsp;<i class="fas fa-book text-warning"></i></span>
+                  Archived Data &nbsp;<i class="fas fa-book nd_icon-archived"></i></span>
               </label>
             </div>
             <div class="clearfix input-group"
@@ -59,8 +59,10 @@
                   <span class="nd_searchcheckbox form-control-plaintext">Not within...</span>
                 </label>
               </div>
-              <input class="nd_side-input form-control" id="daterange"
-                type="text" name="daterange" value="[% vars.sidebar_defaults.search_node.daterange | html_entity %]"/>
+              [%- INCLUDE 'sidebar/_daterange.tt'
+                    all_dates = ''
+                    current   = vars.sidebar_defaults.search_node.daterange
+                    required  = 0 -%]
             </div>
             <div class="clearfix">
               <em class="text-muted">MAC address display as:</em><br/>

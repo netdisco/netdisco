@@ -7,31 +7,45 @@
 
             <em class="text-muted">Backend:</em><br/>
             <div class="input-group">
-              <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown form-control" name="backend" type="text" value="">
+              <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown form-control" name="backend" type="text"
+               autocomplete="off"
+               data-nd-typeahead="/ajax/data/queue/typeahead/backend"
+               data-nd-typeahead-params="self" data-nd-typeahead-open value="">
               <span class="input-group-text nd_topo_dev_caret"><i class="fas fa-caret-down fa-lg"></i></span>
             </div>
 
             <em class="text-muted">Action:</em><br/>
             <div class="input-group">
-              <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown form-control" name="action" type="text" value="">
+              <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown form-control" name="action" type="text"
+               autocomplete="off"
+               data-nd-typeahead="/ajax/data/queue/typeahead/action"
+               data-nd-typeahead-params="self" data-nd-typeahead-open value="">
               <span class="input-group-text nd_topo_dev_caret"><i class="fas fa-caret-down fa-lg"></i></span>
             </div>
 
             <em class="text-muted">Device:</em><br/>
             <div class="input-group">
-              <input data-form="filter" class="nd_topo_dev nd_sidebar-dropdown form-control" name="device" type="text" value="">
+              <input data-form="filter" class="nd_topo_dev nd_sidebar-dropdown form-control" name="device" type="text"
+               autocomplete="off"
+               data-nd-typeahead="/ajax/data/deviceip/typeahead" data-nd-typeahead-open="%" value="">
               <span class="input-group-text nd_topo_dev_caret"><i class="fas fa-caret-down fa-lg"></i></span>
             </div>
 
             <em class="text-muted">Submitted by:</em><br/>
             <div class="input-group">
-              <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown form-control" name="username" type="text" value="">
+              <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown form-control" name="username" type="text"
+               autocomplete="off"
+               data-nd-typeahead="/ajax/data/queue/typeahead/username"
+               data-nd-typeahead-params="self" data-nd-typeahead-open value="">
               <span class="input-group-text nd_topo_dev_caret"><i class="fas fa-caret-down fa-lg"></i></span>
             </div>
 
             <em class="text-muted">Job status:</em><br/>
             <div class="input-group">
-              <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown form-control" name="status" type="text" value="">
+              <input data-form="filter" class="nd_queue_ta nd_sidebar-dropdown form-control" name="status" type="text"
+               autocomplete="off"
+               data-nd-typeahead="/ajax/data/queue/typeahead/status"
+               data-nd-typeahead-params="self" data-nd-typeahead-open value="">
               <span class="input-group-text nd_topo_dev_caret"><i class="fas fa-caret-down fa-lg"></i></span>
             </div>
 

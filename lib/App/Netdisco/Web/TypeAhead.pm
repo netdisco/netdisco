@@ -6,7 +6,6 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Util::Web (); # for sort_port
-use HTML::Entities 'encode_entities';
 use List::MoreUtils ();
 
 ajax '/ajax/data/queue/typeahead/backend' => require_role admin => sub {
@@ -93,7 +92,7 @@ ajax '/ajax/data/devicename/typeahead' => require_login sub {
     my $set = schema(vars->{'tenant'})->resultset('Device')
       ->search_fuzzy($q)->search(undef, {rows => setting('max_typeahead_rows')});
 
-    to_json [map {encode_entities($_->dns || $_->name || $_->ip)} $set->all];
+    to_json [map {($_->dns || $_->name || $_->ip)} $set->all];
 };
 
 ajax '/ajax/data/deviceip/typeahead' => require_login sub {

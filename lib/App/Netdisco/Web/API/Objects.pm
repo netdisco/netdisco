@@ -190,7 +190,7 @@ swagger_path {
   return to_json { deleted => ($gone || 0)};
 };
 
-foreach my $rel (qw/nodes active_nodes nodes_with_age active_nodes_with_age port_vlans vlans logs/) {
+foreach my $rel (qw/nodes active_nodes nodes_with_age active_nodes_with_age port_vlans vlans logs ssid/) {
     swagger_path {
       tags => ['Objects'],
       description => "Returns $rel rows for a given port",
@@ -217,7 +217,7 @@ foreach my $rel (qw/nodes active_nodes nodes_with_age active_nodes_with_age port
     };
 }
 
-foreach my $rel (qw/power properties ssid wireless agg_master neighbor last_node/) {
+foreach my $rel (qw/power properties wireless agg_master neighbor last_node/) {
     swagger_path {
       tags => ['Objects'],
       description => "Returns the related $rel table entry for a given port",

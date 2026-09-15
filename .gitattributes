@@ -2,7 +2,6 @@ share/public/javascripts/*.map binary
 share/public/javascripts/*.min.js binary
 share/public/css/smoothness/jquery-ui.min.css binary
 share/public/javascripts/jstree/jstree.min.js binary
-share/public/css/toastr.css binary
 share/public/css/*.min.css binary
 # Only the generated artifacts. index.html, oauth2-redirect.html, LICENSE,
 # NOTICE and the version marker are hand-readable, and marking them binary stops

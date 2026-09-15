@@ -8,96 +8,35 @@ use Dancer::Plugin::DBIC 'schema';
 
 use Storable 'thaw';
 use MIME::Base64 qw/encode_base64 decode_base64/;
-use File::Spec::Functions qw(splitdir catfile catdir);
+use File::Spec::Functions qw(catfile catdir);
 use File::Slurper qw(read_lines write_text);
+use Archive::Extract;
 
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::Snapshot 'make_snmpwalk_browsable';
-# use DDP;
 
 register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
 
-  my $vendor = $job->extra;
-  debug sprintf 'loadmibs - loading netdisco-mibs object cache%s',
-    ($vendor ? (sprintf ' for vendor "%s"', $vendor) : '');
+  my $mibhome = (setting('mibhome') || catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs'));
+  my $objects = catfile( $mibhome, 'EXTRAS', 'sql', 'netdisco-mibs-snmp-object.sql.gz' );
 
-  my $home = (setting('mibhome') || catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs'));
-  my $reports = catdir( $home, 'EXTRAS', 'reports' );
-  my @maps = map  { (splitdir($_))[-1] }
-             grep { ! m/^(?:EXTRAS)$/ }
-             grep { ! m/\./ }
-             grep { -f }
-             glob (catfile( $reports, '*_oids' ));
+  return Status->error(sprintf 'cannot find file: "%s"', $objects)
+    unless (-f $objects and -s $objects);
 
-  my @report = ();
-  if ($vendor) {
-      push @report, read_lines( catfile( $reports, "${vendor}_oids" ), 'latin-1' );
-  }
-  else {
-      my %seen_report = ();
-      my @to_read = grep { not $seen_report{$_}++ }
-                    (qw(rfc_oids net-snmp_oids cisco_oids), @maps);
+  my $ae = Archive::Extract->new( archive => $objects );
+  return Status->error(sprintf 'is not a gzip file: "%s"', $objects)
+    unless $ae->is_gz;
 
-      push @report, read_lines( catfile( $reports, $_ ), 'latin-1' )
-        for @to_read;
-  }
-  
-  my @browser = ();
-  my %children = ();
-  my %seenoid = ();
+  my $obj_count_pre = schema(vars->{'tenant'})->resultset('SNMPObject')->count();
+  debug sprintf 'loadmibs - current object cache size: %s', $obj_count_pre;
+  debug 'loadmibs - loading netdisco-mibs object cache';
+  my $gzip = $ae->bin_gzip;
+  system(qq{$gzip -d -c '$objects' | psql -X -v ON_ERROR_STOP=0 -v ON_ERROR_ROLLBACK=on -q});
+  my $obj_count_post = schema(vars->{'tenant'})->resultset('SNMPObject')->count();
+  debug sprintf 'loadmibs - new object cache size: %s', $obj_count_post;
 
-  foreach my $line (@report) {
-    my ($oid, $qual_leaf, $type, $access, $index, $status, $enum, $descr) = split m/,/, $line, 8;
-    next unless defined $oid and defined $qual_leaf;
-    next if ++$seenoid{$oid} > 1;
-
-    my ($mib, $leaf) = split m/::/, $qual_leaf;
-    my @oid_parts = grep {length} (split m/\./, $oid);
-    ++$children{ join '.', '', @oid_parts[0 .. (@oid_parts - 2)] }
-      if scalar @oid_parts > 1;
-
-    push @browser, {
-      oid    => $oid,
-      oid_parts => [ @oid_parts ],
-      mib    => $mib,
-      leaf   => $leaf,
-      type   => $type,
-      access => $access,
-      index  => [($index ? (split m/:/, $index) : ())],
-      status => $status,
-      enum   => [($enum  ? (split m/:/, $enum ) : ())],
-      descr  => $descr,
-    };
-  }
-
-  foreach my $row (@browser) {
-    $row->{num_children} = $children{ $row->{oid} } || 0;
-  }
-
-  debug sprintf "loadmibs - loaded %d objects from netdisco-mibs",
-    scalar @browser;
-
-  if (not scalar @browser) {
-    my $refusal = sprintf
-      'loadmibs - refusing to empty snmp_object: read %d lines from %s but '
-    . 'parsed 0 objects', scalar @report, $reports;
-
-    # error() is what survives --quiet on the console. add_status() records the
-    # refusal now so the blocks below still run and cannot displace it.
-    error $refusal;
-    $job->add_status( Status->error($refusal) );
-  }
-  else {
-    schema('netdisco')->txn_do(sub {
-      my $gone = schema('netdisco')->resultset('SNMPObject')->delete;
-      debug sprintf 'loadmibs - removed %d oids', $gone;
-      schema('netdisco')->resultset('SNMPObject')->populate(\@browser);
-      debug sprintf 'loadmibs - added %d new oids', scalar @browser;
-    });
-  }
-
-  # promote snapshots prior to loadmibs to be browsable
+  debug 'loadmibs - checking for snapshots made prior to loadmibs to make browsable';
   schema('netdisco')->txn_do(sub {
     my @devices = schema('netdisco')
           ->resultset('DeviceBrowser')
@@ -112,7 +51,7 @@ register_worker({ phase => 'main' }, sub {
     }
   });
 
-  # legacy snapshot upgrade
+  debug 'loadmibs - checking for legacy format snapshots to upgrade';
   schema('netdisco')->txn_do(sub {
     my $legacy_rs = schema('netdisco')
           ->resultset('DeviceBrowser')

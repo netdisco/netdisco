@@ -55,7 +55,8 @@ around BUILDARGS => sub {
   $args->{port} = parse_params_to_config($args->{port})
     if defined $args->{port};
   $args->{subaction} = parse_params_to_config($args->{subaction})
-    if defined $args->{subaction};
+    if defined $args->{subaction}
+       and ($args->{action} and $args->{action} !~ m/^(?:hook|cf_)/);
 
   $args->{subaction} = q{}
     if ! defined $args->{subaction};

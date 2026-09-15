@@ -5,6 +5,7 @@ use warnings;
 
 use Test::More 0.88;
 use File::Spec::Functions qw/catfile catdir updir/;
+use File::Basename qw/basename/;
 use FindBin;
 use Digest::SHA qw/sha256_hex/;
 use JSON::PP ();
@@ -86,51 +87,29 @@ my @VENDORED = (
         banner  => sub { qr/bootstrap5-toggle v\Q$_[0]\E\b/ },
     },
     {   package => 'datatables.net',
-        file    => [qw/javascripts jquery.dataTables.min.js/],
+        file    => [qw/javascripts dataTables.min.js/],
         banner  => sub { qr/DataTables \Q$_[0]\E\b/ },
     },
     {   # The Bootstrap 5 integration layer states which framework it targets
         # and never which version of itself, so there is nothing to read back.
         package    => 'datatables.net-bs5',
         file       => [qw/javascripts dataTables.bootstrap.js/],
-        sha256     => '5adfe8c7957aaec56ef0403aa9e1fcdf7165785f092c34bb55c9075ea660ddbc',
-        pinned_for => '2.3.8',
+        sha256     => '1806022582576a6ee8a1922881d26c939e85e7c99962ae287ab729e9a4796a33',
+        pinned_for => '3.0.3',
     },
-    {   # Two reasons rather than one. The banner reads "@version: 3.1" where
-        # the manifest declares 3.1.0, so no exact read is possible, and the
-        # file is patched locally besides, which a version string cannot show.
-        package    => 'daterangepicker',
-        file       => [qw/javascripts daterangepicker.js/],
-        sha256     => '88e56cd45cad3db88fdc772786d14cce8d0cc1879bc03e4e56be919dfd9ad229',
-        pinned_for => '3.1.0',
+    {   # The stylesheet half of the same package states no version either, and
+        # pinning one half without the other lets the two disagree quietly.
+        package    => 'datatables.net-bs5',
+        file       => [qw/css dataTables.bootstrap.css/],
+        sha256     => '02eb90f742a251cd6eac1cc5886b5b7b066a57ae97d28127189f15396d0bf8b3',
+        pinned_for => '3.0.3',
     },
-    {   package => 'htmx.org',
+    {   # The 4.x builds state the version as a property assignment where the
+        # 2.x builds minified it into an object literal, so this pattern is
+        # tied to the major version and not only to the library.
+        package => 'htmx.org',
         file    => [qw/javascripts htmx.min.js/],
-        banner  => sub { qr/version:"\Q$_[0]\E"/ },
-    },
-    {   package => 'jquery',
-        file    => [qw/javascripts jquery-latest.min.js/],
-        banner  => sub { qr/jQuery v\Q$_[0]\E\b/ },
-    },
-    {   package => 'jquery-ui',
-        file    => [qw/javascripts jquery-ui.min.js/],
-        banner  => sub { qr/jQuery UI - v\Q$_[0]\E\b/ },
-    },
-    {   package => 'moment',
-        file    => [qw/javascripts moment.min.js/],
         banner  => sub { qr/version="\Q$_[0]\E"/ },
-    },
-    {   package => 'jstree',
-        file    => [qw/javascripts jstree jstree.min.js/],
-        banner  => sub { qr/jsTree - v\Q$_[0]\E\b/ },
-    },
-    {   package => 'toastr',
-        file    => [qw/javascripts toastr.js/],
-        banner  => sub { qr/version:\s*'\Q$_[0]\E'/ },
-    },
-    {   package => 'floatthead',
-        file    => [qw/javascripts jquery.floatThead.js/],
-        banner  => sub { qr/jQuery\.floatThead \Q$_[0]\E\b/ },
     },
     {   package => 'force-graph',
         file    => [qw/javascripts force-graph.min.js/],
@@ -209,6 +188,26 @@ for my $entry (@VENDORED) {
         }
     };
 }
+
+subtest 'MANIFEST__every_xt_js_suite_on_disk__is_listed' => sub {
+    # A suite missing here still runs locally and in CI, since both work
+    # from the checkout rather than a packaged tarball. Nothing short of
+    # building that tarball notices the gap, and by then the suite it
+    # dropped does not ship. This has happened twice.
+    my @suites = sort glob( catfile( $root, 'xt', 'js', '*.test.js' ) );
+
+    ok scalar(@suites) > 0, 'found at least one xt/js/*.test.js suite on disk'
+        or return;
+
+    my %listed = map { $_ => 1 } split /\n/, slurp( catfile( $root, 'MANIFEST' ) );
+
+    for my $suite (@suites) {
+        my $relative = join '/', 'xt', 'js', basename($suite);
+        ok $listed{$relative},
+            "$relative is listed in MANIFEST: add it in sorted position "
+          . "among the other xt/js entries";
+    }
+};
 
 subtest 'vendored_manifest__swagger_ui_drop__carries_a_marker_matching_the_manifest' => sub {
     # The marker is netdisco's own note of what was vendored, added with the

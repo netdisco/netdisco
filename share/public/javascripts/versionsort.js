@@ -7,7 +7,7 @@
  *  @author [Jim Palmer](http://www.overset.com/2008/09/01/javascript-natural-sort-algorithm-with-unicode-support)
  *
  *  @example
- *    $('#example').dataTable( {
+ *    new DataTable('#example', {
  *       columnDefs: [
  *         { type: 'versionsort', targets: 0 }
  *       ]
@@ -25,24 +25,32 @@ function pad(datum, size) {
  * Natural Sort algorithm for Javascript - Version 0.7 - Released under MIT license
  * Author: Jim Palmer (based on chunking idea from Dave Koelle)
  */
-/*jshint unused:false */
-function versionSort (a, b) {
+function versionKey (datum) {
     "use strict";
-    var pada = a.split(/(\D)/).map(x => pad(x, 5)).join('');
-    var padb = b.split(/(\D)/).map(x => pad(x, 5)).join('');
-    if ( pada < padb ) { return -1; }
-    else if ( pada > padb ) { return 1; }
-    return 0;
-};
+    return datum.split(/(\D)/).map(x => pad(x, 5)).join('');
+}
 
-jQuery.extend( jQuery.fn.dataTableExt.oSort, {
-    "versionsort-asc": function ( a, b ) {
-        return versionSort(a,b);
-    },
+// A pre-formatter and not a pairwise comparator: the comparison is a plain
+// relational test between two keys each built from one value alone, so the key
+// is built once per value rather than once per comparison. The two comparators
+// spell that relational test out rather than leaving it to whatever the library
+// does for a type registering none, so an upgrade cannot move the order.
+DataTable.type('versionsort', {
+    order: {
+        pre: versionKey,
 
-    "versionsort-desc": function ( a, b ) {
-        return versionSort(a,b) * -1;
+        asc: function ( a, b ) {
+            if ( a < b ) { return -1; }
+            else if ( a > b ) { return 1; }
+            return 0;
+        },
+
+        desc: function ( a, b ) {
+            if ( a < b ) { return 1; }
+            else if ( a > b ) { return -1; }
+            return 0;
+        }
     }
-} );
+});
 
 }());

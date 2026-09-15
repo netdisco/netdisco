@@ -43,8 +43,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
   "token_no_expire",
   { data_type => "boolean", default_value => \"false", is_nullable => 1 },
-  "token_allowed_ips",
-  { data_type => "text[]", is_nullable => 1 },
+  "token_acl",
+  { data_type => "text", is_nullable => 1 },
   "token_auth_only",
   { data_type => "boolean", default_value => \"false", is_nullable => 1 },
 );
@@ -52,6 +52,9 @@ __PACKAGE__->set_primary_key("username");
 
 __PACKAGE__->has_many( roles => 'App::Netdisco::DB::Result::Virtual::UserRole',
   'username', { cascade_copy => 0, cascade_update => 0, cascade_delete => 0 } );
+
+__PACKAGE__->belongs_to( token_acl_name => 'App::Netdisco::DB::Result::AccessControlListName',
+  { 'foreign.acl_name' => 'self.token_acl' }, { join_type => 'left' } );
 
 sub created   { return (shift)->get_column('created')  }
 sub last_seen { return (shift)->get_column('last_seen')  }

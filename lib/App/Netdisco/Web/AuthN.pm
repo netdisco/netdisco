@@ -162,13 +162,12 @@ post '/login' => sub {
 
             my $body = try { from_json(request->body) } catch { {} };
             my $want_permanent = $body->{permanent} && setting('allow_permanent_tokens');
-            my $allowed_ips    = (ref $body->{allowed_ips} eq ref [])
-                                   ? $body->{allowed_ips} : undef;
+            my $token_acl      = $body->{token_acl};
 
             $user->update({
               token_from      => time,
               token_no_expire => ($want_permanent ? \"true" : \"false"),
-              ($allowed_ips ? (token_allowed_ips => $allowed_ips) : ()),
+              ($token_acl ? (token_acl => $token_acl) : ()),
               ($provider->validate_api_token($user->token)
                 ? () : (token => \'md5(random()::text)')),
             })->discard_changes();
@@ -176,8 +175,8 @@ post '/login' => sub {
             return to_json {
               api_key   => $user->token,
               permanent => ($user->token_no_expire ? \1 : \0),
-              ($user->token_allowed_ips
-                ? (allowed_ips => $user->token_allowed_ips) : ()),
+              ($user->token_acl
+                ? (token_acl => $user->token_acl) : ()),
             };
         }
 
@@ -259,6 +258,21 @@ any qr{^/(?:login(?:/denied)?)?} => sub {
         error => 'not authorized',
         return_url => param('return_url'),
       };
+    }
+    elsif (request->header('HX-Request')) {
+      # htmx sends HX-Request and not X-Requested-With, so without this branch
+      # an expired session answers a pane with the whole login page and 200,
+      # and htmx swaps that into the pane. HX-Redirect takes the browser to
+      # the login page instead.
+      #
+      # The return_url the before hook computed is the pane's own path, which
+      # is a fragment and not somewhere to send a reader after login. htmx
+      # carries the address bar in HX-Current-URL, which is where they were.
+      my $back = request->header('HX-Current-URL') || param('return_url');
+      header('HX-Redirect' =>
+        uri_for('/login', { return_url => $back })->path_query);
+      status('unauthorized');
+      return '';
     }
     elsif (defined request->header('X-Requested-With')
            and request->header('X-Requested-With') eq 'XMLHttpRequest') {

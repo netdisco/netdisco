@@ -1,3 +1,204 @@
+2.109001 - tbd
+
+  [ENHANCEMENTS]
+
+  * netdisco's own configuration of the API browser is no longer kept inside
+    the vendored Swagger UI files, so updating them cannot quietly revert it
+
+  [BUG FIXES]
+
+  * the "Ports on Hosts" choice when creating an Access Control List made a
+    Host to Host mapping instead, so a port control rule using that list never
+    applied. the list also then showed the other type's name
+
+2.109000 - 2026-09-13
+
+  [ENHANCEMENTS]
+
+  * this release needs Safari 16.4, Firefox 101, Chrome 74 or Edge 79, or
+    newer. it is the first that will not work on an older browser
+  * pages are now drawn in the display mode the current framework is written
+    for. rows in a table stand a little taller as a result
+  * Back and Forward now fetch the page again for the tab and options in the
+    address bar, so what you return to is current rather than the results as
+    they were when you left them
+  * changing your search or your columns while results are still loading now
+    abandons the request already in flight, so what you asked for last arrives
+    sooner and the results you replaced never flash up on the way
+  * a request whose answer never arrives now gives up after five minutes and
+    says so where the results would be, instead of leaving the spinner turning
+  * searching the SNMP browser now goes straight to the object, where it used
+    to open the tree a level at a time
+  * the SNMP browser tree and the suggestion lists under the search boxes are
+    drawn by netdisco itself now. they work as they did, and both look a little
+    different
+  * the arrow marking a sorted column is drawn differently and takes less room,
+    so tables are a little narrower
+  * the date range boxes on Node Search, IP Inventory and Subnet Utilization
+    are now a list of the usual ranges above two ordinary date fields. they
+    send what they always did
+  * the sidebar now opens and closes at once instead of sliding
+  * if you keep site-local templates or JavaScript, run netdisco-do
+    checksitelocal after upgrading. this release removes several things a copy
+    may still call, including script files and a stylesheet a copy of the
+    layout may still name, and the report names every file and what to change.
+    a shadowed layout is also reported when the web app starts, because it
+    leaves every page dead and says nothing otherwise
+  * the loadmibs action now loads the SQL bundled with netdisco-mibs. the
+    previous behavior, building the table from the OID reports, is now the
+    loadmibsfromoids action
+
+  [BUG FIXES]
+
+  * fix an authenticated server-side request forgery: any user could have the
+    backend poll an address of their choosing
+  * a non-admin job no longer forwards the extra and port parameters into the
+    backend configuration
+  * fix a privilege escalation in the port control endpoint, where a
+    port_control user could queue any backend job action
+  * fix an authenticated reflected XSS in the /t/<tenant> URL segment
+  * a /t/ URL naming a tenancy which is not configured is no longer a page
+  * fix an authenticated credential disclosure: the device API returned the
+    stored SNMP community in the device object
+  * fix an authenticated SQL injection in the device search "fields" parameter
+  * Device Search no longer returns the stored SNMP community, and a field name
+    which is not a Device column is refused rather than passed to the database
+  * fix an authenticated SQL injection in report sorting and searching
+  * the archived-node marker is drawn in one color everywhere it appears
+  * the delete button on the Duplicate Devices admin page shows its icon
+    again, rather than red on red
+  * the Neighbor Hops label in the netmap sidebar lines up with its radio
+    button again
+  * the Module Inventory, NetBIOS and Node Vendor reports now honor every
+    filter when more than one is given, rather than only the first
+  * the ACL editor's Host Preference now follows the address bar, so it can be
+    linked to and bookmarked
+  * choosing an IPv6 prefix from the suggestions in the IP Inventory sidebar
+    now disables the "never" option, which it only did if you typed the prefix
+    out in full
+  * a device name containing an ampersand now reads correctly in the search
+    suggestions
+  * when your session expires you are now taken to the login page and returned
+    to where you were once you log in. a page whose panel refreshes on its own,
+    the Job Queue in particular, used to report a server error and stop
+    refreshing, with nothing to say your session had ended
+  * the job log that appears when you hover a Job Queue row is now dismissed
+    when the table refreshes. one was left behind on every refresh, still
+    showing the job it described, and they piled up over the page and swallowed
+    clicks meant for the rows beneath them
+  * addresses that are links, on Device Inventory and Duplicate Devices, now
+    sort by address. they sorted as text, which put .70 above .4
+  * tooltips and the job log that appears when you hover a Job Queue row are
+    drawn in the same typeface as the rest of the page again. the log had also
+    been set larger, and in a monospaced face, which read as a terminal dropped
+    onto the page
+  * a button in an admin table no longer breaks its label across two lines as
+    the window narrows. "Create ACL" on the User Management page split in two
+    below about 1200 pixels
+  * the Discover box on the front page now says whether your job was queued,
+    and leaves you where you are. a name that does not resolve, a prefix wider
+    than /22, or anything that is not an address, sent you back to the front
+    page with nothing said either way
+  * #1610 loadmibs silently skipped every vendor report when the mibhome path
+    contained a dot
+  * #1611 loadmibs -e <vendor> replaced the entire snmp_object table, and the
+    single-vendor load now always includes rfc_oids, net-snmp_oids and
+    cisco_oids
+
+2.108004 - 2026-09-09
+
+  [BUG FIXES]
+
+  * #1675 a login logo too wide to sit beside the username and password fields
+    is drawn below them again, where it was until the interface was rebuilt on
+    Bootstrap 5
+  * #1676 #1677 fix hook workers getting no configuration causing JSON decode
+    error, caused by supporting JSON in NETDISCO_WITH_CONFIGURATION
+  * fix where the ports are cached in Discover job so that they don't always
+    trigger a changed device event
+  * fix changed device rules to exclude custom fields on device and device
+    ports
+
+2.108003 - 2026-09-07
+
+  [ENHANCEMENTS]
+
+  * move NETDISCO_WITH_CONFIGURATION handling before database connections handling
+    so that it can affect database schema and tenants configuration.
+
+2.108002 - 2026-09-07
+
+  [ENHANCEMENTS]
+
+  * support base64 encoded JSON for config override (NETDISCO_WITH_CONFIGURATION)
+
+  [BUG FIXES]
+
+  * the Admin Topology and ACL editor pages, and a device's SNMP tab, no longer
+    use a little more of the browser's memory every time their results are
+    reloaded. left open and reloaded many times, they could slow down
+
+2.108001 - 2026-09-06
+
+  [ENHANCEMENTS]
+
+  * significant reduction in container image size after refactoring Dockerfiles
+  * run garbage collection on DigitalOcean container registry after demo release
+
+2.108000 - 2026-09-05
+
+  [ENHANCEMENTS]
+
+  * the Ports tab with Connected Nodes shown is several times faster to load
+    on a device with many nodes
+  * a connected-node list longer than the collapse threshold now loads when
+    you open it, rather than with the rest of the page. until you open one,
+    its nodes are not in the page, so your browser's find-in-page and copying
+    the table will not see them
+  * the Ports table filter now matches a node's MAC both as displayed and in
+    the plain colon-separated form, so a MAC pasted from elsewhere is found
+    whichever format the sidebar is showing. it no longer matches a node's age
+    text such as "2 days 3 hours"
+  * checksitelocal reports a site-local device.tt, search.tt or report.tt
+    copied before the htmx tab transport, and the web app warns about one at
+    startup because that tab renders an empty pane and says nothing
+  * the navbar Reports and Admin submenus open from the keyboard as well as the
+    pointer, so their entries can be reached without a mouse
+  * the loading indicator now stays up until a tab is ready to use, instead of
+    coming down when the server answered and leaving an unsorted, unpaged table
+    on screen while the browser worked through it
+
+  [BUG FIXES]
+
+  * the Show and Hide control on a port's connected-node list could not be
+    clicked, because the first node in the list was drawn on top of it
+  * the Ports tab SSID column showed one SSID on a port that has several
+  * the Ports CSV export omitted the SSID value, shifting every later column
+  * GET /api/v1/object/device/{ip}/port/{port}/ssid returned only one SSID
+    for a port that has several, and now answers with a list
+  * checksitelocal named the wrong release for the do_search deprecation
+  * #1667 the Show all Ports tooltip stayed on screen, at the top left of the
+    window, after clicking the bin to clear the ports filter
+  * a tooltip could be left on screen the same way when the sidebar, the CSV
+    download link or a port control icon was hidden
+  * a page fragment could 404 for the rest of a web worker's life after one
+    request to its URL from outside the application
+  * behind_proxy, which no deployment needs to set, made the client address
+    read as the whole X-Forwarded-For chain where more than one proxy stood in
+    front of the web server, so an API token restricted by an ACL was refused
+    and every login failed to log
+
+2.107000 - 2026-09-04
+
+  [NEW FEATURES]
+
+  * #1651 change user's API token allowed IPs from a list to a managed ACL
+
+  [ENHANCEMENTS]
+
+  * #1650 statistics panel's Netdisco version comes from app source
+  * #1663 improve debug on undiscoverable neighbor
+
 2.106000 - 2026-09-02
 
   [NEW FEATURES]

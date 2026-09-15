@@ -1,4 +1,25 @@
-<table id="ps-data-table" class="table table-striped table-bordered" width="100%" cellspacing="0">
+<script type="application/json" id="nd-results-search-port">[% results.replace('<', '\u003c') | none %]</script>
+<table id="ps-data-table" class="table table-striped table-bordered" width="100%" cellspacing="0"
+  data-nd-data="#nd-results-search-port"
+  data-nd-urls='{"device_ports":"[% device_ports | html_entity %]"}'
+  data-nd-table='{
+  "deferRender": true,
+  "columnDefs": [
+    {"sortable":false,"targets":0},
+    {"searchable":false,"targets":0},
+    {"type":"portsort","targets":["portsort"]}
+  ],
+  "order": [[1,"asc"]],
+  "columns": [
+    {"data":"up","className":"nd_center-cell nd_devport-icon","width":"unset","render":"portUpIcon"},
+    {"data":"name","render":"escape"},
+    {"data":"ip","className":"nd_nowrap nd_center-cell","render":"searchPortLink"},
+    {"data":"vlan_agg","render":"raw"},
+    {"data":"speed","render":"raw"},
+    {"data":"properties.remote_dns","render":"raw"},
+    {"data":"lastchange_stamp","render":"raw"}
+  ]
+}'>
   <thead>
     <tr>
       <th>Status</th>
@@ -11,73 +32,3 @@
     </tr>
   </thead>
 </table>
-
-<script type="text/javascript">
-$(document).ready(function() {
-  var table = $('#ps-data-table').dataTable({
-    "deferRender": true,
-    "data": [% results | none %],
-    "columnDefs": [
-        { "sortable": false, "targets": 0 },
-        { "searchable": false, "targets": 0 },
-        { "type": 'portsort', "targets": [ 'portsort' ] }
-    ],
-    "order": [[ 1, 'asc' ]],
-    "columns": [{
-        "data": 'up',
-        "className": "nd_center-cell nd_devport-icon",
-        "width": "unset",
-        "render": function(data, type, row, meta) {
-          if (row.up_admin != "up") {
-            return'<i class="fas fa-xmark"></i>';
-          }
-          else if (row.up_admin == "up" && (row.up != "up" && row.up != "dormant")) {
-            return '<i class="fas fa-arrow-down text-danger"></i>';
-          }
-          else {
-            return '<i class="fas fa-angle-up text-success"></i>';
-          }
-        }
-      }, {
-        "data": 'name',
-        "render": function(data, type, row, meta) {
-          return DataTable.util.escapeHtml(data || '');
-        }
-      }, {
-        "data": 'ip',
-        "className": "nd_nowrap nd_center-cell",
-        "render": function(data, type, row, meta) {
-          var ddns = '';
-          if (row.device.dns || row.device.name) {
-            ddns = '<br>(' + DataTable.util.escapeHtml(row.device.dns || row.device.name)  + ')';
-          }
-          return '<a href="[% device_ports | none %]&q=' + encodeURIComponent(data)
-            + '&f=' + encodeURIComponent(row.port) + '">' + DataTable.util.escapeHtml(data)
-            + ' [' + DataTable.util.escapeHtml(row.port) + ']</a>' + ddns;
-        }
-      }, {
-        "data": 'vlan_agg',
-        "render": function(data, type, row, meta) {
-          return data || '';
-        }
-      }, {
-        "data": 'speed',
-        "render": function(data, type, row, meta) {
-          return data || '';
-        }
-      }, {
-        "data": 'properties.remote_dns',
-        "render": function(data, type, row, meta) {
-          return data || '';
-        }
-      }, {
-        "data": 'lastchange_stamp',
-        "render": function(data, type, row, meta) {
-          return data || '';
-        }
-      }
-    ],
-[% INCLUDE 'ajax/datatabledefaults.tt' -%]
-  });
-});</script>
-

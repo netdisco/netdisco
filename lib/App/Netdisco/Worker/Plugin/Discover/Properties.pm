@@ -289,6 +289,10 @@ register_worker({ phase => 'early', driver => 'snmp',
   }
 
   my $pass = Status->info(" [$device] device - OK to continue discover (valid interfaces)");
+
+  # cache the device ports to save hitting the database for many single rows
+  vars->{'device_ports'} = { map {($_->port => $_)}
+                                 $device->ports(undef, {prefetch => 'properties'})->reset->all };
   my $interfaces = $snmp->interfaces;
 
   # OK if no interfaces
@@ -297,11 +301,6 @@ register_worker({ phase => 'early', driver => 'snmp',
   return $pass if scalar grep {$_ ne $interfaces->{$_}} keys %$interfaces;
   # OK if any non-digit in values
   return $pass if scalar grep {$_ !~ m/^[0-9]+$/} values %$interfaces;
-
-  # cache the device ports to save hitting the database for many single rows
-  vars->{'device_ports'} = { map {($_->port => $_)}
-                                 $device->ports(undef, {prefetch => 'properties'})->reset->all };
-
   # OK if no ports
   return $pass if 0 == scalar keys %{ vars->{'device_ports'} };
   # OK if any interface value is a port name

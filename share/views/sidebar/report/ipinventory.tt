@@ -3,6 +3,7 @@
               <input id="nd_ipinventory-subnet" class="nd_sidebar-topinput nd_colored-input form-control"
                 placeholder="CIDR Prefix/Subnet" required="required"
                 name="subnet" value="[% params.subnet | html_entity %]" type="text" autocomplete="off"
+                data-nd-typeahead="/ajax/data/subnet/typeahead" data-nd-typeahead-min="3"
                 rel="tooltip" data-bs-placement="left" data-bs-title="Prefix/Subnet in CIDR Format"/>
             </div>
 
@@ -19,11 +20,11 @@
                   <span class="nd_searchcheckbox form-control-plaintext">Not within...</span>
                 </label>
               </div>
-              <div class="clearfix">
-                <input class="nd_side-input form-control" id="daterange" required="required"
-                  type="text" name="daterange" value="[%
-                    (params.exists('daterange') ? params.daterange : to_daterange()) | html_entity %]"/>
-              </div>
+              [%- all_dates = to_daterange() -%]
+              [%- INCLUDE 'sidebar/_daterange.tt'
+                    all_dates = all_dates
+                    current   = (params.exists('daterange') ? params.daterange : all_dates)
+                    required  = 1 -%]
             </fieldset>
 
             <fieldset>

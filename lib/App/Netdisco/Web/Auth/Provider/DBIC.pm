@@ -20,6 +20,9 @@ use File::ShareDir 'dist_dir';
 use Try::Tiny;
 use NetAddr::IP::Lite ':lower';
 
+use App::Netdisco::Util::Permission 'acl_matches_only';
+use App::Netdisco::Util::Configuration 'refresh_managed_acl';
+
 sub authenticate_user {
     my ($self, $username, $password) = @_;
     return unless defined $username;
@@ -41,7 +44,7 @@ sub get_user_details {
 
     my $user = try {
       $database->resultset($users_table)->find({
-          # FIXME: ILIKE to get case insensitive match on username, no wildcards
+          # case insensitive match on username, no wildcards
           $username_column => { -ilike => quotemeta($username) },
       });
     };
@@ -73,18 +76,25 @@ sub validate_api_token {
 
     $token =~ s/^(?:Apikey|Bearer) //i; # swagger-ui omits scheme; also accept Bearer
     my $user = try {
-      $database->resultset($users_table)->find({ $token_column => $token });
+      $database->resultset($users_table)->find({ $token_column => $token },
+        { prefetch => { token_acl_name => { mappings => [qw/left_acl right_acl/] } } });
     };
 
     return undef unless $user and $user->in_storage and $user->token_from
       and ($user->token_no_expire
         or $user->token_from > (time - setting('api_token_lifetime')));
 
-    if ($user->token_allowed_ips and scalar @{$user->token_allowed_ips}) {
-      my $client = NetAddr::IP::Lite->new(request->remote_address);
-      return undef unless $client
-        and grep { $client->within(NetAddr::IP::Lite->new($_)) }
-                 @{$user->token_allowed_ips};
+    # the ACL is loaded when the user is loaded from the DB above
+    if ($user->token_acl) {
+        # refresh host_group for the token acl
+        refresh_managed_acl( $user->token_acl_name );
+
+        # would expect empty list acl to reject, because client IP is not in there
+        # but acl_matches_only returns true for empty list
+        # however managed host acls can never be empty, UI forces grp:any
+        my $client = NetAddr::IP::Lite->new(request->remote_address);
+        return undef unless
+            acl_matches_only($client, setting('host_groups')->{$user->token_acl});
     }
 
     return $user;

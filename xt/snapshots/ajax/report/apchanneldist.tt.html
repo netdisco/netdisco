@@ -1,4 +1,7 @@
-<table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0">
+<script type="application/json" id="nd-results-report-apchanneldist"></script>
+<table id="data-table" class="table table-striped table-bordered" width="100%" cellspacing="0"
+  data-nd-data="#nd-results-report-apchanneldist"
+  data-nd-table='{"deferRender":true,"order":[[1,"desc"]],"columns":[{"data":"channel","render":"raw"},{"data":"ch_count","searchable":false,"render":"number"}]}'>
   <thead>
     <tr>
       <th>Channel</th>
@@ -6,52 +9,3 @@
     </tr>
   </thead>
 </table>
-
-<script type="text/javascript">
-$(document).ready(function() {
-  var table = $('#data-table').dataTable({
-    "deferRender": true,
-    "order": [[ 1, "desc" ]],
-    "data": ,
-    "columns": [
-      {
-        "data": 'channel'
-      }, {
-        "data": 'ch_count',
-        "searchable": false,
-        "render": function(data, type, row, meta) {
-          return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
-      }
-    ],
-    "processing": true
-    ,"stateSave": true
-    ,"pageLength": 
-    ,"lengthMenu": 
-    ,"dom": '<"top"l<"nd_datatables-pager"p>f>rit<"bottom"><"clear">'
-
-    ,"pagingType": 'simple_numbers'
-    ,"language": {
-
-      "processing": 'Processing...'
-      ,"search": '_INPUT_'
-      ,"searchPlaceholder": 'Filter records...'
-      ,"lengthMenu": "Show _MENU_ records."
-      ,"info":         "&nbsp;Showing _START_ to _END_ of _TOTAL_"
-      ,"infoFiltered": "(filtered from _MAX_ total)"
-      ,"infoEmpty":    "&nbsp;No matching entries"
-
-      ,"paginate": {
-        "previous": '&larr; Previous'
-        ,"next":    'Next &rarr;'
-      }
-    }
-    ,"stateSaveParams": function (settings, data) {
-      // make sure filter is never saved
-      data.search.search = "";
-      // make sure paging position is not saved
-      data.start = 0;
-    }
-  });
-});
-</script>

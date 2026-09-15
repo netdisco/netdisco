@@ -1,4 +1,21 @@
-<table id="da-data-table" class="table table-striped table-bordered" width="100%" cellspacing="0">
+<script type="application/json" id="nd-results-device-addresses"></script>
+<table id="da-data-table" class="table table-striped table-bordered" width="100%" cellspacing="0"
+  data-nd-admin="0"
+  data-nd-data="#nd-results-device-addresses"
+  data-nd-urls='{
+  "device_ports": "",
+  "search_device": ""
+}'
+  data-nd-table='{
+  "deferRender": true,
+  "columns": [
+    {"data":"alias","render":"escape"},
+    {"data":"dns","render":"escape"},
+    {"data":"port","type":"portsort","render":{"name":"devicePortsLink","q":"ip","f":"data"}},
+    {"data":"device_port.name","render":"escape"},
+    {"data":"subnet","render":"subnetLink"}
+  ]
+}'>
   <thead>
     <tr>
       <th>Address</th>
@@ -10,72 +27,3 @@
     </tr>
   </thead>
 </table>
-
-<script type="text/javascript">
-$(document).ready(function() {
-  var table = $('#da-data-table').dataTable({
-    "deferRender": true,
-    "data": ,
-    "columns": [
-      {
-        "data": 'alias',
-        "render": function(data, type, row, meta) {
-          return DataTable.util.escapeHtml(data || '');
-        }
-      }, {
-        "data": 'dns',
-        "render": function(data, type, row, meta) {
-          return DataTable.util.escapeHtml(data || '');
-        }
-      }, {
-        "data": 'port',
-        "type": 'portsort',
-        "render": function(data, type, row, meta) {
-          return type === 'display' ?
-            '<a href="&q=' + encodeURIComponent(row.ip) + '&f=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(data || '') + '</a>' :
-            DataTable.util.escapeHtml(data || '');
-        }
-      }, {
-        "data": 'device_port.name',
-        "render": function(data, type, row, meta) {
-          return DataTable.util.escapeHtml(data || '');
-        }
-      }, {
-        "data": 'subnet',
-        "render": function(data, type, row, meta) {
-          return ''
-            + '<a href="&q=' + encodeURIComponent(data) + '&ip=' + encodeURIComponent(data) + '">' + DataTable.util.escapeHtml(data || '') + '</a>';
-        }
-      }
-    ],
-    "processing": true
-    ,"stateSave": true
-    ,"pageLength": 
-    ,"lengthMenu": 
-    ,"dom": '<"top"l<"nd_datatables-pager"p>f>rit<"bottom"><"clear">'
-
-    ,"pagingType": 'simple_numbers'
-    ,"language": {
-
-      "processing": 'Processing...'
-      ,"search": '_INPUT_'
-      ,"searchPlaceholder": 'Filter records...'
-      ,"lengthMenu": "Show _MENU_ records."
-      ,"info":         "&nbsp;Showing _START_ to _END_ of _TOTAL_"
-      ,"infoFiltered": "(filtered from _MAX_ total)"
-      ,"infoEmpty":    "&nbsp;No matching entries"
-
-      ,"paginate": {
-        "previous": '&larr; Previous'
-        ,"next":    'Next &rarr;'
-      }
-    }
-    ,"stateSaveParams": function (settings, data) {
-      // make sure filter is never saved
-      data.search.search = "";
-      // make sure paging position is not saved
-      data.start = 0;
-    }
-  });
-});
-</script>

@@ -63,6 +63,10 @@ ajax '/ajax/control/admin/aclmanager/delete' => require_role setting('defanged_a
           ? () : (portctl_role => undef, port_control => \'false')),
       });
 
+    schema('netdisco')->resultset('User')
+      ->search({token_acl => $acl})
+      ->update({token_acl => undef});
+
     schema(vars->{'tenant'})->txn_do(sub {
       schema(vars->{'tenant'})->resultset('AccessControlListName')
                               ->find({ acl_name => $acl })->delete;
@@ -105,7 +109,8 @@ ajax '/ajax/control/admin/aclmanager/update' => require_role setting('defanged_a
       $maps->update({ acl_name => $acl });
       if ($type eq 'host') {
           schema(vars->{'tenant'})->resultset('AccessControlList')
-            ->search({id => { -in => [ $maps->right_acls ] }})->delete;
+            ->search({id => { -in => [ $maps->right_acls ] }})
+            ->update({ rules => [] });
       }
     });
 

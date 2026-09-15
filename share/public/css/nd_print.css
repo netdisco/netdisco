@@ -15,11 +15,6 @@ body {
   margin-right: 0px !important;
 }
 
-.floatThead-table {
-  position: inherit;
-  top: 45px;
-}
-
 a:after {
   content: "" !important;
 }

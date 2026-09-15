@@ -1,4 +1,10 @@
-<div id="nd2_netmap-wrap">
+<div id="nd2_netmap-wrap"
+     data-nd-data-url="[% uri_for('/ajax/data/device/netmap') | html_entity %]?[% my_query | html_entity %]"
+     data-nd-save-url="[% uri_for('/ajax/data/device/netmappositions') | html_entity %]"
+     data-nd-mapshow="[% params.mapshow | html_entity %]"
+     data-nd-label-zoom="[% settings.netmap.node_label_zoom_threshold || 0.9 | html_entity %]"
+     data-nd-label-size="[% settings.netmap.node_label_font_size || 8 | html_entity %]"
+     data-nd-link-label-size="[% settings.netmap.link_label_font_size || 5 | html_entity %]">
 [%# do_search's "Waiting for results..." is already gone by the time this
     fragment lands; the wait the user sees is the getJSON below. Same markup as
     netdisco.js so the netmap does not announce a slow load differently. %]
@@ -8,7 +14,4 @@
   <div id="nd2_netmap-spinner" class="nd_netmap-running"></div>
   [% IF params.colorby == 'hgroup' OR params.colorby == 'lgroup' %]<div id="nd2_netmap-legend"></div>[% END %]
 </div>
-<script>
-[%+ INCLUDE 'js/netmap.js' -%]
-</script>
 <!-- vim: ft=html -->

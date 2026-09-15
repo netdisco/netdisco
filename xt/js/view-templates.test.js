@@ -26,106 +26,32 @@
 
 'use strict';
 
-const { describe, test } = require('node:test');
+const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const vm = require('node:vm');
 
 const repoRoot = path.join(__dirname, '..', '..');
 const viewJsDir = path.join(repoRoot, 'share', 'views', 'js');
 const codeqlConfigPath = path.join(repoRoot, '.github', 'codeql', 'codeql-config.yml');
 
-// .github/ is not in MANIFEST, so the config is absent from a CPAN tarball
-// while share/views/js/ is present. Skip rather than pass in that case: an
-// empty exception list would make the assertions below silently meaningless.
-const configIsAbsent = !fs.existsSync(codeqlConfigPath);
-const skipWithoutConfig =
-  configIsAbsent && 'no .github/codeql/codeql-config.yml (expected outside a git checkout)';
+// .github/ is not in MANIFEST, so the config is absent from a CPAN tarball.
+// Skip rather than pass in that case: a passed assertion that never read the
+// file would hide a real regression on a checkout where the file exists.
+const skipWithoutConfig = !fs.existsSync(codeqlConfigPath)
+  && 'no .github/codeql/codeql-config.yml (expected outside a git checkout)';
 
-function viewTemplates() {
-  return fs.readdirSync(viewJsDir)
-    .filter((name) => name.endsWith('.js'))
-    .sort();
-}
-
-function parsesAsJavaScript(name) {
-  try {
-    // vm.Script compiles as a classic script, which is what these are. It
-    // agrees with `node --check` on all six files as of 6d81a9d5.
-    new vm.Script(fs.readFileSync(path.join(viewJsDir, name), 'utf8'));
-    return true;
-  }
-  catch (error) {
-    if (error instanceof SyntaxError) return false;
-    throw error;
-  }
-}
-
-// Line matching rather than a YAML parse, because the test must not give the
-// repository a dependency for this. Returns null when the key is missing, which
-// the first test below turns into a failure rather than an empty list.
-function pathsIgnoreEntries() {
-  const lines = fs.readFileSync(codeqlConfigPath, 'utf8').split('\n');
-  const start = lines.findIndex((line) => /^paths-ignore:\s*$/.test(line));
-  if (start === -1) return null;
-
-  const entries = [];
-  for (const line of lines.slice(start + 1)) {
-    if (/^\S/.test(line)) break;
-    const entry = /^\s+-\s+(\S+)\s*$/.exec(line);
-    if (entry) entries.push(entry[1]);
-  }
-  return entries;
-}
-
-function excludedTemplates(entries) {
-  const prefix = 'share/views/js/';
-  return entries.filter((entry) => entry.startsWith(prefix)).map((entry) => entry.slice(prefix.length));
-}
-
-describe('the guard can see what it claims to guard', () => {
-  // Runs everywhere, including from a tarball. Without it, moving or renaming
-  // the directory would leave every assertion below iterating an empty list and
-  // reporting success.
-  test('viewJsDirectory__in_any_checkout__holds_the_files_the_guard_covers', () => {
-    assert.ok(fs.existsSync(viewJsDir), `${viewJsDir} does not exist`);
-    assert.ok(viewTemplates().length > 0, 'no .js files found under share/views/js/');
-  });
-
-  test('codeqlConfig__as_shipped__yields_a_non_empty_paths_ignore_list', { skip: skipWithoutConfig }, () => {
-    const entries = pathsIgnoreEntries();
-    assert.notEqual(entries, null,
-      'no `paths-ignore:` key found in .github/codeql/codeql-config.yml. If the key was renamed or ' +
-      'reindented, update pathsIgnoreEntries() in this file: an unparsed config yields an empty ' +
-      'exception list, which would make the exclusion assertions below pass without checking anything.');
-    assert.ok(entries.length > 0, 'the paths-ignore list parsed as empty');
-  });
+// The conversion this guard watched for is finished: every template under
+// share/views/js/ went static, the directory is gone, and the exclusion it
+// needed is gone with it. This is what stays behind to say so.
+test('viewJsDirectory__after_the_conversion__no_longer_exists', () => {
+  assert.ok(!fs.existsSync(viewJsDir), `${viewJsDir} still exists; it was to be removed once its templates went static`);
 });
 
-describe('agreement between the templates and the CodeQL config', () => {
-  test('viewTemplates__with_a_js_extension__either_parse_or_are_excluded_from_scanning',
-    { skip: skipWithoutConfig }, () => {
-      const excluded = excludedTemplates(pathsIgnoreEntries() || []);
-      const unanalyzed = viewTemplates()
-        .filter((name) => !parsesAsJavaScript(name))
-        .filter((name) => !excluded.includes(name));
-
-      assert.deepStrictEqual(unanalyzed, [],
-        `these files under share/views/js/ do not parse as JavaScript and are not excluded in ` +
-        `.github/codeql/codeql-config.yml, so CodeQL skips them and analyzes nothing: ` +
-        `${unanalyzed.join(', ')}. Either quote the interpolation that breaks the parse, or add the ` +
-        `file to paths-ignore.`);
-    });
-
-  test('codeqlConfig__excluding_a_view_template__names_only_files_that_cannot_parse',
-    { skip: skipWithoutConfig }, () => {
-      const excluded = excludedTemplates(pathsIgnoreEntries() || []);
-      const stale = excluded.filter((name) => fs.existsSync(path.join(viewJsDir, name)))
-        .filter((name) => parsesAsJavaScript(name));
-
-      assert.deepStrictEqual(stale, [],
-        `these files are excluded in .github/codeql/codeql-config.yml but parse as JavaScript, so the ` +
-        `exclusion is costing analysis for no reason: ${stale.join(', ')}. Remove them from paths-ignore.`);
-    });
+// Matched against paths-ignore entries only, not comment prose: another
+// entry's comment can legitimately still say where its own fixtures come from.
+test('codeqlConfig__after_the_conversion__no_longer_excludes_a_removed_directory', { skip: skipWithoutConfig }, () => {
+  const config = fs.readFileSync(codeqlConfigPath, 'utf8');
+  assert.doesNotMatch(config, /^\s*-\s*share\/views/m,
+    'codeql-config.yml still excludes a share/views path, but the directory it excluded is gone');
 });

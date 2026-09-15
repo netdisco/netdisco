@@ -7,7 +7,7 @@
  *  @author [Jim Palmer](http://www.overset.com/2008/09/01/javascript-natural-sort-algorithm-with-unicode-support)
  *
  *  @example
- *    $('#example').dataTable( {
+ *    new DataTable('#example', {
  *       columnDefs: [
  *         { type: 'portsort', targets: 0 }
  *       ]
@@ -63,14 +63,20 @@ function portSort (a, b) {
     return 0;
 }
 
-jQuery.extend( jQuery.fn.dataTableExt.oSort, {
-    "portsort-asc": function ( a, b ) {
-        return portSort(a,b);
-    },
+// A pairwise comparator and deliberately not a pre-formatter: each chunk is
+// coerced to a number or to a string depending on what the other value's chunk
+// turned out to be, so no key computed from one value on its own reproduces the
+// order.
+DataTable.type('portsort', {
+    order: {
+        asc: function ( a, b ) {
+            return portSort(a,b);
+        },
 
-    "portsort-desc": function ( a, b ) {
-        return portSort(a,b) * -1;
+        desc: function ( a, b ) {
+            return portSort(a,b) * -1;
+        }
     }
-} );
+});
 
 }());

@@ -183,12 +183,11 @@ __PACKAGE__->might_have( properties => 'App::Netdisco::DB::Result::DevicePortPro
 
 =head2 ssid
 
-Returns a row from the C<device_port_ssid> table if one refers to this
-device port.
+Returns every C<device_port_ssid> row for this port.
 
 =cut
 
-__PACKAGE__->might_have(
+__PACKAGE__->has_many(
     ssid => 'App::Netdisco::DB::Result::DevicePortSsid',
     {   'foreign.ip'   => 'self.ip',
         'foreign.port' => 'self.port',

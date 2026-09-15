@@ -6,6 +6,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use NetAddr::IP qw/:rfc3021 :lower/;
+use Socket qw/inet_pton AF_INET AF_INET6/;
 use App::Netdisco::JobQueue 'jq_insert';
 
 sub add_job {
@@ -47,6 +48,32 @@ sub add_job {
     return $happy;
 }
 
+# a job requested by a non-admin user may only be aimed at one device which is
+# already in the inventory
+sub nonadmin_job_target {
+    my $device = shift;
+    my $addr = single_address($device) or return undef;
+
+    return schema(vars->{'tenant'})->resultset('Device')
+      ->search({ip => $addr})->count ? $addr : undef;
+}
+
+sub single_address {
+    my $device = shift;
+    return undef unless defined $device and length $device;
+
+    # a name is resolved again when the job is queued, and may resolve then to
+    # an address other than the one checked here
+    my ($host) = split m{/}, $device, 2;
+    return undef unless inet_pton(AF_INET, $host) or inet_pton(AF_INET6, $host);
+
+    my $net = NetAddr::IP->new($device) or return undef;
+    return undef
+      if ($net->version == 4 ? $net->masklen != 32 : $net->masklen != 128);
+
+    return $net->addr;
+}
+
 foreach my $action (@{ setting('job_prio')->{high} },
                     @{ setting('job_prio')->{normal} }) {
 
@@ -65,13 +92,19 @@ foreach my $action (@{ setting('job_prio')->{high} },
 }
 
 if (setting('enable_nonadmin_actions')) {
+    # the backend merges a job's extra and port into its own running
+    # configuration, so only an admin may send them
     foreach my $action (@{ setting('nonadmin_actions') }) {
         ajax "/ajax/control/nonadmin/$action" => sub {
-            add_job($action, param('device'), param('extra'), param('port'))
+            send_error('Bad device', 400)
+              unless nonadmin_job_target(param('device'));
+            add_job($action, param('device'))
               or send_error('Bad device', 400);
         };
         post "/nonadmin/$action" => sub {
-            add_job($action, param('device'), param('extra'), param('port'));
+            return redirect uri_for('/device', {tab => 'details', q => param('device')})
+              unless nonadmin_job_target(param('device'));
+            add_job($action, param('device'));
             redirect uri_for('/device', {tab => 'details', q => param('device')});
         };
     }

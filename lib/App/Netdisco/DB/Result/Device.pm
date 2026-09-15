@@ -94,6 +94,13 @@ __PACKAGE__->add_columns(
 );
 __PACKAGE__->set_primary_key("ip");
 
+# the stored SNMP read community is a credential, so it is kept out of the
+# field list every API route's TO_JSON is built from
+sub serializable_columns {
+    my $self = shift;
+    return [ grep { $_ ne 'snmp_comm' } @{ $self->next::method(@_) } ];
+}
+
 
 =head1 RELATIONSHIPS
 

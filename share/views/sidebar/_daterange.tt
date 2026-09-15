@@ -1,0 +1,35 @@
+[%# The date range control, shared by node search and the two reports so the
+    three cannot drift apart again.
+
+    all_dates is what the leading option puts on the wire for this page: the
+    epoch range where the field is required, nothing where the filter is
+    optional. current is what the field should carry right now, which after a
+    search differs from all_dates and must not be relabeled as "All dates". %]
+[%- DEFAULT current = all_dates -%]
+[%- is_all = (current == all_dates) -%]
+[%- dates = current.split(' to ') -%]
+<div class="nd_daterange" data-nd-daterange-all="[% all_dates | html_entity %]">
+  <select class="form-select nd_daterange-preset" data-nd-daterange>
+    <option value="all"[% ' selected="selected"' IF is_all %]>All dates</option>
+    <option value="today">Today</option>
+    <option value="yesterday">Yesterday</option>
+    <option value="last7">Last 7 days</option>
+    <option value="last30">Last 30 days</option>
+    <option value="thismonth">This month</option>
+    <option value="lastmonth">Last month</option>
+    <option value="custom"[% ' selected="selected"' UNLESS is_all %]>Custom range</option>
+  </select>
+  <div class="nd_daterange-pair"[% ' hidden="hidden"' IF is_all %]>
+    <div class="input-group input-group-sm">
+      <span class="input-group-text nd_daterange-addon" aria-hidden="true">From</span>
+      <input type="date" class="form-control nd_daterange-input"
+             aria-label="From" value="[% dates.0 | html_entity %]"[% ' required="required"' IF required %]/>
+    </div>
+    <div class="input-group input-group-sm">
+      <span class="input-group-text nd_daterange-addon" aria-hidden="true">To</span>
+      <input type="date" class="form-control nd_daterange-input"
+             aria-label="To" value="[% dates.1 | html_entity %]"[% ' required="required"' IF required %]/>
+    </div>
+  </div>
+  <input type="hidden" name="daterange" value="[% current | html_entity %]"/>
+</div>

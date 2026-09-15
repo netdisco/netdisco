@@ -44,16 +44,16 @@ describe('netmap first paint indicator', () => {
   });
 
   test('dataCallback__once_the_graph_is_built__removes_the_loading_indicator', () => {
-    const js = read('share', 'views', 'js', 'netmap.js');
+    const js = read('share', 'public', 'javascripts', 'netdisco-netmap.js');
     assert.match(
       js,
       new RegExp(LOADING_ID),
-      `share/views/js/netmap.js must reference "${LOADING_ID}"`
+      `share/public/javascripts/netdisco-netmap.js must reference "${LOADING_ID}"`
     );
     assert.match(
       js,
       new RegExp(`${LOADING_ID}[\\s\\S]{0,200}?\\.remove\\(\\)`),
-      `share/views/js/netmap.js must remove "${LOADING_ID}", or it stays on top of the map`
+      `share/public/javascripts/netdisco-netmap.js must remove "${LOADING_ID}", or it stays on top of the map`
     );
   });
 
@@ -62,11 +62,11 @@ describe('netmap first paint indicator', () => {
   // fragment's data callback, so its handlers fire against a spinner that has
   // left the document.
   test('spinnerHandlers__pane_replaced_mid_run__do_not_dereference_a_missing_element', () => {
-    const js = read('share', 'views', 'js', 'netmap.js');
+    const js = read('share', 'public', 'javascripts', 'netdisco-netmap.js');
     assert.doesNotMatch(
       js,
       /getElementById\(['"]nd2_netmap-spinner['"]\)\s*\./,
-      'share/views/js/netmap.js must not read a property straight off the spinner lookup: ' +
+      'share/public/javascripts/netdisco-netmap.js must not read a property straight off the spinner lookup: ' +
       'onEngineTick and onEngineStop both outlive the element on a reload in place, ' +
       'and an unguarded read throws a TypeError into the console on every re-submit'
     );
