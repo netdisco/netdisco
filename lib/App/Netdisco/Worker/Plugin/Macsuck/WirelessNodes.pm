@@ -35,6 +35,8 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $cd11_txbyte  = $snmp->cd11_txbyte();
   my $cd11_ssid    = $snmp->cd11_ssid();
 
+  my $nossid = 0;
+
   while (my ($idx, $txrates) = each %$cd11_txrate) {
     my $rates = $cd11_rateset->{$idx};
     my $mac   = $cd11_mac->{$idx};
@@ -49,7 +51,17 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       ? int($rates->[$#$rates])
       : undef;
 
-    my $ssid = $cd11_ssid->{$idx} || 'unknown';
+    # the SSID table is a separate walk from the rate table and, as above,
+    # can have fewer rows. An index missing here is a client we cannot
+    # attribute to an SSID on this pass, not a client on an SSID called
+    # "unknown" - and since (mac, ssid) is the primary key, storing it under
+    # that name gives the client a second identity which nothing expires.
+    # Skip it and pick the client up on a pass where the walk is complete.
+    my $ssid = $cd11_ssid->{$idx};
+    if (! defined $ssid or ! length $ssid) {
+      ++$nossid;
+      next;
+    }
 
     schema('netdisco')->txn_do(sub {
       schema('netdisco')->resultset('NodeWireless')
@@ -72,8 +84,9 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     });
   }
 
-  return Status->info(sprintf ' [%s] macsuck - processed %s wireless nodes',
-    $device->ip, scalar keys %{ $cd11_txrate });
+  return Status->info(sprintf ' [%s] macsuck - processed %s wireless nodes%s',
+    $device->ip, (scalar keys %{ $cd11_txrate }),
+    ($nossid ? sprintf(' (%s skipped, no SSID reported)', $nossid) : ''));
 });
 
 true;
