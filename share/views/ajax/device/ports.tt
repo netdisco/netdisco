@@ -427,9 +427,9 @@
               [% row.remote_inventory | html_entity %]<br/>
             [% END %]
             [% IF params.n_detailed_inventory %]
-              ([% 'IP: '_ row.remote_ip IF row.remote_ip %]
-              [% ' id: '_ row.remote_id IF row.remote_id %]
-              [% ' type: '_ row.remote_type IF row.remote_type %])<br/>
+              ([% 'IP: '_ row.remote_ip | html_entity IF row.remote_ip %]
+              [% ' id: '_ row.remote_id | html_entity IF row.remote_id %]
+              [% ' type: '_ row.remote_type | html_entity IF row.remote_type %])<br/>
             [% END %]
           [% ELSIF row.remote_ip %]
             <i class="fas [% row.remote_is_discoverable ? 'fa-link-slash' : 'fa-eye-slash' %] text-danger"
@@ -454,8 +454,8 @@
               [% row.remote_inventory | html_entity %]<br/>
             [% END %]
             [% IF params.n_detailed_inventory and (row.remote_id or row.remote_type) %]
-              ([% 'id: '_ row.remote_id IF row.remote_id %]
-              [% ' type: '_ row.remote_type IF row.remote_type %])<br/>
+              ([% 'id: '_ row.remote_id | html_entity IF row.remote_id %]
+              [% ' type: '_ row.remote_type | html_entity IF row.remote_type %])<br/>
             [% END %]
           [% ELSE %]
             <i class="fas fa-link-slash text-danger" title="Possible uplink: neighbor seen but no IP recorded"></i>&nbsp; (possible uplink)

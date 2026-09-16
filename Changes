@@ -16,6 +16,8 @@
   * fix a stored CSV formula injection in CSV downloads: a cell that would be
     read as a spreadsheet formula is now written as plain text
   * fix a stored cross-site scripting hole in several report and search tables
+  * fix a stored cross-site scripting hole in the Ports tab and the node
+    search views
 
 2.109000 - 2026-09-13
 

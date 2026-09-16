@@ -35,7 +35,7 @@
       <td>MAC &rarr; IP</td>
       <td class="nd_center-cell"><a href="[% search_node | none %]&q=[% row.ip | uri %]">[% row.ip | html_entity %]</a>
         [% '&nbsp;<i class="fas fa-book nd_icon-archived"></i>&nbsp;' IF NOT row.active %]
-        [% ' (' _ row.dns.remove(settings.domain_suffix) _ ')' IF row.dns %]
+        [% ' (' _ row.dns.remove(settings.domain_suffix) _ ')' | html_entity IF row.dns %]
         [% IF row.router_ip %]
         via <a href="[% search_device | none %]&q=[% row.router_ip | uri %]">[% row.router_name || row.router_ip | html_entity %]</a>
         [% END %]

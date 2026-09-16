@@ -710,6 +710,7 @@ xt/80-acl-type-options.t
 xt/81-token-entropy.t
 xt/83-csv-formula-neutralization.t
 xt/84-datatables-raw-columns.t
+xt/85-postfix-conditional-escaping.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/daterange-presets.test.js
