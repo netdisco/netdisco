@@ -15,6 +15,7 @@
     page says how to replace a key minted by the old code
   * fix a stored CSV formula injection in CSV downloads: a cell that would be
     read as a spreadsheet formula is now written as plain text
+  * fix a stored cross-site scripting hole in several report and search tables
 
 2.109000 - 2026-09-13
 
