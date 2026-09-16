@@ -711,6 +711,7 @@ xt/81-token-entropy.t
 xt/83-csv-formula-neutralization.t
 xt/84-datatables-raw-columns.t
 xt/85-postfix-conditional-escaping.t
+xt/86-snapshot-regenerator.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/daterange-presets.test.js
