@@ -8,9 +8,13 @@ use Dancer::Plugin::Auth::Extensible;
 use NetAddr::IP qw/:rfc3021 :lower/;
 use Socket qw/inet_pton AF_INET AF_INET6/;
 use App::Netdisco::JobQueue 'jq_insert';
+use App::Netdisco::Util::JobAction 'action_is_refused';
 
 sub add_job {
     my ($action, $device, $extra, $port) = @_;
+
+    # a false return is how every caller already reports a job not queued
+    return if action_is_refused($action);
 
     my $net = NetAddr::IP->new($device);
     return if

@@ -153,6 +153,7 @@ lib/App/Netdisco/Util/DNS.pm
 lib/App/Netdisco/Util/ExpandParams.pm
 lib/App/Netdisco/Util/FastResolver.pm
 lib/App/Netdisco/Util/Graph.pm
+lib/App/Netdisco/Util/JobAction.pm
 lib/App/Netdisco/Util/MCE.pm
 lib/App/Netdisco/Util/Nbtstat.pm
 lib/App/Netdisco/Util/Node.pm
@@ -713,6 +714,7 @@ xt/84-datatables-raw-columns.t
 xt/85-postfix-conditional-escaping.t
 xt/86-snapshot-regenerator.t
 xt/87-snmp-munger-allowlist.t
+xt/88-job-action-refusal.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/daterange-presets.test.js

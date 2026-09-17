@@ -19,6 +19,8 @@
   * fix a stored cross-site scripting hole in the Ports tab and the node
     search views
   * fix arbitrary module loading in the SNMP browser's munge parameter
+  * fix a privilege escalation in the queue API and the admin job controls,
+    where a job action naming a backend command worker could be queued
 
 2.109000 - 2026-09-13
 
