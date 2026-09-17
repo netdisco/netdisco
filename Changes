@@ -24,6 +24,9 @@
   * fix an open redirect in the login form's return_url
   * warn at startup when metrics_path is set with neither metrics_allow nor
     metrics_token, so the endpoint is not published unrestricted unnoticed
+  * raise the bcrypt work factor for locally stored passwords. existing
+    passwords keep the factor they were stored with and still work
+  * bound the port count accepted when creating a pseudo device
 
 2.109000 - 2026-09-13
 

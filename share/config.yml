@@ -1044,6 +1044,11 @@ engines:
       csv: 'App::Netdisco::Template::Plugin::CSV'
 layout: 'noop'
 plugins:
+  Passphrase:
+    # without this the plugin falls back to its own cost of 4. existing hashes
+    # carry the cost they were made with, so raising this needs no migration
+    Bcrypt:
+      cost: 12
   Swagger:
     main_api_module: 'App::Netdisco'
     ui_url: '/swagger-ui'
