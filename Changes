@@ -21,6 +21,9 @@
   * fix arbitrary module loading in the SNMP browser's munge parameter
   * fix a privilege escalation in the queue API and the admin job controls,
     where a job action naming a backend command worker could be queued
+  * fix an open redirect in the login form's return_url
+  * warn at startup when metrics_path is set with neither metrics_allow nor
+    metrics_token, so the endpoint is not published unrestricted unnoticed
 
 2.109000 - 2026-09-13
 

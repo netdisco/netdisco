@@ -12,6 +12,14 @@ use MIME::Base64;
 use Try::Tiny;
 use URI::Based;
 
+# path_query drops a scheme and host, but leaves a leading "//" intact, and a
+# browser reads that as a host rather than a path.
+sub safe_return_url {
+    my $back = (scalar URI::Based->new(shift)->path_query) || '/';
+    $back =~ s{^/+}{/};
+    return $back;
+}
+
 # ensure that regardless of where the user is redirected, we have a link
 # back to the page they requested. The login page is excluded along with the
 # front page: it is the one path a user leaves by using it, so returning them
@@ -181,7 +189,7 @@ post '/login' => sub {
             };
         }
 
-        redirect ((scalar URI::Based->new(param('return_url'))->path_query) || '/');
+        redirect safe_return_url(param('return_url'));
     }
     else {
         # invalidate session cookie

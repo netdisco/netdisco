@@ -715,6 +715,7 @@ xt/85-postfix-conditional-escaping.t
 xt/86-snapshot-regenerator.t
 xt/87-snmp-munger-allowlist.t
 xt/88-job-action-refusal.t
+xt/89-login-return-url.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/daterange-presets.test.js

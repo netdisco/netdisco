@@ -22,6 +22,15 @@ sub _sample {
 }
 
 if (my $metrics_path = setting('metrics_path')) {
+
+# Both restrictions below are optional, so this endpoint can be published with
+# neither. Warns rather than dies: a misconfiguration should not become an
+# outage.
+warning 'metrics_path is set with neither metrics_allow nor metrics_token,'
+      . ' so the metrics endpoint is served to anyone who can reach it'
+  unless (setting('metrics_allow') and scalar @{ setting('metrics_allow') })
+      or setting('metrics_token');
+
 get $metrics_path => sub {
   # Optional IP range restriction
   my $allow = setting('metrics_allow');
