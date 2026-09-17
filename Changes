@@ -27,6 +27,8 @@
   * raise the bcrypt work factor for locally stored passwords. existing
     passwords keep the factor they were stored with and still work
   * bound the port count accepted when creating a pseudo device
+  * fix a command injection in the external credentials command, where a
+    device's DNS name was substituted into it unchecked
 
 2.109000 - 2026-09-13
 

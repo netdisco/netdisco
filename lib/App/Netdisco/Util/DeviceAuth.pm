@@ -130,6 +130,10 @@ sub get_external_credentials {
   my $host = ($device->dns || hostname_from_ip($ip) || $ip);
   $mode ||= 'read';
 
+  # the command below reaches a shell, and this name comes from DNS, so fall
+  # back to the address unless it is shaped like a hostname
+  $host = $ip unless $host =~ m/^[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?$/;
+
   if (defined $cmd and length $cmd) {
       # replace variables
       $cmd =~ s/\%MODE\%/$mode/egi;
