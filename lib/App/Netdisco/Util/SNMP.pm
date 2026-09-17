@@ -191,6 +191,11 @@ sub decode_and_munge {
 
     return $json->encode( $data ) if not $munger;
 
+    # this names a class to load and a sub to call, and reaches here from the
+    # request, so only SNMP::Info's own namespace is accepted
+    return $json->encode( $data )
+      unless $munger =~ m/^SNMP::Info(?:::[A-Za-z0-9_]+)*::[A-Za-z0-9_]+$/;
+
     my $sub   = sub_name($munger);
     my $class = class_name($munger);
     Module::Load::load $class;

@@ -712,6 +712,7 @@ xt/83-csv-formula-neutralization.t
 xt/84-datatables-raw-columns.t
 xt/85-postfix-conditional-escaping.t
 xt/86-snapshot-regenerator.t
+xt/87-snmp-munger-allowlist.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/daterange-presets.test.js
@@ -753,5 +754,6 @@ xt/lib/App/NetdiscoX/Worker/Plugin/TestSeven.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestSix.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestThree.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestTwo.pm
+xt/lib/Test/Netdisco/MungerProbe.pm
 xt/lib/Test/Netdisco/Snapshot.pm
 xt/portsort-corpus.json
