@@ -35,6 +35,11 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $cd11_txbyte  = $snmp->cd11_txbyte();
   my $cd11_ssid    = $snmp->cd11_ssid();
 
+  # A class that implements cd11_txrate but not cd11_ssid at all - Trapeze and
+  # NWSS2300 both do - gets undef back from AUTOLOAD rather than an error, and
+  # for those the old fallback is still the best available answer. Only treat a
+  # missing index as unattributable when the walk returned something.
+  my $have_ssids = (ref $cd11_ssid eq 'HASH' and scalar keys %$cd11_ssid);
   my $nossid = 0;
 
   while (my ($idx, $txrates) = each %$cd11_txrate) {
@@ -59,8 +64,13 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     # Skip it and pick the client up on a pass where the walk is complete.
     my $ssid = $cd11_ssid->{$idx};
     if (! defined $ssid or ! length $ssid) {
-      ++$nossid;
-      next;
+      if (! $have_ssids) {
+        $ssid = 'unknown';
+      }
+      else {
+        ++$nossid;
+        next;
+      }
     }
 
     schema('netdisco')->txn_do(sub {
