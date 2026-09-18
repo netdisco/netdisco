@@ -26,7 +26,7 @@ use Test::More 0.88;
 use FindBin;
 use Path::Class 'dir';
 use File::Temp 'tempfile';
-use Cwd 'getcwd';
+use Cwd qw/getcwd abs_path/;
 
 my $root       = dir($FindBin::RealBin)->parent;
 my $script_dir = $root->subdir('xt', 'bin');
@@ -71,12 +71,26 @@ chdir $root or BAIL_OUT("cannot chdir to $root: $!");
 my $output = do {
     # Module::Build sets PERL5LIB to include blib/lib for this whole test
     # run, and a child process inherits it like any other environment
-    # variable. Without clearing it here, the child would find the CSV
+    # variable. Without removing it here, the child would find the CSV
     # plugin via blib no matter what the script itself puts on @INC, which
     # is exactly the blind spot xt/40-template-snapshots.t already has.
-    delete local $ENV{PERL5LIB};
+    #
+    # Only the entries leading back into this distribution go: its lib, blib
+    # and xt/lib, whichever the runner happened to add. Clearing these
+    # variables outright also removes the path to netdisco's dependencies
+    # wherever they are installed into a local::lib, which is how the
+    # container CI runs in is built, and the child could then not load Dancer
+    # at all.
+    my $root_abs = abs_path($root->stringify);
+    my $strip = sub {
+        return join ':', grep {
+            my $abs = abs_path($_);
+            not (defined $abs and defined $root_abs and index($abs, $root_abs) == 0)
+        } grep { length } split m/:/, (shift // '');
+    };
+    local $ENV{PERL5LIB} = $strip->($ENV{PERL5LIB});
+    local $ENV{PERLLIB}  = $strip->($ENV{PERLLIB});
     delete local $ENV{PERL5OPT};
-    delete local $ENV{PERLLIB};
     open my $ph, '-|', $^X, $filename
         or BAIL_OUT("cannot run $filename: $!");
     local $/;
@@ -90,7 +104,8 @@ chdir $original_cwd or BAIL_OUT("cannot chdir back to $original_cwd: $!");
 
 subtest 'regenerateSnapshotsScript__csvTemplateUnderItsOwnIncludePath__renders' => sub {
     like($output, qr/^OK:\d+\z/,
-        q{the CSV plugin loads and the template renders under the script's own include path, not the suite's});
+        q{the CSV plugin loads and the template renders under the script's own include path, not the suite's})
+      or diag("child produced: $output");
 };
 
 done_testing;
