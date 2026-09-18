@@ -24,8 +24,9 @@
   * fix an open redirect in the login form's return_url
   * warn at startup when metrics_path is set with neither metrics_allow nor
     metrics_token, so the endpoint is not published unrestricted unnoticed
-  * raise the bcrypt work factor for locally stored passwords. existing
-    passwords keep the factor they were stored with and still work
+  * raise the bcrypt work factor for locally stored passwords. an existing
+    password is rewritten at the new factor on its owner's next successful
+    login, and safe_password_store still governs whether that happens
   * bound the port count accepted when creating a pseudo device
   * fix a command injection in the external credentials command, where a
     device's DNS name was substituted into it unchecked

@@ -181,8 +181,33 @@ sub match_with_local_pass {
         }
     }
     else {
-        return passphrase($password)->matches($user->$password_column);
+        return 0 unless passphrase($password)->matches($user->$password_column);
+
+        # a hash carries the work factor it was made with, so a raised setting
+        # reaches an existing password only by rewriting it on a good login
+        if (setting('safe_password_store')
+            and password_hash_is_stale($user->$password_column)) {
+            $user->update({password => passphrase($password)->generate});
+        }
+        return 1;
     }
+}
+
+# True only when the stored hash is bcrypt, the configured work factor is
+# readable, and the hash was made with a lower one. Anything else is left
+# alone: an unrecognised scheme is not ours to rewrite.
+sub password_hash_is_stale {
+    my $hash = shift;
+    return 0 unless defined $hash;
+
+    my ($stored) = $hash =~ m/^\{CRYPT\}\$2a\$(\d\d)\$/;
+    return 0 unless defined $stored;
+
+    my $wanted = ((setting('plugins') || {})->{'Passphrase'} || {})
+                   ->{'Bcrypt'}->{'cost'};
+    return 0 unless defined $wanted and $wanted =~ m/^\d+$/;
+
+    return (($stored + 0) < ($wanted + 0)) ? 1 : 0;
 }
 
 sub match_with_ldap {
