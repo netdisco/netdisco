@@ -10,16 +10,16 @@ dependencies = [
     "netmiko>=4.7.0,<5",
     "cryptography>=50.0.1,<51",
     "virtualenv>=21.7.9",
-    "sqlalchemy>=2.0.52,<3",
+    "sqlalchemy>=2.0.53,<3",
     "psycopg>=3.3.5,<4",
-    "uv-build>=0.12.13,<0.13.0",
+    "uv-build>=0.12.14,<0.13.0",
 ]
 
 [project.scripts]
 run_worklet = "netdisco.runner:main"
 
 [build-system]
-requires = ["uv_build>=0.12.13,<0.13.0"]
+requires = ["uv_build>=0.12.14,<0.13.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
