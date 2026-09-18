@@ -5,6 +5,7 @@
   * fix metrics_allow logic: an empty list now means any, so metrics_path alone
     publishes the endpoint instead of refusing everyone, and metrics_token
     works on its own
+  * scope device and topology writes to the user's port control role
 
 2.109001 - 2026-09-18
 

@@ -7,6 +7,7 @@ use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
 use App::Netdisco::Util::Device 'get_device';
+use App::Netdisco::Util::Port qw/port_acl_check port_acl_by_role_check sync_portctl_roles/;
 
 use Try::Tiny;
 use NetAddr::IP::Lite ':lower';
@@ -33,8 +34,32 @@ sub _sanity_ok {
     return 1;
 }
 
+# These routes write is_uplink and the remote_* columns on a named port, which
+# is a port change like any other, so they answer to the same role ACL. The
+# service check is not used: it refuses a port that is already an uplink, which
+# is what manual topology exists to set.
+sub _scope_ok {
+    my ($ip, $portname) = @_;
+    return 1 if user_has_role('admin');
+
+    # the database half of portctl_by_role is only in scope once this has run,
+    # which is why every port control worker calls it before its own check
+    sync_portctl_roles();
+
+    my $device = get_device($ip);
+    return 0 unless $device and $device->in_storage;
+    my $port = $device->ports->search({ 'me.port' => $portname })->single
+      or return 0;
+
+    return 0 unless port_acl_check($port, $device, logged_in_user);
+    return port_acl_by_role_check($port, $device, logged_in_user) ? 1 : 0;
+}
+
 ajax '/ajax/control/admin/topology/add' => require_any_role [qw(admin port_control)] => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
+    send_error('Forbidden', 403)
+      unless _scope_ok(param('dev1'), param('port1'))
+         and _scope_ok(param('dev2'), param('port2'));
 
     my $device = schema(vars->{'tenant'})->resultset('Topology')
       ->create({
@@ -86,6 +111,9 @@ ajax '/ajax/control/admin/topology/add' => require_any_role [qw(admin port_contr
 
 ajax '/ajax/control/admin/topology/del' => require_any_role [qw(admin port_control)] => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
+    send_error('Forbidden', 403)
+      unless _scope_ok(param('dev1'), param('port1'))
+         and _scope_ok(param('dev2'), param('port2'));
 
     schema(vars->{'tenant'})->txn_do(sub {
       my $device = schema(vars->{'tenant'})->resultset('Topology')
