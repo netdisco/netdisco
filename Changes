@@ -1,3 +1,11 @@
+2.109002 - tbd
+
+  [BUG FIXES]
+
+  * fix metrics_allow logic: an empty list now means any, so metrics_path alone
+    publishes the endpoint instead of refusing everyone, and metrics_token
+    works on its own
+
 2.109001 - 2026-09-18
 
   [ENHANCEMENTS]

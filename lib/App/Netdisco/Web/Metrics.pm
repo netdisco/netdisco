@@ -3,7 +3,7 @@ package App::Netdisco::Web::Metrics;
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
 
-use App::Netdisco::Util::Permission 'acl_matches';
+use App::Netdisco::Util::Permission 'acl_matches_only';
 use POSIX 'floor';
 use Try::Tiny;
 
@@ -36,7 +36,7 @@ get $metrics_path => sub {
   my $allow = setting('metrics_allow');
   if ($allow and ref $allow eq ref []) {
     my $remote = request->remote_address;
-    unless (acl_matches($remote, $allow)) {
+    unless (acl_matches_only($remote, $allow)) {
       status 403;
       return 'Forbidden';
     }
