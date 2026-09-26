@@ -23,25 +23,42 @@ my $CSV_ROUTE = qr{
   \s*template\s+['"]([^'"]+)['"]
 }x;
 
-sub csv_route_templates {
-  my @found;
-  File::Find::find({ no_chdir => 1, wanted => sub {
-    return unless -f $File::Find::name and $File::Find::name =~ m/\.pm\z/;
-    my $source = read_text($File::Find::name);
-    while ($source =~ m/$CSV_ROUTE/g) {
-      push @found, { file => $File::Find::name, template => $1 };
-    }
-  } }, 'lib/App/Netdisco/Web');
-  return @found;
+# Every mention of the CSV content type has to be read by the pattern, so a
+# route written in any other shape fails here instead of passing unchecked.
+sub csv_route_problems {
+  my ($file, $source) = @_;
+  my @problems;
+  my $mentions = () = $source =~ m{text/comma-separated-values}g;
+  my $matched = 0;
+  while ($source =~ m/$CSV_ROUTE/g) {
+    $matched++;
+    push @problems, "$file: renders $1" unless $1 =~ m/_csv\.tt\z/;
+  }
+  push @problems, "$file: ". ($mentions - $matched)
+    ." CSV response(s) in a shape this test cannot read"
+    if $mentions != $matched;
+  return @problems;
 }
 
 subtest 'csvRoutes__every_one_in_the_web_tree__renders_a_csv_template' => sub {
-  my @routes = csv_route_templates();
-  # 35 on 2026-09-26; the floor stops a pattern that matches nothing passing.
-  cmp_ok scalar @routes, '>=', 30, 'the scan finds the CSV routes';
-  my @wrong = grep { $_->{template} !~ m/_csv\.tt\z/ } @routes;
-  is_deeply [ map { "$_->{file}: $_->{template}" } @wrong ], [],
-    'no CSV route renders a template that is not a *_csv.tt';
+  my ($routes, @problems) = (0);
+  File::Find::find({ no_chdir => 1, wanted => sub {
+    return unless -f $File::Find::name and $File::Find::name =~ m/\.pm\z/;
+    my $source = read_text($File::Find::name);
+    $routes += () = $source =~ m/$CSV_ROUTE/g;
+    push @problems, csv_route_problems($File::Find::name, $source);
+  } }, 'lib/App/Netdisco/Web');
+  # a floor, so a scan that finds nothing cannot pass
+  cmp_ok $routes, '>=', 30, 'the scan finds the CSV routes';
+  is_deeply \@problems, [],
+    'every CSV route renders a *_csv.tt template, in a shape this test reads';
+};
+
+subtest 'csvRouteScan__a_csv_response_in_an_unrecognized_shape__is_reported' => sub {
+  my $source = "header 'Content-Type' => 'text/comma-separated-values';\n"
+             . "template 'ajax/report/x.tt';\n";
+  my @problems = csv_route_problems('Synthetic.pm', $source);
+  is scalar @problems, 1, 'a CSV response the pattern cannot read is a problem, not a pass';
 };
 
 setting('no_auth' => 1);
