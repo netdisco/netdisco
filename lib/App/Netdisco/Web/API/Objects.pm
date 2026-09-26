@@ -11,6 +11,14 @@ use URI::Escape 'uri_unescape';
 
 sub _port_param { my $s = uri_unescape(shift // ''); $s =~ s/^\s+|\s+$//g; $s }
 
+# query params always arrive as strings, so accept the usual spellings of a
+# boolean and fall back to the default documented in the swagger_path
+sub _bool_param {
+  my ($val, $default) = @_;
+  return $default unless defined $val and length $val;
+  return ($val =~ m/^(?:1|y|yes|t|true|on)$/i) ? 1 : 0;
+}
+
 swagger_path {
   tags => ['Objects'],
   path => (setting('api_base') || '').'/object/device/{ip}',
@@ -289,7 +297,7 @@ swagger_path {
   ],
   responses => { default => {} },
 }, get '/api/v1/object/device/:ip/nodes' => require_role api => sub {
-  my $active = (params->{active_only} and ('true' eq params->{active_only})) ? 1 : 0;
+  my $active = _bool_param(params->{active_only}, 1);
   my $rows = try { schema(vars->{'tenant'})->resultset('Node')
     ->search({ switch => params->{ip}, ($active ? (-bool => 'active') : ()) }) }
     or send_error('Bad Device', 404);
@@ -364,7 +372,7 @@ swagger_path {
   ],
   responses => { default => {} },
 }, get '/api/v1/object/vlan/:vlan/nodes' => require_role api => sub {
-  my $active = (params->{active_only} and ('true' eq params->{active_only})) ? 1 : 0;
+  my $active = _bool_param(params->{active_only}, 1);
   my $rows = try { schema(vars->{'tenant'})->resultset('Node')
     ->search({ vlan => params->{vlan}, ($active ? (-bool => 'active') : ()) }) }
     or send_error('Bad VLAN', 404);
