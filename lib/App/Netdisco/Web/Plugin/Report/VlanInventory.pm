@@ -81,7 +81,7 @@ get '/ajax/content/report/vlanmultiplenames' => require_login sub {
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/report/vlanmultiplenames.tt', { results => \@results }, { layout => 'noop' };
+        template 'ajax/report/vlanmultiplenames_csv.tt', { results => \@results }, { layout => 'noop' };
     }
 };
 
