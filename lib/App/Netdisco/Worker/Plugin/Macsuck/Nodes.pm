@@ -291,6 +291,9 @@ sub get_vlan_list {
   my $i_vlan = $snmp->i_vlan || {};
   my $trunks = $snmp->i_vlan_membership || {};
   my $i_type = $snmp->i_type || {};
+  my $auth_vlans = $snmp->can('i_auth_vlan_membership')
+    ? ($snmp->i_auth_vlan_membership || {})
+    : {};
 
   # get list of vlans in use
   while (my ($idx, $vlan) = each %$i_vlan) {
@@ -308,6 +311,15 @@ sub get_vlan_list {
       }
       foreach my $t_vlan (@{$trunks->{$idx}}) {
         ++$vlans{$t_vlan};
+      }
+  }
+
+  # Authentication frameworks such as Cisco ISE can assign VLANs
+  # dynamically to individual authentication sessions. These VLANs may
+  # not be reflected by the configured interface VLAN membership.
+  while (my ($idx, $memberships) = each %$auth_vlans) {
+      foreach my $vlan (@{$memberships || []}) {
+          ++$vlans{$vlan};
       }
   }
 
