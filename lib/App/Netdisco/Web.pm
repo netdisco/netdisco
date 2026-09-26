@@ -34,6 +34,7 @@ use App::Netdisco::Util::Web qw/
   request_is_api_search
 /;
 use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
+use App::Netdisco::Util::Port 'device_acl_by_role_check';
 use App::Netdisco::Util::SiteLocal qw/scan_shadowed_files site_local_paths/;
 
 BEGIN {
@@ -391,23 +392,7 @@ hook 'before_template' => sub {
         return true if not $device;
 
         my $user = logged_in_user or return false;
-        return true unless $user->portctl_role;
-
-        # this has the merged yaml and database config
-        my $acl = setting('portctl_by_role')->{$user->portctl_role};
-        if ($acl and (ref $acl eq q{} or ref $acl eq ref [])) {
-            return true if acl_matches($device, $acl);
-        }
-        elsif ($acl and ref $acl eq ref {}) {
-            foreach my $key (grep { defined } keys %$acl) {
-                # lhs matches device, rhs matches port
-                # but we are not interested in the ports
-                return true if acl_matches($device, $key);
-            }
-        }
-
-        # assigned an unknown role
-        return false;
+        return device_acl_by_role_check($device, $user);
     };
 
     # create date ranges from within templates
