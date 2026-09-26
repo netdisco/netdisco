@@ -5,6 +5,8 @@
   * fix metrics_allow logic: an empty list now means any, so metrics_path alone
     publishes the endpoint instead of refusing everyone, and metrics_token
     works on its own
+  * the VLANs With Multiple Names report's CSV download is now CSV; it
+    returned the web page's markup with no data in it
 
 2.109001 - 2026-09-18
 
