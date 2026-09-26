@@ -9,6 +9,9 @@
     returned the web page's markup with no data in it
   * fix CSV downloads silently leaving out any row with a line break in one of
     its values; a line break is now written as a space
+  * the backend matches a job's action name as text when loading its workers,
+    so an action containing pattern characters no longer loads the plugins of
+    other actions
 
 2.109001 - 2026-09-18
 

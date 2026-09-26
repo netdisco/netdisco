@@ -25,7 +25,7 @@ sub _find_python_worklets {
       else {
           $worklet = $entry;
       }
-      next unless $worklet and $worklet =~ m/^${action}\./;
+      next unless $worklet and $worklet =~ m/^\Q${action}\E\./;
       my @parts = split /\./, $worklet;
 
       my %base = (

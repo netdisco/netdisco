@@ -721,6 +721,7 @@ xt/91-external-credentials-host.t
 xt/92-password-rehash-on-login.t
 xt/94-metrics-allow-empty.t
 xt/95-csv-routes-render-csv-templates.t
+xt/96-worker-action-is-literal.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/daterange-presets.test.js
