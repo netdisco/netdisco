@@ -9,6 +9,11 @@
     returned the web page's markup with no data in it
   * fix CSV downloads silently leaving out any row with a line break in one of
     its values; a line break is now written as a space
+  * the backend matches a job's action name as text when loading its workers,
+    so an action containing pattern characters no longer loads the plugins of
+    other actions
+  * the loadmibsfromoids action accepts only a vendor report name, such as
+    juniper, and refuses anything else before changing the MIB cache
   * scope device and topology writes to the user's port control role
 
 2.109001 - 2026-09-18
