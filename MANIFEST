@@ -724,6 +724,7 @@ xt/95-csv-routes-render-csv-templates.t
 xt/96-worker-action-is-literal.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
+xt/js/admin-button-dispatch.test.js
 xt/js/daterange-presets.test.js
 xt/js/deferred-nodes.test.js
 xt/js/disco-queue.test.js
