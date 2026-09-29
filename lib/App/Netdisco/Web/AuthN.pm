@@ -256,6 +256,16 @@ get '/logout' => sub {
     redirect uri_for(setting('web_home'))->path;
 };
 
+# require_role answers a valid token that lacks the role with a 302 to the
+# denied page. An API client cannot tell that from a broken token or a moved
+# endpoint, and one that follows it gets an answer from a page it never asked
+# for while the request it made did nothing. The token was fine and the role
+# was missing, which is what 403 means, so answer that before the plugin
+# redirects. An invalid token is still 401, from the before hook above.
+hook permission_denied => sub {
+    send_error('insufficient role for this endpoint', 403) if request_is_api;
+};
+
 # user redirected here when require_role does not succeed
 any qr{^/(?:login(?:/denied)?)?} => sub {
     my $api = ((request->accept and request->accept =~ m/(?:json|javascript)/) ? true : false);

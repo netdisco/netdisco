@@ -21,6 +21,9 @@
     juniper, and refuses anything else before changing the MIB cache
   * #1694 fix the job queue's delete-all button
   * #1683 stop storing wireless clients under an SSID called "unknown"
+  * an API token whose user lacks the role an endpoint needs now gets 403 with
+    a JSON error, instead of a redirect to the login page that looked like a
+    broken token and made a DELETE on the queue quietly do nothing
 
 2.109001 - 2026-09-18
 
