@@ -335,8 +335,10 @@ swagger_path {
 }, get '/api/v1/object/device/:ip/nodes' => require_role api => sub {
   my $active = (params->{active_only} and ('true' eq params->{active_only})) ? 1 : 0;
   my @includes = _node_includes(params->{include});
+  # qualified, because prefetching ips or netbios joins tables that have
+  # an active column of their own
   my $rows = try { schema(vars->{'tenant'})->resultset('Node')
-    ->search({ switch => params->{ip}, ($active ? (-bool => 'active') : ()) },
+    ->search({ 'me.switch' => params->{ip}, ($active ? (-bool => 'me.active') : ()) },
       (@includes ? { prefetch => [@includes] } : ())) }
     or send_error('Bad Device', 404);
   return to_json [ map { _node_to_json($_, @includes) } $rows->all ];
@@ -417,8 +419,10 @@ swagger_path {
 }, get '/api/v1/object/vlan/:vlan/nodes' => require_role api => sub {
   my $active = (params->{active_only} and ('true' eq params->{active_only})) ? 1 : 0;
   my @includes = _node_includes(params->{include});
+  # qualified, because prefetching ips or netbios joins tables that have
+  # an active column of their own
   my $rows = try { schema(vars->{'tenant'})->resultset('Node')
-    ->search({ vlan => params->{vlan}, ($active ? (-bool => 'active') : ()) },
+    ->search({ 'me.vlan' => params->{vlan}, ($active ? (-bool => 'me.active') : ()) },
       (@includes ? { prefetch => [@includes] } : ())) }
     or send_error('Bad VLAN', 404);
   return to_json [ map { _node_to_json($_, @includes) } $rows->all ];
