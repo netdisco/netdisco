@@ -722,6 +722,7 @@ xt/92-password-rehash-on-login.t
 xt/94-metrics-allow-empty.t
 xt/95-csv-routes-render-csv-templates.t
 xt/96-worker-action-is-literal.t
+xt/98-api-delete-count.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/admin-button-dispatch.test.js

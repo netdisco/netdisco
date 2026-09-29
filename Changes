@@ -21,6 +21,8 @@
     juniper, and refuses anything else before changing the MIB cache
   * #1694 fix the job queue's delete-all button
   * #1683 stop storing wireless clients under an SSID called "unknown"
+  * the job delete endpoints answer {"deleted":0} when nothing matched,
+    instead of {"deleted":"0E0"}
 
 2.109001 - 2026-09-18
 
