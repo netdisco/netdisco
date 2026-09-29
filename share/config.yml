@@ -744,6 +744,7 @@ expire_jobs: 14
 expire_userlog: 365
 expire_nodeip_freshness: null
 expire_nodeip_orphans: true
+expire_node_wireless: null
 store_wireless_clients: true
 skip_neighbors: []
 neighbor_no_type: []

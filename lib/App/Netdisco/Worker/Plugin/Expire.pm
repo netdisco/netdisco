@@ -79,6 +79,25 @@ register_worker({ phase => 'main' }, sub {
       });
   }
 
+  # node_wireless is otherwise only cleared when a node row for the same mac
+  # is deleted, and a client still seen anywhere keeps its node row fresh, so
+  # every (mac, ssid) pair it ever held - an SSID it roamed away from, or an
+  # "unknown" row from before a gap in the SSID walk was skipped - would stay
+  # for good. Macsuck refreshes time_last on each pair it sees, so age alone
+  # tells a pair that is no longer reported. This deliberately does not pick
+  # "unknown" out by name: on classes with no cd11_ssid at all it is still the
+  # only row a client has, and is refreshed like any other.
+  my $wireless_age = ((defined setting('expire_node_wireless'))
+    ? setting('expire_node_wireless') : setting('expire_nodes'));
+  if ($wireless_age and $wireless_age > 0) {
+      schema('netdisco')->txn_do(sub {
+        schema('netdisco')->resultset('NodeWireless')->search({
+          time_last => \[q/< (LOCALTIMESTAMP - ?::interval)/,
+              ($wireless_age * 86400)],
+        })->delete();
+      });
+  }
+
   # also clean up node_ip entries that have no corresponding node
   if (setting('expire_nodeip_orphans')) {
       schema('netdisco')->resultset('NodeIp')->search({
