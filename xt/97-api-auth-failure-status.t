@@ -17,6 +17,11 @@ no warnings 'once'; # the glob overrides below are single-use by design
 #
 # The browser case is asserted too, because the hook sits in front of the
 # redirect for every request and must only answer for the API.
+#
+# The same file covers a request that sends no credentials at all. The before
+# hook sends those to the handler for '/', which recognises the API by the
+# Accept header alone, so a client without one got the login page as HTML with
+# a 200 and a JSON Content-Type, which it took for success.
 
 use Test::More 0.88;
 use App::Netdisco;
@@ -63,6 +68,17 @@ like $api->content, qr{"error"\s*:\s*"insufficient role},
 my $bad = fresh_request(GET => '/api/v1/queue/status', { headers => [
   'Authorization' => 'badtoken', 'Accept' => 'application/json' ] });
 is $bad->status, 401, 'an invalid token is still unauthorized, not forbidden';
+like $bad->content, qr/"error"\s*:\s*"invalid or expired token"/,
+  'and says why, where it used to send an empty body';
+
+# no credentials at all, with and without an Accept header
+foreach my $accept ([], ['Accept' => 'application/json']) {
+  my $what = (@$accept ? 'with' : 'without') . ' an Accept header';
+  my $none = fresh_request(GET => '/api/v1/queue/status', { headers => $accept });
+  is $none->status, 401, "no credentials $what is unauthorized";
+  my $body = $none->content; $body = do { local $/; <$body> } if ref $body;
+  like $body, qr/\A\s*\{.*"error"\s*:\s*"not authorized"/s, "and says so in JSON $what";
+}
 
 # a browser that lacks the role still goes to the denied page as before
 # (an existing admin-only route; one defined here would lose to Web.pm's
