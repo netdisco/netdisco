@@ -1,5 +1,10 @@
 2.109002 - tbd
 
+  [ENHANCEMENTS]
+
+  * #1680 include dynamically authenticated VLANs in MAC-Suck VLAN selection
+    (needs an SNMP::Info release with snmp-info#580)
+
   [BUG FIXES]
 
   * fix metrics_allow logic: an empty list now means any, so metrics_path alone
