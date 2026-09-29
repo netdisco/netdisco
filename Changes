@@ -1,5 +1,10 @@
 2.109002 - tbd
 
+  [ENHANCEMENTS]
+
+  * #1680 include dynamically authenticated VLANs in MAC-Suck VLAN selection
+    (needs an SNMP::Info release with snmp-info#580)
+
   [BUG FIXES]
 
   * fix metrics_allow logic: an empty list now means any, so metrics_path alone
@@ -14,7 +19,10 @@
     other actions
   * the loadmibsfromoids action accepts only a vendor report name, such as
     juniper, and refuses anything else before changing the MIB cache
-  * scope device and topology writes to the user's port control role
+  * the Job Queue's delete-all button did nothing since 2.109000; it now
+    deletes the queue again
+  * #1683 stop storing wireless clients under an SSID called "unknown"
+  * #1691 scope device and topology writes to the user's port control role
 
 2.109001 - 2026-09-18
 
