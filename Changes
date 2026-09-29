@@ -21,6 +21,7 @@
     juniper, and refuses anything else before changing the MIB cache
   * the Job Queue's delete-all button did nothing since 2.109000; it now
     deletes the queue again
+  * #1683 stop storing wireless clients under an SSID called "unknown"
 
 2.109001 - 2026-09-18
 
