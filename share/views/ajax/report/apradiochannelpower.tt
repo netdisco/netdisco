@@ -11,7 +11,7 @@
     {"data":"port","type":"portsort","render":{"name":"devicePortsLink","q":"ip","f":"data"}},
     {"data":"port_name","render":"escape"},
     {"data":"descr","render":"escape"},
-    {"data":"channel","className":"nd_center-cell","render":"raw"},
+    {"data":"channel","className":"nd_center-cell","render":"escape"},
     {"data":"power","className":"nd_center-cell","render":"powerPair"}
   ],
   "drawCallback": {"name":"groupDeviceRows","colspan":5,"nameKey":"device_name","toggleOrder":true}

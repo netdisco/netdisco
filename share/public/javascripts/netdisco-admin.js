@@ -158,11 +158,15 @@ ndPages.admin = {
         task = '';
       }
 
+      // the job queue's delete-all link sits in the tab bar, outside any
+      // row, and has no fields to send. Returning on a missing row left it
+      // swallowing the click without ever posting.
       var row = button.closest('tr');
-      if (!row) return;
 
       // collected before the pane is wiped below, which detaches this row
-      var body = ndRequest.fields(row, 'input[data-form="' + mode + '"],select[data-form="' + mode + '"]');
+      var body = row
+        ? ndRequest.fields(row, 'input[data-form="' + mode + '"],select[data-form="' + mode + '"]')
+        : new URLSearchParams();
 
       if (mode == 'add' || mode == 'delete') {
         var targetEl = document.querySelector(target);

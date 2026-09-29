@@ -4,6 +4,7 @@ use Dancer ':syntax';
 use Dancer::Plugin::DBIC 'schema';
 use Dancer::Plugin::Auth::Extensible;
 
+use App::Netdisco::Util::Token 'random_token';
 use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
@@ -33,7 +34,7 @@ register_worker({ phase => 'main' }, sub {
     token_from     => time,
     token_no_expire => ($flag eq 'permanent' ? \"true" : \"false"),
     ($provider->validate_api_token($user->token)
-      ? () : (token => \'md5(random()::text)')),
+      ? () : (token => random_token())),
   );
 
   $user->update(\%updates)->discard_changes();

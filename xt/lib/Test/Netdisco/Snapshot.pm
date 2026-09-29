@@ -14,8 +14,12 @@ our @EXPORT_OK = qw/render_template all_templates snapshot_path stash_for
 use constant VIEW_ROOT     => 'share/views';
 use constant SNAPSHOT_ROOT => 'xt/snapshots';
 
-# Mirrors share/config.yml:1005-1015. If that block changes, change this.
+# Mirrors share/config.yml:1026-1044. If that block changes, change this.
+# Production renders a CSV response with AUTO_FILTER none (Web.pm's
+# before_template hook), and every CSV route renders a *_csv.tt template
+# (xt/95), so the suffix is what selects it here.
 sub _engine {
+  my $view = shift || '';
   return Template::AutoFilter->new({
     INCLUDE_PATH => [ VIEW_ROOT ],
     START_TAG    => quotemeta('[%'),
@@ -23,10 +27,12 @@ sub _engine {
     ANYCASE      => 1,
     ABSOLUTE     => 1,
     PRE_CHOMP    => 1,
-    AUTO_FILTER  => 'html_entity',
+    AUTO_FILTER  => ($view =~ m/_csv\.tt\z/ ? 'none' : 'html_entity'),
     ENCODING     => 'utf8',
     # mirrors share/config.yml: the SNMP tree includes itself per open level
     RECURSION    => 1,
+    # mirrors share/config.yml's PLUGINS mapping
+    PLUGINS      => { csv => 'App::Netdisco::Template::Plugin::CSV' },
   });
 }
 
@@ -464,7 +470,7 @@ must not pass one, or they would depend on their caller.
 sub render_template {
   my $view = shift;
   my $stash = shift;
-  my $engine = _engine();
+  my $engine = _engine($view);
   my $out = '';
   # Templates read empty values from the stash; that is expected here and the
   # resulting numeric warnings are noise, not signal.
@@ -472,7 +478,7 @@ sub render_template {
   # Mirrors lib/App/Netdisco/Web.pm:404, which the application sets before
   # every render so settings._foo keys resolve instead of being hidden by
   # Template::Stash's leading-underscore filter. This must run after the
-  # _engine() call above: that call is what first loads Template::Stash and
+  # _engine($view) call above: that call is what first loads Template::Stash and
   # assigns its qr/^[_.]/ default, so setting this beforehand would only be
   # overwritten by that load. Localized to this one process() call so the
   # package global cannot leak into another subtest in this process.

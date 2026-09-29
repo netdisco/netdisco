@@ -416,3 +416,16 @@ jobs:
 
       - name: A tip with no trigger left is removed
         run: node --test xt/js/stranded-popovers.test.js
+
+  admin-button-dispatch:
+    name: an admin button outside a table row
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: The job queue's delete-all link posts
+        run: node --test xt/js/admin-button-dispatch.test.js

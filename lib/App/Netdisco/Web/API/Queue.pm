@@ -3,6 +3,7 @@ package App::Netdisco::Web::API::Queue;
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Swagger;
+use App::Netdisco::Util::JobAction 'action_is_refused';
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::JobQueue 'jq_insert';
@@ -221,6 +222,8 @@ swagger_path {
         # TODO make this aware of port control roles per device/port
         if ($job->{action} =~ m/^cf_/ and not user_has_role('port_control'))
         or ($job->{action} !~ m/^cf_/ and not user_has_role('api_admin'));
+      send_error('Action not permitted', 403)
+        if action_is_refused($job->{action});
 
       if ($job->{device} and not NetAddr::IP::Lite->new($job->{device})) {
           my $ip = ipv4_from_hostname($job->{device})

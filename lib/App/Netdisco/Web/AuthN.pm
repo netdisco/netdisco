@@ -6,10 +6,19 @@ use Dancer::Plugin::Auth::Extensible;
 use Dancer::Plugin::Swagger;
 
 use App::Netdisco; # a safe noop but needed for standalone testing
+use App::Netdisco::Util::Token 'random_token';
 use App::Netdisco::Util::Web 'request_is_api';
 use MIME::Base64;
 use Try::Tiny;
 use URI::Based;
+
+# path_query drops a scheme and host, but leaves a leading "//" intact, and a
+# browser reads that as a host rather than a path.
+sub safe_return_url {
+    my $back = (scalar URI::Based->new(shift)->path_query) || '/';
+    $back =~ s{^/+}{/};
+    return $back;
+}
 
 # ensure that regardless of where the user is redirected, we have a link
 # back to the page they requested. The login page is excluded along with the
@@ -169,7 +178,7 @@ post '/login' => sub {
               token_no_expire => ($want_permanent ? \"true" : \"false"),
               ($token_acl ? (token_acl => $token_acl) : ()),
               ($provider->validate_api_token($user->token)
-                ? () : (token => \'md5(random()::text)')),
+                ? () : (token => random_token())),
             })->discard_changes();
 
             return to_json {
@@ -180,7 +189,7 @@ post '/login' => sub {
             };
         }
 
-        redirect ((scalar URI::Based->new(param('return_url'))->path_query) || '/');
+        redirect safe_return_url(param('return_url'));
     }
     else {
         # invalidate session cookie
