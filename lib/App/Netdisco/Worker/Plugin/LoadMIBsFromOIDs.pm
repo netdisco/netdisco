@@ -19,6 +19,10 @@ register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
 
   my $vendor = $job->extra;
+  return Status->error(sprintf
+    'loadmibsfromoids: "%s" is not a report name; pass the part of an'
+    . ' EXTRAS/reports file name before "_oids", such as juniper', $vendor)
+    if defined $vendor and length $vendor and $vendor !~ m/\A[\w.-]+\z/;
   debug sprintf 'loadmibsfromoids - loading netdisco-mibs object cache%s',
     ($vendor ? (sprintf ' for vendor "%s"', $vendor) : '');
 

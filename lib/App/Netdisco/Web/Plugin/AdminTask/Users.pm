@@ -8,6 +8,7 @@ use Dancer::Plugin::Passphrase;
 
 use App::Netdisco::Web::Plugin;
 use App::Netdisco::Util::Port 'sync_portctl_roles';
+use App::Netdisco::Util::Token 'random_token';
 use List::MoreUtils 'uniq';
 use Digest::MD5 ();
 
@@ -145,7 +146,7 @@ ajax '/ajax/control/admin/users/token' => require_role setting('defanged_admin')
 
   my $token;
   schema('netdisco')->txn_do(sub {
-    $user->update({ token => \'md5(random()::text)', token_from => time });
+    $user->update({ token => random_token(), token_from => time });
     $user->discard_changes();
     $token = $user->token;
   });

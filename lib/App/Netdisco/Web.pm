@@ -213,6 +213,13 @@ foreach my $tag (keys %{ setting('_admin_tasks') }) {
 push @{ config->{engines}->{netdisco_template_toolkit}->{INCLUDE_PATH} },
      setting('views');
 
+# Confirms the CSV plugin mapping in share/config.yml is still in force.
+# Warns rather than dies: a misconfiguration should not become an outage.
+warning 'the CSV template plugin is not App::Netdisco::Template::Plugin::CSV.'
+      . ' CSV downloads may no longer be neutralized against formula injection'
+  unless ((config->{engines}->{netdisco_template_toolkit}->{PLUGINS} || {})
+            ->{csv} || '') eq 'App::Netdisco::Template::Plugin::CSV';
+
 # sort the reports which have been loaded, by their label
 foreach my $cat (@{ setting('_report_order') }) {
     setting('_reports_menu')->{ $cat } ||= [];
