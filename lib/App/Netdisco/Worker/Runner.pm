@@ -30,6 +30,7 @@ sub run {
   die 'bad job to run()'
     unless ref $job eq 'App::Netdisco::Backend::Job';
 
+  $job->apply_config_overrides;
   $self->job($job);
   $job->device( get_device($job->device) )
     unless scalar grep {$job->action eq $_} @{ setting('job_targets_prefix') };
