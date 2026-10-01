@@ -168,7 +168,9 @@ swagger_path {
     ( param('backend') ? ( backend   => param('backend') ) : () ),
   })->delete;
 
-  return to_json { deleted => ($gone || 0)};
+  # DBI reports "no rows" as the true string "0E0", which slips past the ||
+  # and reached clients as {"deleted":"0E0"}; numify so it is always a number
+  return to_json { deleted => 0 + ($gone || 0) };
 };
 
 swagger_path {
