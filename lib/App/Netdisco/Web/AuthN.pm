@@ -61,6 +61,16 @@ sub _get_delegated_authn_user {
   return $provider->get_user_details($username);
 }
 
+# send_error from inside a before hook sets the status, but its body never
+# reaches the client, so an API client refused there got an empty 401 and no
+# reason. halt carries the body through.
+sub _api_unauthorized {
+    my $error = shift;
+    status 401;
+    content_type 'application/json';
+    return halt(to_json { error => $error, return_url => param('return_url') });
+}
+
 # Dancer will create a session if it sees its own cookie. For the API and also
 # various auto login options we need to bootstrap the session instead. If no
 # auth data passed, then the hook simply returns, no session is set, and the
@@ -100,7 +110,7 @@ hook 'before' => sub {
 
         my $token = request->header('Authorization');
         my $user = $provider->validate_api_token($token)
-          or return send_error('{"error":"invalid or expired token"}', 401);
+          or return _api_unauthorized('invalid or expired token');
 
         session(logged_in_user => $user->username);
         session(logged_in_user_realm => 'users');
@@ -110,6 +120,12 @@ hook 'before' => sub {
         session(logged_in_user_realm => 'users');
     }
     else {
+        # An API request with no credentials is answered here. The handler for
+        # '/' tells the API apart by the Accept header alone, so a client that
+        # sent none got the login page as HTML, with a 200 and a JSON
+        # Content-Type, and took that for success.
+        return _api_unauthorized('not authorized') if request_is_api;
+
         # user has no AuthN - force to handler for '/'
         request->path_info('/');
     }
@@ -254,6 +270,16 @@ get '/logout' => sub {
     }
 
     redirect uri_for(setting('web_home'))->path;
+};
+
+# require_role answers a valid token that lacks the role with a 302 to the
+# denied page. An API client cannot tell that from a broken token or a moved
+# endpoint, and one that follows it gets an answer from a page it never asked
+# for while the request it made did nothing. The token was fine and the role
+# was missing, which is what 403 means, so answer that before the plugin
+# redirects. An invalid token is still 401, from the before hook above.
+hook permission_denied => sub {
+    send_error('insufficient role for this endpoint', 403) if request_is_api;
 };
 
 # user redirected here when require_role does not succeed
