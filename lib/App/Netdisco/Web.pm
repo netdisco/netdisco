@@ -11,6 +11,7 @@ use Dancer::Error;
 use Dancer::Continuation::Route::ErrorSent;
 
 use URI ();
+use HTTP::Status ();
 use Socket6 (); # to ensure dependency is met
 use HTML::Entities (); # to ensure dependency is met
 use URI::QueryParam (); # part of URI, to add helper methods
@@ -262,6 +263,21 @@ Dancer::Session::Cookie::init(session);
 
 # workaround for https://github.com/PerlDancer/Dancer/issues/935
 hook after_error_render => sub { setting('layout' => 'main') };
+
+# A route that dies is rendered by Dancer::Error as an HTML page, whatever the
+# client asked for, so an API client that sent Accept: application/json got
+# markup to parse. send_error is already JSON for the API (see above); this is
+# the path that does not go through it. The body names the status only: the
+# exception text stays in the log, as show_errors keeps it out of the page.
+hook after_error_render => sub {
+    my $response = shift;
+    return unless request_is_api;
+    $response->content_type('application/json');
+    $response->content(to_json {
+      error => lc HTTP::Status::status_message($response->status || 500),
+      return_url => param('return_url'),
+    });
+};
 
 # build list of port detail columns
 {
@@ -718,6 +734,10 @@ any '/t/*/**' => sub {
 # all. Dancer caches the route it matched, keyed on the path alone, so letting
 # this one answer would make that path 404 for every later XHR.
 any qr{^(?!/ajax/).*} => sub {
+    # an unknown /api path, or a known one with the wrong method, would get
+    # the HTML not-found page, even with Accept: application/json
+    send_error('not found', 404) if request_is_api;
+
     var('notfound' => true);
     status 'not_found';
     template 'index', {}, { layout => 'main' };
