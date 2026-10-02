@@ -3,6 +3,7 @@
   [BUG FIXES]
 
   * #1691 scope device and topology writes to the user's port control role
+  * #1695 expire node_wireless on its own age
 
 2.109002 - 2026-10-01
 
