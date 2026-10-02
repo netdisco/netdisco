@@ -11,6 +11,53 @@ use URI::Escape 'uri_unescape';
 
 sub _port_param { my $s = uri_unescape(shift // ''); $s =~ s/^\s+|\s+$//g; $s }
 
+# Node relations a caller may pull in alongside the node rows themselves.
+# The value says whether the relation yields a list. "oui" is deliberately
+# absent: Node has both a column and a relation of that name, and the
+# accessor collision is exactly what the TO_JSON override in
+# App::Netdisco::DB::Result guards against.
+my %NODE_INCLUDES = (
+  wireless     => 1, # node_wireless - SSID, signal, rates
+  ips          => 1, # node_ip
+  netbios      => 0, # node_nbt
+  manufacturer => 0, # vendor looked up from the OUI
+);
+
+sub _node_includes {
+  my $val = shift;
+  return () unless defined $val and length $val;
+  my @asked = grep { length } map { s/^\s+|\s+$//gr } split /,/, $val;
+  if (my @bad = grep { ! exists $NODE_INCLUDES{$_} } @asked) {
+    send_error((sprintf 'Bad include "%s". Valid: %s',
+      (join ',', @bad), (join ',', sort keys %NODE_INCLUDES)), 400);
+  }
+  return @asked;
+}
+
+# TO_JSON returns own columns only, so fold in the requested relations here
+sub _node_to_json {
+  my ($row, @includes) = @_;
+  my $data = $row->TO_JSON;
+  foreach my $rel (@includes) {
+    if ($NODE_INCLUDES{$rel}) {
+      $data->{$rel} = [ map { $_->TO_JSON } $row->$rel->all ];
+    }
+    else {
+      my $one = $row->$rel;
+      $data->{$rel} = $one ? $one->TO_JSON : undef;
+    }
+  }
+  return $data;
+}
+
+# query params always arrive as strings, so accept the usual spellings of a
+# boolean and fall back to the default documented in the swagger_path
+sub _bool_param {
+  my ($val, $default) = @_;
+  return $default unless defined $val and length $val;
+  return ($val =~ m/^(?:1|y|yes|t|true|on)$/i) ? 1 : 0;
+}
+
 swagger_path {
   tags => ['Objects'],
   path => (setting('api_base') || '').'/object/device/{ip}',
@@ -187,7 +234,9 @@ swagger_path {
     ( param('backend') ? ( backend   => param('backend') ) : () ),
   })->delete;
 
-  return to_json { deleted => ($gone || 0)};
+  # DBI reports "no rows" as the true string "0E0", which slips past the ||
+  # and reached clients as {"deleted":"0E0"}; numify so it is always a number
+  return to_json { deleted => 0 + ($gone || 0) };
 };
 
 foreach my $rel (qw/nodes active_nodes nodes_with_age active_nodes_with_age port_vlans vlans logs ssid/) {
@@ -286,14 +335,23 @@ swagger_path {
       default => 'true',
       in => 'query',
     },
+    include => {
+      description => 'Comma-separated list of related rows to embed in each Node: wireless (node_wireless - SSID, signal, rates), ips (node_ip), netbios (node_nbt), manufacturer (vendor from the OUI). Omitted by default.',
+      type => 'string',
+      in => 'query',
+    },
   ],
   responses => { default => {} },
 }, get '/api/v1/object/device/:ip/nodes' => require_role api => sub {
-  my $active = (params->{active_only} and ('true' eq params->{active_only})) ? 1 : 0;
+  my $active = _bool_param(params->{active_only}, 1);
+  my @includes = _node_includes(params->{include});
+  # qualified, because prefetching ips or netbios joins tables that have
+  # an active column of their own
   my $rows = try { schema(vars->{'tenant'})->resultset('Node')
-    ->search({ switch => params->{ip}, ($active ? (-bool => 'active') : ()) }) }
+    ->search({ 'me.switch' => params->{ip}, ($active ? (-bool => 'me.active') : ()) },
+      (@includes ? { prefetch => [@includes] } : ())) }
     or send_error('Bad Device', 404);
-  return to_json [ map {$_->TO_JSON} $rows->all ];
+  return to_json [ map { _node_to_json($_, @includes) } $rows->all ];
 };
 
 swagger_path {
@@ -361,14 +419,23 @@ swagger_path {
       default => 'true',
       in => 'query',
     },
+    include => {
+      description => 'Comma-separated list of related rows to embed in each Node: wireless (node_wireless - SSID, signal, rates), ips (node_ip), netbios (node_nbt), manufacturer (vendor from the OUI). Omitted by default.',
+      type => 'string',
+      in => 'query',
+    },
   ],
   responses => { default => {} },
 }, get '/api/v1/object/vlan/:vlan/nodes' => require_role api => sub {
-  my $active = (params->{active_only} and ('true' eq params->{active_only})) ? 1 : 0;
+  my $active = _bool_param(params->{active_only}, 1);
+  my @includes = _node_includes(params->{include});
+  # qualified, because prefetching ips or netbios joins tables that have
+  # an active column of their own
   my $rows = try { schema(vars->{'tenant'})->resultset('Node')
-    ->search({ vlan => params->{vlan}, ($active ? (-bool => 'active') : ()) }) }
+    ->search({ 'me.vlan' => params->{vlan}, ($active ? (-bool => 'me.active') : ()) },
+      (@includes ? { prefetch => [@includes] } : ())) }
     or send_error('Bad VLAN', 404);
-  return to_json [ map {$_->TO_JSON} $rows->all ];
+  return to_json [ map { _node_to_json($_, @includes) } $rows->all ];
 };
 
 swagger_path {

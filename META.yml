@@ -30,7 +30,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.109001'
+    version: '2.109002'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -284,6 +284,8 @@ provides:
     file: lib/App/Netdisco/SSHCollector/Platform/PaloAlto.pm
   App::Netdisco::SSHCollector::Platform::VOSS:
     file: lib/App/Netdisco/SSHCollector/Platform/VOSS.pm
+  App::Netdisco::Template::Plugin::CSV:
+    file: lib/App/Netdisco/Template/Plugin/CSV.pm
   App::Netdisco::Transport::Python:
     file: lib/App/Netdisco/Transport/Python.pm
   App::Netdisco::Transport::SNMP:
@@ -306,6 +308,8 @@ provides:
     file: lib/App/Netdisco/Util/FastResolver.pm
   App::Netdisco::Util::Graph:
     file: lib/App/Netdisco/Util/Graph.pm
+  App::Netdisco::Util::JobAction:
+    file: lib/App/Netdisco/Util/JobAction.pm
   App::Netdisco::Util::MCE:
     file: lib/App/Netdisco/Util/MCE.pm
   App::Netdisco::Util::Nbtstat:
@@ -334,6 +338,8 @@ provides:
     file: lib/App/Netdisco/Util/Snapshot.pm
   App::Netdisco::Util::Statistics:
     file: lib/App/Netdisco/Util/Statistics.pm
+  App::Netdisco::Util::Token:
+    file: lib/App/Netdisco/Util/Token.pm
   App::Netdisco::Util::Web:
     file: lib/App/Netdisco/Util/Web.pm
   App::Netdisco::Util::Worker:
@@ -648,6 +654,7 @@ requires:
   Authen::TacacsPlus: '0'
   CGI::Expand: '2.05'
   Command::Runner: '0'
+  Crypt::URandom: '0.36'
   DBD::Pg: '0'
   DBIx::Class: '0.082844'
   DBIx::Class::Helpers: '2.037000'
@@ -743,5 +750,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.109001'
+version: '2.109002'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.020'

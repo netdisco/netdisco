@@ -52,12 +52,6 @@ around BUILDARGS => sub {
       $args->{only_namespace} = $2;
   }
 
-  $args->{port} = parse_params_to_config($args->{port})
-    if defined $args->{port};
-  $args->{subaction} = parse_params_to_config($args->{subaction})
-    if defined $args->{subaction}
-       and ($args->{action} and $args->{action} !~ m/^(?:hook|cf_)/);
-
   $args->{subaction} = q{}
     if ! defined $args->{subaction};
 
@@ -66,6 +60,29 @@ around BUILDARGS => sub {
 };
 
 =head1 METHODS
+
+=head2 apply_config_overrides
+
+Applies any configuration overrides carried in C<port> or C<subaction> to
+this process's configuration, leaving the residual value in their place.
+
+=cut
+
+# Not done in BUILDARGS: a queued job is built in the backend manager and run
+# in a poller, a separate process, so overrides applied while building it
+# changed only the manager's configuration, and never reached the poller.
+sub apply_config_overrides {
+  my $job = shift;
+
+  $job->port( parse_params_to_config($job->port) )
+    if defined $job->port;
+  $job->subaction( parse_params_to_config($job->subaction) )
+    if defined $job->subaction
+       and ($job->action and $job->action !~ m/^(?:hook|cf_)/);
+
+  $job->subaction(q{})
+    if ! defined $job->subaction;
+}
 
 =head2 display_name
 

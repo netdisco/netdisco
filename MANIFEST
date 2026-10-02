@@ -376,9 +376,9 @@ share/public/javascripts/netdisco-deferred-nodes.js
 share/public/javascripts/netdisco-netmap.js
 share/public/javascripts/netdisco-portcontrol.js
 share/public/javascripts/netdisco-request.js
+share/public/javascripts/netdisco-swagger.js
 share/public/javascripts/netdisco-tables.js
 share/public/javascripts/netdisco-toast.js
-share/public/javascripts/netdisco-swagger.js
 share/public/javascripts/netdisco-typeahead.js
 share/public/javascripts/netdisco.js
 share/public/javascripts/portsort.js
@@ -628,7 +628,6 @@ share/views/password.tt
 share/views/plugin.tt
 share/views/report.tt
 share/views/search.tt
-share/views/swagger-ui.tt
 share/views/sidebar/_daterange.tt
 share/views/sidebar/admintask/acleditor.tt
 share/views/sidebar/admintask/jobqueue.tt
@@ -649,6 +648,7 @@ share/views/sidebar/report/subnets.tt
 share/views/sidebar/search/device.tt
 share/views/sidebar/search/node.tt
 share/views/sidebar/search/port.tt
+share/views/swagger-ui.tt
 xt/00-compile.t
 xt/01-local-pod.t
 xt/10-sort_port.t
@@ -722,7 +722,11 @@ xt/92-password-rehash-on-login.t
 xt/94-metrics-allow-empty.t
 xt/95-csv-routes-render-csv-templates.t
 xt/96-worker-action-is-literal.t
+xt/97-api-auth-failure-status.t
+xt/98-api-delete-count.t
+xt/99-api-json-errors.t
 xt/100-expire-node-wireless.t
+xt/101-job-overrides-in-poller.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/admin-button-dispatch.test.js
