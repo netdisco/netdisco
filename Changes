@@ -1,3 +1,9 @@
+2.109003 - tbd
+
+  [BUG FIXES]
+
+  * #1691 scope device and topology writes to the user's port control role
+
 2.109002 - 2026-10-01
 
   [ENHANCEMENTS]
@@ -27,7 +33,6 @@
   * #1697 API: return a number from the job delete endpoints, not "0E0"
   * #1698 API: answer unknown paths and failing routes in JSON
   * #1681 API: nodes endpoints ignore their documented active_only default
-  * #1691 scope device and topology writes to the user's port control role
 
 2.109001 - 2026-09-18
 
