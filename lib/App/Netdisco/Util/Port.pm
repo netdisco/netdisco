@@ -12,6 +12,7 @@ our @EXPORT = ();
 our @EXPORT_OK = qw/
   sync_portctl_roles
   port_acl_service port_acl_pvid port_acl_name
+  port_acl_check port_acl_by_role_check device_acl_by_role_check
   get_port get_iid get_powerid
   is_vlan_subinterface port_has_phone port_has_wap
   to_speed
@@ -204,6 +205,49 @@ sub port_acl_pvid {
 
   return false unless setting('portctl_native_vlan');
   return port_acl_service(@_);
+}
+
+=head2 device_acl_by_role_check( $device, $user? )
+
+Permission check on C<portctl_by_role> for a change which belongs to the
+device rather than to one of its ports, such as its location or contact.
+
+A role ACL naming devices and ports is matched on the device alone, because
+there is no port to match. This is the same decision the device details view
+makes when it chooses whether to render an editable cell.
+
+Returns false if the request should be denied, true if OK to proceed.
+
+=cut
+
+sub device_acl_by_role_check {
+  my ($device, $user) = @_;
+
+  # skip user acls for netdisco-do --force jobs, as port_acl_by_role_check does
+  return true if $ENV{ND2_DO_FORCE};
+  return false unless $device and $user;
+
+  $user = ref $user ? $user :
+    schema('netdisco')->resultset('User')
+                      ->find({ username => $user });
+  return false unless $user;
+  return false unless $user->port_control;
+  return true if $user->admin;
+  return true unless $user->portctl_role;
+
+  my $acl = setting('portctl_by_role')->{ $user->portctl_role };
+  if ($acl and (ref $acl eq q{} or ref $acl eq ref [])) {
+      return acl_matches($device, $acl) ? true : false;
+  }
+  elsif ($acl and ref $acl eq ref {}) {
+      foreach my $key (grep { defined } keys %$acl) {
+          return true if acl_matches($device, $key);
+      }
+      return false;
+  }
+
+  # assigned an unknown role
+  return false;
 }
 
 =head2 port_acl_name( $port, $device?, $user? )
