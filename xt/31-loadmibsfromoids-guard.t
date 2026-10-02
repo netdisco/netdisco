@@ -218,4 +218,28 @@ subtest 'loadmibs__a_later_block_dies__still_reports_the_refusal' => sub {
       or diag join "\n", map { $_->log // '' } @{ $job->_statuslist };
 };
 
+subtest 'loadmibs__a_vendor_that_is_not_a_report_name__is_refused_before_any_delete' => sub {
+  my $home = mibhome_with_valid_reports();
+  open my $fh, '>', catfile("$home", 'EXTRAS', 'escape_oids') or die $!;
+  print {$fh} ".1.3.6.1.4.1.9999.1,ESCAPE-MIB::outside,OCTET STRING,"
+            . "read-only,,current,,outside the reports directory\n";
+  close $fh;
+
+  my $job = run_loadmibs($home, '../escape');
+  is $job->status, 'error', 'the job is refused';
+  like $job->log, qr/before "_oids"/, 'the message says what to pass instead';
+  is_deeply [ grep { m/^(?:delete|populate) / } @STATEMENTS ], [],
+    'nothing is deleted or loaded';
+};
+
+subtest 'loadmibs__a_vendor_with_a_hyphen__is_loaded' => sub {
+  my $home = mibhome_with_valid_reports();
+  my $job = run_loadmibs($home, 'net-snmp');
+  is $job->status, 'done', 'a real report name with a hyphen is accepted';
+};
+
+subtest 'loadmibs__no_vendor__loads_every_report_as_before' => sub {
+  my $job = run_loadmibs(mibhome_with_valid_reports());
+  is $job->status, 'done', 'the all-vendors path is unchanged';
+};
 done_testing;

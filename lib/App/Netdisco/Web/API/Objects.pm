@@ -50,6 +50,14 @@ sub _node_to_json {
   return $data;
 }
 
+# query params always arrive as strings, so accept the usual spellings of a
+# boolean and fall back to the default documented in the swagger_path
+sub _bool_param {
+  my ($val, $default) = @_;
+  return $default unless defined $val and length $val;
+  return ($val =~ m/^(?:1|y|yes|t|true|on)$/i) ? 1 : 0;
+}
+
 swagger_path {
   tags => ['Objects'],
   path => (setting('api_base') || '').'/object/device/{ip}',
@@ -226,7 +234,9 @@ swagger_path {
     ( param('backend') ? ( backend   => param('backend') ) : () ),
   })->delete;
 
-  return to_json { deleted => ($gone || 0)};
+  # DBI reports "no rows" as the true string "0E0", which slips past the ||
+  # and reached clients as {"deleted":"0E0"}; numify so it is always a number
+  return to_json { deleted => 0 + ($gone || 0) };
 };
 
 foreach my $rel (qw/nodes active_nodes nodes_with_age active_nodes_with_age port_vlans vlans logs ssid/) {
@@ -333,7 +343,7 @@ swagger_path {
   ],
   responses => { default => {} },
 }, get '/api/v1/object/device/:ip/nodes' => require_role api => sub {
-  my $active = (params->{active_only} and ('true' eq params->{active_only})) ? 1 : 0;
+  my $active = _bool_param(params->{active_only}, 1);
   my @includes = _node_includes(params->{include});
   # qualified, because prefetching ips or netbios joins tables that have
   # an active column of their own
@@ -417,7 +427,7 @@ swagger_path {
   ],
   responses => { default => {} },
 }, get '/api/v1/object/vlan/:vlan/nodes' => require_role api => sub {
-  my $active = (params->{active_only} and ('true' eq params->{active_only})) ? 1 : 0;
+  my $active = _bool_param(params->{active_only}, 1);
   my @includes = _node_includes(params->{include});
   # qualified, because prefetching ips or netbios joins tables that have
   # an active column of their own

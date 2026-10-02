@@ -6,6 +6,18 @@
 use strict;
 use warnings;
 
+use FindBin;
+use Path::Class 'dir';
+
+BEGIN {
+    # xt/bin is two levels below the distribution root, unlike the xt/*.t
+    # tests that use this same idiom one level up, so this needs parent->parent
+    # rather than parent to land on lib/. Without it the CSV plugin loaded by
+    # Test::Netdisco::Snapshot's PLUGINS mapping is unfindable, because this
+    # script (unlike ./Build test) never puts blib/lib on @INC.
+    unshift @INC, dir($FindBin::RealBin)->parent->parent->subdir('lib')->stringify;
+}
+
 use File::Basename 'dirname';
 use File::Path 'make_path';
 use lib 'xt/lib';

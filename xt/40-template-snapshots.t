@@ -74,4 +74,36 @@ subtest 'renderedOutput__every_template__matches_its_committed_snapshot' => sub 
             . "\nreview the diff, then run: xt/bin/regenerate-snapshots";
 };
 
+subtest 'renderTemplate__a_csv_template__is_unfiltered_as_production_sends_it' => sub {
+  my ($out, $error) = render_template('ajax/report/vlaninventory_csv.tt');
+  is $error, undef, 'the CSV template renders';
+  like $out, qr/^"VLAN ID","VLAN Name"/, 'CSV quotes are not HTML-escaped';
+};
+
+subtest 'snapshotEngine__html_and_csv_views__get_different_filters' => sub {
+  my $probe = \'[% value %]';
+  my %out;
+  foreach my $view (qw{ajax/report/x.tt ajax/report/x_csv.tt}) {
+    my $rendered = '';
+    Test::Netdisco::Snapshot::_engine($view)
+      ->process($probe, { value => '<b>"q"' }, \$rendered)
+      or die Test::Netdisco::Snapshot::_engine($view)->error;
+    $out{$view} = $rendered;
+  }
+  is $out{'ajax/report/x.tt'}, '&lt;b&gt;&quot;q&quot;',
+    'an HTML view keeps the html_entity filter';
+  is $out{'ajax/report/x_csv.tt'}, '<b>"q"',
+    'a CSV view is unfiltered, as production sends it';
+};
+
+subtest 'committedSnapshots__csv_templates__carry_no_html_entities' => sub {
+  plan skip_all => 'xt/snapshots is not shipped in the distribution'
+    unless -d 'xt/snapshots';
+  my @escaped = grep {
+    open my $fh, '<', snapshot_path($_) or die "$_: $!";
+    local $/; my $body = <$fh>; $body =~ m/&quot;|&amp;|&lt;|&gt;/;
+  } grep { m/_csv\.tt\z/ } all_templates();
+  is_deeply \@escaped, [], 'no CSV snapshot records HTML escaping';
+};
+
 done_testing;

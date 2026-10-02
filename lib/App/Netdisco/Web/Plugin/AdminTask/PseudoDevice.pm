@@ -15,6 +15,14 @@ register_admin_task({
   label => 'Pseudo Devices',
 });
 
+# the count becomes a range which is materialized into a list, so it is bounded
+# well above any real chassis rather than left to the request
+sub ports_count_ok {
+    my $count = shift;
+    return 0 unless defined $count and $count =~ m/^[[:digit:]]+$/;
+    return ($count > 0 and $count <= 9999) ? 1 : 0;
+}
+
 sub _sanity_ok {
     return 0 unless param('name')
       and param('name') =~ m/^[[:print:]]+$/
@@ -23,8 +31,7 @@ sub _sanity_ok {
     my $ip = NetAddr::IP::Lite->new(param('ip'));
     return 0 unless ($ip and $ip->addr ne '0.0.0.0');
 
-    return 0 unless param('ports')
-      and param('ports') =~ m/^[[:digit:]]+$/;
+    return 0 unless ports_count_ok( param('ports') );
 
     return 1;
 }

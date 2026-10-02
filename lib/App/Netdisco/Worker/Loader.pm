@@ -31,7 +31,7 @@ sub load_workers {
       if $plugin !~ m/^\+/;
     $plugin =~ s/^\+//;
 
-    next unless $plugin =~ m/::Plugin::(?:${action}|Internal)(?:::|$)/i;
+    next unless $plugin =~ m/::Plugin::(?:\Q${action}\E|Internal)(?:::|$)/i;
     $ENV{ND2_LOG_PLUGINS} && debug "loading worker plugin $plugin";
     Module::Load::load $plugin;
   }
