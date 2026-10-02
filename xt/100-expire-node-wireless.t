@@ -36,13 +36,8 @@ my @deletes;
 
 package FakeRS;
 sub new { my ($class, $name) = @_; return bless { name => $name }, $class }
-sub search {
-  my ($self, $cond) = @_;
-  # the age is the single bind value of the time_last literal
-  my $age = (ref $cond->{time_last} eq 'REF') ? ${ $cond->{time_last} }->[1] : undef;
-  return bless { %$self, age => $age }, ref $self;
-}
-sub delete { my $self = shift; push @deletes, [$self->{name}, $self->{age}]; return 0 }
+sub search { my ($self, $cond) = @_; return bless { %$self, cond => $cond }, ref $self }
+sub delete { my $self = shift; push @deletes, [$self->{name}, $self->{cond}]; return 0 }
 
 package FakeSchema;
 sub new { return bless {}, shift }
@@ -75,24 +70,48 @@ sub run_expire {
   return [ map { $_->[1] } grep { $_->[0] eq 'NodeWireless' } @deletes ];
 }
 
+# the age is the single bind value of the time_last literal
+sub ages {
+  return [ map {
+    my ($older) = grep { ref $_->{time_last} eq 'REF' } @{ $_->{-or} };
+    ${ $older->{time_last} }->[1];
+  } @{ shift() } ];
+}
+
 subtest 'expire__node_wireless_unset__follows_expire_nodes' => sub {
-  is_deeply run_expire(expire_nodes => 90), [90 * 86400],
+  is_deeply ages(run_expire(expire_nodes => 90)), [90 * 86400],
     'node_wireless expires at the expire_nodes age';
 };
 
 subtest 'expire__node_wireless_set__uses_its_own_age' => sub {
-  is_deeply run_expire(expire_nodes => 90, expire_node_wireless => 7), [7 * 86400],
+  is_deeply ages(run_expire(expire_nodes => 90, expire_node_wireless => 7)), [7 * 86400],
     'expire_node_wireless overrides expire_nodes';
 };
 
 subtest 'expire__node_wireless_zero__leaves_node_wireless_alone' => sub {
-  is_deeply run_expire(expire_nodes => 90, expire_node_wireless => 0), [],
+  is_deeply ages(run_expire(expire_nodes => 90, expire_node_wireless => 0)), [],
     'zero turns node_wireless expiry off';
 };
 
 subtest 'expire__node_wireless_set_without_expire_nodes__still_expires' => sub {
-  is_deeply run_expire(expire_node_wireless => 30), [30 * 86400],
+  is_deeply ages(run_expire(expire_node_wireless => 30)), [30 * 86400],
     'node_wireless expiry does not depend on expire_nodes being on';
+};
+
+subtest 'expire__node_wireless_unset_and_nodes_kept__follows_the_archive_age' => sub {
+  is_deeply ages(run_expire(expire_nodes => 0, expire_nodes_archive => 60)), [60 * 86400],
+    'node_wireless expires at the expire_nodes_archive age';
+};
+
+subtest 'expire__node_wireless_unset_and_no_node_expiry__leaves_node_wireless_alone' => sub {
+  is_deeply run_expire(expire_nodes => 0, expire_nodes_archive => 0), [],
+    'nothing expires when no node expiry is configured either';
+};
+
+subtest 'expire__a_pair_never_stamped__is_expired_too' => sub {
+  my ($cond) = @{ run_expire(expire_nodes => 90) };
+  ok((grep { exists $_->{time_last} and not defined $_->{time_last} } @{ $cond->{-or} || [] }),
+    'a NULL time_last matches the expiry');
 };
 
 done_testing;

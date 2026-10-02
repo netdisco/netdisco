@@ -87,13 +87,22 @@ register_worker({ phase => 'main' }, sub {
   # tells a pair that is no longer reported. This deliberately does not pick
   # "unknown" out by name: on classes with no cd11_ssid at all it is still the
   # only row a client has, and is refreshed like any other.
+  #
+  # Unset, it follows node expiry, falling back to the archive age so that a
+  # site which keeps active nodes for good but expires archived ones still
+  # ages node_wireless out. A NULL time_last is a pair not seen since the
+  # column gained its default, as every macsuck sets it, so it goes too.
   my $wireless_age = ((defined setting('expire_node_wireless'))
-    ? setting('expire_node_wireless') : setting('expire_nodes'));
+    ? setting('expire_node_wireless')
+    : (setting('expire_nodes') || setting('expire_nodes_archive')));
   if ($wireless_age and $wireless_age > 0) {
       schema('netdisco')->txn_do(sub {
         schema('netdisco')->resultset('NodeWireless')->search({
-          time_last => \[q/< (LOCALTIMESTAMP - ?::interval)/,
-              ($wireless_age * 86400)],
+          -or => [
+            { time_last => undef },
+            { time_last => \[q/< (LOCALTIMESTAMP - ?::interval)/,
+                ($wireless_age * 86400)] },
+          ],
         })->delete();
       });
   }
