@@ -4,6 +4,7 @@
 
   * #1680 include dynamically authenticated VLANs in MAC-Suck VLAN selection
     (needs an SNMP::Info release with snmp-info#580)
+  * #1682 API: embed related rows in the nodes API with an include parameter
 
   [BUG FIXES]
 
@@ -19,9 +20,13 @@
     other actions
   * the loadmibsfromoids action accepts only a vendor report name, such as
     juniper, and refuses anything else before changing the MIB cache
-  * the Job Queue's delete-all button did nothing since 2.109000; it now
-    deletes the queue again
+  * #1694 fix the job queue's delete-all button
   * #1683 stop storing wireless clients under an SSID called "unknown"
+  * #1696 API: answer auth failures with 401/403 JSON instead of redirects
+    and HTML
+  * #1697 API: return a number from the job delete endpoints, not "0E0"
+  * #1698 API: answer unknown paths and failing routes in JSON
+  * #1681 API: nodes endpoints ignore their documented active_only default
   * #1691 scope device and topology writes to the user's port control role
 
 2.109001 - 2026-09-18
