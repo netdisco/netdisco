@@ -4,6 +4,7 @@
 
   * #1680 include dynamically authenticated VLANs in MAC-Suck VLAN selection
     (needs an SNMP::Info release with snmp-info#580)
+  * #1682 API: embed related rows in the nodes API with an include parameter
 
   [BUG FIXES]
 
@@ -25,7 +26,7 @@
     and HTML
   * #1697 API: return a number from the job delete endpoints, not "0E0"
   * #1698 API: answer unknown paths and failing routes in JSON
-  * #1681 nodes API ignores its own documented active_only default
+  * #1681 API: nodes endpoints ignore their documented active_only default
 
 2.109001 - 2026-09-18
 
