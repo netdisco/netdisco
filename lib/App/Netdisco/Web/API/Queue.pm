@@ -7,6 +7,7 @@ use App::Netdisco::Util::JobAction 'action_is_refused';
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::JobQueue 'jq_insert';
+use App::Netdisco::Backend::Job;
 use App::Netdisco::Util::DNS 'ipv4_from_hostname';
 use NetAddr::IP::Lite;
 use Try::Tiny;
@@ -226,6 +227,10 @@ swagger_path {
         or ($job->{action} !~ m/^cf_/ and not user_has_role('api_admin'));
       send_error('Action not permitted', 403)
         if action_is_refused($job->{action});
+      send_error('Configuration overrides in a port or extra need the'
+        .' api_admin role. Send the port name and extra on their own.', 403)
+        if not user_has_role('api_admin')
+           and App::Netdisco::Backend::Job->carries_config_overrides($job);
 
       if ($job->{device} and not NetAddr::IP::Lite->new($job->{device})) {
           my $ip = ipv4_from_hostname($job->{device})
