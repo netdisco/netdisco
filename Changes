@@ -2,6 +2,7 @@
 
   [BUG FIXES]
 
+  * #1701 bug: job's configuration overrides
   * #1691 scope device and topology writes to the user's port control role
   * #1695 expire node_wireless on its own age
 
