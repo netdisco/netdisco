@@ -652,6 +652,8 @@ share/views/swagger-ui.tt
 xt/00-compile.t
 xt/01-local-pod.t
 xt/10-sort_port.t
+xt/100-expire-node-wireless.t
+xt/101-job-overrides-in-poller.t
 xt/11-port-sortkey.t
 xt/12-port-order-helper.t
 xt/20-checkacl.t
@@ -726,8 +728,6 @@ xt/96-worker-action-is-literal.t
 xt/97-api-auth-failure-status.t
 xt/98-api-delete-count.t
 xt/99-api-json-errors.t
-xt/100-expire-node-wireless.t
-xt/101-job-overrides-in-poller.t
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/admin-button-dispatch.test.js
