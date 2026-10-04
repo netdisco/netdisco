@@ -4,6 +4,8 @@
 
   * netdisco-deploy verifies TLS certificates when it downloads OUI data and
     MIBs
+  * a string exec hook cmd may use only the ip and ndo fields; write cmd as a
+    list to pass other event fields
 
 2.109004 - 2026-10-03
 
