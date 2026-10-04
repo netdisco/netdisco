@@ -260,7 +260,7 @@ sub deploy_oui {
   # tables oui, enterprise, manufacturer, product, snmp_filter
   my $latest = 'https://github.com/netdisco/upstream-sources/raw/refs/heads/master/bootstrap/netdisco-lookup-tables.sql';
   my $file = file($home, 'netdisco-lookup-tables.sql');
-  my $resp = HTTP::Tiny->new->mirror($latest, $file);
+  my $resp = HTTP::Tiny->new(verify_SSL => 1)->mirror($latest, $file);
 
   if ($resp->{success}) {
       # by loading App::Netdisco, Configuration has set necessary psql env vars
@@ -281,13 +281,13 @@ sub deploy_mibs {
   my $fail = 0;
 
   my $latest = 'https://github.com/netdisco/netdisco-mibs/releases/latest';
-  my $resp = HTTP::Tiny->new->get($latest);
+  my $resp = HTTP::Tiny->new(verify_SSL => 1)->get($latest);
 
   if ($resp->{url} =~ m/([0-9.]+)$/) {
     my $ver = $1;
     my $url = "https://github.com/netdisco/netdisco-mibs/releases/download/${ver}/netdisco-mibs.tar.gz";
     my $file = file($home, 'netdisco-mibs.tar.gz');
-    $resp = HTTP::Tiny->new->mirror($url, $file);
+    $resp = HTTP::Tiny->new(verify_SSL => 1)->mirror($url, $file);
 
     if ($resp->{success}) {
       my $ae = Archive::Extract->new(archive => $file, type => 'tgz');

@@ -1,3 +1,10 @@
+2.110000 - tbd
+
+  [BUG FIXES]
+
+  * netdisco-deploy verifies TLS certificates when it downloads OUI data and
+    MIBs
+
 2.109004 - 2026-10-03
 
   [BUG FIXES]
