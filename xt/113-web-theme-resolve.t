@@ -7,7 +7,7 @@ use Test::More 0.88;
 use File::Temp ();
 use File::Spec::Functions qw/catfile/;
 
-use App::Netdisco::Web::Theme qw/find_theme_file theme_problem_message/;
+use App::Netdisco::Web::Theme qw/find_theme_file theme_problem_message theme_scope_message/;
 
 sub theme_dir_with {
   my $dir = File::Temp->newdir(CLEANUP => 1);
@@ -53,6 +53,22 @@ like $notfound, qr/remove web_theme/, 'themeProblemMessage__not_found__says_how_
 my $invalid = theme_problem_message('../x', '/a/themes');
 like $invalid, qr/letters, digits/, 'themeProblemMessage__invalid_name__states_the_allowed_characters';
 unlike $invalid, qr{/a/themes}, 'themeProblemMessage__invalid_name__does_not_claim_a_search_happened';
+
+# A file found by name can still be scoped to a different name, and then
+# Bootstrap never applies its rules.
+is theme_scope_message('classic', '/t/classic.css', '[data-bs-theme="classic"] { --bs-primary: #000; }'),
+  undef, 'themeScopeMessage__rules_scoped_to_the_name__finds_nothing_to_report';
+is theme_scope_message('classic', '/t/classic.css', "[data-bs-theme='classic'] .x { color: red; }"),
+  undef, 'themeScopeMessage__single_quoted_selector__is_accepted';
+is theme_scope_message('classic', '/t/classic.css', '[data-bs-theme=classic] { color: red; }'),
+  undef, 'themeScopeMessage__unquoted_selector__is_accepted';
+
+my $other = theme_scope_message('classic', '/t/classic.css', '[data-bs-theme="blue"] { --bs-primary: #000; }');
+like $other, qr/web_theme 'classic'/, 'themeScopeMessage__other_name__names_the_setting';
+like $other, qr{/t/classic\.css}, 'themeScopeMessage__other_name__names_the_file';
+like $other, qr/\[data-bs-theme="classic"\]/, 'themeScopeMessage__other_name__shows_the_selector_to_use';
+isnt theme_scope_message('classic', '/t/classic.css', '[data-bs-theme="classicx"] { }'), undef,
+  'themeScopeMessage__name_as_a_prefix_of_another__is_not_mistaken_for_it';
 
 # The tests above pass their own directories, so this pins where shipped themes
 # are looked for, and that they are looked for before any site-local one.

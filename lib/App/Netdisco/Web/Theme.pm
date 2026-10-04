@@ -5,7 +5,7 @@ use Path::Class qw/dir file/;
 use App::Netdisco::Util::SiteLocal 'site_local_paths';
 
 use base 'Exporter';
-our @EXPORT_OK = qw/find_theme_file theme_problem_message/;
+our @EXPORT_OK = qw/find_theme_file theme_problem_message theme_scope_message/;
 
 # A theme name becomes a file name, so nothing that could leave the directory.
 my $VALID_NAME = qr/\A[A-Za-z0-9_-]+\z/;
@@ -33,6 +33,16 @@ sub theme_problem_message {
     $name, $name, join(', ', @dirs);
 }
 
+sub theme_scope_message {
+  my ($name, $path, $css) = @_;
+  return undef if $css =~ m/\[\s*data-bs-theme\s*=\s*(["']?)\Q$name\E\1\s*\]/;
+
+  return sprintf q{web_theme '%s' was loaded from %s, but none of its rules are }
+    . q{scoped to [data-bs-theme="%s"], so Bootstrap will not apply them. Scope }
+    . q{the rules to that selector, or set web_theme to the name the file uses.},
+    $name, $path, $name;
+}
+
 sub theme_dirs {
   return (
     dir(setting('public'), 'css', 'themes')->stringify,
@@ -48,6 +58,9 @@ sub resolve_configured_theme {
   my @dirs = theme_dirs();
   my $path = find_theme_file($name, @dirs);
   return warning theme_problem_message($name, @dirs) unless $path;
+
+  my $scope = theme_scope_message($name, $path, scalar file($path)->slurp);
+  warning $scope if $scope;
 
   setting('_web_theme' => {
     name  => $name,
