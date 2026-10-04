@@ -1,5 +1,10 @@
 2.110000 - tbd
 
+  [ENHANCEMENTS]
+
+  * netdisco-sshcollector checks SSH host keys against the netdisco user's
+    known_hosts file
+
   [BUG FIXES]
 
   * netdisco-deploy verifies TLS certificates when it downloads OUI data and
