@@ -45,6 +45,17 @@ my @compressible = qw(
 );
 
 set plack_middlewares => [
+  # Ahead of ReverseProxy, which overwrites REMOTE_ADDR from the forwarded
+  # header; trusted_client_address() decides on the peer kept here.
+  # Plack::Builder wraps the list in reverse, so first here runs first.
+  [ sub {
+      my $app = shift;
+      sub {
+        my $env = shift;
+        $env->{'netdisco.peer_address'} = $env->{REMOTE_ADDR};
+        return $app->($env);
+      };
+  } ],
   ['Plack::Middleware::ReverseProxy'],
   # Above Static, which short-circuits: below it, static assets never compress.
   ( setting('compress_responses')

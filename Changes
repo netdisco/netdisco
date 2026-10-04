@@ -21,6 +21,11 @@
     MIBs; set PERL_HTTP_TINY_SSL_INSECURE_BY_DEFAULT=1 to turn this off
   * a string exec hook cmd may use only the ip and ndo fields; write cmd as a
     list to pass other event fields
+  * fix an authorization bypass in the token_acl and metrics_allow address
+    checks, which now read a forwarded address only from a proxy named in the
+    new trusted_proxies setting
+  * a token_acl or metrics_allow entry for an IPv4 address now matches that
+    client on a dual-stack web server
 
 2.109004 - 2026-10-03
 

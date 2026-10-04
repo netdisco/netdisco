@@ -1071,6 +1071,10 @@ template: 'netdisco_template_toolkit'
 route_cache: true
 appname: 'Netdisco'
 behind_proxy: false
+# proxies whose X-Forwarded-For is believed; usual ACL forms
+trusted_proxies:
+  - '127.0.0.1'
+  - '::1'
 compress_responses: true
 HTTP-Header-X-Frame-Options: 'DENY'
 HTTP-Header-Content-Security-Policy: 'frame-ancestors none;'

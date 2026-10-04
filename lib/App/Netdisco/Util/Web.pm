@@ -6,6 +6,8 @@ use warnings;
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC 'schema';
 
+use App::Netdisco::Util::Permission 'check_acl';
+
 use Time::Piece;
 use Time::Seconds;
 use HTML::Entities ();
@@ -22,6 +24,8 @@ our @EXPORT_OK = qw/
   request_is_api
   request_is_api_report
   request_is_api_search
+  trusted_client_address
+  warn_forwarded_address_ignored
   device_display_name
   page_title
   pane_chrome
@@ -103,6 +107,92 @@ sub request_is_api_search {
     (param('return_url')
     and index(param('return_url'), uri_for('/api/v1/search/')->path) == 0)
   ));
+}
+
+=head2 trusted_client_address
+
+The client address to make a security decision with.
+
+This is the peer that opened the connection, unless that peer is named in the
+C<trusted_proxies> setting, in which case it is the client named in the
+C<X-Forwarded-For> chain that peer forwarded. The chain is read from its
+nearest hop leftwards, stepping over any address which is itself a trusted
+proxy, so a deployment two proxies deep resolves to the visitor rather than to
+the inner proxy.
+
+C<trusted_proxies> takes the usual access control list forms, so a Host Group
+name works as well as a literal list.
+
+A client on a UNIX socket is treated as the loopback address.
+
+=cut
+
+sub trusted_client_address {
+  my $peer = _socket_peer_address();
+
+  return $peer unless _is_trusted_proxy($peer);
+
+  my @chain = map { _unmapped($_) } grep { length } split m/\s*,\s*/,
+    (request->env->{HTTP_X_FORWARDED_FOR} || '');
+  return $peer unless scalar @chain;
+
+  while (scalar @chain > 1 and _is_trusted_proxy($chain[-1])) {
+    pop @chain;
+  }
+
+  return $chain[-1];
+}
+
+sub _socket_peer_address {
+  my $env = request->env;
+
+  # bin/netdisco-web-fg keeps the socket peer here.
+  # A UNIX socket client can only be local.
+  if (exists $env->{'netdisco.peer_address'}) {
+      return '127.0.0.1' if not defined $env->{'netdisco.peer_address'};
+      return _unmapped($env->{'netdisco.peer_address'});
+  }
+
+  # without that entry, nothing overwrote REMOTE_ADDR
+  return _unmapped($env->{REMOTE_ADDR});
+}
+
+# dual-stack listeners report an IPv4 peer in its IPv4-mapped IPv6 form
+sub _unmapped {
+  my $address = shift;
+  return $address unless defined $address;
+  (my $plain = $address) =~ s/^::ffff:(?=\d+(?:\.\d+){3}$)//i;
+  return $plain;
+}
+
+sub _is_trusted_proxy {
+  my $address = shift;
+  return false unless $address;
+
+  # check_acl, not the acl_matches wrappers: both answer true for an absent or
+  # empty list, which here would trust every peer.
+  return check_acl($address, setting('trusted_proxies')) ? true : false;
+}
+
+=head2 warn_forwarded_address_ignored( $what )
+
+Log that C<$what> refused a client whose request carried a forwarded header
+that C<trusted_proxies> keeps out of the decision, because it did not arrive
+from a listed proxy.
+
+=cut
+
+sub warn_forwarded_address_ignored {
+  my $what = shift;
+  return unless request->forwarded_for_address;
+  return if _is_trusted_proxy(_socket_peer_address());
+
+  # The refusal is otherwise silent, and nothing else names the setting that
+  # governs it. No addresses: this reaches the normal log.
+  warning "$what refused a client whose X-Forwarded-For was not used,"
+    . " because the request did not arrive from an address named in"
+    . " trusted_proxies; list the proxy there if one is in front"
+    . " of the web server";
 }
 
 =head2 sql_match( $value, $exact? )
