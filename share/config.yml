@@ -93,6 +93,7 @@ web_plugins:
   - AdminTask::JobQueue
   - AdminTask::PollerPerformance
   - AdminTask::UserLog
+  - AdminTask::Appearance
   - Search::Device
   - Search::Node
   - Search::VLAN
@@ -1073,3 +1074,7 @@ behind_proxy: false
 compress_responses: true
 HTTP-Header-X-Frame-Options: 'DENY'
 HTTP-Header-Content-Security-Policy: 'frame-ancestors none;'
+
+# Global web appearance state. Empty uses $NETDISCO_HOME/netdisco-appearance.json.
+# Multiple web hosts need the same writable shared path.
+appearance_settings_file: ""

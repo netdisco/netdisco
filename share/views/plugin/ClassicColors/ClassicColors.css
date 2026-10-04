@@ -1,0 +1,129 @@
+/* Palette override for Netdisco's Bootstrap 5 UI. No layout changes. */
+html[data-nd-palette="classic"] {
+  --bs-primary: #0088cc; --bs-primary-rgb: 0,136,204;
+  --bs-success: #468847; --bs-success-rgb: 70,136,71;
+  --bs-danger: #b94a48; --bs-danger-rgb: 185,74,72;
+  --bs-info: #3a87ad; --bs-info-rgb: 58,135,173;
+  --bs-warning: #f89406; --bs-warning-rgb: 248,148,6;
+  --bs-secondary: #999999; --bs-secondary-rgb: 153,153,153;
+  --bs-link-color: #0088cc; --bs-link-color-rgb: 0,136,204;
+  --bs-link-hover-color: #005580; --bs-link-hover-color-rgb: 0,85,128;
+  --bs-secondary-color: #999999;
+}
+html[data-nd-palette="classic"] .nav-link { --bs-nav-link-color: #0088cc; --bs-nav-link-hover-color: #005580; }
+html[data-nd-palette="classic"] .navbar .nav-link { --bs-nav-link-color: rgba(255,255,255,.55); --bs-nav-link-hover-color: rgba(255,255,255,.75); }
+html[data-nd-palette="classic"] .pagination { --bs-pagination-color: #0088cc; --bs-pagination-hover-color: #005580; --bs-pagination-active-color: #999999; --bs-pagination-active-bg: #f5f5f5; --bs-pagination-active-border-color: #dddddd; }
+html[data-nd-palette="classic"] .alert-info { --bs-alert-color: #3a87ad; --bs-alert-bg: #d9edf7; --bs-alert-border-color: #bce8f1; --bs-alert-link-color: #2d6987; }
+html[data-nd-palette="classic"] .alert-success { --bs-alert-color: #468847; --bs-alert-bg: #dff0d8; --bs-alert-border-color: #d6e9c6; --bs-alert-link-color: #356635; }
+html[data-nd-palette="classic"] .alert-danger { --bs-alert-color: #b94a48; --bs-alert-bg: #f2dede; --bs-alert-border-color: #eed3d7; --bs-alert-link-color: #953b39; }
+html[data-nd-palette="classic"] .alert-warning { --bs-alert-color: #c09853; --bs-alert-bg: #fcf8e3; --bs-alert-border-color: #fbeed5; --bs-alert-link-color: #a47e3c; }
+html[data-nd-palette="classic"] .form-check-input:checked { background-color: #0088cc; border-color: #0088cc; }
+html[data-nd-palette="classic"] .form-control:focus,
+html[data-nd-palette="classic"] .form-select:focus { border-color: #66afe9; box-shadow: 0 0 0 .2rem rgba(0,136,204,.18); }
+html[data-nd-palette="classic"] .text-bg-info,
+html[data-nd-palette="classic"] .text-bg-warning { color: white !important; }
+html[data-nd-palette="classic"] .text-warning { color: #c09853 !important; }
+
+/* Contextual table classes carry their own fixed palette in Bootstrap 5. */
+html[data-nd-palette="classic"] .table-success {
+  --bs-table-color: #333333; --bs-table-bg: #dff0d8;
+  --bs-table-border-color: #dddddd;
+  --bs-table-striped-bg: #dff0d8; --bs-table-striped-color: #333333;
+  --bs-table-hover-bg: #d0e9c6; --bs-table-hover-color: #333333;
+  --bs-table-active-bg: #d0e9c6; --bs-table-active-color: #333333;
+}
+html[data-nd-palette="classic"] .table-danger {
+  --bs-table-color: #333333; --bs-table-bg: #f2dede;
+  --bs-table-border-color: #dddddd;
+  --bs-table-striped-bg: #f2dede; --bs-table-striped-color: #333333;
+  --bs-table-hover-bg: #ebcccc; --bs-table-hover-color: #333333;
+  --bs-table-active-bg: #ebcccc; --bs-table-active-color: #333333;
+}
+html[data-nd-palette="classic"] .table-warning {
+  --bs-table-color: #333333; --bs-table-bg: #fcf8e3;
+  --bs-table-border-color: #dddddd;
+  --bs-table-striped-bg: #fcf8e3; --bs-table-striped-color: #333333;
+  --bs-table-hover-bg: #faf2cc; --bs-table-hover-color: #333333;
+  --bs-table-active-bg: #faf2cc; --bs-table-active-color: #333333;
+}
+html[data-nd-palette="classic"] .table-info {
+  --bs-table-color: #333333; --bs-table-bg: #d9edf7;
+  --bs-table-border-color: #dddddd;
+  --bs-table-striped-bg: #d9edf7; --bs-table-striped-color: #333333;
+  --bs-table-hover-bg: #c4e3f3; --bs-table-hover-color: #333333;
+  --bs-table-active-bg: #c4e3f3; --bs-table-active-color: #333333;
+}
+
+/* Explicit text rules also cover status icons and locally defined utilities. */
+html[data-nd-palette="classic"] .text-primary,
+html[data-nd-palette="classic"] .text-primary-emphasis { color: #0088cc !important; }
+html[data-nd-palette="classic"] .text-success,
+html[data-nd-palette="classic"] .text-success-emphasis { color: #468847 !important; }
+html[data-nd-palette="classic"] .text-danger,
+html[data-nd-palette="classic"] .text-danger-emphasis { color: #b94a48 !important; }
+html[data-nd-palette="classic"] .text-info,
+html[data-nd-palette="classic"] .text-info-emphasis { color: #3a87ad !important; }
+html[data-nd-palette="classic"] .text-warning,
+html[data-nd-palette="classic"] .text-warning-emphasis { color: #c09853 !important; }
+html[data-nd-palette="classic"] .text-muted,
+html[data-nd-palette="classic"] .text-muted-emphasis { color: #999999 !important; }
+html[data-nd-palette="classic"] .text-secondary,
+html[data-nd-palette="classic"] .text-secondary-emphasis { color: #999999 !important; }
+html[data-nd-palette="classic"] .dropdown-menu { --bs-dropdown-link-active-bg: #0088cc; }
+html[data-nd-palette="classic"] .form-control.is-valid { border-color: #468847; }
+html[data-nd-palette="classic"] .form-control.is-invalid { border-color: #b94a48; }
+html[data-nd-palette="classic"] .valid-feedback { color: #468847; }
+html[data-nd-palette="classic"] .invalid-feedback { color: #b94a48; }
+
+/* Remaining Bootstrap components, matched to the pre-Bootstrap-5 source. */
+html[data-nd-palette="classic"] {
+  --bs-dark: #333333; --bs-dark-rgb: 51,51,51;
+  --bs-tertiary-bg: #eeeeee; --bs-tertiary-bg-rgb: 238,238,238;
+}
+html[data-nd-palette="classic"] .nav-pills { --bs-nav-pills-link-active-bg: #0088cc; }
+html[data-nd-palette="classic"] .nav-tabs {
+  --bs-nav-tabs-link-active-color: #555555;
+  --bs-nav-tabs-link-active-bg: #ffffff;
+  --bs-nav-tabs-border-color: #dddddd;
+  --bs-nav-tabs-link-active-border-color: #dddddd #dddddd #ffffff;
+}
+html[data-nd-palette="classic"] .dropdown-menu {
+  --bs-dropdown-color: #333333; --bs-dropdown-bg: #ffffff;
+  --bs-dropdown-border-color: rgba(0,0,0,.2);
+  --bs-dropdown-link-color: #333333; --bs-dropdown-link-disabled-color: #999999;
+  --bs-dropdown-link-hover-color: #ffffff; --bs-dropdown-link-hover-bg: #0081c2;
+  --bs-dropdown-link-active-color: #ffffff; --bs-dropdown-link-active-bg: #0081c2;
+}
+html[data-nd-palette="classic"] .dropdown-item:not(.disabled):not(:disabled):hover,
+html[data-nd-palette="classic"] .dropdown-item:not(.disabled):not(:disabled):focus,
+html[data-nd-palette="classic"] .dropdown-item.active {
+  background-image: linear-gradient(to bottom, #0088cc, #0077b3);
+}
+html[data-nd-palette="classic"] a.text-muted:hover,
+html[data-nd-palette="classic"] a.text-muted:focus { color: #808080 !important; }
+html[data-nd-palette="classic"] a.text-success:hover,
+html[data-nd-palette="classic"] a.text-success:focus { color: #356635 !important; }
+html[data-nd-palette="classic"] a.text-danger:hover,
+html[data-nd-palette="classic"] a.text-danger:focus { color: #953b39 !important; }
+html[data-nd-palette="classic"] a.text-info:hover,
+html[data-nd-palette="classic"] a.text-info:focus { color: #2d6987 !important; }
+html[data-nd-palette="classic"] a.text-warning:hover,
+html[data-nd-palette="classic"] a.text-warning:focus { color: #a47e3c !important; }
+html[data-nd-palette="classic"] .popover {
+  --bs-popover-bg: #ffffff; --bs-popover-body-color: #333333;
+  --bs-popover-border-color: rgba(0,0,0,.2);
+  --bs-popover-header-bg: #f7f7f7; --bs-popover-header-color: #333333;
+}
+html[data-nd-palette="classic"] .popover-header { border-bottom-color: #ebebeb; }
+html[data-nd-palette="classic"] .tooltip { --bs-tooltip-bg: #000000; --bs-tooltip-color: #ffffff; --bs-tooltip-opacity: .8; }
+html[data-nd-palette="classic"] .modal {
+  --bs-modal-bg: #ffffff; --bs-modal-color: #333333;
+  --bs-modal-border-color: rgba(0,0,0,.3);
+  --bs-modal-header-border-color: #eeeeee;
+  --bs-modal-footer-bg: #f5f5f5; --bs-modal-footer-border-color: #dddddd;
+}
+html[data-nd-palette="classic"] .modal-backdrop { --bs-backdrop-bg: #000000; --bs-backdrop-opacity: .8; }
+html[data-nd-palette="classic"] .progress { --bs-progress-bg: #f7f7f7; --bs-progress-bar-bg: #0e90d2; }
+html[data-nd-palette="classic"] #nd2_netmap-boxselect { border-color: #0088cc; background-color: rgba(0,136,204,.08); }
+html[data-nd-palette="classic"] #nd_snmp_loading_spinner.htmx-request { color: #c09853; }
+html[data-nd-palette="classic"] .nd_snmp-empty { color: #999999; }

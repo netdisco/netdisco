@@ -442,3 +442,14 @@ jobs:
 
       - name: Only a same-origin spec URL is loaded
         run: node --test xt/js/swagger-spec-url.test.js
+
+  appearance:
+    name: Classic colors preference
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Palette polling and save behavior
+        run: node --test xt/js/appearance.test.js

@@ -1,0 +1,14 @@
+<div class="card"><div class="card-body">
+  <h3>Colors</h3>
+  <div id="nd-appearance-form" data-action="[% uri_for('/ajax/control/admin/appearance/save') | html_entity %]" role="form" aria-label="Appearance settings">
+    <input type="hidden" name="csrf" value="[% appearance_csrf | html_entity %]">
+    <div class="form-check mb-3">
+      <input class="form-check-input" id="nd-classic-colors" type="checkbox" name="classic_colors"[% IF classic_colors %] checked[% END %] aria-describedby="nd-classic-colors-help">
+      <label class="form-check-label" for="nd-classic-colors">Classic colors</label>
+    </div>
+    <p id="nd-classic-colors-help">Use the earlier Netdisco colors for links, tables, status indicators and menus. The current layout and features stay the same.</p>
+    <p>This setting applies to everyone using this Netdisco installation. Untick it to use the current colors. Open pages update within 30 seconds or when refreshed.</p>
+    <button class="btn btn-primary" type="button">Save appearance</button>
+    <span id="nd-appearance-status" class="ms-2" role="status" aria-live="polite"></span>
+  </div>
+</div></div>
