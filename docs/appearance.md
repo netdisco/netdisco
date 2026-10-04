@@ -1,25 +1,23 @@
-# Appearance
+# Web color palette
 
-Admin → Appearance offers Classic colors, an optional palette based on the
-frontend before the Bootstrap 5 migration. The current palette remains the
-default. Changing the palette retains the current layout and functionality.
-The setting applies to everyone using this installation, including its tenants.
-It changes colors, not every visual aspect of the former frontend.
+Configuration reference entry for the [Configuration wiki](https://github.com/netdisco/netdisco/wiki/Configuration), under Web Frontend settings.
 
-An administrator can tick or untick Classic colors and choose Save appearance.
-Saving follows the configured `defanged_admin` role and requires a session
-request token. A successful save is also written to User Activity Log when
-logging is available. Open pages update within 30 seconds, when a tab becomes
-visible, or on reload. Saving remains explicit; toggling the checkbox alone does
-not change other users' appearance.
+## `web_color_palette`
 
-The server saves its preference in `netdisco-appearance.json` under
-`NETDISCO_HOME` (or the web process user's home). It uses a private temporary file,
-an exclusive lock and atomic replacement. This file must be writable by the web
-process and retained during upgrades. For several web hosts, configure
-`appearance_settings_file` to one shared writable path. Without a saved file,
-the current palette is used. No database migration is required.
+Value: `new|classic`. Default: `new`.
 
-The palette uses scoped CSS overrides for standard Netdisco components; new
-components may require further rules. Browser controls, third-party tools and
-map canvas drawing do not all have a corresponding classic color override.
+Selects the color palette used by the web interface for all users of the configured deployment.
+
+The standard (`new`) palette uses the colors supplied by the updated Bootstrap library. The `classic` palette provides the original Netdisco colors for users who prefer the previous appearance. This setting changes colors only; layout and functionality remain the same.
+
+To enable the classic palette, add this to `deployment.yml`:
+
+```yaml
+web_color_palette: classic
+```
+
+Set it to `new`, or remove the override, to return to the standard palette. Restart the web service after changing this setting unless your deployment automatically reloads configuration changes. Reload open pages to apply the palette.
+
+The page template loads the Classic stylesheet only when `classic` is selected. No additional plugin or web-writable preference file is required. Configure each web host consistently when using several hosts.
+
+The Classic stylesheet covers standard Netdisco components. Native browser controls, third-party tools, and map canvas drawing are not all restored to the original colors. New components may require additional palette rules.

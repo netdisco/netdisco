@@ -779,11 +779,5 @@ xt/lib/App/NetdiscoX/Worker/Plugin/TestTwo.pm
 xt/lib/Test/Netdisco/MungerProbe.pm
 xt/lib/Test/Netdisco/Snapshot.pm
 xt/portsort-corpus.json
-lib/App/Netdisco/Web/Plugin/AdminTask/Appearance.pm
-lib/App/Netdisco/Web/Plugin/AdminTask/Appearance/State.pm
-share/views/ajax/admintask/appearance.tt
 share/public/css/classic-colors.css
-share/public/javascripts/netdisco-appearance.js
 docs/appearance.md
-xt/41-appearance-state.t
-xt/js/appearance.test.js
