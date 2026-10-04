@@ -4,6 +4,10 @@
 
   * #1709 add a web_theme setting for Bootstrap color-mode themes
 
+  [BUG FIXES]
+
+  * #1706 keep the first connected node within its port cell
+
 2.109004 - 2026-10-03
 
   [BUG FIXES]
