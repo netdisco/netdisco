@@ -6,6 +6,8 @@
     rather than permitted on every port
   * accept only a number or MCE's documented forms in the workers tasks
     setting
+  * the backend matches a queued job's action as text when it checks for a
+    duplicate already running
 
 2.109003 - 2026-10-03
 

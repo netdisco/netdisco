@@ -84,9 +84,10 @@ sub worker_body {
 
           # 1392 check for any of the same job running already
           if ($job->device) {
+              my ($action, $device) = ($job->action, $job->device);
               foreach my $p ( @{$t->table} ) {
                   if ($p->cmndline
-                        and $p->cmndline =~ m/nd2: #\d+ poll: #\d+: ${display_name}/) {
+                        and $p->cmndline =~ m/nd2: #\d+ poll: #\d+: \Q${action}\E ${device}/) {
                       debug "mgr ($wid): duplicate running job detected: $display_name";
                       next JOB;
                   }
