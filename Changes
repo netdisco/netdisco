@@ -2,8 +2,7 @@
 
   [BUG FIXES]
 
-  * a port_control user can no longer queue a job that carries configuration
-    overrides; setting configuration needs the admin role
+  * #1703 refuse configuration overrides on jobs queued by port_control users
   * keep a job's configuration overrides out of the backend's process titles
   * a port_control user whose role is not defined is refused port changes,
     rather than permitted on every port
