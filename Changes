@@ -1,3 +1,10 @@
+2.109004 - tbd
+
+  [BUG FIXES]
+
+  * a port_control user whose role is not defined is refused port changes,
+    rather than permitted on every port
+
 2.109003 - 2026-10-03
 
   [BUG FIXES]

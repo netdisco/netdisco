@@ -126,6 +126,9 @@ sub port_acl_by_role_check {
         return $found;
     }
 
+    # a role missing from portctl_by_role must not fall back to any-port
+    return false if $role;
+
     # if the user has "Enabled (any port)" setting
     return $user->port_control;
   }
