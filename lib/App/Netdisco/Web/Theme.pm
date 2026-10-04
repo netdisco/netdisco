@@ -2,6 +2,7 @@ package App::Netdisco::Web::Theme;
 
 use Dancer ':syntax';
 use Path::Class qw/dir file/;
+use App::Netdisco::Util::SiteLocal 'site_local_paths';
 
 use base 'Exporter';
 our @EXPORT_OK = qw/find_theme_file theme_problem_message/;
@@ -31,5 +32,34 @@ sub theme_problem_message {
     . q{to one of those directories, or remove web_theme to use the default palette.},
     $name, $name, join(', ', @dirs);
 }
+
+sub theme_dirs {
+  return (
+    dir(setting('public'), 'css', 'themes')->stringify,
+    map { dir($_, 'themes')->stringify } site_local_paths(),
+  );
+}
+
+sub resolve_configured_theme {
+  setting('_web_theme' => undef);
+  my $name = setting('web_theme');
+  return unless defined $name and length $name;
+
+  my @dirs = theme_dirs();
+  my $path = find_theme_file($name, @dirs);
+  return warning theme_problem_message($name, @dirs) unless $path;
+
+  setting('_web_theme' => {
+    name  => $name,
+    path  => $path,
+    mtime => (stat $path)[9],
+  });
+}
+
+get '/theme.css' => sub {
+  my $theme = setting('_web_theme');
+  return send_error('no web_theme is configured', 404) unless $theme;
+  send_file $theme->{path}, system_path => 1, content_type => 'text/css';
+};
 
 true;

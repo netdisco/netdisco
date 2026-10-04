@@ -81,6 +81,7 @@ hook 'before' => sub {
       request->path eq uri_for('/login')->path
       or request->path eq uri_for('/logout')->path
       or request->path eq uri_for('/swagger.json')->path
+      or request->path eq uri_for('/theme.css')->path
       or index(request->path, uri_for('/swagger-ui')->path) == 0
       or (setting('health_path')  and request->path eq uri_for(setting('health_path'))->path)
       or (setting('metrics_path') and request->path eq uri_for(setting('metrics_path'))->path)

@@ -49,6 +49,7 @@ ldap: {}
 #  tls_opts: {}
 path: '/'
 web_home: '/inventory'
+web_theme: ''
 web_plugins:
   - Inventory
   - Report::PortVLANMismatch
