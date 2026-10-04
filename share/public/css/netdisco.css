@@ -1513,6 +1513,12 @@ ul ul, ul ol, ol ol, ol ul {
   .nd_div-closer-last {
     margin-bottom: 14px;
   }
+  /* Nothing to make up where #dp-data-table > tbody > tr > td > .nd_div-closer:first-child
+     cancels the first block's pull-up. */
+  #dp-data-table > tbody > tr > td > .nd_div-closer:first-child ~ .nd_div-closer-last,
+  #dp-data-table > tbody > tr > td > .nd_div-closer-last:first-child {
+    margin-bottom: 0;
+  }
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
