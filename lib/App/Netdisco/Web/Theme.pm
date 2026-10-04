@@ -58,7 +58,12 @@ sub resolve_configured_theme {
 
 get '/theme.css' => sub {
   my $theme = setting('_web_theme');
-  return send_error('no web_theme is configured', 404) unless $theme;
+  # No error page: this route needs no login, and with show_errors set an
+  # error page lists the application's settings.
+  unless ($theme and -f $theme->{path}) {
+    status 'not_found';
+    return '';
+  }
   send_file $theme->{path}, system_path => 1, content_type => 'text/css';
 };
 

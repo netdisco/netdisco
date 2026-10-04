@@ -59,6 +59,16 @@ test_psgi $app, sub {
     'loginPage__site_local_theme__carries_the_color_mode_attribute';
   like $login->content, qr{/theme\.css\?v=\d+"},
     'loginPage__site_local_theme__links_the_theme_stylesheet';
+
+  # The route needs no login, so a theme file removed after startup must not
+  # put its absolute path into an error page anyone can fetch.
+  my $theme_file = setting('_web_theme')->{path};
+  unlink $theme_file or die "cannot remove $theme_file: $!";
+  setting('show_errors' => 1);
+  my $gone = $cb->(GET '/theme.css');
+  is $gone->code, 404, 'themeRoute__file_removed_after_startup__answers_not_found';
+  unlike $gone->content, qr/\Q$sitedir\E/,
+    'themeRoute__file_removed_after_startup__does_not_reveal_its_path';
 };
 
 done_testing;

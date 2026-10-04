@@ -54,4 +54,13 @@ my $invalid = theme_problem_message('../x', '/a/themes');
 like $invalid, qr/letters, digits/, 'themeProblemMessage__invalid_name__states_the_allowed_characters';
 unlike $invalid, qr{/a/themes}, 'themeProblemMessage__invalid_name__does_not_claim_a_search_happened';
 
+# The tests above pass their own directories, so this pins where shipped themes
+# are looked for, and that they are looked for before any site-local one.
+Dancer::Config::setting('public' => '/xt/public');
+Dancer::Config::setting('template_paths' => ['/xt/site']);
+Dancer::Config::setting('site_local_files' => 0);
+is_deeply [ App::Netdisco::Web::Theme::theme_dirs() ],
+  [ '/xt/public/css/themes', '/xt/site/themes' ],
+  'themeDirs__shipped_and_site_local__searches_shipped_themes_first';
+
 done_testing;

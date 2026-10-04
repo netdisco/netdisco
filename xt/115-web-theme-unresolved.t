@@ -47,6 +47,12 @@ test_psgi $app, sub {
   my $cb = shift;
   is $cb->(GET '/theme.css')->code, 404,
     'themeRoute__no_resolved_theme__answers_not_found';
+
+  # Reachable without a login, so it must not render the error page that
+  # lists the application's settings when show_errors is on.
+  setting('show_errors' => 1);
+  is $cb->(GET '/theme.css')->content, '',
+    'themeRoute__no_resolved_theme__answers_with_an_empty_body_even_with_show_errors';
 };
 
 done_testing;
