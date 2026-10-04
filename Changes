@@ -4,6 +4,8 @@
 
   * a port_control user whose role is not defined is refused port changes,
     rather than permitted on every port
+  * accept only a number or MCE's documented forms in the workers tasks
+    setting
 
 2.109003 - 2026-10-03
 
