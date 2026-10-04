@@ -8,6 +8,8 @@
     setting
   * the backend matches a queued job's action as text when it checks for a
     duplicate already running
+  * fold line breaks out of the To, From and Subject headers of node monitor
+    mail
 
 2.109003 - 2026-10-03
 

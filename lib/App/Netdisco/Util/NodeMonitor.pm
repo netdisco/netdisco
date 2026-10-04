@@ -14,6 +14,20 @@ our @EXPORT_OK = qw/
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
+sub _header_value {
+  (my $value = shift) =~ s/[\r\n]+/ /g;
+  return $value;
+}
+
+sub _headers {
+  my ($to, $subject, $domain) = @_;
+  return (
+    "To: @{[_header_value($to)]}\n",
+    "From: Netdisco <netdisco\@@{[_header_value($domain)]}>\n",
+    "Subject: @{[_header_value($subject)]}\n\n",
+  );
+}
+
 sub _email {
   my ($to, $subject, $body) = @_;
   return unless $to;
@@ -21,9 +35,7 @@ sub _email {
 
   my $SENDMAIL = '/usr/sbin/sendmail';
   open (SENDMAIL, "| $SENDMAIL -t") or die "Can't open sendmail at $SENDMAIL.\n";
-    print SENDMAIL "To: $to\n";
-    print SENDMAIL "From: Netdisco <netdisco\@$domain>\n";
-    print SENDMAIL "Subject: $subject\n\n";
+    print SENDMAIL _headers($to, $subject, $domain);
     print SENDMAIL $body;
   close (SENDMAIL) or die "Can't send letter. $!\n";
 }

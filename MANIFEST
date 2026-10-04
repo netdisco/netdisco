@@ -657,6 +657,7 @@ xt/101-job-overrides-in-poller.t
 xt/104-port-scope-unknown-role.t
 xt/105-workers-tasks-is-arithmetic.t
 xt/106-manager-action-is-literal.t
+xt/107-node-monitor-mail-headers.t
 xt/11-port-sortkey.t
 xt/12-port-order-helper.t
 xt/20-checkacl.t
