@@ -1,3 +1,9 @@
+2.110000 - tbd
+
+  [ENHANCEMENTS]
+
+  * web_theme setting loads a Bootstrap color-mode stylesheet, shipped or site-local
+
 2.109004 - 2026-10-03
 
   [BUG FIXES]

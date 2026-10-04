@@ -244,6 +244,7 @@ lib/App/Netdisco/Web/Report.pm
 lib/App/Netdisco/Web/Search.pm
 lib/App/Netdisco/Web/Static.pm
 lib/App/Netdisco/Web/Statistics.pm
+lib/App/Netdisco/Web/Theme.pm
 lib/App/Netdisco/Web/TypeAhead.pm
 lib/App/Netdisco/Worker/Loader.pm
 lib/App/Netdisco/Worker/Plugin.pm
@@ -661,6 +662,11 @@ xt/105-workers-tasks-is-arithmetic.t
 xt/106-manager-action-is-literal.t
 xt/107-node-monitor-mail-headers.t
 xt/11-port-sortkey.t
+xt/113-web-theme-resolve.t
+xt/114-web-theme-app.t
+xt/115-web-theme-unresolved.t
+xt/116-web-theme-layout.t
+xt/117-theme-bootstrap-variables.t
 xt/12-port-order-helper.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
