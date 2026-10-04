@@ -51,6 +51,14 @@ sub carries { App::Netdisco::Backend::Job->carries_config_overrides({@_}) }
 
 ok carries(action => 'portcontrol', port => $override),
   'carries_config_overrides__override_in_port__is_true';
+ok carries(action => 'portcontrol', port => 'Gi1/0/1', subaction => $override),
+  'carries_config_overrides__override_in_subaction__is_true';
+ok !carries(action => 'portcontrol', port => 'GigabitEthernet1/0/1',
+            subaction => 'up'),
+  'carries_config_overrides__plain_port_and_status__is_false';
+ok !carries(action => 'portname', port => 'Port 1.2',
+            subaction => 'uplink to core'),
+  'carries_config_overrides__port_name_with_spaces__is_false';
 ok carries(action => 'portcontrol', port => 'Gi1/0/1',
            subaction => 'snmptimeout=1-other'),
   'carries_config_overrides__key_value_form_in_subaction__is_true';
