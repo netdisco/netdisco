@@ -2,7 +2,7 @@
 
   [ENHANCEMENTS]
 
-  * web_theme setting loads a Bootstrap color-mode stylesheet, shipped or site-local
+  * #1709 add a web_theme setting for Bootstrap color-mode themes
 
 2.109004 - 2026-10-03
 
