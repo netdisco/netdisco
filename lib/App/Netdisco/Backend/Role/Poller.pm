@@ -28,6 +28,8 @@ sub worker_body {
 
       try {
           $job->started(scalar localtime);
+          # the title shows the port, so take any overrides out of it first
+          $job->apply_config_overrides;
           prctl sprintf 'nd2: #%s poll: #%s: %s',
             $wid, $job->id, $job->display_name;
           info sprintf "pol (%s): starting %s job(%s) at %s",

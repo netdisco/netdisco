@@ -5,6 +5,7 @@ use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Util::Configuration
   qw/parse_params_to_config split_params_to_config/;
+use Hash::Util::FieldHash 'fieldhash';
 
 use Moo;
 use Term::ANSIColor qw(:constants :constants256);
@@ -66,14 +67,22 @@ around BUILDARGS => sub {
 
 Applies any configuration overrides carried in C<port> or C<subaction> to
 this process's configuration, leaving the residual value in their place.
+Only the first call on a job does anything.
 
 =cut
+
+# kept off the object: py_worklet hands every job key to Python's
+# JobManager, which rejects keys it does not know
+fieldhash my %overrides_applied;
 
 # Not done in BUILDARGS: a queued job is built in the backend manager and run
 # in a poller, a separate process, so overrides applied while building it
 # changed only the manager's configuration, and never reached the poller.
 sub apply_config_overrides {
   my $job = shift;
+
+  # a residual value can itself parse as an override
+  return if $overrides_applied{$job}++;
 
   foreach my $field (_override_fields($job->action)) {
       $job->$field( parse_params_to_config($job->$field) )
