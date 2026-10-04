@@ -661,6 +661,7 @@ xt/104-port-scope-unknown-role.t
 xt/105-workers-tasks-is-arithmetic.t
 xt/106-manager-action-is-literal.t
 xt/107-node-monitor-mail-headers.t
+xt/108-openssh-debug-mask.t
 xt/11-port-sortkey.t
 xt/113-web-theme-resolve.t
 xt/114-web-theme-app.t
