@@ -4,6 +4,8 @@
 
   * netdisco-sshcollector checks SSH host keys against the netdisco user's
     known_hosts file
+  * HTTP hooks verify TLS certificates; set
+    PERL_HTTP_TINY_SSL_INSECURE_BY_DEFAULT=1 to turn this off
 
   [BUG FIXES]
 

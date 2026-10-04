@@ -663,6 +663,7 @@ xt/107-node-monitor-mail-headers.t
 xt/109-deploy-verifies-tls.t
 xt/110-exec-hook-string-cmd-fields.t
 xt/111-sshcollector-host-key-checking.t
+xt/112-hook-http-verifies-tls.t
 xt/11-port-sortkey.t
 xt/12-port-order-helper.t
 xt/20-checkacl.t
