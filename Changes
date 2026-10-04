@@ -6,6 +6,8 @@
     known_hosts file
   * HTTP hooks verify TLS certificates; set
     PERL_HTTP_TINY_SSL_INSECURE_BY_DEFAULT=1 to turn this off
+  * Python CLI worklets check SSH host keys against known_hosts; set
+    ssh_strict: false in the device_auth entry to turn this off
 
   [BUG FIXES]
 
