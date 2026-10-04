@@ -2264,3 +2264,39 @@ td.nd_nowrap {
 #dp-data-table > tbody > tr > td > .nd_div-closer:first-child {
   margin-top: 0;
 }
+
+/* Reports category menu: independent of the selected color palette. */
+.navbar .dropdown-menu:has(> li.dropend) {
+  min-width: 160px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.navbar .dropend > .dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 3px 20px;
+  line-height: 20px;
+}
+.navbar .dropend > .dropdown-toggle::after {
+  flex: 0 0 auto;
+  margin-left: 0;
+  vertical-align: middle;
+  border-left-color: #999;
+}
+.navbar .dropend > .dropdown-toggle:hover::after,
+.navbar .dropend > .dropdown-toggle:focus::after {
+  border-left-color: currentColor;
+}
+/* Cancel the category menu's 5px top padding and 1px border.
+   Each submenu aligns with its category, including categories below Device. */
+.navbar .dropend > .dropdown-menu {
+  margin-top: -6px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.navbar .dropend > .dropdown-menu > li > .dropdown-item {
+  padding: 3px 20px;
+  line-height: 20px;
+}
