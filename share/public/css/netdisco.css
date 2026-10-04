@@ -2258,3 +2258,9 @@ td.nd_nowrap {
 .nd_daterange-pair { display: grid; gap: .25em; margin-top: .3em }
 .nd_daterange-addon { width: 3.3em; justify-content: flex-start; font-size: .78rem; padding: .1rem .4rem }
 .nd_daterange-input { font-size: .85rem; padding: .15rem .4rem }
+
+/* A first node has no preceding block whose gap needs closing.
+   Safari otherwise lets its negative margin pull content above the cell padding. */
+#dp-data-table > tbody > tr > td > .nd_div-closer:first-child {
+  margin-top: 0;
+}
