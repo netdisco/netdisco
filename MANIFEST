@@ -654,6 +654,8 @@ xt/01-local-pod.t
 xt/10-sort_port.t
 xt/100-expire-node-wireless.t
 xt/101-job-overrides-in-poller.t
+xt/102-config-overrides-need-admin.t
+xt/103-job-display-name.t
 xt/104-port-scope-unknown-role.t
 xt/105-workers-tasks-is-arithmetic.t
 xt/106-manager-action-is-literal.t

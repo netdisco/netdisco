@@ -7,6 +7,7 @@ use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::JobQueue qw/jq_insert jq_userlog/;
 use App::Netdisco::Util::Port qw/device_acl_by_role_check sync_portctl_roles/;
+use App::Netdisco::Backend::Job;
 
 my %action_map = (
   'location' => 'location',
@@ -50,6 +51,12 @@ ajax '/ajax/portcontrol' => require_any_role [qw(admin port_control)] => sub {
     my $subaction = ($action =~ m/^(?:power|portcontrol)/
       ? (param('action') ."-other")
       : param('value'));
+
+    send_error('Configuration overrides in a port or value need the admin'
+      .' role. Send the port name and value on their own.', 403)
+      if not user_has_role('admin')
+         and App::Netdisco::Backend::Job->carries_config_overrides({
+           action => $action, port => param('port'), subaction => $subaction });
 
     schema(vars->{'tenant'})->txn_do(sub {
       if (param('port')) {

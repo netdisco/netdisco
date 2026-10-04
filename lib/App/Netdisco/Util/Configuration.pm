@@ -14,6 +14,7 @@ our @EXPORT_OK = qw/
   refresh_managed_acl
   load_acls_from_database
   parse_params_to_config
+  split_params_to_config
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -155,8 +156,22 @@ to return, it returns that, otherwise returns undef.
 =cut
 
 sub parse_params_to_config {
+  my ($actual_value, $overrides) = split_params_to_config(shift);
+  merge_into_configuration($overrides) if $overrides;
+  return $actual_value;
+}
+
+=head1 split_params_to_config
+
+Works out what has been provided as C<parse_params_to_config> does, but
+applies nothing. Returns the residual value and a hashref of the
+configuration overrides, or undef when there are none.
+
+=cut
+
+sub split_params_to_config {
   my $orig_value = shift;
-  return undef unless defined $orig_value;
+  return (undef, undef) unless defined $orig_value;
 
   # value via "schedule:" deployment.yml would already be a Perl struct
   my $struct = (ref $orig_value ne q{})
@@ -169,12 +184,12 @@ sub parse_params_to_config {
 
   # case when value is a struct but not config (hashref), just leave it alone
   if ((ref $struct ne q{}) and (ref $struct ne ref {})) {
-      return $orig_value;
+      return ($orig_value, undef);
   }
 
   # case when value is an empty string
   if (($orig_value eq q{}) or (defined $struct and $struct eq q{})) {
-      return q{};
+      return (q{}, undef);
   }
 
   # finally, we have either a lengthy string or a struct
@@ -192,11 +207,11 @@ sub parse_params_to_config {
           # try to decode base64
           my $decoded = try { from_json(decode_base64($value)) }; # might explode
           if (defined $decoded and ref {} eq ref $decoded) {
-              return parse_params_to_config($decoded);
+              return split_params_to_config($decoded);
           }
           # some other use of subaction (file ref, log comment, etc)
           else {
-              return $value;
+              return ($value, undef);
           }
       }
   }
@@ -212,15 +227,12 @@ sub parse_params_to_config {
   }
 
   $value = $value->{'with'} if exists $value->{'with'};
-  if (ref $value eq ref {}) {
-      merge_into_configuration($value);
-  }
-  else {
-      # we can recurse to decode a stringified JSON 'with'
-      parse_params_to_config($value);
-  }
+  # we can recurse to decode a stringified JSON 'with'
+  my $overrides = ((ref $value eq ref {})
+    ? $value : (split_params_to_config($value))[1]);
 
-  return $actual_value;
+  return ($actual_value,
+    ((ref $overrides eq ref {} and scalar keys %$overrides) ? $overrides : undef));
 }
 
 sub parse_config_string_to_dict {

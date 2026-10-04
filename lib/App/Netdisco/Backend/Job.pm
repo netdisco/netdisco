@@ -3,7 +3,9 @@ package App::Netdisco::Backend::Job;
 use Dancer qw/:moose :syntax !error !params/;
 use aliased 'App::Netdisco::Worker::Status';
 
-use App::Netdisco::Util::Configuration 'parse_params_to_config';
+use App::Netdisco::Util::Configuration
+  qw/parse_params_to_config split_params_to_config/;
+use Hash::Util::FieldHash 'fieldhash';
 
 use Moo;
 use Term::ANSIColor qw(:constants :constants256);
@@ -65,8 +67,13 @@ around BUILDARGS => sub {
 
 Applies any configuration overrides carried in C<port> or C<subaction> to
 this process's configuration, leaving the residual value in their place.
+Only the first call on a job does anything.
 
 =cut
+
+# kept off the object: py_worklet hands every job key to Python's
+# JobManager, which rejects keys it does not know
+fieldhash my %overrides_applied;
 
 # Not done in BUILDARGS: a queued job is built in the backend manager and run
 # in a poller, a separate process, so overrides applied while building it
@@ -74,14 +81,40 @@ this process's configuration, leaving the residual value in their place.
 sub apply_config_overrides {
   my $job = shift;
 
-  $job->port( parse_params_to_config($job->port) )
-    if defined $job->port;
-  $job->subaction( parse_params_to_config($job->subaction) )
-    if defined $job->subaction
-       and ($job->action and $job->action !~ m/^(?:hook|cf_)/);
+  # a residual value can itself parse as an override
+  return if $overrides_applied{$job}++;
+
+  foreach my $field (_override_fields($job->action)) {
+      $job->$field( parse_params_to_config($job->$field) )
+        if defined $job->$field;
+  }
 
   $job->subaction(q{})
     if ! defined $job->subaction;
+}
+
+=head2 carries_config_overrides( \%spec )
+
+Class method. True when a job queued from C<%spec> would apply configuration
+overrides, as C<apply_config_overrides> reads them. Takes the same keys as
+C<jq_insert>, where C<extra> is an alias for C<subaction>.
+
+=cut
+
+sub carries_config_overrides {
+  my ($class, $spec) = @_;
+  my %value = (port => $spec->{port},
+               subaction => ($spec->{extra} || $spec->{subaction}));
+
+  return scalar grep { (split_params_to_config($value{$_}))[1] }
+                     _override_fields($spec->{action});
+}
+
+# hook and custom field jobs keep their subaction as data
+sub _override_fields {
+  my $action = shift;
+  return ('port',
+    (($action and $action !~ m/^(?:hook|cf_)/) ? 'subaction' : ()));
 }
 
 =head2 display_name
