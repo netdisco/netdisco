@@ -10,8 +10,6 @@ use App::Netdisco::Web::Plugin::AdminTask::Appearance::State;
 use Crypt::URandom ();
 use File::Spec;
 
-register_css('ClassicColors');
-register_javascript('ClassicColors');
 register_admin_task({tag => 'appearance', label => 'Appearance'});
 
 sub _file {

@@ -3,7 +3,7 @@ const {test} = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const source = fs.readFileSync('share/views/plugin/ClassicColors/ClassicColors.js', 'utf8');
+const source = fs.readFileSync('share/public/javascripts/netdisco-appearance.js', 'utf8');
 const flush = () => new Promise(resolve => setImmediate(resolve));
 function setup() {
   const listeners = {}, requests = [], attrs = {};

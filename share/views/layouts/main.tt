@@ -25,6 +25,9 @@
   <link rel="stylesheet" href="[% uri_base | none %]/css/dataTables.bootstrap.css?v=[% asset_version | none %]"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/nd_print.css?v=[% asset_version | none %]" media="print"/>
 
+  [% IF settings._admin_tasks.appearance %]
+  <link rel="stylesheet" href="[% uri_base | none %]/css/classic-colors.css?v=[% asset_version | none %]"/>
+  [% END %]
   [% FOREACH add_css IN settings._additional_css %]
   <link rel="stylesheet" href="[% uri_base | none %]/plugin/[% add_css | none %]/[% add_css | none %].css?v=[% asset_version | none %]"/>
   [% END %]
@@ -212,6 +215,9 @@
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-deferred-nodes.js?v=[% asset_version | none %]"></script>
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-portcontrol.js?v=[% asset_version | none %]"></script>
 
+[% IF settings._admin_tasks.appearance %]
+<script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-appearance.js?v=[% asset_version | none %]"></script>
+[% END %]
 [% FOREACH add_js IN settings._additional_javascript %]
 <script type="text/javascript" src="[% uri_base | none %]/plugin/[% add_js | none %]/[% add_js | none %].js?v=[% asset_version | none %]"></script>
 [% END %]

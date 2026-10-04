@@ -782,8 +782,8 @@ xt/portsort-corpus.json
 lib/App/Netdisco/Web/Plugin/AdminTask/Appearance.pm
 lib/App/Netdisco/Web/Plugin/AdminTask/Appearance/State.pm
 share/views/ajax/admintask/appearance.tt
-share/views/plugin/ClassicColors/ClassicColors.css
-share/views/plugin/ClassicColors/ClassicColors.js
+share/public/css/classic-colors.css
+share/public/javascripts/netdisco-appearance.js
 docs/appearance.md
 xt/41-appearance-state.t
 xt/js/appearance.test.js
