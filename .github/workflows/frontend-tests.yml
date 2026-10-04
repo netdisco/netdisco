@@ -429,3 +429,16 @@ jobs:
 
       - name: The job queue's delete-all link posts
         run: node --test xt/js/admin-button-dispatch.test.js
+
+  swagger-spec-url:
+    name: the Swagger UI page's spec URL guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Only a same-origin spec URL is loaded
+        run: node --test xt/js/swagger-spec-url.test.js
