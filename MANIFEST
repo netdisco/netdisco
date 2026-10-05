@@ -350,6 +350,7 @@ share/public/css/dataTables.bootstrap.css
 share/public/css/font-awesome.min.css
 share/public/css/nd_print.css
 share/public/css/netdisco.css
+share/public/css/themes/classic.css
 share/public/dispatch.cgi
 share/public/dispatch.fcgi
 share/public/images/crystalclear_mag.png
