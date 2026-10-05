@@ -26,8 +26,8 @@ foreach my $theme (@themes) {
 }
 
 # Bootstrap keeps .text-success and .text-danger at their light values in dark
-# mode, under 3:1 on striped dark rows, and the contrast sweep cannot see icon
-# glyphs. Text keeps Bootstrap's color; only icons are lifted.
+# mode, under 3:1 on striped dark rows. Text keeps Bootstrap's color; only
+# icons are lifted.
 my @dark = css_rules(read_text('share/public/css/themes/dark.css'));
 foreach my $variant (qw/success danger/) {
   my $selector = qq{[data-bs-theme="dark"] i.text-$variant};
@@ -36,5 +36,11 @@ foreach my $variant (qw/success danger/) {
                 and grep { $_ eq $selector } split /\s*,\s*/, $_->{selector} } @dark),
     "darkTheme__text_${variant}_icon__uses_bootstrap_dark_emphasis_color" );
 }
+
+# The light value, translucent red, measures 2.45:1 on the dark sidebar.
+ok( (grep { $_->{selector} eq '[data-bs-theme="dark"]'
+              and $_->{property} eq '--nd-pin-active'
+              and $_->{value} eq 'var(--bs-danger-text-emphasis)' } @dark),
+  'darkTheme__pinned_sidebar_thumbtack__uses_bootstrap_dark_danger_emphasis' );
 
 done_testing;

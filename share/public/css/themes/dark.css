@@ -42,6 +42,7 @@
   --nd-sidebar-hr-fill: var(--bs-border-color);
   --nd-sidebar-hr-top: var(--bs-border-color);
   --nd-sidebar-hr-bottom: var(--bs-body-bg);
+  --nd-pin-active: var(--bs-danger-text-emphasis);
 
   --nd-field-icon: #adb5bd;
   --nd-field-success-bg: #1f4d2b;
