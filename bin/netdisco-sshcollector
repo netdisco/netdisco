@@ -116,7 +116,6 @@ sub main {
                 async => 0,
                 default_stderr_file => '/dev/null',
                 master_opts => [
-                    -o => "StrictHostKeyChecking=no",
                     -o => "BatchMode=no"
                 ],
             );
@@ -253,6 +252,12 @@ C<App::Netdisco::SSHCollector::Platform::ACE>.
 If the password is blank, public key authentication will be attempted with the
 default key for the netdisco user. Password protected keys are currently not
 supported.
+
+Each host's SSH key must already be in the netdisco user's
+F<~/.ssh/known_hosts> file, otherwise the connection is refused. Add a new
+host's key by connecting to it once as the netdisco user, or with
+C<ssh-keyscan>. Host key checking can be relaxed for a single host in the
+netdisco user's F<~/.ssh/config>.
 
 =back
 

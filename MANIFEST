@@ -423,6 +423,7 @@ share/python/netdisco/netdisco/worklet/stats/early.py
 share/python/netdisco/pyproject.toml
 share/python/netdisco/ruff.toml
 share/python/netdisco/tests/__init__.py
+share/python/netdisco/tests/test_ssh.py
 share/python/tfsm/index
 share/python/tfsm/juniper_junos_show_bgp_summary.textfsm
 share/python/tfsm/juniper_junos_show_route_forwarding-table.textfsm
@@ -662,6 +663,10 @@ xt/105-workers-tasks-is-arithmetic.t
 xt/106-manager-action-is-literal.t
 xt/107-node-monitor-mail-headers.t
 xt/108-openssh-debug-mask.t
+xt/109-deploy-verifies-tls.t
+xt/110-exec-hook-string-cmd-fields.t
+xt/111-sshcollector-host-key-checking.t
+xt/112-hook-http-verifies-tls.t
 xt/11-port-sortkey.t
 xt/113-web-theme-resolve.t
 xt/114-web-theme-app.t

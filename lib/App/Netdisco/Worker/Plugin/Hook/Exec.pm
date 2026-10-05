@@ -8,6 +8,18 @@ use MIME::Base64 'decode_base64';
 use Command::Runner;
 use Template;
 
+# a string cmd goes through the shell: only ip and ndo may be substituted
+sub render_shell_cmd {
+  my ($orig_cmd, $event_data) = @_;
+  my $tt = Template->new({ ENCODING => 'utf8', STRICT => 1 });
+  my $shell_data = { map {( $_ => $event_data->{$_} )} qw/ndo ip/ };
+
+  my $cmd = undef;
+  return ($cmd, undef) if $tt->process(\$orig_cmd, $shell_data, \$cmd);
+  return (undef, sprintf '%s; a string cmd may use only [%% ip %%] and [%% ndo %%], '
+    .'write cmd as a list to pass other event fields', $tt->error);
+}
+
 register_worker({ phase => 'main' }, sub {
   my ($job, $workerconf) = @_;
   my $extra = from_json( decode_base64( $job->extra || '' ) );
@@ -31,12 +43,13 @@ register_worker({ phase => 'main' }, sub {
           }
       }
       else {
-          $tt->process(\$orig_cmd, $event_data, \$cmd);
+          my $error = undef;
+          ($cmd, $error) = render_shell_cmd($orig_cmd, $event_data);
+          return Status->error("exec Hook: $error") if defined $error;
       }
   }
   $cmd ||= $orig_cmd;
 
-  # debug sprintf(q{cmd: '%s'}, $cmd) if $ENV{ND2_SHOW_COMMUNITY};
   my $result = Command::Runner->new(
     command => $cmd,
     timeout => ($action_conf->{'timeout'} || 60),
