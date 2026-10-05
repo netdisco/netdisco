@@ -676,6 +676,7 @@ xt/116-web-theme-layout.t
 xt/117-theme-bootstrap-variables.t
 xt/118-web-theme-scope-warning.t
 xt/12-port-order-helper.t
+xt/120-hint-over-stored-tag.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t
