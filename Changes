@@ -1,3 +1,29 @@
+2.110000 - 2026-10-04
+
+  [ENHANCEMENTS]
+
+  * #1709 add a web_theme setting for Bootstrap color-mode themes
+  * #1710 check SSH host keys, verify TLS, and limit string exec hook commands
+  * HTTP hooks verify TLS certificates; set
+    PERL_HTTP_TINY_SSL_INSECURE_BY_DEFAULT=1 to turn this off
+  * Python CLI worklets check SSH host keys against known_hosts; set
+    ssh_strict: false in the device_auth entry to turn this off
+
+  [BUG FIXES]
+
+  * #1705 align the Reports submenu indicators and category rows
+  * #1706 keep the first connected node within its port cell
+  * #1708 match the Reports menu's padding to the other menus after #1705
+  * #1711 decide the token and metrics allow lists on the real client address
+  * netdisco-sshcollector -O and SSH_TRACE no longer turn on tracing of the
+    ssh process
+  * netdisco-deploy verifies TLS certificates when it downloads OUI data and
+    MIBs; set PERL_HTTP_TINY_SSL_INSECURE_BY_DEFAULT=1 to turn this off
+  * a string exec hook cmd may use only the ip and ndo fields; write cmd as a
+    list to pass other event fields
+  * a token_acl or metrics_allow entry for an IPv4 address now matches that
+    client on a dual-stack web server
+
 2.109004 - 2026-10-03
 
   [BUG FIXES]

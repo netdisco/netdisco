@@ -155,7 +155,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.109004"
+         "version" : "2.110000"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -845,6 +845,9 @@
       "App::Netdisco::Web::Statistics" : {
          "file" : "lib/App/Netdisco/Web/Statistics.pm"
       },
+      "App::Netdisco::Web::Theme" : {
+         "file" : "lib/App/Netdisco/Web/Theme.pm"
+      },
       "App::Netdisco::Web::TypeAhead" : {
          "file" : "lib/App/Netdisco/Web/TypeAhead.pm"
       },
@@ -1083,6 +1086,6 @@
       "x_IRC" : "irc://irc.libera.chat/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.109004",
+   "version" : "2.110000",
    "x_serialization_backend" : "JSON::PP version 4.16"
 }

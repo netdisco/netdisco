@@ -22,8 +22,13 @@ register_worker({ phase => 'main' }, sub {
     if !defined $action_conf->{'url'};
 
   my $tt = Template->new({ ENCODING => 'utf8' });
-  my $http = HTTP::Tiny
-    ->new( timeout => (($action_conf->{'timeout'} || 5000) / 1000) );
+  my $http = HTTP::Tiny->new(
+    timeout => (($action_conf->{'timeout'} || 5000) / 1000),
+    # explicit: HTTP::Tiny before 0.083 neither verifies by default
+    # nor reads this variable
+    verify_SSL =>
+      (($ENV{PERL_HTTP_TINY_SSL_INSECURE_BY_DEFAULT} || '') ne '1'),
+  );
 
   $action_conf->{'custom_headers'} ||= {};
   $action_conf->{'custom_headers'}->{'Content-Type'}

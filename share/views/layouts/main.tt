@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html[% IF settings.web_color_palette == 'classic' %] data-nd-palette="classic"[% END %]>
+<html[% IF settings._web_theme %] data-bs-theme="[% settings._web_theme.name | html_entity %]"[% END %]>
 <head>
   <meta http-equiv="Content-type" content="text/html; charset=[% settings.charset | html_entity %]" />
   <link rel="shortcut icon" href="[% uri_base | none %]/images/favicon.ico" type="image/x-icon">
@@ -24,10 +24,10 @@
   <link rel="stylesheet" href="[% uri_base | none %]/css/bootstrap-tree.css?v=[% asset_version | none %]"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/dataTables.bootstrap.css?v=[% asset_version | none %]"/>
   <link rel="stylesheet" href="[% uri_base | none %]/css/nd_print.css?v=[% asset_version | none %]" media="print"/>
+  [%- IF settings._web_theme %]
+  <link rel="stylesheet" href="[% uri_base | none %]/theme.css?v=[% settings._web_theme.mtime | uri %]"/>
+  [%- END %]
 
-  [% IF settings.web_color_palette == 'classic' %]
-  <link rel="stylesheet" href="[% uri_base | none %]/css/classic-colors.css?v=[% asset_version | none %]"/>
-  [% END %]
   [% FOREACH add_css IN settings._additional_css %]
   <link rel="stylesheet" href="[% uri_base | none %]/plugin/[% add_css | none %]/[% add_css | none %].css?v=[% asset_version | none %]"/>
   [% END %]

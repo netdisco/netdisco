@@ -1513,6 +1513,12 @@ ul ul, ul ol, ol ol, ol ul {
   .nd_div-closer-last {
     margin-bottom: 14px;
   }
+  /* Nothing to make up where #dp-data-table > tbody > tr > td > .nd_div-closer:first-child
+     cancels the first block's pull-up. */
+  #dp-data-table > tbody > tr > td > .nd_div-closer:first-child ~ .nd_div-closer-last,
+  #dp-data-table > tbody > tr > td > .nd_div-closer-last:first-child {
+    margin-bottom: 0;
+  }
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -2266,18 +2272,11 @@ td.nd_nowrap {
 }
 
 /* Reports category menu: independent of the selected color palette. */
-.navbar .dropdown-menu:has(> li.dropend) {
-  min-width: 160px;
-  padding-top: 5px;
-  padding-bottom: 5px;
-}
 .navbar .dropend > .dropdown-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  padding: 3px 20px;
-  line-height: 20px;
 }
 .navbar .dropend > .dropdown-toggle::after {
   flex: 0 0 auto;
@@ -2289,14 +2288,8 @@ td.nd_nowrap {
 .navbar .dropend > .dropdown-toggle:focus::after {
   border-left-color: currentColor;
 }
-/* Cancel the category menu's 5px top padding and 1px border.
+/* Cancel the category menu's top padding and border.
    Each submenu aligns with its category, including categories below Device. */
 .navbar .dropend > .dropdown-menu {
-  margin-top: -6px;
-  padding-top: 5px;
-  padding-bottom: 5px;
-}
-.navbar .dropend > .dropdown-menu > li > .dropdown-item {
-  padding: 3px 20px;
-  line-height: 20px;
+  margin-top: calc(-1 * (var(--bs-dropdown-padding-y) + var(--bs-dropdown-border-width)));
 }
