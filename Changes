@@ -1,3 +1,11 @@
+2.111000 - tbd
+
+  [ENHANCEMENTS]
+
+  * add a dark web_theme and let site themes opt in to netdisco's component colors
+  * a site theme now gets Bootstrap's own component colors unless its file
+    contains /* netdisco: base-layer */
+
 2.110000 - 2026-10-04
 
   [ENHANCEMENTS]
