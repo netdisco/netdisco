@@ -27,7 +27,37 @@ our @EXPORT_OK = qw/
 /;
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
+my $SUPPORTED_ACTIONS;
+sub _compute_supported_actions {
+  my @supported;
+
+  my @core_plugins = @{ setting('worker_plugins') || [] };
+  my @user_plugins = @{ setting('extra_worker_plugins') || [] };
+
+  foreach my $plugin (@user_plugins, @core_plugins) {
+    my $p = $plugin;
+    $p =~ s/^X::/+App::NetdiscoX::Worker::Plugin::/;
+    $p = 'App::Netdisco::Worker::Plugin::' . $p if $p !~ m/^\+/;
+    $p =~ s/^\+//;
+
+    if ($p =~ m/::Plugin::([^:]+)(?:::|$)/i) {
+      my $action = lc $1;
+      next if $action eq 'internal';
+      next if scalar grep {$_ eq $action} @supported;
+      push @supported, $action;
+    }
+  }
+  debug 'Backend supports actions: ' . join(', ', @supported);
+  return \@supported;
+}
+
+sub _get_supported_actions {
+  return $SUPPORTED_ACTIONS ||= _compute_supported_actions();
+}
+
 sub jq_warm_thrusters {
+  # compute the list of supported actions at startup
+  _get_supported_actions();
   my $rs = schema(vars->{'tenant'})->resultset('DeviceSkip');
 
   schema(vars->{'tenant'})->txn_do(sub {
@@ -68,8 +98,9 @@ sub jq_getsome {
   my @returned = ();
 
   my $tasty = schema(vars->{'tenant'})->resultset('Virtual::TastyJobs')
-    ->search(undef,{ bind => [
-      setting('workers')->{'BACKEND'}, setting('job_prio')->{'high'},
+    ->search(undef, { bind => [
+      setting('workers')->{'BACKEND'}, _get_supported_actions(),
+      setting('job_prio')->{'high'},
       setting('workers')->{'BACKEND'}, setting('workers')->{'max_deferrals'},
       setting('workers')->{'retry_after'}, $num_slots,
     ]});

@@ -17,7 +17,8 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
              AND admin.action = ANY (ds.actionset))
       WHERE admin.status = 'queued'
         AND admin.backend IS NULL
-        AND ds.device IS NULL)
+        AND ds.device IS NULL
+        AND split_part(admin.action, '::', 1) = ANY (string_to_array(btrim(?, '{"}'), '","')))
 
   SELECT my_jobs.*,
          CASE WHEN ( (my_jobs.username IS NOT NULL AND (((ds.deferrals = 0 OR ds.deferrals IS NULL) AND ds.last_defer IS NULL)
