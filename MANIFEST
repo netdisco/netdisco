@@ -764,6 +764,7 @@ xt/js/navbar-submenu.test.js
 xt/js/netmap-autosave.test.js
 xt/js/netmap-legend.test.js
 xt/js/netmap-loading.test.js
+xt/js/netmap-theme-colors.test.js
 xt/js/no-fragment-scripts.test.js
 xt/js/no-jquery.test.js
 xt/js/no-jstree.test.js
