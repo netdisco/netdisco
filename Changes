@@ -1,5 +1,9 @@
 2.110000 - tbd
 
+  [ENHANCEMENTS]
+
+  * #1709 add a web_theme setting for Bootstrap color-mode themes
+
   [BUG FIXES]
 
   * #1706 keep the first connected node within its port cell

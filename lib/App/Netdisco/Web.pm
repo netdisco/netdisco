@@ -146,6 +146,7 @@ BEGIN {
 
 use App::Netdisco::Web::AuthN;
 use App::Netdisco::Web::Static;
+use App::Netdisco::Web::Theme;
 use App::Netdisco::Web::Search;
 use App::Netdisco::Web::Device;
 use App::Netdisco::Web::Report;
@@ -250,6 +251,9 @@ foreach my $finding (scan_shadowed_files(
       '%s predates %s. Run "netdisco-do checksitelocal" for details.',
       $finding->{path}, $finding->{release};
 }
+
+# after template_paths, which decides where site-local themes can live
+App::Netdisco::Web::Theme::resolve_configured_theme();
 
 # load cookie key from database
 setting('session_cookie_key' => undef);
