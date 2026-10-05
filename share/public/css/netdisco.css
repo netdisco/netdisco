@@ -31,6 +31,80 @@
   --bs-body-color-rgb: 51, 51, 51;
 }
 
+/* Netdisco's own colors. A theme recolors netdisco's elements by setting these
+   under its own data-bs-theme selector; themes/dark.css is the worked example. */
+:root {
+  --nd-field-success-bg: #a9dba9;
+  --nd-field-success-border: #46a546;
+  --nd-search-color: #ffffff;
+  --nd-search-bg: #515151;
+  --nd-search-border: #111111;
+  --nd-search-placeholder: #cccccc;
+  --nd-search-focus-color: #333333;
+  --nd-search-focus-bg: #ffffff;
+  --nd-navbar-icon: #999;
+  --nd-navbar-text: #666;
+  --nd-menu-bg: #ffffff;
+  --nd-menu-border: #aaaaaa;
+  --nd-menu-active-border: #999999;
+  --nd-menu-active-bg: #dadada;
+  --nd-menu-active-color: #212121;
+  --nd-suggest-active-border: #0077b3;
+  --nd-suggest-active-bg: #0081c2;
+  --nd-suggest-active-top: #0088cc;
+  --nd-suggest-active-bottom: #0077b3;
+  --nd-suggest-active-color: #ffffff;
+  --nd-snmp-guide: #a6a6a6;
+  --nd-snmp-label: #333;
+  --nd-snmp-found-bg: #3392e3;
+  --nd-snmp-found-color: #8b0000;
+  --nd-snmp-spinner: #ffc107;
+  --nd-toast-color: #ffffff;
+  --nd-toast-success: #51A351;
+  --nd-toast-error: #BD362F;
+  --nd-toast-info: #2F96B4;
+  --nd-link-button-color: #333333;
+  --nd-link-button-hover-color: #ffffff;
+  --nd-link-button-hover-bg: #0081c2;
+  --nd-heading-bg: #eeeeee;
+  --nd-delete-color: white;
+  --nd-stealth-link: #404040;
+  --nd-device-name: #6D5720;
+  --nd-single-tab: rgb(187,112,0);
+  --nd-archived: #c09853;
+  --nd-log-icon: black;
+  --nd-editing-bg: #FFFFD3;
+  --nd-collapser: #0088CC;
+  --nd-arrow-neutral: #555;
+  --nd-arrow-down: #a3a01e;
+  --nd-arrow-up: #783f03;
+  --nd-sidebar-bg: #f5f5f5;
+  --nd-sidebar-border: #e3e3e3;
+  --nd-pin-active: rgba(255,0,0,0.8);
+  --nd-sidebar-icon: #555;
+  --nd-sidebar-hr-fill: black;
+  --nd-sidebar-hr-top: #eeeeee;
+  --nd-sidebar-hr-bottom: #ffffff;
+  --nd-netmap-control: black;
+  --nd-field-icon: #999;
+  --nd-field-clear-color: #3A87AD;
+  --nd-netmap-bg: #fff;
+  --nd-netmap-running: #FFE4B5;
+  --nd-netmap-settled: #CCFFCC;
+  --nd-netmap-legend-bg: rgba(255,255,255,0.85);
+  --nd-netmap-select: #0d6efd;
+  --nd-netmap-select-fill: rgba(13,110,253,0.08);
+  --nd-snmp-label-hover-bg: #e8eff7;
+  --nd-snmp-empty: #6c757d;
+  --nd-netmap-label: #333;
+  --nd-netmap-link: rgba(150, 150, 150, 0.73);
+  --nd-tree-bg: #fbfbfb;
+  --nd-tree-line: #999;
+  --nd-tree-hover-bg: #eee;
+  --nd-tree-hover-border: #94a0b4;
+  --nd-tree-hover-color: #000;
+}
+
 /* Form controls, buttons and dropdown menus hardcode 1rem rather than reading
    --bs-body-font-size, so the block above does not reach them. These are the
    same elements one rule used to cover:
@@ -352,8 +426,8 @@ label.form-check:not(.form-check-inline) > input[type="checkbox"] {
    replacement has no equivalent, and netdisco.js adds the class to
    .input-group-text with nothing left to act on it. */
 .input-group-text.active {
-  background-color: #a9dba9;
-  border-color: #46a546;
+  background-color: var(--nd-field-success-bg);
+  border-color: var(--nd-field-success-border);
 }
 /* Every one of these spans is a read-only field that used to draw a box: an
    off-white fill, a gray border and gray text. Its replacement draws nothing at
@@ -540,9 +614,9 @@ a:hover, a:focus {
 #nq {
   width: 286px;
   padding: 4px 14px;
-  color: #ffffff;
-  background-color: #515151;
-  border-color: #111111;
+  color: var(--nd-search-color);
+  background-color: var(--nd-search-bg);
+  border-color: var(--nd-search-border);
   border-radius: 15px;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, .1), 0 1px 0 rgba(255, 255, 255, .15);
 }
@@ -551,16 +625,16 @@ a:hover, a:focus {
    state: the old stylesheet set it unconditionally, leaving the prompt pale gray
    on the white focused field. */
 #nq:not(:focus)::placeholder {
-  color: #cccccc;
+  color: var(--nd-search-placeholder);
 }
 /* Focusing turned the pill white and took its border away, growing the padding
    by that border on each side so the box stayed 286px. No static capture reaches
    a focused field, so this comes from the old declarations. */
 #nq:focus {
   padding: 5px 15px;
-  color: #333333;
+  color: var(--nd-search-focus-color);
   text-shadow: 0 1px 0 #ffffff;
-  background-color: #ffffff;
+  background-color: var(--nd-search-focus-bg);
   border: 0;
   box-shadow: 0 0 3px rgba(0, 0, 0, 0.15);
   outline: 0;
@@ -577,7 +651,7 @@ a:hover, a:focus {
   margin-top: 0px !important;
 }
 .nd_navbar-search-icon {
-  color: #999;
+  color: var(--nd-navbar-icon);
   padding-left: 5px;
   padding-right: 5px;
 }
@@ -589,7 +663,7 @@ a:hover, a:focus {
 
 /* for the "logged in as..." text */
 .nd_navbar-text {
-  color: #666;
+  color: var(--nd-navbar-text);
   padding-top: 11px;
 }
 
@@ -642,8 +716,8 @@ div.content > div.tab-content table.nd_floatinghead thead {
   margin: 0;
   padding: 2px;
   list-style: none;
-  background: #ffffff;
-  border: 1px solid #aaaaaa;
+  background: var(--nd-menu-bg);
+  border: 1px solid var(--nd-menu-border);
   border-radius: 4px;
 }
 
@@ -655,19 +729,19 @@ div.content > div.tab-content table.nd_floatinghead thead {
 
 /* The theme's own focus colours, which the fifteen non-search fields kept. */
 .nd_typeahead-menu li.nd_typeahead-active {
-  border: 1px solid #999999;
-  background: #dadada;
-  color: #212121;
+  border: 1px solid var(--nd-menu-active-border);
+  background: var(--nd-menu-active-bg);
+  color: var(--nd-menu-active-color);
 }
 
 /* The two search boxes are the exception: their menu draws the picked row in
    the older framework's blue, and that row is the one Enter takes. */
 .nd_typeahead-menu.nd_search-suggestions li.nd_typeahead-active {
-  border-color: #0077b3;
-  background-color: #0081c2;
-  background-image: linear-gradient(to bottom, #0088cc, #0077b3);
+  border-color: var(--nd-suggest-active-border);
+  background-color: var(--nd-suggest-active-bg);
+  background-image: linear-gradient(to bottom, var(--nd-suggest-active-top), var(--nd-suggest-active-bottom));
   background-repeat: repeat-x;
-  color: #ffffff;
+  color: var(--nd-suggest-active-color);
 }
 
 /* The bar paints above this menu's level, and the menu's border and padding
@@ -726,7 +800,7 @@ ul.nd_snmp-tree { padding-left: 0 }
   left: 10px;
   top: 0;
   bottom: 0;
-  border-left: 1px solid #a6a6a6;
+  border-left: 1px solid var(--nd-snmp-guide);
 }
 .nd_snmp-row:last-child::before { bottom: auto; height: 12px }
 .nd_snmp-row::after {
@@ -735,7 +809,7 @@ ul.nd_snmp-tree { padding-left: 0 }
   left: 10px;
   top: 12px;
   width: 12px;
-  border-top: 1px solid #a6a6a6;
+  border-top: 1px solid var(--nd-snmp-guide);
 }
 
 /* The control this replaced was a boxed + and -, drawn from a sprite image at
@@ -770,30 +844,30 @@ ul.nd_snmp-tree { padding-left: 0 }
   line-height: 22px;
   margin: 1px 0 2px 22px;
   padding: 0 4px 0 1px;
-  color: #333;
+  color: var(--nd-snmp-label);
   text-decoration: none;
   cursor: pointer;
 }
 /* A search marks the node it found. The widget selected it and styled it as a
    match at the same time, which is where both halves of this come from. */
 .nd_snmp-label.nd_snmp-found {
-  background-color: #3392e3;
+  background-color: var(--nd-snmp-found-bg);
   border-radius: 3px;
-  color: #8b0000;
+  color: var(--nd-snmp-found-color);
   font-style: italic;
   font-weight: 700;
 }
-.nd_snmp-label:hover, .nd_snmp-label:focus { color: #333; background-color: #e8eff7 }
+.nd_snmp-label:hover, .nd_snmp-label:focus { color: var(--nd-snmp-label); background-color: var(--nd-snmp-label-hover-bg) }
 .nd_snmp-label > i { margin-right: .4em }
 
 /* The three states the tree widget this replaced set from JavaScript: in
    flight, then either a hit or, from an out of band swap, a miss. */
 #nd_snmp_loading_spinner.htmx-request {
-  color: #ffc107;
+  color: var(--nd-snmp-spinner);
   animation: fa-spin 2s infinite linear;
 }
 
-.nd_snmp-empty { list-style: none; color: #6c757d }
+.nd_snmp-empty { list-style: none; color: var(--nd-snmp-empty) }
 .nd_snmp-empty > i { margin-right: .4em }
 
 /* Notifications. Colours, transparency, box and icons are taken from toastr
@@ -804,7 +878,7 @@ ul.nd_snmp-tree { padding-left: 0 }
 .nd_toast-container .toast {
   --bs-toast-border-width: 0;
   --bs-toast-box-shadow: 0 0 12px #999999;
-  --bs-toast-color: #ffffff;
+  --bs-toast-color: var(--nd-toast-color);
   width: 300px;
   margin-bottom: 6px;
   padding: 15px 15px 15px 50px;
@@ -822,9 +896,9 @@ ul.nd_snmp-tree { padding-left: 0 }
 /* The box above carries the padding, so the body adds none of its own. */
 .nd_toast-container .toast-body { padding: 0 }
 
-.nd_toast-success { --bs-toast-bg: #51A351; background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADsSURBVEhLY2AYBfQMgf///3P8+/evAIgvA/FsIF+BavYDDWMBGroaSMMBiE8VC7AZDrIFaMFnii3AZTjUgsUUWUDA8OdAH6iQbQEhw4HyGsPEcKBXBIC4ARhex4G4BsjmweU1soIFaGg/WtoFZRIZdEvIMhxkCCjXIVsATV6gFGACs4Rsw0EGgIIH3QJYJgHSARQZDrWAB+jawzgs+Q2UO49D7jnRSRGoEFRILcdmEMWGI0cm0JJ2QpYA1RDvcmzJEWhABhD/pqrL0S0CWuABKgnRki9lLseS7g2AlqwHWQSKH4oKLrILpRGhEQCw2LiRUIa4lwAAAABJRU5ErkJggg==") }
-.nd_toast-error   { --bs-toast-bg: #BD362F; background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHOSURBVEhLrZa/SgNBEMZzh0WKCClSCKaIYOED+AAKeQQLG8HWztLCImBrYadgIdY+gIKNYkBFSwu7CAoqCgkkoGBI/E28PdbLZmeDLgzZzcx83/zZ2SSXC1j9fr+I1Hq93g2yxH4iwM1vkoBWAdxCmpzTxfkN2RcyZNaHFIkSo10+8kgxkXIURV5HGxTmFuc75B2RfQkpxHG8aAgaAFa0tAHqYFfQ7Iwe2yhODk8+J4C7yAoRTWI3w/4klGRgR4lO7Rpn9+gvMyWp+uxFh8+H+ARlgN1nJuJuQAYvNkEnwGFck18Er4q3egEc/oO+mhLdKgRyhdNFiacC0rlOCbhNVz4H9FnAYgDBvU3QIioZlJFLJtsoHYRDfiZoUyIxqCtRpVlANq0EU4dApjrtgezPFad5S19Wgjkc0hNVnuF4HjVA6C7QrSIbylB+oZe3aHgBsqlNqKYH48jXyJKMuAbiyVJ8KzaB3eRc0pg9VwQ4niFryI68qiOi3AbjwdsfnAtk0bCjTLJKr6mrD9g8iq/S/B81hguOMlQTnVyG40wAcjnmgsCNESDrjme7wfftP4P7SP4N3CJZdvzoNyGq2c/HWOXJGsvVg+RA/k2MC/wN6I2YA2Pt8GkAAAAASUVORK5CYII=") }
-.nd_toast-info    { --bs-toast-bg: #2F96B4; background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGwSURBVEhLtZa9SgNBEMc9sUxxRcoUKSzSWIhXpFMhhYWFhaBg4yPYiWCXZxBLERsLRS3EQkEfwCKdjWJAwSKCgoKCcudv4O5YLrt7EzgXhiU3/4+b2ckmwVjJSpKkQ6wAi4gwhT+z3wRBcEz0yjSseUTrcRyfsHsXmD0AmbHOC9Ii8VImnuXBPglHpQ5wwSVM7sNnTG7Za4JwDdCjxyAiH3nyA2mtaTJufiDZ5dCaqlItILh1NHatfN5skvjx9Z38m69CgzuXmZgVrPIGE763Jx9qKsRozWYw6xOHdER+nn2KkO+Bb+UV5CBN6WC6QtBgbRVozrahAbmm6HtUsgtPC19tFdxXZYBOfkbmFJ1VaHA1VAHjd0pp70oTZzvR+EVrx2Ygfdsq6eu55BHYR8hlcki+n+kERUFG8BrA0BwjeAv2M8WLQBtcy+SD6fNsmnB3AlBLrgTtVW1c2QN4bVWLATaIS60J2Du5y1TiJgjSBvFVZgTmwCU+dAZFoPxGEEs8nyHC9Bwe2GvEJv2WXZb0vjdyFT4Cxk3e/kIqlOGoVLwwPevpYHT+00T+hWwXDf4AJAOUqWcDhbwAAAAASUVORK5CYII=") }
+.nd_toast-success { --bs-toast-bg: var(--nd-toast-success); background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADsSURBVEhLY2AYBfQMgf///3P8+/evAIgvA/FsIF+BavYDDWMBGroaSMMBiE8VC7AZDrIFaMFnii3AZTjUgsUUWUDA8OdAH6iQbQEhw4HyGsPEcKBXBIC4ARhex4G4BsjmweU1soIFaGg/WtoFZRIZdEvIMhxkCCjXIVsATV6gFGACs4Rsw0EGgIIH3QJYJgHSARQZDrWAB+jawzgs+Q2UO49D7jnRSRGoEFRILcdmEMWGI0cm0JJ2QpYA1RDvcmzJEWhABhD/pqrL0S0CWuABKgnRki9lLseS7g2AlqwHWQSKH4oKLrILpRGhEQCw2LiRUIa4lwAAAABJRU5ErkJggg==") }
+.nd_toast-error   { --bs-toast-bg: var(--nd-toast-error); background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHOSURBVEhLrZa/SgNBEMZzh0WKCClSCKaIYOED+AAKeQQLG8HWztLCImBrYadgIdY+gIKNYkBFSwu7CAoqCgkkoGBI/E28PdbLZmeDLgzZzcx83/zZ2SSXC1j9fr+I1Hq93g2yxH4iwM1vkoBWAdxCmpzTxfkN2RcyZNaHFIkSo10+8kgxkXIURV5HGxTmFuc75B2RfQkpxHG8aAgaAFa0tAHqYFfQ7Iwe2yhODk8+J4C7yAoRTWI3w/4klGRgR4lO7Rpn9+gvMyWp+uxFh8+H+ARlgN1nJuJuQAYvNkEnwGFck18Er4q3egEc/oO+mhLdKgRyhdNFiacC0rlOCbhNVz4H9FnAYgDBvU3QIioZlJFLJtsoHYRDfiZoUyIxqCtRpVlANq0EU4dApjrtgezPFad5S19Wgjkc0hNVnuF4HjVA6C7QrSIbylB+oZe3aHgBsqlNqKYH48jXyJKMuAbiyVJ8KzaB3eRc0pg9VwQ4niFryI68qiOi3AbjwdsfnAtk0bCjTLJKr6mrD9g8iq/S/B81hguOMlQTnVyG40wAcjnmgsCNESDrjme7wfftP4P7SP4N3CJZdvzoNyGq2c/HWOXJGsvVg+RA/k2MC/wN6I2YA2Pt8GkAAAAASUVORK5CYII=") }
+.nd_toast-info    { --bs-toast-bg: var(--nd-toast-info); background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGwSURBVEhLtZa9SgNBEMc9sUxxRcoUKSzSWIhXpFMhhYWFhaBg4yPYiWCXZxBLERsLRS3EQkEfwCKdjWJAwSKCgoKCcudv4O5YLrt7EzgXhiU3/4+b2ckmwVjJSpKkQ6wAi4gwhT+z3wRBcEz0yjSseUTrcRyfsHsXmD0AmbHOC9Ii8VImnuXBPglHpQ5wwSVM7sNnTG7Za4JwDdCjxyAiH3nyA2mtaTJufiDZ5dCaqlItILh1NHatfN5skvjx9Z38m69CgzuXmZgVrPIGE763Jx9qKsRozWYw6xOHdER+nn2KkO+Bb+UV5CBN6WC6QtBgbRVozrahAbmm6HtUsgtPC19tFdxXZYBOfkbmFJ1VaHA1VAHjd0pp70oTZzvR+EVrx2Ygfdsq6eu55BHYR8hlcki+n+kERUFG8BrA0BwjeAv2M8WLQBtcy+SD6fNsmnB3AlBLrgTtVW1c2QN4bVWLATaIS60J2Du5y1TiJgjSBvFVZgTmwCU+dAZFoPxGEEs8nyHC9Bwe2GvEJv2WXZb0vjdyFT4Cxk3e/kIqlOGoVLwwPevpYHT+00T+hWwXDf4AJAOUqWcDhbwAAAAASUVORK5CYII=") }
 
 .nd_snmp_search_param {
   margin-top: -3px !important;
@@ -837,7 +911,7 @@ ul.nd_snmp-tree { padding-left: 0 }
   clear: both;
   font-weight: normal;
   line-height: 18px;
-  color: #333333;
+  color: var(--nd-link-button-color);
   white-space: nowrap;
   text-decoration: none;
   margin-top: 0px !important;
@@ -848,8 +922,8 @@ ul.nd_snmp-tree { padding-left: 0 }
 
 .nd_btn-link:hover, .nd_btn-link:focus {
   text-decoration: none;
-  color: #ffffff;
-  background-color: #0081c2;
+  color: var(--nd-link-button-hover-color);
+  background-color: var(--nd-link-button-hover-bg);
   background-repeat: repeat-x;
   text-shadow: none;
 }
@@ -943,7 +1017,7 @@ pre {
 
 /* for System Information bar */
 .nd_sysinfo-heading {
-  background-color: #eeeeee;
+  background-color: var(--nd-heading-bg);
 }
 
 /* for access control list rules */
@@ -967,7 +1041,7 @@ div.nd_acl-rule-list {
 
 .nd_delete-me, .nd_delete-me:hover, .nd_delete-me:focus {
   text-decoration: none;
-  color: white;
+  color: var(--nd-delete-color);
 }
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* styles to adjust the hero box used for homepage + login */
@@ -1052,7 +1126,7 @@ div.nd_acl-rule-list {
 /* still a link, but styled like normal text */
 .nd_stealth-link {
   text-decoration: none !important;
-  color: #404040;
+  color: var(--nd-stealth-link);
 }
 
 .nd_text-align-top {
@@ -1330,7 +1404,7 @@ td > form.nd_inline-form {
   margin-bottom: 0px;
   margin-top: 9px;
   font-weight: bold;
-  color: #6D5720;
+  color: var(--nd-device-name);
 }
 
 /* reset to normal weight for the download as CSV icon */
@@ -1356,7 +1430,7 @@ td > form.nd_inline-form {
 
 /* when there's only one tab (report, task etc) change the text color */
 .nd_single-tab {
-  color: rgb(187,112,0) !important;
+  color: var(--nd-single-tab) !important;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -1390,7 +1464,7 @@ td > form.nd_inline-form {
 }
 
 .nd_icon-archived {
-  color: #c09853;
+  color: var(--nd-archived);
 }
 
 /* port admin up/down control */
@@ -1408,7 +1482,7 @@ td > form.nd_inline-form {
 /* port admin log view */
 .nd_log-icon {
   cursor: pointer;
-  color: black;
+  color: var(--nd-log-icon);
   float: right;
   padding-left: 10px;
   margin-top: 2px;
@@ -1416,7 +1490,7 @@ td > form.nd_inline-form {
 }
 .nd_log-icon:hover, .nd_log-icon:focus {
   text-decoration: none;
-  color: black;
+  color: var(--nd-log-icon);
 }
 
 /* port power control */
@@ -1437,7 +1511,7 @@ td > form.nd_inline-form {
 
 /* style of editable content in any table - yellow background */
 [contenteditable]:focus {
-  background: #FFFFD3 !important;
+  background: var(--nd-editing-bg) !important;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -1448,7 +1522,7 @@ td > form.nd_inline-form {
    gap; the replacement draws a label inline-block with no gutter. */
 .nd_collapser {
   cursor: pointer;
-  color: #0088CC;
+  color: var(--nd-collapser);
   display: block;
   margin-bottom: 5px;
 }
@@ -1456,7 +1530,7 @@ td > form.nd_inline-form {
 /* vlans collapser also clickable and deep grey but with no link styling */
 .nd_collapse-vlans {
   cursor: pointer;
-  color: #0088CC;
+  color: var(--nd-collapser);
   text-decoration: none !important;
 }
 
@@ -1475,15 +1549,15 @@ td > form.nd_inline-form {
   float: right;
   margin-top: 1px;
   margin-right: 1px;
-  color: #555;
+  color: var(--nd-arrow-neutral);
 }
 
 /* little up arrow to the left of a label for collapsed list */
 .nd_arrow-up-down-left-down {
-  color: #a3a01e;
+  color: var(--nd-arrow-down);
 }
 .nd_arrow-up-down-left-up {
-  color: #783f03;
+  color: var(--nd-arrow-up);
 }
 
 /* A bulleted list sat 25px in with a 9px gutter; the replacement indents 2rem
@@ -1605,8 +1679,8 @@ ul ul, ul ol, ol ol, ol ul {
    shadow. The fill is 10 of 255 from white and pixelmatch at threshold 0.2
    ignores anything below 52, which is why it went unseen for so long. */
 .container-fluid > .nd_sidebar > .card {
-  background-color: #f5f5f5;
-  border-color: #e3e3e3;
+  background-color: var(--nd-sidebar-bg);
+  border-color: var(--nd-sidebar-border);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
   /* The replacement component also declares word-wrap:break-word, which inherits,
      so every word in the sidebar became breakable mid-word. The netmap toggles are
@@ -1629,7 +1703,7 @@ ul ul, ul ol, ol ol, ol ul {
 }
 
 .nd_sidebar-pin-clicked {
-  color: rgba(255,0,0,0.8) !important;
+  color: var(--nd-pin-active) !important;
 }
 
 /* The sidebar's three control icons. Both trees set 15px, but the replacement's
@@ -1644,7 +1718,7 @@ ul ul, ul ol, ol ol, ol ul {
   margin-left: -16px;
   font-size: 13px;
   line-height: 15px;
-  color: #555;
+  color: var(--nd-sidebar-icon);
   cursor: pointer;
 }
 
@@ -1654,7 +1728,7 @@ ul ul, ul ol, ol ol, ol ul {
   margin-left: -16px;
   font-size: 13px;
   line-height: 15px;
-  color: #555;
+  color: var(--nd-sidebar-icon);
   cursor: pointer;
 }
 
@@ -1664,7 +1738,7 @@ ul ul, ul ol, ol ol, ol ul {
   margin-left: -16px;
   font-size: 13px;
   line-height: 15px;
-  color: #555;
+  color: var(--nd-sidebar-icon);
   cursor: pointer;
 }
 
@@ -1673,7 +1747,7 @@ ul ul, ul ol, ol ol, ol ul {
   top: 60px;
   right: 7px;
   z-index: 1;
-  color: #555;
+  color: var(--nd-sidebar-icon);
   cursor: pointer;
   display: none;
 }
@@ -1685,13 +1759,13 @@ ul ul, ul ol, ol ol, ol ul {
    border above and a white one below and measure its height outside them, so the
    band stood 4px. */
 .nd_sidebar-hr {
-  color: black;
-  background-color: black;
+  color: var(--nd-sidebar-hr-fill);
+  background-color: var(--nd-sidebar-hr-fill);
   height: 2px;
   margin: 12px 0px 12px 0px;
   box-sizing: content-box;
-  border-top: 1px solid #eeeeee;
-  border-bottom: 1px solid #ffffff;
+  border-top: 1px solid var(--nd-sidebar-hr-top);
+  border-bottom: 1px solid var(--nd-sidebar-hr-bottom);
   opacity: 1;
 }
 
@@ -1743,7 +1817,7 @@ ul ul, ul ol, ol ol, ol ul {
 
 /* netmap maximise icon */
 #nd2_netmap-fullscreen {
-  fill: black;
+  fill: var(--nd-netmap-control);
   font-size: 15px;
 }
 
@@ -1972,13 +2046,13 @@ input#nd_port-query {
 
 /* little icon inside of search input fields */
 .nd_field-copy-icon {
-  color: #999;
+  color: var(--nd-field-icon);
 }
 
 /* little icon inside of search input fields */
 .nd_field-clear-icon {
-  background-color: #A9DBA9;
-  color: #3A87AD;
+  background-color: var(--nd-field-success-bg);
+  color: var(--nd-field-clear-color);
 }
 
  /* same for the ports form, but the positioning is slightly different */
@@ -1989,10 +2063,10 @@ input#nd_port-query {
 
 /* change bg color for form fields which are being used in a search */
 form .clearfix.success select {
-  background-color: #A9DBA9;
+  background-color: var(--nd-field-success-bg);
 }
 form .clearfix.success input {
-  background-color: #A9DBA9;
+  background-color: var(--nd-field-success-bg);
 }
 
 /* A checkbox row stood 18px on a 19px pitch; the replacement's 24px floor
@@ -2244,15 +2318,15 @@ td.nd_nowrap {
    dark link strokes stay visible instead of vanishing into the backdrop */
 /* one selector per rule: an unrecognized vendor-prefixed pseudo-class
    invalidates an entire comma-separated selector list, not just its branch */
-#netmap_pane:fullscreen { background-color: #fff; }
-#netmap_pane:-webkit-full-screen { background-color: #fff; }
-#netmap_pane:-moz-full-screen { background-color: #fff; }
+#netmap_pane:fullscreen { background-color: var(--nd-netmap-bg); }
+#netmap_pane:-webkit-full-screen { background-color: var(--nd-netmap-bg); }
+#netmap_pane:-moz-full-screen { background-color: var(--nd-netmap-bg); }
 #nd2_netmap-fullscreen { position: absolute; top: 12px; right: 16px; cursor: pointer; }
 #nd2_netmap-spinner { position: absolute; bottom: 14px; right: 16px;
   width: 18px; height: 18px; border-radius: 50%; }
-#nd2_netmap-spinner.nd_netmap-running { border: 4px solid #FFE4B5;
+#nd2_netmap-spinner.nd_netmap-running { border: 4px solid var(--nd-netmap-running);
   border-top-color: transparent; animation: nd2-netmap-spin 1.5s linear infinite; }
-#nd2_netmap-spinner.nd_netmap-settled { border: 0; background: #CCFFCC; }
+#nd2_netmap-spinner.nd_netmap-settled { border: 0; background: var(--nd-netmap-settled); }
 @keyframes nd2-netmap-spin { to { transform: rotate(360deg); } }
 /* The rows are the distinct COLORVALUEs of the drawn nodes, and for
    colorby=lgroup that is the raw device.location string. Measured on a 6493
@@ -2263,7 +2337,7 @@ td.nd_nowrap {
    not the wrap, is what goes fullscreen, so a vh value would stop matching the
    box the legend sits in. */
 #nd2_netmap-legend { position: absolute; top: 12px; left: 16px;
-  background: rgba(255,255,255,0.85); padding: 6px 10px; font-size: 12px;
+  background: var(--nd-netmap-legend-bg); padding: 6px 10px; font-size: 12px;
   max-width: 22em; max-height: calc(100% - 24px); overflow-y: auto; }
 /* one line per row: 46% of these labels are longer than a line, and wrapping
    them made the list 100524px instead of 56748px. Safe only because the row
@@ -2271,8 +2345,8 @@ td.nd_nowrap {
    identified by the ~42 characters that fit */
 #nd2_netmap-legend div { white-space: nowrap; overflow: hidden;
   text-overflow: ellipsis; }
-#nd2_netmap-boxselect { position: fixed; border: 1px dashed #0d6efd;
-  background: rgba(13,110,253,0.08); pointer-events: none; z-index: 100; }
+#nd2_netmap-boxselect { position: fixed; border: 1px dashed var(--nd-netmap-select);
+  background: var(--nd-netmap-select-fill); pointer-events: none; z-index: 100; }
 /* htmx hides an idle indicator with opacity and visibility, neither of which
    takes it out of flow, so the spinner's box would push every pane below it
    down for the life of the page. These set display instead; the properties are

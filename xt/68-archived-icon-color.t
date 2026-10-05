@@ -81,7 +81,9 @@ my $css = do {
     <$fh>;
 };
 
-like( $css, qr/\.nd_icon-archived\s*\{[^}]*color:\s*#c09853/i,
-    'the marker class is defined' );
+like( $css, qr/\.nd_icon-archived\s*\{[^}]*color:\s*var\(--nd-archived\)/i,
+    'the marker class reads its token' );
+like( $css, qr/--nd-archived:\s*#c09853/i,
+    'the token holds the archived color' );
 
 done_testing;
