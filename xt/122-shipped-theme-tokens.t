@@ -25,4 +25,16 @@ foreach my $theme (@themes) {
     "shippedTheme__${theme}__sets_only_tokens_netdisco_defines";
 }
 
+# Bootstrap keeps .text-success and .text-danger at their light values in dark
+# mode, under 3:1 on striped dark rows, and the contrast sweep cannot see icon
+# glyphs. Text keeps Bootstrap's color; only icons are lifted.
+my @dark = css_rules(read_text('share/public/css/themes/dark.css'));
+foreach my $variant (qw/success danger/) {
+  my $selector = qq{[data-bs-theme="dark"] i.text-$variant};
+  ok( (grep { $_->{property} eq 'color'
+                and $_->{value} eq "var(--bs-$variant-text-emphasis) !important"
+                and grep { $_ eq $selector } split /\s*,\s*/, $_->{selector} } @dark),
+    "darkTheme__text_${variant}_icon__uses_bootstrap_dark_emphasis_color" );
+}
+
 done_testing;

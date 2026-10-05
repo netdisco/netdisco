@@ -121,6 +121,16 @@
   --bs-table-hover-bg: var(--bs-info-border-subtle);
 }
 
+/* Bootstrap leaves .text-success and .text-danger at their light values in
+   dark mode, too dim for status icons on striped rows. Text that uses them
+   keeps Bootstrap's color. */
+[data-bs-theme="dark"] i.text-success {
+  color: var(--bs-success-text-emphasis) !important;
+}
+[data-bs-theme="dark"] i.text-danger {
+  color: var(--bs-danger-text-emphasis) !important;
+}
+
 /* Five report templates set their DataTables group rows to #ddd !important in
    an inline style; this selector outranks it. */
 [data-bs-theme="dark"] tr.group,
