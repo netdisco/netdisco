@@ -1,3 +1,16 @@
+2.111000 - tbd
+
+  [ENHANCEMENTS]
+
+  * #<pr number is tbd> a backend now only takes jobs for actions it has a worker plugin or
+    python worklet for, so a backend running a reduced worker_plugins list
+    no longer fills its job slots with jobs it cannot run
+
+  [BUG FIXES]
+
+  * a backend supporting exactly two actions, or a job_prio high list of
+    exactly two, no longer loses the first of them when fetching jobs
+
 2.110000 - 2026-10-04
 
   [ENHANCEMENTS]
