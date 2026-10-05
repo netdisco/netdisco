@@ -139,6 +139,9 @@ say 'You will be asked to confirm all changes to your system.';
 say '';
 print color 'reset';
 
+# explicit: HTTP::Tiny before 0.083 neither verifies by default nor reads this variable
+my $verify_SSL = (($ENV{PERL_HTTP_TINY_SSL_INSECURE_BY_DEFAULT} || '') ne '1');
+
 my $term = Term::ReadLine->new('netdisco');
 my $bool = $term->ask_yn(
   prompt => 'So, is all of the above in place?', default => 'n',
@@ -260,7 +263,7 @@ sub deploy_oui {
   # tables oui, enterprise, manufacturer, product, snmp_filter
   my $latest = 'https://github.com/netdisco/upstream-sources/raw/refs/heads/master/bootstrap/netdisco-lookup-tables.sql';
   my $file = file($home, 'netdisco-lookup-tables.sql');
-  my $resp = HTTP::Tiny->new(verify_SSL => 1)->mirror($latest, $file);
+  my $resp = HTTP::Tiny->new(verify_SSL => $verify_SSL)->mirror($latest, $file);
 
   if ($resp->{success}) {
       # by loading App::Netdisco, Configuration has set necessary psql env vars
@@ -281,13 +284,13 @@ sub deploy_mibs {
   my $fail = 0;
 
   my $latest = 'https://github.com/netdisco/netdisco-mibs/releases/latest';
-  my $resp = HTTP::Tiny->new(verify_SSL => 1)->get($latest);
+  my $resp = HTTP::Tiny->new(verify_SSL => $verify_SSL)->get($latest);
 
   if ($resp->{url} =~ m/([0-9.]+)$/) {
     my $ver = $1;
     my $url = "https://github.com/netdisco/netdisco-mibs/releases/download/${ver}/netdisco-mibs.tar.gz";
     my $file = file($home, 'netdisco-mibs.tar.gz');
-    $resp = HTTP::Tiny->new(verify_SSL => 1)->mirror($url, $file);
+    $resp = HTTP::Tiny->new(verify_SSL => $verify_SSL)->mirror($url, $file);
 
     if ($resp->{success}) {
       my $ae = Archive::Extract->new(archive => $file, type => 'tgz');

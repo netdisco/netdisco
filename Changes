@@ -12,7 +12,7 @@
   [BUG FIXES]
 
   * netdisco-deploy verifies TLS certificates when it downloads OUI data and
-    MIBs
+    MIBs; set PERL_HTTP_TINY_SSL_INSECURE_BY_DEFAULT=1 to turn this off
   * a string exec hook cmd may use only the ip and ndo fields; write cmd as a
     list to pass other event fields
 

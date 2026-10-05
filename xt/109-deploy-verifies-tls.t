@@ -31,9 +31,21 @@ subtest 'netdisco_deploy__source_text__constructs_at_least_one_HTTP_Tiny_client'
 
 subtest 'netdisco_deploy__every_HTTP_Tiny_client__sets_verify_SSL' => sub {
   for my $client (@clients) {
-    like $client->{args}, qr/\bverify_SSL\s*=>\s*1\b/,
-      "HTTP::Tiny->new at bin/netdisco-deploy line $client->{line} sets verify_SSL => 1";
+    like $client->{args}, qr/\bverify_SSL\s*=>\s*\$verify_SSL\b/,
+      "HTTP::Tiny->new at bin/netdisco-deploy line $client->{line} sets verify_SSL => \$verify_SSL";
   }
+};
+
+# The same rule as HTTP::Tiny 0.083 and later, and as the HTTP hooks: verify
+# unless PERL_HTTP_TINY_SSL_INSECURE_BY_DEFAULT is exactly 1.
+my ($rule) = $source =~ /^my \$verify_SSL\s*=\s*(.+?);\s*$/m;
+subtest 'netdisco_deploy__verify_SSL__follows_the_insecure_variable' => sub {
+  ok defined $rule, 'bin/netdisco-deploy defines my $verify_SSL';
+  return unless defined $rule;
+  my $verify = sub { local $ENV{PERL_HTTP_TINY_SSL_INSECURE_BY_DEFAULT} = shift; eval $rule };
+  ok $verify->(undef), 'verifies when the variable is unset';
+  ok !$verify->('1'), 'does not verify when the variable is 1';
+  ok $verify->('0'), 'verifies when the variable is 0';
 };
 
 done_testing;
