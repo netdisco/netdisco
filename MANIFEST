@@ -676,6 +676,7 @@ xt/116-web-theme-layout.t
 xt/117-theme-bootstrap-variables.t
 xt/118-web-theme-scope-warning.t
 xt/119-web-theme-base-layer-marker.t
+xt/120-theme-base-layer.t
 xt/12-port-order-helper.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
@@ -792,6 +793,7 @@ xt/lib/App/NetdiscoX/Worker/Plugin/TestSeven.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestSix.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestThree.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestTwo.pm
+xt/lib/Test/Netdisco/CssRules.pm
 xt/lib/Test/Netdisco/MungerProbe.pm
 xt/lib/Test/Netdisco/Snapshot.pm
 xt/portsort-corpus.json
