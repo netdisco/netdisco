@@ -2,6 +2,7 @@
 
   [ENHANCEMENTS]
 
+  * #1709 add a web_theme setting for Bootstrap color-mode themes
   * netdisco-sshcollector checks SSH host keys against the netdisco user's
     known_hosts file
   * HTTP hooks verify TLS certificates; set
@@ -11,6 +12,11 @@
 
   [BUG FIXES]
 
+  * #1705 align the Reports submenu indicators and category rows
+  * #1706 keep the first connected node within its port cell
+  * #1708 match the Reports menu's padding to the other menus after #1705
+  * netdisco-sshcollector -O and SSH_TRACE no longer turn on tracing of the
+    ssh process
   * netdisco-deploy verifies TLS certificates when it downloads OUI data and
     MIBs; set PERL_HTTP_TINY_SSL_INSECURE_BY_DEFAULT=1 to turn this off
   * a string exec hook cmd may use only the ip and ndo fields; write cmd as a

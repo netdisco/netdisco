@@ -93,7 +93,8 @@ sub session_for {
   push(@master_opts, @{$auth->{ssh_master_opts}})
     if $auth->{ssh_master_opts};
 
-  $Net::OpenSSH::debug = $ENV{SSH_TRACE};
+  # bit 512 traces the ssh process into files under /tmp
+  $Net::OpenSSH::debug = ($ENV{SSH_TRACE} || 0) & ~512;
   my $ssh = Net::OpenSSH->new(
     $device->ip,
     user => $auth->{username},

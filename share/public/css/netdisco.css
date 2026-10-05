@@ -1513,6 +1513,12 @@ ul ul, ul ol, ol ol, ol ul {
   .nd_div-closer-last {
     margin-bottom: 14px;
   }
+  /* Nothing to make up where #dp-data-table > tbody > tr > td > .nd_div-closer:first-child
+     cancels the first block's pull-up. */
+  #dp-data-table > tbody > tr > td > .nd_div-closer:first-child ~ .nd_div-closer-last,
+  #dp-data-table > tbody > tr > td > .nd_div-closer-last:first-child {
+    margin-bottom: 0;
+  }
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -2258,3 +2264,32 @@ td.nd_nowrap {
 .nd_daterange-pair { display: grid; gap: .25em; margin-top: .3em }
 .nd_daterange-addon { width: 3.3em; justify-content: flex-start; font-size: .78rem; padding: .1rem .4rem }
 .nd_daterange-input { font-size: .85rem; padding: .15rem .4rem }
+
+/* A first node has no preceding block whose gap needs closing.
+   Safari otherwise lets its negative margin pull content above the cell padding. */
+#dp-data-table > tbody > tr > td > .nd_div-closer:first-child {
+  margin-top: 0;
+}
+
+/* Reports category menu: independent of the selected color palette. */
+.navbar .dropend > .dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.navbar .dropend > .dropdown-toggle::after {
+  flex: 0 0 auto;
+  margin-left: 0;
+  vertical-align: middle;
+  border-left-color: #999;
+}
+.navbar .dropend > .dropdown-toggle:hover::after,
+.navbar .dropend > .dropdown-toggle:focus::after {
+  border-left-color: currentColor;
+}
+/* Cancel the category menu's top padding and border.
+   Each submenu aligns with its category, including categories below Device. */
+.navbar .dropend > .dropdown-menu {
+  margin-top: calc(-1 * (var(--bs-dropdown-padding-y) + var(--bs-dropdown-border-width)));
+}
