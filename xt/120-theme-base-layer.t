@@ -21,7 +21,7 @@ my @BASE_LAYER = (
   '.navbar', '.navbar .nav-link.active', '.navbar.bg-dark',
   '.dropdown-item:hover', '.dropdown-item:focus',
   '.nav-tabs .nav-link:not(.active):hover', '.nav-tabs .nav-link:not(.active):focus',
-  'code', 'pre', '.table', 'table.dataTable.table-bordered',
+  'code', 'pre', '.table',
   'div.dt-container div.nd_datatables-pager div.dt-paging ul.pagination',
   'div.dt-container div.dt-processing',
   '.navbar .dropend > .dropdown-toggle::after',
@@ -93,5 +93,37 @@ foreach my $index (0 .. $#blocks) {
   }
 }
 is_deeply \@left_behind, [], 'baseLayer__guarded_shorthands__do_not_reset_a_longhand_left_behind';
+
+# A half-applied border is the defect: a guarded border shorthand is flagged only
+# when the original it was split from keeps part of that box's border structure.
+# A whole border moved behind the guard is the intended stock-Bootstrap fallback.
+my %STRUCTURE = (
+  border  => qr/^border-(?:collapse|spacing|width|style|(?:top|right|bottom|left)(?:-width|-style)?)$/,
+  outline => qr/^outline-(?:width|style)$/,
+);
+my $WIDTH_OR_STYLE = qr/\b(?:\d+(?:\.\d+)?(?:px|em|rem)|thin|medium|thick|none|hidden|solid|dashed|dotted|double|groove|ridge|inset|outset)\b/;
+my @carries_structure_missing;
+foreach my $index (0 .. $#blocks) {
+  my $guarded = $blocks[$index];
+  next unless is_guarded($guarded->{selector});
+  my $key = unguarded_selector_key($guarded->{selector});
+  my ($original) = grep { !is_guarded($_->{selector})
+                          and join(', ', split_selectors($_->{selector})) eq $key }
+                   reverse @blocks[0 .. $index - 1];
+  next unless $original;
+
+  my %original_properties = map { $_->{property} => 1 } @{ $original->{decls} };
+  foreach my $declaration (grep { $_->{property} =~ /^(?:border|outline)$/
+                                  and $_->{value} =~ $WIDTH_OR_STYLE } @{ $guarded->{decls} }) {
+    my $name = $declaration->{property};
+    my @kept = grep { /$STRUCTURE{$name}/ } keys %original_properties;
+    next unless @kept;
+    push @carries_structure_missing,
+      "line $guarded->{line}: $guarded->{selector} sets $name '$declaration->{value}', "
+      . "line $original->{line} keeps " . join(', ', sort @kept);
+  }
+}
+is_deeply \@carries_structure_missing, [],
+  'baseLayer__guarded_shorthands__do_not_carry_structure_the_original_lacks';
 
 done_testing;

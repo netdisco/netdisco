@@ -51,6 +51,7 @@
   --nd-netmap-bg: var(--bs-body-bg);
   --nd-netmap-legend-bg: rgba(33, 37, 41, 0.85);
   --nd-netmap-label: #dee2e6;
+  --nd-netmap-speed: #dee2e6;
   --nd-netmap-select: #6ea8fe;
   --nd-netmap-select-fill: rgba(110, 168, 254, 0.12);
 

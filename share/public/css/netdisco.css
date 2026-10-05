@@ -102,6 +102,7 @@
   --nd-snmp-label-hover-bg: #e8eff7;
   --nd-snmp-empty: #6c757d;
   --nd-netmap-label: #333;
+  --nd-netmap-speed: black;
   --nd-netmap-link: rgba(150, 150, 150, 0.73);
   --nd-tree-bg: #fbfbfb;
   --nd-tree-line: #999;
@@ -1293,13 +1294,10 @@ div.nd_acl-rule-list {
    separated, each cell draws its own, and the framework sets no color there, so
    it falls back to currentColor and every vertical rule turns near-black. */
 table.dataTable.table-bordered {
+  border: 1px solid var(--bs-table-border-color);
   border-left: 0;
   border-collapse: separate;
   border-radius: 4px;
-}
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) table.dataTable.table-bordered {
-  border: 1px solid #dddddd;
-  border-left: 0;
 }
 table.dataTable.table-bordered > :not(caption) > * > * {
   border-right-width: 0;

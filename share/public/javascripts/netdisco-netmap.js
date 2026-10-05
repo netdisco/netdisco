@@ -239,6 +239,7 @@ function ndNetmap(pane) {
     const LINK_COLOR = netmapThemeColor('--nd-netmap-link', 'rgba(150, 150, 150, 0.73)');
     const SELECT_COLOR = netmapThemeColor('--nd-netmap-select', '#0d6efd');
     const LABEL_COLOR = netmapThemeColor('--nd-netmap-label', '#333');
+    const SPEED_COLOR = netmapThemeColor('--nd-netmap-speed', 'black');
 
     const netmapPaneEl = document.getElementById('netmap_pane');
     const netmapPaneParent = netmapPaneEl && netmapPaneEl.parentElement;
@@ -640,7 +641,7 @@ function ndNetmap(pane) {
       }
       ctx.font = (map.dataset.ndLinkLabelSize || 5) + 'px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillStyle = 'black';
+      ctx.fillStyle = SPEED_COLOR;
       ctx.fillText(l.SPEED, (l.source.x + l.target.x) / 2, (l.source.y + l.target.y) / 2);
     });
 

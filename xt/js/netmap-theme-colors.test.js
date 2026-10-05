@@ -31,3 +31,11 @@ test('netmapColors__drawing_code__holds_no_hardcoded_theme_color', () => {
   assert.doesNotMatch(src, /strokeStyle = '#0d6efd'/);
   assert.doesNotMatch(src, /linkColor\(\(\) => 'rgba/);
 });
+
+test('netmapColors__speed_label__comes_from_a_token', () => {
+  assert.match(src, /netmapThemeColor\('--nd-netmap-speed', 'black'\)/);
+});
+
+test('netmapColors__canvas_styles__are_never_assigned_a_string_literal', () => {
+  assert.doesNotMatch(src, /(fillStyle|strokeStyle)\s*=\s*['"]/);
+});
