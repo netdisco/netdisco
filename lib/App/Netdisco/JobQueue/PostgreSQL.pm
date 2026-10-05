@@ -50,6 +50,8 @@ sub _compute_supported_actions {
     }
   }
 
+  # an action may exist only as a python worklet ('action.phase...'), which
+  # the loader runs, so it has no perl plugin above but must still be supported
   if (setting('enable_python_worklets')) {
     foreach my $setting (qw/python_worker_plugins extra_python_worker_plugins/) {
       my $config = setting($setting);
@@ -112,10 +114,12 @@ sub jq_getsome {
   my $jobs = schema(vars->{'tenant'})->resultset('Admin');
   my @returned = ();
 
+  # dbic reads any two element arrayref in bind as [ column, value ], so a list
+  # of exactly two would lose its first. [ undef, ... ] passes it through whole.
   my $tasty = schema(vars->{'tenant'})->resultset('Virtual::TastyJobs')
     ->search(undef, { bind => [
-      setting('workers')->{'BACKEND'}, _get_supported_actions(),
-      setting('job_prio')->{'high'},
+      setting('workers')->{'BACKEND'}, [ undef, _get_supported_actions() ],
+      [ undef, setting('job_prio')->{'high'} ],
       setting('workers')->{'BACKEND'}, setting('workers')->{'max_deferrals'},
       setting('workers')->{'retry_after'}, $num_slots,
     ]});
