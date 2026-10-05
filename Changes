@@ -6,7 +6,9 @@
 
   [BUG FIXES]
 
+  * #1705 align the Reports submenu indicators and category rows
   * #1706 keep the first connected node within its port cell
+  * #1708 match the Reports menu's padding to the other menus after #1705
 
 2.109004 - 2026-10-03
 
