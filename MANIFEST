@@ -351,6 +351,7 @@ share/public/css/font-awesome.min.css
 share/public/css/nd_print.css
 share/public/css/netdisco.css
 share/public/css/themes/classic.css
+share/public/css/themes/dark.css
 share/public/dispatch.cgi
 share/public/dispatch.fcgi
 share/public/images/crystalclear_mag.png
@@ -678,6 +679,7 @@ xt/118-web-theme-scope-warning.t
 xt/119-web-theme-base-layer-marker.t
 xt/120-theme-base-layer.t
 xt/121-theme-tokens.t
+xt/122-shipped-theme-tokens.t
 xt/12-port-order-helper.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
