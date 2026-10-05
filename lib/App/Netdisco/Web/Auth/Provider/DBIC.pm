@@ -21,6 +21,8 @@ use Try::Tiny;
 use NetAddr::IP::Lite ':lower';
 
 use App::Netdisco::Util::Permission 'acl_matches_only';
+use App::Netdisco::Util::Web
+  qw/trusted_client_address warn_forwarded_address_ignored/;
 use App::Netdisco::Util::Configuration 'refresh_managed_acl';
 
 sub authenticate_user {
@@ -92,9 +94,15 @@ sub validate_api_token {
         # would expect empty list acl to reject, because client IP is not in there
         # but acl_matches_only returns true for empty list
         # however managed host acls can never be empty, UI forces grp:any
-        my $client = NetAddr::IP::Lite->new(request->remote_address);
-        return undef unless
-            acl_matches_only($client, setting('host_groups')->{$user->token_acl});
+        # NetAddr::IP::Lite->new(undef) is a truthy 0.0.0.0/0 in every stable
+        # release, which a negated list matches, so refuse an absent address here.
+        my $address = trusted_client_address();
+        my $client = ($address ? NetAddr::IP::Lite->new($address) : undef);
+        if (not $client
+            or not acl_matches_only($client, setting('host_groups')->{$user->token_acl})) {
+            warn_forwarded_address_ignored('an API token access list');
+            return undef;
+        }
     }
 
     return $user;

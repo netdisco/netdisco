@@ -3,7 +3,9 @@ package App::Netdisco::Web::Metrics;
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
 
-use App::Netdisco::Util::Permission 'acl_matches_only';
+use App::Netdisco::Util::Permission qw/acl_matches_only/;
+use App::Netdisco::Util::Web
+  qw/trusted_client_address warn_forwarded_address_ignored/;
 use POSIX 'floor';
 use Try::Tiny;
 
@@ -35,8 +37,9 @@ get $metrics_path => sub {
   # Optional IP range restriction
   my $allow = setting('metrics_allow');
   if ($allow and ref $allow eq ref []) {
-    my $remote = request->remote_address;
+    my $remote = trusted_client_address();
     unless (acl_matches_only($remote, $allow)) {
+      warn_forwarded_address_ignored('metrics_allow');
       status 403;
       return 'Forbidden';
     }
