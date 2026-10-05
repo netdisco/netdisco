@@ -2,7 +2,7 @@
 
   [ENHANCEMENTS]
 
-  * add a dark web_theme and let site themes opt in to netdisco's component colors
+  * #1715 add a dark theme and a base-layer opt-in for site themes
   * a site theme now gets Bootstrap's own component colors unless its file
     contains /* netdisco: base-layer */
 
