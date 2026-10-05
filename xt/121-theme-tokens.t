@@ -26,6 +26,14 @@ sub stray_colors {
 is_deeply [ stray_colors('control', '.nd_x { color: #123456; }') ],
   [ 'control line 1: .nd_x { color }' ],
   'strayColors__control_with_a_literal__is_reported';
+is_deeply [ stray_colors('control', '.nd_x { color: floralWhite; }') ],
+  [ 'control line 1: .nd_x { color }' ],
+  'strayColors__control_with_a_named_color__is_reported';
+is_deeply [ stray_colors('control', '.nd_x { --bs-success-rgb: 70, 136, 71; }') ],
+  [ 'control line 1: .nd_x { --bs-success-rgb }' ],
+  'strayColors__control_with_a_number_triple__is_reported';
+is_deeply [ stray_colors('control', '.nd_x { white-space: nowrap; }') ], [],
+  'strayColors__control_with_white_space__is_clean';
 is_deeply [ stray_colors('control', ':root { --nd-x: #123456; } .nd_x { color: var(--nd-x); }') ], [],
   'strayColors__control_reading_a_token__is_clean';
 

@@ -16,7 +16,7 @@ my @BASE_LAYER = (
   '.btn:active', '.btn.active', '.btn-link', '.btn-group > .btn + .dropdown-toggle',
   '.toggle > .toggle-group > .toggle-off',
   '.btn-info', '.btn-primary', '.btn-danger', '.btn-success', '.btn-warning', '.btn-dark',
-  '.badge', '.badge.text-bg-info', '.badge.text-bg-warning', '.badge.alert-danger',
+  '.badge', '.badge.text-bg-dark', '.badge.text-bg-info', '.badge.text-bg-warning', '.badge.alert-danger',
   '.form-control', '.form-select', '.input-group-text', '.form-control-plaintext',
   '.navbar', '.navbar .nav-link.active', '.navbar.bg-dark',
   '.dropdown-item:hover', '.dropdown-item:focus',

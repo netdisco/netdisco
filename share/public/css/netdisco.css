@@ -34,6 +34,11 @@
 /* Netdisco's own colors. A theme recolors netdisco's elements by setting these
    under its own data-bs-theme selector; themes/dark.css is the worked example. */
 :root {
+  --nd-table-head-bg: floralWhite;
+  --nd-hero-bg-rgb: 238, 238, 238;
+  --nd-inventory-head: lightSlateGray;
+  --nd-power-off: darkRed;
+  --nd-power-on: darkGreen;
   --nd-field-success-bg: #a9dba9;
   --nd-field-success-border: #46a546;
   --nd-search-color: #ffffff;
@@ -303,14 +308,14 @@
   --bs-badge-font-size: 10.998px;
   --bs-badge-padding-y: 2px;
   --bs-badge-padding-x: 9px;
+  line-height: 14px;
+}
+:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .badge {
   --bs-secondary-rgb: 153, 153, 153;
   --bs-success-rgb: 70, 136, 71;
   --bs-info-rgb: 58, 135, 173;
   --bs-danger-rgb: 185, 74, 72;
   --bs-warning-rgb: 248, 148, 6;
-  line-height: 14px;
-}
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .badge {
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 :where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .badge.text-bg-info,
@@ -325,7 +330,7 @@
   --bs-badge-border-radius: 3px;
   --bs-badge-padding-x: 4px;
 }
-.badge.text-bg-dark {
+:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .badge.text-bg-dark {
   --bs-dark-rgb: 51, 51, 51;
 }
 /* The gray pill replaced one of each kind, so position tells them apart: the
@@ -701,8 +706,8 @@ a:hover, a:focus {
 div.content > div.tab-content table.nd_floatinghead thead {
   position: sticky;
   top: 40px;
-  --bs-table-bg: floralWhite;
-  background-color: floralWhite;
+  --bs-table-bg: var(--nd-table-head-bg);
+  background-color: var(--nd-table-head-bg);
 }
 
 /* The suggestion menu. One element on the body for the whole page, so it is
@@ -1055,7 +1060,7 @@ div.nd_acl-rule-list {
    its larger, lighter type and gray. Built from utility classes now, so its
    padding arrives flagged and only a flag displaces it. */
 .nd_hero-row .bg-body-tertiary {
-  --bs-tertiary-bg-rgb: 238, 238, 238;
+  --bs-tertiary-bg-rgb: var(--nd-hero-bg-rgb);
   --bs-border-radius-lg: 6px;
   padding: 30px 60px 40px 90px !important;
   margin-bottom: 30px !important;
@@ -1108,7 +1113,7 @@ div.nd_acl-rule-list {
 
 .nd_inventory-table-head {
   text-align: center;
-  color: lightSlateGray;
+  color: var(--nd-inventory-head);
   margin-top: 6px;
   margin-bottom: 3px;
 }
@@ -1501,12 +1506,12 @@ td > form.nd_inline-form {
 /* the port power icon, whether it's on or off */
 .fa-power-off {
   vertical-align: middle;
-  color: darkRed;
+  color: var(--nd-power-off);
 }
 
 /* change color of icon from default of red (which is OK for power-off) */
 .nd_power-on {
-  color: darkGreen;
+  color: var(--nd-power-on);
 }
 
 /* style of editable content in any table - yellow background */
