@@ -242,10 +242,8 @@ label.form-check:not(.form-check-inline) > input[type="checkbox"] {
   background-color: var(--nd-field-success-bg);
   border-color: var(--nd-field-success-border);
 }
-/* Every one of these spans is a read-only field that used to draw a box: an
-   off-white fill, a gray border and gray text. Its replacement draws nothing at
-   all, so the sidebar's checkbox captions became bare text sitting beside a
-   checkbox that still has its own box. */
+/* Sidebar checkbox captions: this padding, line height and radius keep each
+   caption aligned with the controls beside it. */
 .form-control-plaintext {
   padding: 4px 6px;
   line-height: 18px;
@@ -1990,9 +1988,9 @@ div.nd_datatables-pager {
 div.dt-processing > div:last-child {
   display: none;
 }
-/* and this restores the banner the words appeared in, a full-width band fading
-   at both ends rather than a small bordered card. Two ancestors deep because
-   dataTables.bootstrap.css is linked after this file. */
+/* and this is the full-width band the words appear in, whose fill comes from
+   the theme. Two ancestors deep because dataTables.bootstrap.css is linked
+   after this file. */
 div.dt-container div.dt-processing {
   /* the 40px is the band below the text, not the whole box, which is what it
      meant before Reboot made every element border-box */

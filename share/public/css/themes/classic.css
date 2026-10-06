@@ -37,7 +37,7 @@
   --bs-form-invalid-color: #b94a48; --bs-form-invalid-border-color: #b94a48;
 
   /* Netdisco's own elements read the --nd-* variables at the top of
-     netdisco.css; themes/dark.css sets every one of them. */
+     netdisco.css; themes/dark.css is the worked example. */
   --nd-snmp-spinner: #c09853;
   --nd-snmp-empty: #999999;
 }
@@ -92,13 +92,17 @@
    Bootstrap's rule for that component and as netdisco.css's rules for the
    same elements, which it must not outrank. A theme with flat Bootstrap
    components leaves this section out. */
+
+/* Buttons */
 :where([data-bs-theme="classic"]) .btn {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
 }
 /* Buttons without a color class. A new color class must join the :not() list.
-   The hover, pressed, disabled and link rules below weigh the same as the
-   rules they change, so they must stay below them. */
+   .btn-secondary is left out on purpose so it draws as the plain button, and
+   .btn-light is listed because it has no fill to restore. The hover, pressed,
+   disabled and link rules below weigh the same as the rules they change, so
+   they must stay below them. */
 :where([data-bs-theme="classic"]) .btn:not(.btn-primary, .btn-success, .btn-danger, .btn-warning, .btn-info, .btn-light, .btn-dark, .btn-link) {
   --bs-btn-color: #333333;
   --bs-btn-bg: #f5f5f5;
@@ -209,6 +213,7 @@
   --bs-btn-disabled-bg: #222222;
   background-image: linear-gradient(to bottom, #444444, #222222);
 }
+/* Badges */
 :where([data-bs-theme="classic"]) .badge {
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
@@ -222,6 +227,7 @@
   background-color: #f2dede;
   color: #b94a48;
 }
+/* Form controls */
 /* Set on the controls rather than through --bs-body-color and
    --bs-border-color, which also draw body text, tables and cards. */
 :where([data-bs-theme="classic"]) .form-control,
@@ -237,6 +243,7 @@
   background-color: #fcfcfc;
   border: 1px solid #cccccc;
 }
+/* Navigation */
 :where([data-bs-theme="classic"]) .navbar {
   --bs-navbar-hover-color: #ffffff;
   --bs-navbar-brand-color: #999999;
@@ -253,6 +260,11 @@
 :where([data-bs-theme="classic"]) .nav-tabs .nav-link:not(.active):focus {
   background-color: #eeeeee;
 }
+:where([data-bs-theme="classic"]) .navbar .dropend > .dropdown-toggle::after {
+  border-left-color: #999;
+}
+
+/* Code */
 :where([data-bs-theme="classic"]) code {
   color: #d14;
   background-color: #f7f7f9;
@@ -263,6 +275,7 @@
   background-color: #f5f5f5;
   border: 1px solid rgba(0, 0, 0, 0.15);
 }
+/* Tables and DataTables */
 /* Bootstrap draws table cells in --bs-emphasis-color, not the body color, so
    all four cell states are set. */
 :where([data-bs-theme="classic"]) .table {
@@ -284,9 +297,6 @@
     rgba(255, 255, 255, 0.9) 25%,
     rgba(255, 255, 255, 0.9) 75%,
     rgba(255, 255, 255, 0) 100%);
-}
-:where([data-bs-theme="classic"]) .navbar .dropend > .dropdown-toggle::after {
-  border-left-color: #999;
 }
 
 /* Choices of this palette rather than gaps in Bootstrap: a second warning

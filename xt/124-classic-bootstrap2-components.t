@@ -64,6 +64,11 @@ foreach my $selector (@BOOTSTRAP2) {
     "classicTheme__${selector}__keeps_the_bootstrap2_color";
 }
 
+ok scalar(grep { $_->{property} eq 'background-position' and $_->{value} eq '0 -15px'
+                 and grep { $_ eq "$Test::Netdisco::CssRules::CLASSIC_SCOPE .btn:hover" } split_selectors($_->{selector})
+                 and grep { $_ eq "$Test::Netdisco::CssRules::CLASSIC_SCOPE .btn:focus" } split_selectors($_->{selector}) } @classic_decls),
+  'classicTheme__btn_hover_and_focus__slide_the_gradient';
+
 foreach my $selector (sort keys %CLASSIC_OWN) {
   my ($rule, @properties) = @{ $CLASSIC_OWN{$selector} };
   foreach my $property (@properties) {

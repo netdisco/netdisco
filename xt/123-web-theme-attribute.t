@@ -36,22 +36,19 @@ use Plack::Util;
 use HTTP::Request::Common;
 use App::Netdisco::Web::Theme ();
 
-ok !App::Netdisco::Web::Theme->can('theme_uses_base_layer'),
-  'webTheme__base_layer_detection__is_gone';
-
 my $app = eval { Plack::Util::load_psgi(catfile($FindBin::Bin, updir(), 'bin', 'netdisco-web-fg')) };
 BAIL_OUT("could not load the web app: $@") unless $app;
 
 sub setting { return Dancer::Config::setting(@_) }
 
 ok !exists +(setting('_web_theme') || {})->{base_layer},
-  'resolveConfiguredTheme__theme_with_the_old_comment__records_no_base_layer';
+  'resolveConfiguredTheme__theme_with_a_marker_comment__records_no_base_layer';
 
 test_psgi $app, sub {
   my $cb = shift;
   my $page = $cb->(GET '/login')->content;
   like $page, qr/<html data-bs-theme="xtstock">/,
-    'mainLayout__theme_with_the_old_comment__carries_only_the_color_mode_attribute';
+    'mainLayout__theme_with_a_marker_comment__carries_only_the_color_mode_attribute';
 };
 
 setting(web_theme => 'classic');

@@ -4,8 +4,8 @@
 
   * #1715 add a dark theme
   * keep the Bootstrap 2 component look in the classic theme only
-  * buttons, badges, form fields, the navbar and tables now use Bootstrap's
-    own colors; set web_theme: classic to keep the previous ones
+  * buttons, badges, form fields, menus, the navbar, the pager and tables now
+    use Bootstrap's own colors; set web_theme: classic to keep the previous ones
 
 2.110000 - 2026-10-04
 
