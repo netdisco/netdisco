@@ -1,10 +1,9 @@
-/* Bootstrap's built-in dark color mode, plus dark values for netdisco's own
-   colors, which Bootstrap does not know about:
+/* Dark: Bootstrap's built-in dark color mode, plus dark values for netdisco's
+   own colors, which Bootstrap does not know about:
    https://getbootstrap.com/docs/5.3/customize/color-modes/#dark-mode
-   This theme does not opt in to netdisco's base layer, so Bootstrap's own
-   components draw in Bootstrap's dark style. The --nd-* names are the ones
-   netdisco.css defines; each value either reads Bootstrap's dark tokens or
-   is chosen to keep 4.5:1 contrast on Bootstrap's dark backgrounds. */
+   The --nd-* names are the ones netdisco.css defines; each value either reads
+   Bootstrap's dark tokens or is chosen to keep 4.5:1 contrast on Bootstrap's
+   dark backgrounds. themes/classic.css shows how to start a theme. */
 
 [data-bs-theme="dark"] {
   --nd-navbar-text: #adb5bd;

@@ -8,8 +8,9 @@ use File::Spec::Functions qw/catdir catfile updir/;
 use FindBin;
 use File::Temp ();
 
-# A theme written for netdisco opts in to netdisco's look for Bootstrap's own
-# components; one written against stock Bootstrap must not get it.
+# A theme sets a color mode and nothing else, so the page carries only its
+# data-bs-theme attribute, whatever comments the theme file holds.
+
 my ($envdir, $sitedir);
 BEGIN {
   $ENV{DANCER_PUBLIC} ||= catdir($FindBin::Bin, updir(), 'share', 'public');
@@ -18,7 +19,7 @@ BEGIN {
   mkdir catdir("$sitedir", 'themes') or die "cannot make themes dir: $!";
   open my $css, '>', catfile("$sitedir", 'themes', 'xtstock.css')
     or die "cannot write the theme: $!";
-  print $css "[data-bs-theme=\"xtstock\"] { --bs-primary: #123456; }\n";
+  print $css "/* netdisco: base-layer */\n[data-bs-theme=\"xtstock\"] { --bs-primary: #123456; }\n";
   close $css;
 
   $envdir = File::Temp->newdir(CLEANUP => 1);
@@ -26,7 +27,6 @@ BEGIN {
     or die "cannot write the test environment file: $!";
   print $env "web_theme: 'xtstock'\ntemplate_paths: ['$sitedir']\n";
   close $env;
-
   $ENV{DANCER_ENVDIR} = "$envdir";
   $ENV{DANCER_ENVIRONMENT} = 'testing';
 }
@@ -34,46 +34,34 @@ BEGIN {
 use Plack::Test;
 use Plack::Util;
 use HTTP::Request::Common;
-use App::Netdisco::Web::Theme 'theme_uses_base_layer';
+use App::Netdisco::Web::Theme ();
 
-is theme_uses_base_layer("/* netdisco: base-layer */\n[data-bs-theme=\"x\"] {}"), 1,
-  'themeUsesBaseLayer__marker_comment__opts_in';
-is theme_uses_base_layer("/*netdisco:base-layer*/"), 1,
-  'themeUsesBaseLayer__marker_without_spaces__opts_in';
-is theme_uses_base_layer("/*   netdisco:   base-layer   */"), 1,
-  'themeUsesBaseLayer__marker_with_extra_spaces__opts_in';
-is theme_uses_base_layer("[data-bs-theme=\"x\"] { --bs-primary: #000; }"), 0,
-  'themeUsesBaseLayer__no_marker__stays_out';
-is theme_uses_base_layer("/* netdisco: base-layers */"), 0,
-  'themeUsesBaseLayer__a_longer_word__is_not_the_marker';
-is theme_uses_base_layer("netdisco: base-layer"), 0,
-  'themeUsesBaseLayer__the_words_outside_a_comment__are_not_the_marker';
+ok !App::Netdisco::Web::Theme->can('theme_uses_base_layer'),
+  'webTheme__base_layer_detection__is_gone';
 
 my $app = eval { Plack::Util::load_psgi(catfile($FindBin::Bin, updir(), 'bin', 'netdisco-web-fg')) };
 BAIL_OUT("could not load the web app: $@") unless $app;
 
 sub setting { return Dancer::Config::setting(@_) }
 
-is +(setting('_web_theme') || {})->{base_layer}, 0,
-  'resolveConfiguredTheme__theme_without_marker__records_no_base_layer';
+ok !exists +(setting('_web_theme') || {})->{base_layer},
+  'resolveConfiguredTheme__theme_with_the_old_comment__records_no_base_layer';
 
 test_psgi $app, sub {
   my $cb = shift;
   my $page = $cb->(GET '/login')->content;
   like $page, qr/<html data-bs-theme="xtstock">/,
-    'mainLayout__theme_without_marker__carries_only_the_color_mode_attribute';
+    'mainLayout__theme_with_the_old_comment__carries_only_the_color_mode_attribute';
 };
 
 setting(web_theme => 'classic');
 App::Netdisco::Web::Theme::resolve_configured_theme();
-is +(setting('_web_theme') || {})->{base_layer}, 1,
-  'resolveConfiguredTheme__shipped_classic__opts_in';
 
 test_psgi $app, sub {
   my $cb = shift;
   my $page = $cb->(GET '/login')->content;
-  like $page, qr/<html data-bs-theme="classic" data-nd-base-layer>/,
-    'mainLayout__theme_with_marker__carries_the_base_layer_attribute';
+  like $page, qr/<html data-bs-theme="classic">/,
+    'mainLayout__shipped_classic__carries_only_the_color_mode_attribute';
 };
 
 setting(web_theme => '');

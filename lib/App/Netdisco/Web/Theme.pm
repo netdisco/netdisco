@@ -5,8 +5,7 @@ use Path::Class qw/dir file/;
 use App::Netdisco::Util::SiteLocal 'site_local_paths';
 
 use base 'Exporter';
-our @EXPORT_OK = qw/find_theme_file theme_problem_message theme_scope_message
-  theme_uses_base_layer/;
+our @EXPORT_OK = qw/find_theme_file theme_problem_message theme_scope_message/;
 
 # A theme name becomes a file name, so nothing that could leave the directory.
 my $VALID_NAME = qr/\A[A-Za-z0-9_-]+\z/;
@@ -44,11 +43,6 @@ sub theme_scope_message {
     $name, $path, $name;
 }
 
-sub theme_uses_base_layer {
-  my $css = shift;
-  return $css =~ m{/\*\s*netdisco:\s*base-layer\s*\*/} ? 1 : 0;
-}
-
 sub theme_dirs {
   return (
     dir(setting('public'), 'css', 'themes')->stringify,
@@ -73,7 +67,6 @@ sub resolve_configured_theme {
     name       => $name,
     path       => $path,
     mtime      => (stat $path)[9],
-    base_layer => theme_uses_base_layer($css),
   });
 }
 

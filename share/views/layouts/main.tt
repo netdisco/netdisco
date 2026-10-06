@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html[% IF settings._web_theme %] data-bs-theme="[% settings._web_theme.name | html_entity %]"[% IF settings._web_theme.base_layer %] data-nd-base-layer[% END %][% END %]>
+<html[% IF settings._web_theme %] data-bs-theme="[% settings._web_theme.name | html_entity %]"[% END %]>
 <head>
   <meta http-equiv="Content-type" content="text/html; charset=[% settings.charset | html_entity %]" />
   <link rel="shortcut icon" href="[% uri_base | none %]/images/favicon.ico" type="image/x-icon">
