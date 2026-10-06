@@ -2,9 +2,10 @@
 
   [ENHANCEMENTS]
 
-  * #1715 add a dark theme and a base-layer opt-in for site themes
-  * a site theme now gets Bootstrap's own component colors unless its file
-    contains /* netdisco: base-layer */
+  * #1715 add a dark theme
+  * keep the Bootstrap 2 component look in the classic theme only
+  * buttons, badges, form fields, the navbar and tables now use Bootstrap's
+    own colors; set web_theme: classic to keep the previous ones
 
 2.110000 - 2026-10-04
 
