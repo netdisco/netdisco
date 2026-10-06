@@ -5,7 +5,7 @@ use warnings;
 
 use Test::More 0.88;
 use lib 'xt/lib';
-use Test::Netdisco::CssRules qw/read_text css_rules has_color_literal is_guarded/;
+use Test::Netdisco::CssRules qw/read_text css_rules has_color_literal/;
 
 # A theme recolors netdisco's own elements by setting --nd-* tokens, so a
 # color written anywhere else is one no theme can reach.
@@ -18,7 +18,6 @@ sub stray_colors {
     grep {
       has_color_literal($_->{value})
         and $_->{property} !~ /shadow$/
-        and !is_guarded($_->{selector})
         and !($_->{selector} eq ':root' and $_->{property} =~ /^--nd-/)
     } css_rules($css);
 }
@@ -39,7 +38,7 @@ is_deeply [ stray_colors('control', ':root { --nd-x: #123456; } .nd_x { color: v
 
 foreach my $name (sort keys %SHEETS) {
   is_deeply [ stray_colors($name, $SHEETS{$name}) ], [],
-    "themeTokens__${name}__has_no_color_outside_tokens_and_the_base_layer";
+    "themeTokens__${name}__has_no_color_outside_tokens";
 }
 
 my %defined = map { $_->{property} => 1 }

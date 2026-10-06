@@ -4,10 +4,10 @@ use strict;
 use warnings;
 
 use base 'Exporter';
-our @EXPORT_OK = qw/read_text css_rules css_rule_blocks split_selectors has_color_literal is_guarded/;
+our @EXPORT_OK = qw/read_text css_rules css_rule_blocks split_selectors has_color_literal is_classic_scoped/;
 
-our $GUARD      = ':where(:root:not([data-bs-theme]), :root[data-nd-base-layer])';
-our $ROOT_GUARD = ':root:where(:not([data-bs-theme]), [data-nd-base-layer])';
+our $CLASSIC_SCOPE = ':where([data-bs-theme="classic"])';
+our $CLASSIC_ROOT  = '[data-bs-theme="classic"]';
 
 my $NAMED_COLORS = join '|', qw/aliceblue antiquewhite aqua aquamarine azure beige bisque black blanchedalmond blue blueviolet brown burlywood cadetblue chartreuse chocolate coral cornflowerblue cornsilk crimson cyan darkblue darkcyan darkgoldenrod darkgray darkgreen darkgrey darkkhaki darkmagenta darkolivegreen darkorange darkorchid darkred darksalmon darkseagreen darkslateblue darkslategray darkslategrey darkturquoise darkviolet deeppink deepskyblue dimgray dimgrey dodgerblue firebrick floralwhite forestgreen fuchsia gainsboro ghostwhite gold goldenrod gray green greenyellow grey honeydew hotpink indianred indigo ivory khaki lavender lavenderblush lawngreen lemonchiffon lightblue lightcoral lightcyan lightgoldenrodyellow lightgray lightgreen lightgrey lightpink lightsalmon lightseagreen lightskyblue lightslategray lightslategrey lightsteelblue lightyellow lime limegreen linen magenta maroon mediumaquamarine mediumblue mediumorchid mediumpurple mediumseagreen mediumslateblue mediumspringgreen mediumturquoise mediumvioletred midnightblue mintcream mistyrose moccasin navajowhite navy oldlace olive olivedrab orange orangered orchid palegoldenrod palegreen paleturquoise palevioletred papayawhip peachpuff peru pink plum powderblue purple rebeccapurple red rosybrown royalblue saddlebrown salmon sandybrown seagreen seashell sienna silver skyblue slateblue slategray slategrey snow springgreen steelblue tan teal thistle tomato turquoise violet wheat white whitesmoke yellow yellowgreen/;
 
@@ -95,11 +95,11 @@ sub has_color_literal {
   return $outside_urls =~ $COLOR ? 1 : 0;
 }
 
-sub is_guarded {
+sub is_classic_scoped {
   my $selector = shift;
-  return 1 if $selector eq $ROOT_GUARD;
   foreach my $part (split_selectors($selector)) {
-    return 0 unless index($part, "$GUARD ") == 0;
+    next if $part eq $CLASSIC_ROOT;
+    return 0 unless index($part, "$CLASSIC_SCOPE ") == 0;
   }
   return 1;
 }

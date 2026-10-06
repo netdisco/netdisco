@@ -680,7 +680,7 @@ xt/12-port-order-helper.t
 xt/121-theme-tokens.t
 xt/122-shipped-theme-tokens.t
 xt/123-web-theme-base-layer-marker.t
-xt/124-theme-base-layer.t
+xt/124-classic-bootstrap2-components.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t

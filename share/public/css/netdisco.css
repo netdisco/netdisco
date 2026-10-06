@@ -23,13 +23,6 @@
      same variable, so it is restated below rather than left to follow. */
   --bs-border-radius: 4px;
 }
-:root:where(:not([data-bs-theme]), [data-nd-base-layer]) {
-  /* The old body color was #333333 against the replacement's #212529. Both halves
-     are stated because other rules read rgba(var(--bs-body-color-rgb), ...). Muted
-     text and table cells resolve elsewhere and are set separately. */
-  --bs-body-color: #333333;
-  --bs-body-color-rgb: 51, 51, 51;
-}
 
 /* Netdisco's own colors. A theme recolors netdisco's elements by setting these
    under its own data-bs-theme selector; themes/dark.css is the worked example. */
@@ -129,92 +122,21 @@
   --bs-btn-line-height: 18px;
   background-repeat: repeat-x;
 }
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .btn {
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
-}
-/* The button with no fill of its own, which .btn alone used to draw. Classes
-   that do carry a fill are excluded by name: a color class added later must be
-   added here too. .btn-secondary is deliberately absent, having replaced a class
-   the old stylesheet never declared; .btn-light is deliberately present, there
-   being nothing to restore.
-
-   MUST STAY ABOVE THE PRESSED AND DISABLED RULES BELOW: equal weight, so below
-   them it wins and a pressed button keeps the ramp the old one dropped. */
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .btn:not(.btn-primary, .btn-success, .btn-danger, .btn-warning, .btn-info, .btn-light, .btn-dark, .btn-link) {
-  --bs-btn-color: #333333;
-  --bs-btn-bg: #f5f5f5;
-  --bs-btn-border-color: #cccccc;
-  --bs-btn-hover-color: #333333;
-  --bs-btn-hover-bg: #e6e6e6;
-  --bs-btn-hover-border-color: #cccccc;
-  --bs-btn-active-color: #333333;
-  --bs-btn-active-bg: #e6e6e6;
-  --bs-btn-active-border-color: #cccccc;
-  --bs-btn-disabled-color: #333333;
-  --bs-btn-disabled-bg: #e6e6e6;
-  --bs-btn-disabled-border-color: #cccccc;
-  background-image: linear-gradient(to bottom, #ffffff, #e6e6e6);
-  border-bottom-color: #b3b3b3;
-}
-/* Hovering slid the ramp 15px up rather than repainting, uncovering the flat
-   fill below; without this each color's hover fill stays hidden under its ramp.
-   The 0.1s easing is not reproduced: restating transition to add a fourth
-   property would drop the three the framework carries. */
-.btn:hover, .btn:focus {
-  background-position: 0 -15px;
-}
-/* Pressing a button dropped its ramp, drew the flat fill under it, and turned
-   the shadow round so the face looked pushed in. */
-.btn:active, .btn.active {
-  background-image: none;
-}
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .btn:active,
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .btn.active {
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-.btn:disabled, .btn.disabled {
-  background-image: none;
-  box-shadow: none;
-}
 /* A link button drew no box, kept square corners, colored its own type and
    underlined only under a pointer. All six carry .nd_btn-link and override the
    color, so none of this shows today; the class should still draw what it did. */
 .btn-link {
   --bs-btn-border-radius: 0;
   text-decoration: none;
-  box-shadow: none;
-}
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .btn-link {
-  --bs-btn-color: #0088cc;
-  --bs-btn-hover-color: #005580;
-  --bs-btn-active-color: #005580;
 }
 .btn-link:hover, .btn-link:focus {
   text-decoration: underline;
 }
-/* The caret half of a split button had no border against its button, so a
-   highlight down its left inside edge stood in for one, and it was padded
-   tighter. More specific than the pressed state above, as the old stylesheet had
-   it. The navbar's two override the padding below. */
+/* The caret half of a split button is padded tighter than its button. The
+   navbar's two override the padding below. */
 .btn-group > .btn + .dropdown-toggle {
   padding-left: 8px;
   padding-right: 8px;
-}
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .btn-group > .btn + .dropdown-toggle {
-  box-shadow: inset 1px 0 0 rgba(255, 255, 255, .125),
-              inset 0 1px 0 rgba(255, 255, 255, .2), 0 1px 2px rgba(0, 0, 0, .05);
-}
-/* The unlit half of a toggle. The old plugin marked it active and active buttons
-   drew pushed in; the new one marks it with nothing, so it reads as raised. Hung
-   on the plugin's own selector because the plugin zeroes this shadow at that
-   weight. */
-.toggle > .toggle-group > .toggle-off {
-  background-image: none;
-}
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .toggle > .toggle-group > .toggle-off {
-  --bs-btn-bg: #e6e6e6;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 /* This file loads after the framework, so the rules above would otherwise
    decide the small button metrics too, at equal specificity. State them instead
@@ -227,101 +149,14 @@
   --bs-btn-border-radius: 3px;
 }
 
-/* The five classes carrying a fill: white type, dark glyph shadow, a ramp, and a
-   border a tenth-opacity black on three sides and a quarter on the bottom. Each
-   fill is stated twice below, through --bs-btn-bg so the framework agrees, and as
-   an image, the only way to get the ramp back. background-image not the
-   shorthand, which would reset the color under it. The bottom edge is stated
-   alone, one --bs-btn-border-color being unable to say an edge differs. */
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .btn-info,
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .btn-primary,
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .btn-danger,
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .btn-success,
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .btn-warning,
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .btn-dark {
-  --bs-btn-color: #ffffff;
-  --bs-btn-border-color: rgba(0, 0, 0, 0.1);
-  --bs-btn-hover-color: #ffffff;
-  --bs-btn-hover-border-color: rgba(0, 0, 0, 0.1);
-  --bs-btn-active-color: #ffffff;
-  --bs-btn-active-border-color: rgba(0, 0, 0, 0.1);
-  --bs-btn-disabled-color: #ffffff;
-  --bs-btn-disabled-border-color: rgba(0, 0, 0, 0.1);
-  border-bottom-color: rgba(0, 0, 0, 0.25);
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-}
-/* and one ramp each, with the fill under it. The fill each of them shows when
-   hovered, pressed or disabled is the dark end of its own ramp, which is what
-   the ramp uncovers when it slides. .btn-dark is the class that replaced the old
-   stylesheet's inverse button. */
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .btn-info {
-  --bs-btn-bg: #49afcd;
-  --bs-btn-hover-bg: #2f96b4;
-  --bs-btn-active-bg: #2f96b4;
-  --bs-btn-disabled-bg: #2f96b4;
-  background-image: linear-gradient(to bottom, #5bc0de, #2f96b4);
-}
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .btn-primary {
-  --bs-btn-bg: #006dcc;
-  --bs-btn-hover-bg: #0044cc;
-  --bs-btn-active-bg: #0044cc;
-  --bs-btn-disabled-bg: #0044cc;
-  background-image: linear-gradient(to bottom, #0088cc, #0044cc);
-}
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .btn-danger {
-  --bs-btn-bg: #da4f49;
-  --bs-btn-hover-bg: #bd362f;
-  --bs-btn-active-bg: #bd362f;
-  --bs-btn-disabled-bg: #bd362f;
-  background-image: linear-gradient(to bottom, #ee5f5b, #bd362f);
-}
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .btn-success {
-  --bs-btn-bg: #5bb75b;
-  --bs-btn-hover-bg: #51a351;
-  --bs-btn-active-bg: #51a351;
-  --bs-btn-disabled-bg: #51a351;
-  background-image: linear-gradient(to bottom, #62c462, #51a351);
-}
-/* No page asks for the warning button and none did before, but the old
-   stylesheet declares it, so it is restored rather than left to draw a flat
-   framework yellow under black type the first time someone reaches for it. */
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .btn-warning {
-  --bs-btn-bg: #faa732;
-  --bs-btn-hover-bg: #f89406;
-  --bs-btn-active-bg: #f89406;
-  --bs-btn-disabled-bg: #f89406;
-  background-image: linear-gradient(to bottom, #fbb450, #f89406);
-}
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .btn-dark {
-  --bs-btn-bg: #363636;
-  --bs-btn-hover-bg: #222222;
-  --bs-btn-active-bg: #222222;
-  --bs-btn-disabled-bg: #222222;
-  background-image: linear-gradient(to bottom, #444444, #222222);
-}
-
-/* A badge drew 11px bold white type on a 9px-cornered pill, inset 2px and 9px,
-   from a palette of its own; the replacement sizes from its parent and insets in
-   ems. Fills go through the variables the utility classes read, because those
-   classes declare their colors flagged. */
+/* Badges keep 11px type on a 9px-cornered pill, inset 2px and 9px, where
+   Bootstrap sizes them from their parent and insets in ems. */
 .badge {
   --bs-badge-border-radius: 9px;
   --bs-badge-font-size: 10.998px;
   --bs-badge-padding-y: 2px;
   --bs-badge-padding-x: 9px;
   line-height: 14px;
-}
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .badge {
-  --bs-secondary-rgb: 153, 153, 153;
-  --bs-success-rgb: 70, 136, 71;
-  --bs-info-rgb: 58, 135, 173;
-  --bs-danger-rgb: 185, 74, 72;
-  --bs-warning-rgb: 248, 148, 6;
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-}
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .badge.text-bg-info,
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .badge.text-bg-warning {
-  color: #ffffff !important;
 }
 /* The old stylesheet had a second pill, cornered 3px and inset 4px rather than
    9px. Two of these classes replaced it and nothing else, so each mapping is
@@ -331,9 +166,6 @@
   --bs-badge-border-radius: 3px;
   --bs-badge-padding-x: 4px;
 }
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .badge.text-bg-dark {
-  --bs-dark-rgb: 51, 51, 51;
-}
 /* The gray pill replaced one of each kind, so position tells them apart: the
    external link badge is always inside a link that opens in a new window and is
    the only badge that ever is. No harness route renders it, the feature drawing
@@ -341,13 +173,6 @@
 a[target="_blank"] > .badge.text-bg-secondary {
   --bs-badge-border-radius: 3px;
   --bs-badge-padding-x: 4px;
-}
-/* The one badge borrowing an alert class, the old PostgreSQL warning. That class
-   now carries only custom properties an alert reads, so the badge drew white type
-   on nothing. */
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .badge.alert-danger {
-  background-color: #f2dede;
-  color: #b94a48;
 }
 .dropdown-menu {
   --bs-dropdown-font-size: 13px;
@@ -368,15 +193,6 @@ a[target="_blank"] > .badge.text-bg-secondary {
    caret artwork. */
 .form-control, .form-select {
   padding: 4px 6px;
-}
-/* Controls had their own text and border colors, #555555 and #cccccc. Neither
-   variable can carry the correction: --bs-body-color is set above for body text,
-   and --bs-border-color draws the sidebar box, tables and cards. Neither shift is
-   visible to the harness, which cannot see below 52 of 255. */
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .form-control,
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .form-select {
-  color: #555555;
-  border-color: #cccccc;
 }
 .form-control-sm {
   min-height: 0;
@@ -413,10 +229,6 @@ option {
   padding: 4px 5px;
   line-height: 18px;
 }
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .input-group-text {
-  background-color: #eeeeee;
-  border-color: #cccccc;
-}
 /* The old framework floated a wrapped checkbox into the 20px gutter its label
    reserves and set its 4px top margin, through the class that also drew its own
    control, so removing that class took the placement too.
@@ -443,11 +255,6 @@ label.form-check:not(.form-check-inline) > input[type="checkbox"] {
   padding: 4px 6px;
   line-height: 18px;
   border-radius: 4px;
-}
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .form-control-plaintext {
-  color: #999999;
-  background-color: #fcfcfc;
-  border: 1px solid #cccccc;
 }
 
 /* the gutter under a control used to come from the control itself, and the
@@ -500,32 +307,7 @@ body {
 .navbar {
   --bs-navbar-padding-y: 0px;
 }
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .navbar {
-  /* A navbar link went full white on hover; the replacement stops at 75%, which
-     composites to about #c7c7c7 here and reads as lighter gray, not a highlight.
-     The resting color already matches. */
-  --bs-navbar-hover-color: #ffffff;
-  /* The brand sat in the same gray as the links beside it and brightened with
-     them. The replacement ships it white with no hover response at all, so it
-     neither matches its neighbors at rest nor answers a pointer. */
-  --bs-navbar-brand-color: #999999;
-  --bs-navbar-brand-hover-color: #ffffff;
-}
 
-/* The bar's item for the page you are on is filled darker. Both trees mark it
-   active; the replacement styles it with color alone, which its neighbours reach
-   on hover. #111111 against the artwork's #1a1a1a. */
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .navbar .nav-link.active {
-  background-color: #111111;
-}
-/* Either side of the container the bar paints its own background, and the
-   replacement's #212529 reads as a second black against the artwork's #1a1a1a.
-   This is the artwork's own black, so the bar is one color at every width, which
-   is deliberately not what the old bar did. Flagged because the utility class
-   supplying the blue flags its own color. */
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .navbar.bg-dark {
-  background-color: #1a1a1a !important;
-}
 .navbar > .container {
   min-height: 40px;
   background: url(../images/navbar_disco.png) no-repeat;
@@ -549,15 +331,6 @@ a:hover, a:focus {
 .nav-link:hover, .nav-link:focus,
 .dropdown-item:hover, .dropdown-item:focus {
   text-decoration: none;
-}
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .dropdown-item:hover,
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .dropdown-item:focus {
-  background-color: #0081c2;
-  color: #ffffff;
-}
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .nav-tabs .nav-link:not(.active):hover,
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .nav-tabs .nav-link:not(.active):focus {
-  background-color: #eeeeee;
 }
 
 /* Navbar submenus opened on hover and closed on leaving. The replacement dropped
@@ -991,11 +764,6 @@ code {
   white-space: nowrap;
   border-radius: 3px;
 }
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) code {
-  color: #d14;
-  background-color: #f7f7f9;
-  border: 1px solid #e1e1e8;
-}
 
 /* The same for pre, drawn as a gray box before and bare text now. Two of these
    are behavior: white-space was pre-wrap and word-break break-all, so a long
@@ -1009,11 +777,6 @@ pre {
   word-break: break-all;
   word-wrap: break-word;
   border-radius: 4px;
-}
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) pre {
-  color: #333333;
-  background-color: #f5f5f5;
-  border: 1px solid rgba(0, 0, 0, 0.15);
 }
 
 /* for when we pinch h4 styling but don't want bold */
@@ -1159,25 +922,6 @@ div.nd_acl-rule-list {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* styles to position table cell content */
 
-/* Every other row was filled #f9f9f9. Its replacement lays a 5% black wash over
-   the cell instead, which comes out seven units darker on every striped row in
-   the application. Stated as the fill the wash uses, so the wash is opaque and
-   lands on the old color. */
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .table {
-  --bs-table-striped-bg: #f9f9f9;
-}
-
-/* The old stylesheet gave a cell no color, so tables drew the body's #333; the
-   replacement resolves the cell and its striped, hovered and active variants from
-   --bs-emphasis-color, which is #000 and does not follow the body. All four are
-   stated because all four resolve from it. */
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .table {
-  --bs-table-color: #333333;
-  --bs-table-striped-color: #333333;
-  --bs-table-hover-color: #333333;
-  --bs-table-active-color: #333333;
-}
-
 /* The old stylesheet ruled a table with border-top on every cell; the
    replacement rules with a bottom border, moving every rule down a row and, the
    border counting inside the height, changing both end rows' depth.
@@ -1187,14 +931,6 @@ div.nd_acl-rule-list {
 .table > tbody > tr > * {
   border-top-width: var(--bs-border-width);
   border-bottom-width: 0;
-}
-
-/* And the color it is drawn in: #dddddd at all four places the old stylesheet
-   drew a table border, against --bs-border-color's #dee2e6. Two things this does
-   not reach: the zero-width edge of an unbordered table, where nothing is drawn
-   either way, and the contextual row classes, which tint their own borders. */
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .table {
-  --bs-table-border-color: #dddddd;
 }
 
 /* The SNMP tab's search row. The old form-inline component laid controls along
@@ -2248,22 +1984,6 @@ div.dt-container div.nd_datatables-pager div.dt-paging ul.pagination {
   --bs-pagination-font-size: 13px;
   margin: 0;
 }
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) div.dt-container div.nd_datatables-pager div.dt-paging ul.pagination {
-  /* The cell for the page you are on was a pale gray block with gray type, quieter
-     than the numbers either side; the replacement paints it primary blue under
-     white type. Rest only: neither stylesheet gives this cell a hover response,
-     and the framework's active rule already outweighs its hover rule. */
-  --bs-pagination-active-color: #999999;
-  --bs-pagination-active-bg: #f5f5f5;
-  --bs-pagination-active-border-color: #dddddd;
-  /* And the spent cell, Previous on the first page: gray type alone, the cell left
-     transparent, where the replacement fills it too. Transparent rather than white
-     because that is what the old stylesheet declared; the two agree only while
-     what sits behind the pager is white. */
-  --bs-pagination-disabled-color: #999999;
-  --bs-pagination-disabled-bg: transparent;
-  --bs-pagination-disabled-border-color: #dddddd;
-}
 /* The count's own 8px was the other half of that alignment: it is what put the
    text's baseline level with the pager beside it rather than 8px above. */
 div.dt-container div.dt-info {
@@ -2294,13 +2014,6 @@ div.dt-container div.dt-processing {
   font-size: 1.2em;
   border: 0;
   border-radius: 0;
-}
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) div.dt-container div.dt-processing {
-  background: linear-gradient(to right,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.9) 25%,
-    rgba(255, 255, 255, 0.9) 75%,
-    rgba(255, 255, 255, 0) 100%);
 }
 
 td.nd_nowrap {
@@ -2398,9 +2111,6 @@ td.nd_nowrap {
   flex: 0 0 auto;
   margin-left: 0;
   vertical-align: middle;
-}
-:where(:root:not([data-bs-theme]), :root[data-nd-base-layer]) .navbar .dropend > .dropdown-toggle::after {
-  border-left-color: #999;
 }
 .navbar .dropend > .dropdown-toggle:hover::after,
 .navbar .dropend > .dropdown-toggle:focus::after {
