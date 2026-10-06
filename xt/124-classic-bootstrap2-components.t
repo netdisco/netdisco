@@ -27,8 +27,8 @@ my @BOOTSTRAP2 = (
 # Classic draws these through its own variables.
 my %CLASSIC_OWN = (
   '.badge.text-bg-dark'  => [ '[data-bs-theme="classic"]', '--bs-dark-rgb' ],
-  '.dropdown-item:hover' => [ '[data-bs-theme="classic"] .dropdown-menu', '--bs-dropdown-link-hover-bg' ],
-  '.dropdown-item:focus' => [ '[data-bs-theme="classic"] .dropdown-menu', '--bs-dropdown-link-hover-bg' ],
+  '.dropdown-item:hover' => [ '[data-bs-theme="classic"] .dropdown-menu', '--bs-dropdown-link-hover-bg', '--bs-dropdown-link-hover-color' ],
+  '.dropdown-item:focus' => [ '[data-bs-theme="classic"] .dropdown-menu', '--bs-dropdown-link-hover-bg', '--bs-dropdown-link-hover-color' ],
 );
 
 my $netdisco = read_text('share/public/css/netdisco.css');
@@ -65,10 +65,12 @@ foreach my $selector (@BOOTSTRAP2) {
 }
 
 foreach my $selector (sort keys %CLASSIC_OWN) {
-  my ($rule, $property) = @{ $CLASSIC_OWN{$selector} };
-  ok scalar(grep { $_->{property} eq $property
-                   and grep { $_ eq $rule } split_selectors($_->{selector}) } @classic_decls),
-    "classicTheme__${selector}__draws_through_its_own_${property}";
+  my ($rule, @properties) = @{ $CLASSIC_OWN{$selector} };
+  foreach my $property (@properties) {
+    ok scalar(grep { $_->{property} eq $property
+                     and grep { $_ eq $rule } split_selectors($_->{selector}) } @classic_decls),
+      "classicTheme__${selector}__draws_through_its_own_${property}";
+  }
 }
 
 # Each of these undoes a rule above it at the same weight, so it must come

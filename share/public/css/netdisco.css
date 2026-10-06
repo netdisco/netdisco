@@ -112,9 +112,7 @@
   font-size: 13px;
   line-height: 18px;
 }
-/* Every button sat on a ramp, highlighted along its top inside edge, shadowed
-   under its bottom outside edge, with a light shadow over the type, and slid the
-   ramp rather than repainting on hover. These are the parts no class overrode. */
+/* Button metrics, and the repeat a themed ramp needs. */
 .btn {
   --bs-btn-font-size: 13px;
   --bs-btn-padding-y: 4px;
@@ -122,9 +120,7 @@
   --bs-btn-line-height: 18px;
   background-repeat: repeat-x;
 }
-/* A link button drew no box, kept square corners, colored its own type and
-   underlined only under a pointer. All six carry .nd_btn-link and override the
-   color, so none of this shows today; the class should still draw what it did. */
+/* A link button keeps square corners and underlines only under a pointer. */
 .btn-link {
   --bs-btn-border-radius: 0;
   text-decoration: none;
@@ -160,8 +156,7 @@
 }
 /* The old stylesheet had a second pill, cornered 3px and inset 4px rather than
    9px. Two of these classes replaced it and nothing else, so each mapping is
-   exact, and the dark one also has to put back a fill three units lighter than
-   the framework's. */
+   exact. */
 .badge.text-bg-info, .badge.text-bg-dark {
   --bs-badge-border-radius: 3px;
   --bs-badge-padding-x: 4px;
@@ -324,9 +319,7 @@ a:hover, a:focus {
 }
 
 /* Navigation is the exception to the rule above: the previous framework
-   suppressed the hover underline on the navbar, its menus and the tab strips and
-   filled their background instead. Both values are its own. The active tab is
-   excluded, keeping its own fill when hovered. */
+   suppressed the hover underline on the navbar, its menus and the tab strips. */
 .navbar-brand:hover, .navbar-brand:focus,
 .nav-link:hover, .nav-link:focus,
 .dropdown-item:hover, .dropdown-item:focus {
@@ -754,10 +747,8 @@ small {
   font-size: 85%;
 }
 
-/* Inline code was a boxed thing: crimson type at 11px, inset 2px and 4px, on an
-   off-white fill inside a pale border, never wrapping. The set is restated rather
-   than reached through a variable because the framework declares only
-   --bs-code-color. The family is deliberately not put back. */
+/* Inline code is 11px, inset 2px and 4px, and never wraps. The family is
+   deliberately not put back. */
 code {
   padding: 2px 4px;
   font-size: 11px;
