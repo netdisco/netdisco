@@ -116,6 +116,10 @@
   --nd-light-link-hover-rgb: 8, 66, 152;
   --nd-light-info-icon: #087990;
   --nd-light-warning-icon: #997404;
+  --nd-light-row-link: #084298;
+  --nd-light-row-link-rgb: 8, 66, 152;
+  --nd-light-row-link-hover: #06357a;
+  --nd-light-row-link-hover-rgb: 6, 53, 122;
 }
 
 /* Bootstrap's light link blue and its info and warning colors miss WCAG
@@ -132,6 +136,15 @@
 }
 :root:not([data-bs-theme]) i.text-warning {
   color: var(--nd-light-warning-icon) !important;
+}
+
+/* Bootstrap's colored rows darken further on stripe, hover and selection,
+   where the light link blue drops below 4.5:1. */
+:root:not([data-bs-theme]) :is(.table-success, .table-danger, .table-info) {
+  --bs-link-color: var(--nd-light-row-link);
+  --bs-link-color-rgb: var(--nd-light-row-link-rgb);
+  --bs-link-hover-color: var(--nd-light-row-link-hover);
+  --bs-link-hover-color-rgb: var(--nd-light-row-link-hover-rgb);
 }
 
 /* Bootstrap 5's bare .btn is transparent and borderless, so the icon-only

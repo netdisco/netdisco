@@ -103,7 +103,8 @@ is_deeply [ unknown_variables(\%global, @root_tokens) ], [],
 my @literal = grep { literal_outside_var($_->{value}) } @root_tokens;
 is_deeply [ sort map { $_->{property} } @literal ],
   [ sort qw/--nd-archived --nd-arrow-down --nd-arrow-up --nd-netmap-running --nd-single-tab --nd-toast-info
-    --nd-light-link --nd-light-link-rgb --nd-light-link-hover --nd-light-link-hover-rgb --nd-light-info-icon --nd-light-warning-icon --nd-navbar-bg/ ],
+    --nd-light-link --nd-light-link-rgb --nd-light-link-hover --nd-light-link-hover-rgb --nd-light-info-icon --nd-light-warning-icon
+    --nd-light-row-link --nd-light-row-link-rgb --nd-light-row-link-hover --nd-light-row-link-hover-rgb --nd-navbar-bg/ ],
   'themeTokens__default_palette__uses_literals_only_where_bootstrap_has_no_variable';
 
 done_testing;

@@ -165,4 +165,30 @@ ok( (grep { $_->{selector} eq '.navbar.bg-dark'
 ok( !(grep { $_->{selector} =~ /\.navbar\.bg-dark/ } @dark),
   'darkTheme__navbar__takes_the_shared_color' );
 
+# Bootstrap's colored rows darken on stripe, hover and selection, where the
+# light link blue drops under 4.5:1. Dark mixes a smaller share of the strong
+# tone so the dark link keeps its margin on every state.
+my $ROW_VARIANTS = ':is(.table-success, .table-danger, .table-info)';
+foreach my $case (
+  [ '--bs-link-color', 'var(--nd-light-row-link)' ],
+  [ '--bs-link-color-rgb', 'var(--nd-light-row-link-rgb)' ],
+  [ '--bs-link-hover-color', 'var(--nd-light-row-link-hover)' ],
+  [ '--bs-link-hover-color-rgb', 'var(--nd-light-row-link-hover-rgb)' ],
+) {
+  my ($property, $value) = @$case;
+  ok( (grep { $_->{selector} eq "$LIGHT $ROW_VARIANTS"
+                and $_->{property} eq $property and $_->{value} eq $value } @nd),
+    "netdiscoCss__colored_row_links_${property}__use_the_darker_step_in_light" );
+}
+
+foreach my $variant (qw/success danger/, 'info') {
+  my $mix = "color-mix(in srgb, var(--bs-$variant-bg-subtle), "
+    . "var(--bs-$variant-border-subtle) 30%)";
+  foreach my $property (qw/--bs-table-hover-bg --bs-table-active-bg/) {
+    ok( (grep { $_->{selector} eq qq{[data-bs-theme="dark"] .table-$variant}
+                  and $_->{property} eq $property and $_->{value} eq $mix } @dark),
+      "darkTheme__colored_row_${variant}_${property}__mixes_30_percent_of_the_strong_tone" );
+  }
+}
+
 done_testing;

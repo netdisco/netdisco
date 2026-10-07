@@ -38,22 +38,22 @@
   --bs-table-bg: var(--bs-success-bg-subtle);
   --bs-table-border-color: var(--bs-success-border-subtle);
   --bs-table-striped-bg: var(--bs-success-bg-subtle);
-  --bs-table-active-bg: var(--bs-success-border-subtle);
-  --bs-table-hover-bg: var(--bs-success-border-subtle);
+  --bs-table-active-bg: color-mix(in srgb, var(--bs-success-bg-subtle), var(--bs-success-border-subtle) 30%);
+  --bs-table-hover-bg: color-mix(in srgb, var(--bs-success-bg-subtle), var(--bs-success-border-subtle) 30%);
 }
 [data-bs-theme="dark"] .table-danger {
   --bs-table-bg: var(--bs-danger-bg-subtle);
   --bs-table-border-color: var(--bs-danger-border-subtle);
   --bs-table-striped-bg: var(--bs-danger-bg-subtle);
-  --bs-table-active-bg: var(--bs-danger-border-subtle);
-  --bs-table-hover-bg: var(--bs-danger-border-subtle);
+  --bs-table-active-bg: color-mix(in srgb, var(--bs-danger-bg-subtle), var(--bs-danger-border-subtle) 30%);
+  --bs-table-hover-bg: color-mix(in srgb, var(--bs-danger-bg-subtle), var(--bs-danger-border-subtle) 30%);
 }
 [data-bs-theme="dark"] .table-info {
   --bs-table-bg: var(--bs-info-bg-subtle);
   --bs-table-border-color: var(--bs-info-border-subtle);
   --bs-table-striped-bg: var(--bs-info-bg-subtle);
-  --bs-table-active-bg: var(--bs-info-border-subtle);
-  --bs-table-hover-bg: var(--bs-info-border-subtle);
+  --bs-table-active-bg: color-mix(in srgb, var(--bs-info-bg-subtle), var(--bs-info-border-subtle) 30%);
+  --bs-table-hover-bg: color-mix(in srgb, var(--bs-info-bg-subtle), var(--bs-info-border-subtle) 30%);
 }
 
 /* Bootstrap leaves .text-success and .text-danger at their light values in
