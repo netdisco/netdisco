@@ -43,4 +43,25 @@ ok( (grep { $_->{selector} eq '[data-bs-theme="dark"]'
               and $_->{value} eq 'var(--bs-danger-text-emphasis)' } @dark),
   'darkTheme__pinned_sidebar_thumbtack__uses_bootstrap_dark_danger_emphasis' );
 
+# A report's inline <style> is a color no theme reaches and a strict CSP
+# blocks, so the group rows read a token from netdisco.css instead.
+my @inline_style = grep {
+  open my $fh, '<', $_ or die "cannot read $_: $!";
+  local $/; my $src = <$fh>; $src =~ /<style/;
+} glob 'share/views/ajax/{report,search}/*.tt';
+is_deeply \@inline_style, [], 'reportTemplates__group_rows__carry_no_inline_style';
+
+my @nd = css_rules(read_text('share/public/css/netdisco.css'));
+foreach my $case (
+  [ '.radio label::before', 'border-color', 'var(--nd-radio-border)' ],
+  [ '.radio label::before', 'background-color', 'var(--nd-radio-bg)' ],
+  [ '.radio label::after', 'background-color', 'var(--nd-radio-dot)' ],
+  [ 'tr.group', 'background-color', 'var(--nd-group-row-bg) !important' ],
+) {
+  my ($selector, $property, $value) = @$case;
+  ok( (grep { $_->{property} eq $property and $_->{value} eq $value
+                and grep { $_ eq $selector } split /\s*,\s*/, $_->{selector} } @nd),
+    "netdiscoCss__${selector}_${property}__reads_its_token" );
+}
+
 done_testing;

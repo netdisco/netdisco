@@ -66,22 +66,16 @@
   --nd-inventory-head: var(--bs-secondary-color);
   --nd-power-off: var(--bs-danger-text-emphasis);
   --nd-power-on: var(--bs-success-text-emphasis);
+  --nd-radio-border: var(--bs-border-color);
+  --nd-radio-bg: var(--bs-body-bg);
+  --nd-radio-dot: var(--bs-body-color);
+  --nd-group-row-bg: var(--bs-secondary-bg);
 }
 
 /* In dark mode Bootstrap's bg-dark is the page background itself, which would
    merge the navbar into the page. */
 [data-bs-theme="dark"] .navbar.bg-dark {
   background-color: #1a1a1a !important;
-}
-
-/* awesome-bootstrap-checkbox.css is vendored and draws the radio circle and
-   dot in fixed light colors. */
-[data-bs-theme="dark"] .radio label::before {
-  border-color: var(--bs-border-color);
-  background-color: var(--bs-body-bg);
-}
-[data-bs-theme="dark"] .radio label::after {
-  background-color: var(--bs-body-color);
 }
 
 /* The SNMP browser's expander boxes are images drawn white with grey lines. */
@@ -129,11 +123,4 @@
 }
 [data-bs-theme="dark"] i.text-danger {
   color: var(--bs-danger-text-emphasis) !important;
-}
-
-/* Five report templates set their DataTables group rows to #ddd !important in
-   an inline style; this selector outranks it. */
-[data-bs-theme="dark"] tr.group,
-[data-bs-theme="dark"] tr.group:hover {
-  background-color: var(--bs-secondary-bg) !important;
 }

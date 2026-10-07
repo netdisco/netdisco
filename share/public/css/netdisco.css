@@ -102,6 +102,11 @@
   --nd-tree-hover-bg: #eee;
   --nd-tree-hover-border: #94a0b4;
   --nd-tree-hover-color: #000;
+  --nd-radio-border: #cccccc;
+  --nd-radio-bg: #fff;
+  --nd-radio-dot: #555555;
+  --nd-radio-checked: #5cb85c;
+  --nd-group-row-bg: #ddd;
 }
 
 /* Form controls, buttons and dropdown menus hardcode 1rem rather than reading
@@ -1850,6 +1855,30 @@ form .clearfix.success input {
 .radio input[type="radio"] {
   float: left;
   margin-left: -20px;
+}
+
+/* awesome-bootstrap-checkbox.css draws the radio in fixed colors. Same
+   selectors, loaded later, so these win without extra weight. */
+.radio label::before {
+  border-color: var(--nd-radio-border);
+  background-color: var(--nd-radio-bg);
+}
+.radio label::after {
+  background-color: var(--nd-radio-dot);
+}
+.radio-success input[type="radio"] + label::after,
+.radio-success input[type="radio"]:checked + label::after {
+  background-color: var(--nd-radio-checked);
+}
+.radio-success input[type="radio"]:checked + label::before {
+  border-color: var(--nd-radio-checked);
+}
+
+/* DataTables group header rows. !important outranks Bootstrap's striped and
+   hover cell backgrounds. */
+tr.group,
+tr.group:hover {
+  background-color: var(--nd-group-row-bg) !important;
 }
 
 /* A third defect in the same rows, and the only one caused by a vendored
