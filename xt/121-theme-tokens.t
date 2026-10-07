@@ -64,11 +64,43 @@ foreach my $block ($bootstrap =~ m/(?:^|[\}\/])(?::root,\[data-bs-theme=light\]|
 }
 my @root_tokens = grep { $_->{selector} eq ':root' and $_->{property} =~ /^--nd-/ }
   css_rules($SHEETS{'netdisco.css'});
-my @unknown = map { "$_->{property}: $_->{value}" }
-  grep { my $v = $_->{value}; grep { !$global{$_} } ($v =~ m/var\((--[\w-]+)\)/g) } @root_tokens;
-is_deeply \@unknown, [], 'themeTokens__root_token__reads_only_global_bootstrap_variables';
+sub unknown_variables {
+  my ($known, @tokens) = @_;
+  return map { "$_->{property}: $_->{value}" }
+    grep { my $v = $_->{value}; grep { !$known->{$_} } ($v =~ m/var\((--[\w-]+)\s*[,)]/g) } @tokens;
+}
 
-my @literal = grep { $_->{value} !~ /var\(--bs-/ } @root_tokens;
+# A var() fallback is a color no theme can reach, so it stays in view while
+# the reference itself is replaced by V, innermost group first. A color
+# function wrapped around a reference (rgba(var(--x-rgb), .5)) is the
+# reference's color, not a literal.
+sub literal_outside_var {
+  my ($value) = @_;
+  1 while $value =~ s/var\(\s*--[\w-]+\s*\)/V/
+    or $value =~ s/var\(\s*--[\w-]+\s*,\s*([^()]*)\)/V $1/
+    or $value =~ s/(?:rgba?|hsla?)\(([^()]*\bV\b[^()]*)\)/$1/;
+  return has_color_literal($value);
+}
+
+is_deeply [ unknown_variables({}, { property => '--nd-x', value => 'var(--bs-navbar-color, #fff)' }) ],
+  [ '--nd-x: var(--bs-navbar-color, #fff)' ],
+  'unknownVariables__control_with_a_fallback__is_reported';
+is_deeply [ unknown_variables({ '--bs-body-color' => 1 }, { property => '--nd-x', value => 'var(--bs-body-color)' }) ], [],
+  'unknownVariables__control_with_a_known_variable__is_clean';
+ok literal_outside_var('var(--bs-x, #fff)'),
+  'literalOutsideVar__control_with_a_fallback__counts_as_a_literal';
+ok !literal_outside_var('var(--bs-x)'),
+  'literalOutsideVar__control_without_a_fallback__is_clean';
+ok literal_outside_var('var(--bs-x, var(--bs-y, #fff))'),
+  'literalOutsideVar__control_with_a_nested_fallback__counts_as_a_literal';
+
+ok !literal_outside_var('rgba(var(--bs-white-rgb), 0.55)'),
+  'literalOutsideVar__control_with_a_wrapped_reference__is_clean';
+
+is_deeply [ unknown_variables(\%global, @root_tokens) ], [],
+  'themeTokens__root_token__reads_only_global_bootstrap_variables';
+
+my @literal = grep { literal_outside_var($_->{value}) } @root_tokens;
 is_deeply [ sort map { $_->{property} } @literal ],
   [ sort qw/--nd-archived --nd-arrow-down --nd-arrow-up --nd-netmap-running --nd-single-tab --nd-toast-info
     --nd-light-link --nd-light-link-rgb --nd-light-link-hover --nd-light-link-hover-rgb --nd-light-info-icon --nd-light-warning-icon/ ],
