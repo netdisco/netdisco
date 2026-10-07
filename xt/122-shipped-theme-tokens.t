@@ -82,6 +82,50 @@ foreach my $case (
     "netdiscoCss__light_${property}_on_${selector}__uses_the_darker_step" );
 }
 
+# Bootstrap 5's bare .btn is transparent and borderless, its info badge is
+# heavy, and its current page is the loudest blue on the page. Stock light and
+# dark soften all three; classic and site themes keep their own. The prefix
+# holds a comma, so these compare the whole selector rather than splitting.
+my $QUIET = ':is(:root:not([data-bs-theme]), [data-bs-theme="dark"])';
+my $PLAIN_BTN = '.btn:not(.btn-primary, .btn-success, .btn-danger, .btn-warning, '
+  . '.btn-info, .btn-light, .btn-dark, .btn-link, .btn-secondary)';
+sub quiet_has {
+  my ($selector, %expected) = @_;
+  my @rules = grep { $_->{selector} eq "$QUIET $selector" } @nd;
+  foreach my $property (keys %expected) {
+    return 0 unless grep { $_->{property} eq $property
+                           and $_->{value} eq $expected{$property} } @rules;
+  }
+  return 1;
+}
+
+ok( quiet_has($PLAIN_BTN,
+    '--bs-btn-color' => 'var(--bs-body-color)',
+    '--bs-btn-bg' => 'var(--bs-tertiary-bg)',
+    '--bs-btn-border-color' => 'var(--bs-border-color)',
+    '--bs-btn-hover-color' => 'var(--bs-emphasis-color)',
+    '--bs-btn-hover-bg' => 'var(--bs-secondary-bg)',
+    '--bs-btn-hover-border-color' => 'var(--bs-border-color)',
+    '--bs-btn-active-color' => 'var(--bs-emphasis-color)',
+    '--bs-btn-active-bg' => 'var(--bs-secondary-bg)',
+    '--bs-btn-active-border-color' => 'var(--bs-border-color)' ),
+  'netdiscoCss__plain_button__draws_a_quiet_box_in_light_and_dark' );
+
+ok( quiet_has('.badge.text-bg-info',
+    'color' => 'var(--bs-info-text-emphasis) !important',
+    'background-color' => 'var(--bs-info-bg-subtle) !important',
+    'border' => 'var(--bs-border-width) solid var(--bs-info-border-subtle)' ),
+  'netdiscoCss__info_badge__uses_the_subtle_style_in_light_and_dark' );
+
+ok( quiet_has('.badge', '--bs-badge-font-weight' => '600'),
+  'netdiscoCss__badge__weighs_600_in_light_and_dark' );
+
+ok( quiet_has('.pagination',
+    '--bs-pagination-active-color' => 'var(--bs-primary-text-emphasis)',
+    '--bs-pagination-active-bg' => 'var(--bs-primary-bg-subtle)',
+    '--bs-pagination-active-border-color' => 'var(--bs-primary-border-subtle)' ),
+  'netdiscoCss__current_page__uses_primary_subtle_in_light_and_dark' );
+
 # navbar_disco.png is opaque with its own background, so a theme that paints
 # the bar another color shows the artwork as a rectangle.
 ok( (grep { $_->{selector} eq '.navbar.bg-dark'
