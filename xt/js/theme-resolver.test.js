@@ -88,3 +88,18 @@ test('ndTheme__source_returning_nothing__defers_to_the_next', () => {
   t.nd.apply();
   assert.equal(t.attrs['data-bs-theme'], 'classic');
 });
+
+test('ndTheme__configured_light__leaves_no_attribute', () => {
+  const t = load({ configured: 'light', osDark: true });
+  assert.equal(t.attrs['data-bs-theme'], undefined);
+  assert.equal(t.links.length, 0);
+});
+
+test('ndTheme__source_choosing_light__leaves_no_attribute_and_links_nothing', () => {
+  const t = load({ configured: 'classic', osDark: true });
+  assert.equal(t.attrs['data-bs-theme'], 'classic');
+  t.nd.sources.unshift(() => 'light');
+  t.nd.apply();
+  assert.equal(t.attrs['data-bs-theme'], undefined);
+  assert.equal(t.links.length, 0);
+});

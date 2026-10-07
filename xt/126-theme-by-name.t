@@ -22,6 +22,12 @@ BEGIN {
     or die "cannot write the theme: $!";
   print $css "[data-bs-theme=\"xtsite\"] { --bs-primary: #123456; }\n";
   close $css;
+  foreach my $reserved (qw/light auto/) {
+    open my $reserved_css, '>', catfile("$sitedir", 'themes', "$reserved.css")
+      or die "cannot write the theme: $!";
+    print $reserved_css "[data-bs-theme=\"$reserved\"] { --bs-primary: #654321; }\n";
+    close $reserved_css;
+  }
 
   $envdir = File::Temp->newdir(CLEANUP => 1);
   open my $env, '>', catfile("$envdir", 'testing.yml')
@@ -50,6 +56,12 @@ test_psgi $app, sub {
   my $missing = $cb->(GET '/theme/nosuch.css');
   is $missing->code, 404, 'themeByName__unknown_name__is_not_found_without_login';
   is $missing->content, '', 'themeByName__not_found__has_an_empty_body';
+  foreach my $reserved (qw/light auto/) {
+    my $response = $cb->(GET "/theme/$reserved.css");
+    is $response->code, 404, "themeByName__reserved_name_$reserved\__is_not_found_despite_a_site_file";
+    is $response->content, '', "themeByName__reserved_name_$reserved\__has_an_empty_body";
+  }
+
   # Outside the exemption, so the login page answers; the point is no CSS.
   foreach my $path ('/theme/..%2Fnetdisco.css', '/theme/a.b.css', '/theme/x/y.css', '/theme/dark.css.bak') {
     my $response = $cb->(GET $path);

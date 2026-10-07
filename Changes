@@ -8,6 +8,8 @@
     netdisco's own elements now use Bootstrap's palette; set web_theme: classic
     to keep the previous colors
   * web_theme: auto follows the browser's light or dark preference
+  * light and auto are reserved web_theme values; a site theme with either
+    name is no longer used
 
 2.110000 - 2026-10-04
 

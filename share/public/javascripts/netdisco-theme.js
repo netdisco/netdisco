@@ -27,13 +27,17 @@
   }
 
   /**
-   * Turns a theme name into the color mode Bootstrap reads.
-   * @param {string} name a theme name, possibly 'auto'
-   * @returns {string} the data-bs-theme value, or '' or 'light' for none
+   * Turns a theme name into the color mode Bootstrap reads. 'light' and
+   * 'auto' are reserved: 'light' means the standard colors, and 'auto'
+   * follows the OS preference between dark and the standard colors.
+   * @param {string} name a theme name
+   * @returns {string} the data-bs-theme value, or '' for none (the standard
+   *   colors); any name other than 'light' and 'auto' passes through
    */
   function colorMode(name) {
+    if (name === 'light') return '';
     if (name !== 'auto') return name;
-    return darkQuery && darkQuery.matches ? 'dark' : 'light';
+    return darkQuery && darkQuery.matches ? 'dark' : '';
   }
 
   /**
@@ -44,7 +48,7 @@
    */
   function ensureSheet(mode) {
     const configured = root.dataset.ndThemeDefault === 'auto' ? 'dark' : root.dataset.ndThemeDefault;
-    if (!mode || mode === 'light' || mode === configured) return;
+    if (!mode || mode === configured) return;
     const escaped = typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(mode) : mode;
     if (document.querySelector(`link[data-nd-theme-sheet="${escaped}"]`)) return;
     const link = document.createElement('link');
@@ -55,16 +59,16 @@
   }
 
   /**
-   * Applies the preferred theme: sets data-bs-theme, or removes it for
-   * Bootstrap's light default. Safe to call again whenever a source changes.
+   * Applies the preferred theme: sets data-bs-theme, or removes it when the
+   * mode is '' (the standard colors). Safe to call again whenever a source changes.
    * @returns {void}
    */
   function apply() {
     const mode = colorMode(preferred());
     ensureSheet(mode);
-    // Stock light has rules keyed on :root:not([data-bs-theme]), so light must
-    // be the absence of the attribute, never data-bs-theme="light".
-    if (mode && mode !== 'light') root.setAttribute('data-bs-theme', mode);
+    // Stock light has rules keyed on :root:not([data-bs-theme]), so the
+    // standard colors must be the absence of the attribute.
+    if (mode) root.setAttribute('data-bs-theme', mode);
     else root.removeAttribute('data-bs-theme');
   }
 

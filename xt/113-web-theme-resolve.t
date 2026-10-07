@@ -80,8 +80,9 @@ is_deeply [ App::Netdisco::Web::Theme::theme_dirs() ],
   'themeDirs__shipped_and_site_local__searches_shipped_themes_first';
 
 # auto follows the browser's color scheme, so it serves the dark sheet and the
-# page decides when that sheet applies.
+# page decides when that sheet applies. light is the standard colors.
 is theme_sheet_name('auto'), 'dark', 'themeSheetName__auto__is_the_dark_sheet';
+is theme_sheet_name('light'), undef, 'themeSheetName__light__has_no_sheet';
 is theme_sheet_name('classic'), 'classic', 'themeSheetName__any_other_name__is_itself';
 
 done_testing;
