@@ -91,4 +91,15 @@ get '/theme.css' => sub {
   send_file $theme->{path}, system_path => 1, content_type => 'text/css';
 };
 
+get '/theme/*.css' => sub {
+  my ($name) = splat;
+  my $path = find_theme_file($name, theme_dirs());
+  # No error page, for the same reason as /theme.css.
+  unless ($path) {
+    status 'not_found';
+    return '';
+  }
+  send_file $path, system_path => 1, content_type => 'text/css';
+};
+
 true;
