@@ -157,6 +157,30 @@
   background-color: var(--bs-info-bg-subtle) !important;
   border: var(--bs-border-width) solid var(--bs-info-border-subtle);
 }
+/* Netdisco uses info as its everyday button, and Bootstrap's bright cyan with
+   black text reads heavy; same subtle style as the info badge. */
+:is(:root:not([data-bs-theme]), [data-bs-theme="dark"]) .btn-info {
+  --bs-btn-color: var(--bs-info-text-emphasis);
+  --bs-btn-bg: var(--bs-info-bg-subtle);
+  --bs-btn-border-color: var(--bs-info-border-subtle);
+  --bs-btn-hover-color: var(--bs-emphasis-color);
+  --bs-btn-hover-bg: var(--bs-info-border-subtle);
+  --bs-btn-hover-border-color: var(--bs-info-border-subtle);
+  --bs-btn-active-color: var(--bs-emphasis-color);
+  --bs-btn-active-bg: var(--bs-info-border-subtle);
+  --bs-btn-active-border-color: var(--bs-info-border-subtle);
+  --bs-btn-disabled-color: var(--bs-info-text-emphasis);
+  --bs-btn-disabled-bg: var(--bs-info-bg-subtle);
+  --bs-btn-disabled-border-color: var(--bs-info-border-subtle);
+}
+/* The button's own box frames the icon. Font Awesome's default padding spaces it from the label. */
+:is(:root:not([data-bs-theme]), [data-bs-theme="dark"]) .btn .fa-border {
+  --fa-border-width: 0;
+}
+/* The delete mark is white, invisible on the soft info badge. */
+:is(:root:not([data-bs-theme]), [data-bs-theme="dark"]) .badge .nd_delete-me {
+  color: inherit;
+}
 /* White on primary blue is the loudest color on most pages. */
 :is(:root:not([data-bs-theme]), [data-bs-theme="dark"]) .pagination {
   --bs-pagination-active-color: var(--bs-primary-text-emphasis);

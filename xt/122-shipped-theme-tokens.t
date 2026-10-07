@@ -126,6 +126,35 @@ ok( quiet_has('.pagination',
     '--bs-pagination-active-border-color' => 'var(--bs-primary-border-subtle)' ),
   'netdiscoCss__current_page__uses_primary_subtle_in_light_and_dark' );
 
+my @fa_border_rules = grep { $_->{selector} eq "$QUIET .btn .fa-border" } @nd;
+my $has_width = scalar grep { $_->{property} eq '--fa-border-width' and $_->{value} eq '0' } @fa_border_rules;
+my $has_padding = scalar grep { $_->{property} eq '--fa-border-padding' } @fa_border_rules;
+ok( $has_width and !$has_padding,
+  'netdiscoCss__icon_border_in_a_button__is_dropped_in_light_and_dark' );
+
+ok( quiet_has('.badge .nd_delete-me', 'color' => 'inherit'),
+  'netdiscoCss__badge_delete_icon__takes_the_badge_color_in_light_and_dark' );
+
+ok( (grep { $_->{selector} eq '[data-bs-theme="dark"] .badge.text-bg-dark'
+              and $_->{property} eq 'background-color'
+              and $_->{value} eq 'var(--bs-secondary-bg) !important' } @dark),
+  'darkTheme__dark_badge__uses_the_secondary_background' );
+
+ok( quiet_has('.btn-info',
+    '--bs-btn-color' => 'var(--bs-info-text-emphasis)',
+    '--bs-btn-bg' => 'var(--bs-info-bg-subtle)',
+    '--bs-btn-border-color' => 'var(--bs-info-border-subtle)',
+    '--bs-btn-hover-color' => 'var(--bs-emphasis-color)',
+    '--bs-btn-hover-bg' => 'var(--bs-info-border-subtle)',
+    '--bs-btn-hover-border-color' => 'var(--bs-info-border-subtle)',
+    '--bs-btn-active-color' => 'var(--bs-emphasis-color)',
+    '--bs-btn-active-bg' => 'var(--bs-info-border-subtle)',
+    '--bs-btn-active-border-color' => 'var(--bs-info-border-subtle)',
+    '--bs-btn-disabled-color' => 'var(--bs-info-text-emphasis)',
+    '--bs-btn-disabled-bg' => 'var(--bs-info-bg-subtle)',
+    '--bs-btn-disabled-border-color' => 'var(--bs-info-border-subtle)' ),
+  'netdiscoCss__info_button__uses_the_subtle_style_in_light_and_dark' );
+
 # navbar_disco.png is opaque with its own background, so a theme that paints
 # the bar another color shows the artwork as a rectangle.
 ok( (grep { $_->{selector} eq '.navbar.bg-dark'

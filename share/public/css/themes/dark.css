@@ -65,3 +65,8 @@
 [data-bs-theme="dark"] i.text-danger {
   color: var(--bs-danger-text-emphasis) !important;
 }
+
+/* Bootstrap's dark badge is the dark page color, so the chip vanishes. */
+[data-bs-theme="dark"] .badge.text-bg-dark {
+  background-color: var(--bs-secondary-bg) !important;
+}
