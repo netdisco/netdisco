@@ -37,7 +37,7 @@ foreach my $variant (qw/success danger/) {
     "darkTheme__text_${variant}_icon__uses_bootstrap_dark_emphasis_color" );
 }
 
-# The light value, translucent red, measures 2.45:1 on the dark sidebar.
+# Bootstrap's base red, the light value, measures under 3:1 on the dark sidebar.
 ok( (grep { $_->{selector} eq '[data-bs-theme="dark"]'
               and $_->{property} eq '--nd-pin-active'
               and $_->{value} eq 'var(--bs-danger-text-emphasis)' } @dark),

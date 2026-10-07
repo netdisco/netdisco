@@ -236,10 +236,10 @@ function ndNetmap(pane) {
     }
 
     // read once per render; the theme cannot change without a page load
-    const LINK_COLOR = netmapThemeColor('--nd-netmap-link', 'rgba(150, 150, 150, 0.73)');
+    const LINK_COLOR = netmapThemeColor('--nd-netmap-link', '#adb5bd');
     const SELECT_COLOR = netmapThemeColor('--nd-netmap-select', '#0d6efd');
-    const LABEL_COLOR = netmapThemeColor('--nd-netmap-label', '#333');
-    const SPEED_COLOR = netmapThemeColor('--nd-netmap-speed', 'black');
+    const LABEL_COLOR = netmapThemeColor('--nd-netmap-label', '#212529');
+    const SPEED_COLOR = netmapThemeColor('--nd-netmap-speed', '#212529');
 
     const netmapPaneEl = document.getElementById('netmap_pane');
     const netmapPaneParent = netmapPaneEl && netmapPaneEl.parentElement;

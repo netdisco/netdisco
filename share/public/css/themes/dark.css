@@ -1,75 +1,22 @@
-/* Dark: Bootstrap's built-in dark color mode, plus dark values for netdisco's
-   own colors, which Bootstrap does not know about:
+/* Dark: Bootstrap's built-in dark color mode:
    https://getbootstrap.com/docs/5.3/customize/color-modes/#dark-mode
-   The --nd-* names are the ones netdisco.css defines; each value either reads
-   Bootstrap's dark tokens or is chosen to keep 4.5:1 contrast on Bootstrap's
-   dark backgrounds. themes/classic.css shows how to start a theme. */
+   netdisco.css maps its --nd-* colors onto Bootstrap's variables, so most follow
+   this mode without an entry here. These are the ones Bootstrap's dark variables
+   cannot express: icons, which take the light-on-dark emphasis colors, and the
+   orange and yellow netdisco uses for its own meanings, from Bootstrap's palette.
+   themes/classic.css shows how to start a theme. */
 
 [data-bs-theme="dark"] {
-  --nd-navbar-text: #adb5bd;
-
-  --nd-menu-bg: var(--bs-body-bg);
-  --nd-menu-border: var(--bs-border-color);
-  --nd-menu-active-border: var(--bs-border-color);
-  --nd-menu-active-bg: var(--bs-secondary-bg);
-  --nd-menu-active-color: var(--bs-emphasis-color);
-
-  --nd-snmp-guide: var(--bs-border-color);
-  --nd-snmp-label: var(--bs-body-color);
-  --nd-snmp-label-hover-bg: var(--bs-secondary-bg);
-  --nd-snmp-empty: var(--bs-secondary-color);
-  --nd-snmp-found-bg: #1c5a8f;
-  --nd-snmp-found-color: #ffffff;
-
-  --nd-link-button-color: var(--bs-body-color);
-  --nd-heading-bg: var(--bs-secondary-bg);
-  --nd-stealth-link: var(--bs-body-color);
-  --nd-log-icon: var(--bs-body-color);
-  --nd-editing-bg: #4d4a1f;
-
-  --nd-device-name: #e0c27a;
-  --nd-single-tab: #e8a33d;
-  --nd-archived: #d4b37a;
-  --nd-collapser: #6ea8fe;
-  --nd-arrow-neutral: #adb5bd;
-  --nd-arrow-down: #d6d24a;
-  --nd-arrow-up: #e0975a;
-
-  --nd-sidebar-bg: var(--bs-tertiary-bg);
-  --nd-sidebar-border: var(--bs-border-color);
-  --nd-sidebar-icon: #adb5bd;
-  --nd-sidebar-hr-fill: var(--bs-border-color);
-  --nd-sidebar-hr-top: var(--bs-border-color);
-  --nd-sidebar-hr-bottom: var(--bs-body-bg);
-  --nd-pin-active: var(--bs-danger-text-emphasis);
-
-  --nd-field-icon: #adb5bd;
-  --nd-field-success-bg: #1f4d2b;
-  --nd-field-clear-color: #6ea8fe;
-
-  --nd-netmap-control: var(--bs-body-color);
-  --nd-netmap-bg: var(--bs-body-bg);
-  --nd-netmap-legend-bg: rgba(33, 37, 41, 0.85);
-  --nd-netmap-label: #dee2e6;
-  --nd-netmap-speed: #dee2e6;
-  --nd-netmap-select: #6ea8fe;
-  --nd-netmap-select-fill: rgba(110, 168, 254, 0.12);
-
-  --nd-tree-bg: var(--bs-tertiary-bg);
-  --nd-tree-line: var(--bs-border-color);
-  --nd-tree-hover-bg: var(--bs-secondary-bg);
-  --nd-tree-hover-border: var(--bs-border-color);
-  --nd-tree-hover-color: var(--bs-emphasis-color);
-
-  --nd-table-head-bg: var(--bs-tertiary-bg);
-  --nd-hero-bg-rgb: 43, 48, 53;
-  --nd-inventory-head: var(--bs-secondary-color);
   --nd-power-off: var(--bs-danger-text-emphasis);
   --nd-power-on: var(--bs-success-text-emphasis);
-  --nd-radio-border: var(--bs-border-color);
-  --nd-radio-bg: var(--bs-body-bg);
-  --nd-radio-dot: var(--bs-body-color);
-  --nd-group-row-bg: var(--bs-secondary-bg);
+  --nd-single-tab: #feb272;
+  --nd-archived: #ffe69c;
+  --nd-arrow-down: #ffda6a;
+  --nd-arrow-up: #feb272;
+  --nd-pin-active: var(--bs-danger-text-emphasis);
+  --nd-netmap-running: var(--bs-warning);
+  --nd-netmap-settled: var(--bs-success-text-emphasis);
+  --nd-radio-checked: var(--bs-success-text-emphasis);
 }
 
 /* In dark mode Bootstrap's bg-dark is the page background itself, which would

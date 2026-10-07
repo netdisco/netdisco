@@ -21,8 +21,8 @@ test('netmapThemeColor__empty_value__returns_the_fallback', () => {
 });
 
 test('netmapColors__label_link_and_selection__come_from_tokens', () => {
-  assert.match(src, /netmapThemeColor\('--nd-netmap-label', '#333'\)/);
-  assert.match(src, /netmapThemeColor\('--nd-netmap-link', 'rgba\(150, 150, 150, 0\.73\)'\)/);
+  assert.match(src, /netmapThemeColor\('--nd-netmap-label', '#212529'\)/);
+  assert.match(src, /netmapThemeColor\('--nd-netmap-link', '#adb5bd'\)/);
   assert.match(src, /netmapThemeColor\('--nd-netmap-select', '#0d6efd'\)/);
 });
 
@@ -33,7 +33,7 @@ test('netmapColors__drawing_code__holds_no_hardcoded_theme_color', () => {
 });
 
 test('netmapColors__speed_label__comes_from_a_token', () => {
-  assert.match(src, /netmapThemeColor\('--nd-netmap-speed', 'black'\)/);
+  assert.match(src, /netmapThemeColor\('--nd-netmap-speed', '#212529'\)/);
 });
 
 test('netmapColors__canvas_styles__are_never_assigned_a_string_literal', () => {

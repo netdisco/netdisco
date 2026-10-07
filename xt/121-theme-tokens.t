@@ -55,4 +55,22 @@ is_deeply [ sort grep { !$defined{$_} } keys %used ], [],
 is_deeply [ sort grep { !$used{$_} } keys %defined ], [],
   'themeTokens__every_token_defined__is_read';
 
+# A token on :root resolves var() at :root, where only Bootstrap's global
+# variables exist; a component variable there resolves to nothing.
+my $bootstrap = read_text('share/public/css/bootstrap.min.css');
+my %global;
+foreach my $block ($bootstrap =~ m/(?:^|[\}\/])(?::root,\[data-bs-theme=light\]|\[data-bs-theme=dark\])\{([^}]*)\}/g) {
+  $global{$_} = 1 for ($block =~ m/(--bs-[\w-]+):/g);
+}
+my @root_tokens = grep { $_->{selector} eq ':root' and $_->{property} =~ /^--nd-/ }
+  css_rules($SHEETS{'netdisco.css'});
+my @unknown = map { "$_->{property}: $_->{value}" }
+  grep { my $v = $_->{value}; grep { !$global{$_} } ($v =~ m/var\((--[\w-]+)\)/g) } @root_tokens;
+is_deeply \@unknown, [], 'themeTokens__root_token__reads_only_global_bootstrap_variables';
+
+my @literal = grep { $_->{value} !~ /var\(--bs-/ } @root_tokens;
+is_deeply [ sort map { $_->{property} } @literal ],
+  [ sort qw/--nd-archived --nd-arrow-down --nd-arrow-up --nd-netmap-running --nd-single-tab --nd-toast-info/ ],
+  'themeTokens__default_palette__uses_literals_only_where_bootstrap_has_no_variable';
+
 done_testing;
