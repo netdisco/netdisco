@@ -29,7 +29,8 @@
   /**
    * Turns a theme name into the color mode Bootstrap reads. 'light' and
    * 'auto' are reserved: 'light' means the standard colors, and 'auto'
-   * follows the OS preference between dark and the standard colors.
+   * follows the browser's color-scheme preference, which normally mirrors
+   * the operating system, between dark and the standard colors.
    * @param {string} name a theme name
    * @returns {string} the data-bs-theme value, or '' for none (the standard
    *   colors); any name other than 'light' and 'auto' passes through
