@@ -37,9 +37,87 @@
   --bs-form-invalid-color: #b94a48; --bs-form-invalid-border-color: #b94a48;
 
   /* Netdisco's own elements read the --nd-* variables at the top of
-     netdisco.css; themes/dark.css is the worked example. */
+     netdisco.css; classic sets every --nd-* variable. */
+  --nd-table-head-bg: floralWhite;
+  --nd-hero-bg-rgb: 238, 238, 238;
+  --nd-inventory-head: lightSlateGray;
+  --nd-power-off: darkRed;
+  --nd-power-on: darkGreen;
+  --nd-field-success-bg: #a9dba9;
+  --nd-field-success-border: #46a546;
+  --nd-search-color: #ffffff;
+  --nd-search-bg: #515151;
+  --nd-search-border: #111111;
+  --nd-search-placeholder: #cccccc;
+  --nd-search-focus-color: #333333;
+  --nd-search-focus-bg: #ffffff;
+  --nd-navbar-icon: #999;
+  --nd-navbar-text: #666;
+  --nd-menu-bg: #ffffff;
+  --nd-menu-border: #aaaaaa;
+  --nd-menu-active-border: #999999;
+  --nd-menu-active-bg: #dadada;
+  --nd-menu-active-color: #212121;
+  --nd-suggest-active-border: #0077b3;
+  --nd-suggest-active-bg: #0081c2;
+  --nd-suggest-active-top: #0088cc;
+  --nd-suggest-active-bottom: #0077b3;
+  --nd-suggest-active-color: #ffffff;
+  --nd-snmp-guide: #a6a6a6;
+  --nd-snmp-label: #333;
+  --nd-snmp-found-bg: #3392e3;
+  --nd-snmp-found-color: #8b0000;
   --nd-snmp-spinner: #c09853;
+  --nd-toast-color: #ffffff;
+  --nd-toast-success: #51A351;
+  --nd-toast-error: #BD362F;
+  --nd-toast-info: #2F96B4;
+  --nd-link-button-color: #333333;
+  --nd-link-button-hover-color: #ffffff;
+  --nd-link-button-hover-bg: #0081c2;
+  --nd-heading-bg: #eeeeee;
+  --nd-delete-color: white;
+  --nd-stealth-link: #404040;
+  --nd-device-name: #6D5720;
+  --nd-single-tab: rgb(187,112,0);
+  --nd-archived: #c09853;
+  --nd-log-icon: black;
+  --nd-editing-bg: #FFFFD3;
+  --nd-collapser: #0088CC;
+  --nd-arrow-neutral: #555;
+  --nd-arrow-down: #a3a01e;
+  --nd-arrow-up: #783f03;
+  --nd-sidebar-bg: #f5f5f5;
+  --nd-sidebar-border: #e3e3e3;
+  --nd-pin-active: rgba(255,0,0,0.8);
+  --nd-sidebar-icon: #555;
+  --nd-sidebar-hr-fill: black;
+  --nd-sidebar-hr-top: #eeeeee;
+  --nd-sidebar-hr-bottom: #ffffff;
+  --nd-netmap-control: black;
+  --nd-field-icon: #999;
+  --nd-field-clear-color: #3A87AD;
+  --nd-netmap-bg: #fff;
+  --nd-netmap-running: #FFE4B5;
+  --nd-netmap-settled: #CCFFCC;
+  --nd-netmap-legend-bg: rgba(255,255,255,0.85);
+  --nd-netmap-select: #0d6efd;
+  --nd-netmap-select-fill: rgba(13,110,253,0.08);
+  --nd-snmp-label-hover-bg: #e8eff7;
   --nd-snmp-empty: #999999;
+  --nd-netmap-label: #333;
+  --nd-netmap-speed: black;
+  --nd-netmap-link: rgba(150, 150, 150, 0.73);
+  --nd-tree-bg: #fbfbfb;
+  --nd-tree-line: #999;
+  --nd-tree-hover-bg: #eee;
+  --nd-tree-hover-border: #94a0b4;
+  --nd-tree-hover-color: #000;
+  --nd-radio-border: #cccccc;
+  --nd-radio-bg: #fff;
+  --nd-radio-dot: #555555;
+  --nd-radio-checked: #5cb85c;
+  --nd-group-row-bg: #ddd;
 }
 
 /* Component variables. Bootstrap fixes these per component when it is built,
