@@ -64,4 +64,22 @@ foreach my $case (
     "netdiscoCss__${selector}_${property}__reads_its_token" );
 }
 
+# Bootstrap's link blue and its info and warning icon colors miss WCAG
+# contrast on netdisco's tinted backgrounds, so stock light uses darker steps
+# from Bootstrap's own palette. A theme attribute switches this off.
+my $LIGHT = ':root:not([data-bs-theme])';
+foreach my $case (
+  [ $LIGHT, '--bs-link-color', 'var(--nd-light-link)' ],
+  [ $LIGHT, '--bs-link-color-rgb', 'var(--nd-light-link-rgb)' ],
+  [ $LIGHT, '--bs-link-hover-color', 'var(--nd-light-link-hover)' ],
+  [ $LIGHT, '--bs-link-hover-color-rgb', 'var(--nd-light-link-hover-rgb)' ],
+  [ "$LIGHT i.text-info", 'color', 'var(--nd-light-info-icon) !important' ],
+  [ "$LIGHT i.text-warning", 'color', 'var(--nd-light-warning-icon) !important' ],
+) {
+  my ($selector, $property, $value) = @$case;
+  ok( (grep { $_->{property} eq $property and $_->{value} eq $value
+                and grep { $_ eq $selector } split /\s*,\s*/, $_->{selector} } @nd),
+    "netdiscoCss__light_${property}_on_${selector}__uses_the_darker_step" );
+}
+
 done_testing;

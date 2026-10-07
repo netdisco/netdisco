@@ -118,6 +118,12 @@
   --nd-radio-dot: #555555;
   --nd-radio-checked: #5cb85c;
   --nd-group-row-bg: #ddd;
+  --nd-light-link: #0088cc;
+  --nd-light-link-rgb: 0, 136, 204;
+  --nd-light-link-hover: #005580;
+  --nd-light-link-hover-rgb: 0, 85, 128;
+  --nd-light-info-icon: #3a87ad;
+  --nd-light-warning-icon: #f89406;
 }
 
 /* Component variables. Bootstrap fixes these per component when it is built,
