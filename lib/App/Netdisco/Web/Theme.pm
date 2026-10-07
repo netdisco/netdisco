@@ -5,10 +5,19 @@ use Path::Class qw/dir file/;
 use App::Netdisco::Util::SiteLocal 'site_local_paths';
 
 use base 'Exporter';
-our @EXPORT_OK = qw/find_theme_file theme_problem_message theme_scope_message/;
+our @EXPORT_OK = qw/find_theme_file theme_problem_message theme_scope_message theme_sheet_name/;
 
 # A theme name becomes a file name, so nothing that could leave the directory.
 my $VALID_NAME = qr/\A[A-Za-z0-9_-]+\z/;
+
+# auto follows the browser's color scheme: it serves the dark sheet, whose
+# rules apply only once the page's resolver sets data-bs-theme="dark".
+my %SHEET_FOR = (auto => 'dark');
+
+sub theme_sheet_name {
+  my $name = shift;
+  return $SHEET_FOR{$name} || $name;
+}
 
 sub find_theme_file {
   my ($name, @dirs) = @_;
@@ -55,12 +64,13 @@ sub resolve_configured_theme {
   my $name = setting('web_theme');
   return unless defined $name and length $name;
 
+  my $sheet = theme_sheet_name($name);
   my @dirs = theme_dirs();
-  my $path = find_theme_file($name, @dirs);
+  my $path = find_theme_file($sheet, @dirs);
   return warning theme_problem_message($name, @dirs) unless $path;
 
   my $css = scalar file($path)->slurp;
-  my $scope = theme_scope_message($name, $path, $css);
+  my $scope = theme_scope_message($sheet, $path, $css);
   warning $scope if $scope;
 
   setting('_web_theme' => {

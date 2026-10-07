@@ -7,7 +7,7 @@ use Test::More 0.88;
 use File::Temp ();
 use File::Spec::Functions qw/catfile/;
 
-use App::Netdisco::Web::Theme qw/find_theme_file theme_problem_message theme_scope_message/;
+use App::Netdisco::Web::Theme qw/find_theme_file theme_problem_message theme_scope_message theme_sheet_name/;
 
 sub theme_dir_with {
   my $dir = File::Temp->newdir(CLEANUP => 1);
@@ -78,5 +78,10 @@ Dancer::Config::setting('site_local_files' => 0);
 is_deeply [ App::Netdisco::Web::Theme::theme_dirs() ],
   [ '/xt/public/css/themes', '/xt/site/themes' ],
   'themeDirs__shipped_and_site_local__searches_shipped_themes_first';
+
+# auto follows the browser's color scheme, so it serves the dark sheet and the
+# page decides when that sheet applies.
+is theme_sheet_name('auto'), 'dark', 'themeSheetName__auto__is_the_dark_sheet';
+is theme_sheet_name('classic'), 'classic', 'themeSheetName__any_other_name__is_itself';
 
 done_testing;

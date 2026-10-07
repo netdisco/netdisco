@@ -381,6 +381,7 @@ share/public/javascripts/netdisco-portcontrol.js
 share/public/javascripts/netdisco-request.js
 share/public/javascripts/netdisco-swagger.js
 share/public/javascripts/netdisco-tables.js
+share/public/javascripts/netdisco-theme.js
 share/public/javascripts/netdisco-toast.js
 share/public/javascripts/netdisco-typeahead.js
 share/public/javascripts/netdisco.js
@@ -785,6 +786,7 @@ xt/js/submit-dispatch.test.js
 xt/js/swagger-spec-url.test.js
 xt/js/tab-request-sync.test.js
 xt/js/tables-registry.test.js
+xt/js/theme-resolver.test.js
 xt/js/toast.test.js
 xt/js/toggle-build.test.js
 xt/js/tooltip-dismissal.test.js
