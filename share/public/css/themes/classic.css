@@ -125,6 +125,10 @@
   --nd-light-link-hover-rgb: 0, 85, 128;
   --nd-light-info-icon: #3a87ad;
   --nd-light-warning-icon: #f89406;
+  --nd-light-row-link: #0088cc;
+  --nd-light-row-link-rgb: 0, 136, 204;
+  --nd-light-row-link-hover: #005580;
+  --nd-light-row-link-hover-rgb: 0, 85, 128;
 }
 
 /* Component variables. Bootstrap fixes these per component when it is built,
