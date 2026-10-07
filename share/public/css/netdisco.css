@@ -44,6 +44,7 @@
   --nd-search-focus-bg: var(--bs-body-bg);
   --nd-navbar-icon: rgba(var(--bs-white-rgb), 0.55);
   --nd-navbar-text: rgba(var(--bs-white-rgb), 0.55);
+  --nd-navbar-bg: #1a1a1a;
   --nd-menu-bg: var(--bs-body-bg);
   --nd-menu-border: var(--bs-border-color);
   --nd-menu-active-border: var(--bs-primary);
@@ -333,6 +334,11 @@ body {
 .navbar > .container {
   min-height: 40px;
   background: url(../images/navbar_disco.png) no-repeat;
+}
+/* navbar_disco.png carries this color as its own background, so the bar
+   around the artwork must match it in every theme. */
+.navbar.bg-dark {
+  background-color: var(--nd-navbar-bg) !important;
 }
 
 /* Links carried no underline until hovered. The replacement underlines every

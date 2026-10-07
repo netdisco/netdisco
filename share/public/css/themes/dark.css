@@ -19,12 +19,6 @@
   --nd-radio-checked: var(--bs-success-text-emphasis);
 }
 
-/* In dark mode Bootstrap's bg-dark is the page background itself, which would
-   merge the navbar into the page. */
-[data-bs-theme="dark"] .navbar.bg-dark {
-  background-color: #1a1a1a !important;
-}
-
 /* The SNMP browser's expander boxes are images drawn white with grey lines. */
 [data-bs-theme="dark"] .nd_snmp-row > details > summary::before {
   filter: invert(0.85);

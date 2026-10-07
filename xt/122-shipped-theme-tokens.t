@@ -82,4 +82,14 @@ foreach my $case (
     "netdiscoCss__light_${property}_on_${selector}__uses_the_darker_step" );
 }
 
+# navbar_disco.png is opaque with its own background, so a theme that paints
+# the bar another color shows the artwork as a rectangle.
+ok( (grep { $_->{selector} eq '.navbar.bg-dark'
+              and $_->{property} eq 'background-color'
+              and $_->{value} eq 'var(--nd-navbar-bg) !important' } @nd),
+  'netdiscoCss__navbar__matches_the_artwork_background_in_every_theme' );
+
+ok( !(grep { $_->{selector} =~ /\.navbar\.bg-dark/ } @dark),
+  'darkTheme__navbar__takes_the_shared_color' );
+
 done_testing;
