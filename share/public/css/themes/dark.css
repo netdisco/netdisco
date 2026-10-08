@@ -17,6 +17,7 @@
   --nd-netmap-running: var(--bs-warning);
   --nd-netmap-settled: var(--bs-success-text-emphasis);
   --nd-radio-checked: var(--bs-success-text-emphasis);
+  --nd-control-border: var(--bs-gray-500);
 }
 
 /* The SNMP browser's expander boxes are images drawn white with grey lines. */
@@ -68,5 +69,5 @@
 
 /* Bootstrap's dark badge is the dark page color, so the chip vanishes. */
 [data-bs-theme="dark"] .badge.text-bg-dark {
-  background-color: var(--bs-secondary-bg) !important;
+  background-color: var(--nd-secondary-bg) !important;
 }

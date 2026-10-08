@@ -30,7 +30,9 @@
    all. */
 :root {
   --nd-table-head-bg: var(--bs-tertiary-bg);
-  --nd-hero-bg-rgb: var(--bs-secondary-bg-rgb);
+  --nd-secondary-bg: var(--bs-secondary-bg);
+  --nd-control-border: var(--bs-gray-600);
+  --nd-hero-bg: var(--nd-secondary-bg);
   --nd-inventory-head: var(--bs-secondary-color);
   --nd-power-off: var(--bs-danger);
   --nd-power-on: var(--bs-success);
@@ -42,8 +44,8 @@
   --nd-search-placeholder: var(--bs-gray-500);
   --nd-search-focus-color: var(--bs-body-color);
   --nd-search-focus-bg: var(--bs-body-bg);
-  --nd-navbar-icon: rgba(var(--bs-white-rgb), 0.55);
-  --nd-navbar-text: rgba(var(--bs-white-rgb), 0.55);
+  --nd-navbar-icon: color-mix(in srgb, var(--bs-white) 55%, transparent);
+  --nd-navbar-text: color-mix(in srgb, var(--bs-white) 55%, transparent);
   --nd-navbar-bg: #1a1a1a;
   --nd-menu-bg: var(--bs-body-bg);
   --nd-menu-border: var(--bs-border-color);
@@ -67,7 +69,7 @@
   --nd-link-button-color: var(--bs-body-color);
   --nd-link-button-hover-color: var(--bs-white);
   --nd-link-button-hover-bg: var(--bs-primary);
-  --nd-heading-bg: var(--bs-secondary-bg);
+  --nd-heading-bg: var(--nd-secondary-bg);
   --nd-delete-color: var(--bs-white);
   --nd-stealth-link: var(--bs-body-color);
   --nd-device-name: var(--bs-warning-text-emphasis);
@@ -92,24 +94,24 @@
   --nd-netmap-bg: var(--bs-body-bg);
   --nd-netmap-running: #997404;
   --nd-netmap-settled: var(--bs-success);
-  --nd-netmap-legend-bg: rgba(var(--bs-body-bg-rgb), 0.85);
+  --nd-netmap-legend-bg: color-mix(in srgb, var(--bs-body-bg) 85%, transparent);
   --nd-netmap-select: var(--bs-link-color);
-  --nd-netmap-select-fill: rgba(var(--bs-link-color-rgb), 0.1);
-  --nd-snmp-label-hover-bg: var(--bs-secondary-bg);
+  --nd-netmap-select-fill: color-mix(in srgb, var(--bs-link-color) 10%, transparent);
+  --nd-snmp-label-hover-bg: var(--nd-secondary-bg);
   --nd-snmp-empty: var(--bs-secondary-color);
   --nd-netmap-label: var(--bs-body-color);
   --nd-netmap-speed: var(--bs-body-color);
   --nd-netmap-link: var(--bs-gray-500);
   --nd-tree-bg: var(--bs-tertiary-bg);
   --nd-tree-line: var(--bs-border-color);
-  --nd-tree-hover-bg: var(--bs-secondary-bg);
+  --nd-tree-hover-bg: var(--nd-secondary-bg);
   --nd-tree-hover-border: var(--bs-border-color);
   --nd-tree-hover-color: var(--bs-emphasis-color);
-  --nd-radio-border: var(--bs-border-color);
+  --nd-radio-border: var(--nd-control-border);
   --nd-radio-bg: var(--bs-body-bg);
   --nd-radio-dot: var(--bs-body-color);
   --nd-radio-checked: var(--bs-success);
-  --nd-group-row-bg: var(--bs-secondary-bg);
+  --nd-group-row-bg: var(--nd-secondary-bg);
   --nd-light-link: #0a58ca;
   --nd-light-link-rgb: 10, 88, 202;
   --nd-light-link-hover: #084298;
@@ -154,10 +156,10 @@
   --bs-btn-bg: var(--bs-tertiary-bg);
   --bs-btn-border-color: var(--bs-border-color);
   --bs-btn-hover-color: var(--bs-emphasis-color);
-  --bs-btn-hover-bg: var(--bs-secondary-bg);
+  --bs-btn-hover-bg: var(--nd-secondary-bg);
   --bs-btn-hover-border-color: var(--bs-border-color);
   --bs-btn-active-color: var(--bs-emphasis-color);
-  --bs-btn-active-bg: var(--bs-secondary-bg);
+  --bs-btn-active-bg: var(--nd-secondary-bg);
   --bs-btn-active-border-color: var(--bs-border-color);
 }
 /* Black on saturated cyan at weight 700 is heavy in dense tables; the subtle
@@ -199,6 +201,25 @@
   --bs-pagination-active-color: var(--bs-primary-text-emphasis);
   --bs-pagination-active-bg: var(--bs-primary-bg-subtle);
   --bs-pagination-active-border-color: var(--bs-primary-border-subtle);
+}
+/* Bootstrap's field borders are 1.3:1 against the page; WCAG 1.4.11 asks 3:1. */
+:where(:root:not([data-bs-theme]), [data-bs-theme="dark"])
+  :is(.form-control, .form-select, .form-check-input, .input-group-text) {
+  border-color: var(--nd-control-border);
+}
+/* The caption beside a sidebar checkbox has no border here, so the edge Bootstrap
+   squares to join it reads as clipped. !important because Bootstrap's join rule
+   is six classes deep. */
+:where(:root:not([data-bs-theme]), [data-bs-theme="dark"])
+  .input-group > .input-group-text:has(+ .nd_checkboxlabel) {
+  border-radius: var(--bs-border-radius) !important;
+}
+/* Even space around it in every one of these boxes; the native 13px leaves an
+   odd remainder that a 1x screen rounds a pixel off center. */
+:where(:root:not([data-bs-theme]), [data-bs-theme="dark"])
+  .input-group > .input-group-text:has(+ .nd_checkboxlabel) > input[type="checkbox"] {
+  width: 12px;
+  height: 12px;
 }
 
 /* Form controls, buttons and dropdown menus hardcode 1rem rather than reading
@@ -915,7 +936,7 @@ div.nd_acl-rule-list {
    its larger, lighter type and gray. Built from utility classes now, so its
    padding arrives flagged and only a flag displaces it. */
 .nd_hero-row .bg-body-tertiary {
-  --bs-tertiary-bg-rgb: var(--nd-hero-bg-rgb);
+  background-color: var(--nd-hero-bg) !important;
   --bs-border-radius-lg: 6px;
   padding: 30px 60px 40px 90px !important;
   margin-bottom: 30px !important;
@@ -1856,7 +1877,6 @@ input#nd_port-query {
   width: 138px;
 }
 .nd_sidebar-btn-drop-drop {
-  height: 28px;
   width: 28px;
 }
 

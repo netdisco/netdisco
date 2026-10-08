@@ -11,6 +11,10 @@
   * light and auto are reserved web_theme values; a site theme with either
     name is no longer used
 
+  [BUG FIXES]
+
+  * the Update View button and its menu caret share a bottom edge
+
 2.110000 - 2026-10-04
 
   [ENHANCEMENTS]

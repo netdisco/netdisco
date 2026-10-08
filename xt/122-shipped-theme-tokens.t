@@ -57,6 +57,7 @@ foreach my $case (
   [ '.radio label::before', 'background-color', 'var(--nd-radio-bg)' ],
   [ '.radio label::after', 'background-color', 'var(--nd-radio-dot)' ],
   [ 'tr.group', 'background-color', 'var(--nd-group-row-bg) !important' ],
+  [ '.nd_hero-row .bg-body-tertiary', 'background-color', 'var(--nd-hero-bg) !important' ],
 ) {
   my ($selector, $property, $value) = @$case;
   ok( (grep { $_->{property} eq $property and $_->{value} eq $value
@@ -104,10 +105,10 @@ ok( quiet_has($PLAIN_BTN,
     '--bs-btn-bg' => 'var(--bs-tertiary-bg)',
     '--bs-btn-border-color' => 'var(--bs-border-color)',
     '--bs-btn-hover-color' => 'var(--bs-emphasis-color)',
-    '--bs-btn-hover-bg' => 'var(--bs-secondary-bg)',
+    '--bs-btn-hover-bg' => 'var(--nd-secondary-bg)',
     '--bs-btn-hover-border-color' => 'var(--bs-border-color)',
     '--bs-btn-active-color' => 'var(--bs-emphasis-color)',
-    '--bs-btn-active-bg' => 'var(--bs-secondary-bg)',
+    '--bs-btn-active-bg' => 'var(--nd-secondary-bg)',
     '--bs-btn-active-border-color' => 'var(--bs-border-color)' ),
   'netdiscoCss__plain_button__draws_a_quiet_box_in_light_and_dark' );
 
@@ -129,7 +130,7 @@ ok( quiet_has('.pagination',
 my @fa_border_rules = grep { $_->{selector} eq "$QUIET .btn .fa-border" } @nd;
 my $has_width = scalar grep { $_->{property} eq '--fa-border-width' and $_->{value} eq '0' } @fa_border_rules;
 my $has_padding = scalar grep { $_->{property} eq '--fa-border-padding' } @fa_border_rules;
-ok( $has_width and !$has_padding,
+ok( ($has_width and !$has_padding),
   'netdiscoCss__icon_border_in_a_button__is_dropped_in_light_and_dark' );
 
 ok( quiet_has('.badge .nd_delete-me', 'color' => 'inherit'),
@@ -137,8 +138,8 @@ ok( quiet_has('.badge .nd_delete-me', 'color' => 'inherit'),
 
 ok( (grep { $_->{selector} eq '[data-bs-theme="dark"] .badge.text-bg-dark'
               and $_->{property} eq 'background-color'
-              and $_->{value} eq 'var(--bs-secondary-bg) !important' } @dark),
-  'darkTheme__dark_badge__uses_the_secondary_background' );
+              and $_->{value} eq 'var(--nd-secondary-bg) !important' } @dark),
+  'darkTheme__dark_badge__uses_the_secondary_background_token' );
 
 ok( quiet_has('.btn-info',
     '--bs-btn-color' => 'var(--bs-info-text-emphasis)',
@@ -154,6 +155,47 @@ ok( quiet_has('.btn-info',
     '--bs-btn-disabled-bg' => 'var(--bs-info-bg-subtle)',
     '--bs-btn-disabled-border-color' => 'var(--bs-info-border-subtle)' ),
   'netdiscoCss__info_button__uses_the_subtle_style_in_light_and_dark' );
+
+# Bootstrap's field borders are 1.3:1 against the page in light and dark,
+# under WCAG 1.4.11's 3:1. One class of specificity, so Bootstrap's focus,
+# checked and validation borders still win.
+my $FIELDS = ':where(:root:not([data-bs-theme]), [data-bs-theme="dark"]) '
+  . ':is(.form-control, .form-select, .form-check-input, .input-group-text)';
+ok( (grep { $_->{selector} eq $FIELDS
+              and $_->{property} eq 'border-color'
+              and $_->{value} eq 'var(--nd-control-border)' } @nd),
+  'netdiscoCss__field_border__reads_the_control_border_token_in_light_and_dark' );
+
+my %root_token = map { $_->{property} => $_->{value} }
+  grep { $_->{selector} eq ':root' and $_->{property} =~ /^--nd-/ } @nd;
+is $root_token{'--nd-control-border'}, 'var(--bs-gray-600)',
+  'netdiscoCss__control_border_token__is_bootstrap_gray_600';
+is $root_token{'--nd-radio-border'}, 'var(--nd-control-border)',
+  'netdiscoCss__netmap_radio_border__follows_the_control_border';
+
+# Dark panels (sidebar, login box) are lighter than the page, where gray-600
+# falls to 2.45:1; gray-500 is the darkest palette step over 3:1 on all of them.
+ok( (grep { $_->{selector} eq '[data-bs-theme="dark"]'
+              and $_->{property} eq '--nd-control-border'
+              and $_->{value} eq 'var(--bs-gray-500)' } @dark),
+  'darkTheme__control_border_token__is_bootstrap_gray_500' );
+
+# The sidebar checkbox boxes sit beside a borderless caption in light and dark,
+# so Bootstrap's squared joining edge reads as clipped. Classic borders the
+# caption and keeps the join.
+my $CHECKBOX_BOX = ':where(:root:not([data-bs-theme]), [data-bs-theme="dark"]) '
+  . '.input-group > .input-group-text:has(+ .nd_checkboxlabel)';
+ok( (grep { $_->{selector} eq $CHECKBOX_BOX
+              and $_->{property} eq 'border-radius'
+              and $_->{value} eq 'var(--bs-border-radius) !important' } @nd),
+  'netdiscoCss__sidebar_checkbox_box__rounds_all_four_corners_in_light_and_dark' );
+
+# A 13px checkbox leaves odd space in these boxes (3px across the port search
+# pair, 5px down), which a 1x screen cannot split, so it sat a pixel off center.
+ok( (scalar grep { $_->{selector} eq "$CHECKBOX_BOX > input[type=\"checkbox\"]"
+              and $_->{property} =~ /^(?:width|height)$/
+              and $_->{value} eq '12px' } @nd) == 2,
+  'netdiscoCss__sidebar_checkbox__is_12px_so_it_centers_in_light_and_dark' );
 
 # navbar_disco.png is opaque with its own background, so a theme that paints
 # the bar another color shows the artwork as a rectangle.
