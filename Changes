@@ -3,8 +3,7 @@ Unreleased
   [ENHANCEMENTS]
 
   * #1714 show the installed MIB Bundle version in System Information
-  * #1715 add a dark theme
-  * #1718 keep the previous colors in the classic theme only
+  * #1718 add a dark theme and keep the previous colors in the classic theme only
   * buttons, badges, form fields, menus, the navbar, the pager, tables and
     netdisco's own elements now use Bootstrap's palette; set web_theme: classic
     to keep the previous colors
