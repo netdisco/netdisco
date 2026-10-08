@@ -8,6 +8,7 @@ Unreleased
   * buttons, badges, form fields, menus, the navbar, the pager, tables and
     netdisco's own elements now use Bootstrap's palette; set web_theme: classic
     to keep the previous colors
+  * #1723 add web_theme: auto
   * web_theme: auto follows the browser's light or dark preference
   * light and auto are reserved web_theme values; a site theme with either
     name is no longer used
