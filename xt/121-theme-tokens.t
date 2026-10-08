@@ -64,10 +64,13 @@ foreach my $block ($bootstrap =~ m/(?:^|[\}\/])(?::root,\[data-bs-theme=light\]|
 }
 my @root_tokens = grep { $_->{selector} eq ':root' and $_->{property} =~ /^--nd-/ }
   css_rules($SHEETS{'netdisco.css'});
+# A token may also read another token defined in the same block, which
+# resolves at :root in turn.
 sub unknown_variables {
-  my ($known, @tokens) = @_;
+  my ($global, @tokens) = @_;
+  my %known = (%$global, map { $_->{property} => 1 } grep { $_->{property} =~ /^--nd-/ } @tokens);
   return map { "$_->{property}: $_->{value}" }
-    grep { my $v = $_->{value}; grep { !$known->{$_} } ($v =~ m/var\((--[\w-]+)\s*[,)]/g) } @tokens;
+    grep { my $v = $_->{value}; grep { !$known{$_} } ($v =~ m/var\((--[\w-]+)\s*[,)]/g) } @tokens;
 }
 
 # A var() fallback is a color no theme can reach, so it stays in view while
@@ -88,6 +91,15 @@ is_deeply [ unknown_variables({}, { property => '--nd-x', value => 'var(--bs-nav
   'unknownVariables__control_with_a_fallback__is_reported';
 is_deeply [ unknown_variables({ '--bs-body-color' => 1 }, { property => '--nd-x', value => 'var(--bs-body-color)' }) ], [],
   'unknownVariables__control_with_a_known_variable__is_clean';
+is_deeply [ unknown_variables({ '--bs-body-bg' => 1 },
+    { property => '--nd-y', value => 'var(--bs-body-bg)' },
+    { property => '--nd-x', value => 'var(--nd-y)' }) ], [],
+  'unknownVariables__control_reading_a_defined_token__is_clean';
+is_deeply [ unknown_variables({ '--bs-body-bg' => 1 },
+    { property => '--nd-y', value => 'var(--bs-body-bg)' },
+    { property => '--nd-x', value => 'var(--nd-z)' }) ],
+  [ '--nd-x: var(--nd-z)' ],
+  'unknownVariables__control_reading_an_undefined_token__is_reported';
 ok literal_outside_var('var(--bs-x, #fff)'),
   'literalOutsideVar__control_with_a_fallback__counts_as_a_literal';
 ok !literal_outside_var('var(--bs-x)'),
@@ -103,7 +115,7 @@ ok literal_outside_var('color-mix(in srgb, #ffffff 55%, transparent)'),
   'literalOutsideVar__control_with_a_literal_mixed_with_transparent__counts_as_a_literal';
 
 is_deeply [ unknown_variables(\%global, @root_tokens) ], [],
-  'themeTokens__root_token__reads_only_global_bootstrap_variables';
+  'themeTokens__root_token__reads_only_global_bootstrap_variables_or_root_tokens';
 
 my @literal = grep { literal_outside_var($_->{value}) } @root_tokens;
 is_deeply [ sort map { $_->{property} } @literal ],

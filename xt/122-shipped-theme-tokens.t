@@ -105,10 +105,10 @@ ok( quiet_has($PLAIN_BTN,
     '--bs-btn-bg' => 'var(--bs-tertiary-bg)',
     '--bs-btn-border-color' => 'var(--bs-border-color)',
     '--bs-btn-hover-color' => 'var(--bs-emphasis-color)',
-    '--bs-btn-hover-bg' => 'var(--bs-secondary-bg)',
+    '--bs-btn-hover-bg' => 'var(--nd-secondary-bg)',
     '--bs-btn-hover-border-color' => 'var(--bs-border-color)',
     '--bs-btn-active-color' => 'var(--bs-emphasis-color)',
-    '--bs-btn-active-bg' => 'var(--bs-secondary-bg)',
+    '--bs-btn-active-bg' => 'var(--nd-secondary-bg)',
     '--bs-btn-active-border-color' => 'var(--bs-border-color)' ),
   'netdiscoCss__plain_button__draws_a_quiet_box_in_light_and_dark' );
 
@@ -138,8 +138,8 @@ ok( quiet_has('.badge .nd_delete-me', 'color' => 'inherit'),
 
 ok( (grep { $_->{selector} eq '[data-bs-theme="dark"] .badge.text-bg-dark'
               and $_->{property} eq 'background-color'
-              and $_->{value} eq 'var(--bs-secondary-bg) !important' } @dark),
-  'darkTheme__dark_badge__uses_the_secondary_background' );
+              and $_->{value} eq 'var(--nd-secondary-bg) !important' } @dark),
+  'darkTheme__dark_badge__uses_the_secondary_background_token' );
 
 ok( quiet_has('.btn-info',
     '--bs-btn-color' => 'var(--bs-info-text-emphasis)',
