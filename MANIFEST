@@ -679,6 +679,7 @@ xt/118-web-theme-scope-warning.t
 xt/119-mib-bundle-version.t
 xt/12-port-order-helper.t
 xt/128-schema-101-index-hygiene.t
+xt/129-subnet-utilization-ipv6-size.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t

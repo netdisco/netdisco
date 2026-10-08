@@ -5,6 +5,10 @@ Unreleased
   * #1714 show the installed MIB Bundle version in System Information
   * drop redundant indexes and add four that existing queries lack
 
+  [BUG FIXES]
+
+  * Subnet Utilization reports the size of IPv6 subnets correctly
+
 2.110000 - 2026-10-04
 
   [ENHANCEMENTS]
