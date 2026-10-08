@@ -130,7 +130,7 @@ ok( quiet_has('.pagination',
 my @fa_border_rules = grep { $_->{selector} eq "$QUIET .btn .fa-border" } @nd;
 my $has_width = scalar grep { $_->{property} eq '--fa-border-width' and $_->{value} eq '0' } @fa_border_rules;
 my $has_padding = scalar grep { $_->{property} eq '--fa-border-padding' } @fa_border_rules;
-ok( $has_width and !$has_padding,
+ok( ($has_width and !$has_padding),
   'netdiscoCss__icon_border_in_a_button__is_dropped_in_light_and_dark' );
 
 ok( quiet_has('.badge .nd_delete-me', 'color' => 'inherit'),
@@ -155,6 +155,30 @@ ok( quiet_has('.btn-info',
     '--bs-btn-disabled-bg' => 'var(--bs-info-bg-subtle)',
     '--bs-btn-disabled-border-color' => 'var(--bs-info-border-subtle)' ),
   'netdiscoCss__info_button__uses_the_subtle_style_in_light_and_dark' );
+
+# Bootstrap's field borders are 1.3:1 against the page in light and dark,
+# under WCAG 1.4.11's 3:1. One class of specificity, so Bootstrap's focus,
+# checked and validation borders still win.
+my $FIELDS = ':where(:root:not([data-bs-theme]), [data-bs-theme="dark"]) '
+  . ':is(.form-control, .form-select, .form-check-input, .input-group-text)';
+ok( (grep { $_->{selector} eq $FIELDS
+              and $_->{property} eq 'border-color'
+              and $_->{value} eq 'var(--nd-control-border)' } @nd),
+  'netdiscoCss__field_border__reads_the_control_border_token_in_light_and_dark' );
+
+my %root_token = map { $_->{property} => $_->{value} }
+  grep { $_->{selector} eq ':root' and $_->{property} =~ /^--nd-/ } @nd;
+is $root_token{'--nd-control-border'}, 'var(--bs-gray-600)',
+  'netdiscoCss__control_border_token__is_bootstrap_gray_600';
+is $root_token{'--nd-radio-border'}, 'var(--nd-control-border)',
+  'netdiscoCss__netmap_radio_border__follows_the_control_border';
+
+# Dark panels (sidebar, login box) are lighter than the page, where gray-600
+# falls to 2.45:1; gray-500 is the darkest palette step over 3:1 on all of them.
+ok( (grep { $_->{selector} eq '[data-bs-theme="dark"]'
+              and $_->{property} eq '--nd-control-border'
+              and $_->{value} eq 'var(--bs-gray-500)' } @dark),
+  'darkTheme__control_border_token__is_bootstrap_gray_500' );
 
 # navbar_disco.png is opaque with its own background, so a theme that paints
 # the bar another color shows the artwork as a rectangle.

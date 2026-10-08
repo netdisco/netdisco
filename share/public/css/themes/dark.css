@@ -17,6 +17,7 @@
   --nd-netmap-running: var(--bs-warning);
   --nd-netmap-settled: var(--bs-success-text-emphasis);
   --nd-radio-checked: var(--bs-success-text-emphasis);
+  --nd-control-border: var(--bs-gray-500);
 }
 
 /* The SNMP browser's expander boxes are images drawn white with grey lines. */
