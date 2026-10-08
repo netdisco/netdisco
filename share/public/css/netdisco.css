@@ -214,6 +214,13 @@
   .input-group > .input-group-text:has(+ .nd_checkboxlabel) {
   border-radius: var(--bs-border-radius) !important;
 }
+/* Even space around it in every one of these boxes; the native 13px leaves an
+   odd remainder that a 1x screen rounds a pixel off center. */
+:where(:root:not([data-bs-theme]), [data-bs-theme="dark"])
+  .input-group > .input-group-text:has(+ .nd_checkboxlabel) > input[type="checkbox"] {
+  width: 12px;
+  height: 12px;
+}
 
 /* Form controls, buttons and dropdown menus hardcode 1rem rather than reading
    --bs-body-font-size, so the block above does not reach them. These are the

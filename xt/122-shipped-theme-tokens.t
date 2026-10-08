@@ -190,6 +190,13 @@ ok( (grep { $_->{selector} eq $CHECKBOX_BOX
               and $_->{value} eq 'var(--bs-border-radius) !important' } @nd),
   'netdiscoCss__sidebar_checkbox_box__rounds_all_four_corners_in_light_and_dark' );
 
+# A 13px checkbox leaves odd space in these boxes (3px across the port search
+# pair, 5px down), which a 1x screen cannot split, so it sat a pixel off center.
+ok( (scalar grep { $_->{selector} eq "$CHECKBOX_BOX > input[type=\"checkbox\"]"
+              and $_->{property} =~ /^(?:width|height)$/
+              and $_->{value} eq '12px' } @nd) == 2,
+  'netdiscoCss__sidebar_checkbox__is_12px_so_it_centers_in_light_and_dark' );
+
 # navbar_disco.png is opaque with its own background, so a theme that paints
 # the bar another color shows the artwork as a rectangle.
 ok( (grep { $_->{selector} eq '.navbar.bg-dark'
