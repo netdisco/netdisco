@@ -8,6 +8,10 @@
     netdisco's own elements now use Bootstrap's palette; set web_theme: classic
     to keep the previous colors
 
+  [BUG FIXES]
+
+  * the Update View button and its menu caret share a bottom edge
+
 2.110000 - 2026-10-04
 
   [ENHANCEMENTS]
