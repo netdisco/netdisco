@@ -1,7 +1,8 @@
-2.111000 - tbd
+Unreleased
 
   [ENHANCEMENTS]
 
+  * #1714 show the installed MIB Bundle version in System Information
   * #1715 add a dark theme
   * #1718 keep the previous colors in the classic theme only
   * buttons, badges, form fields, menus, the navbar, the pager, tables and
