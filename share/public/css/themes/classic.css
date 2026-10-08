@@ -39,7 +39,7 @@
   /* Netdisco's own elements read the --nd-* variables at the top of
      netdisco.css; classic sets every --nd-* variable. */
   --nd-table-head-bg: floralWhite;
-  --nd-hero-bg-rgb: 238, 238, 238;
+  --nd-hero-bg: #eeeeee;
   --nd-inventory-head: lightSlateGray;
   --nd-power-off: darkRed;
   --nd-power-on: darkGreen;

@@ -73,12 +73,13 @@ sub unknown_variables {
 # A var() fallback is a color no theme can reach, so it stays in view while
 # the reference itself is replaced by V, innermost group first. A color
 # function wrapped around a reference (rgba(var(--x-rgb), .5)) is the
-# reference's color, not a literal.
+# reference's color, not a literal, and so is a color-mix() of a reference
+# with transparent.
 sub literal_outside_var {
   my ($value) = @_;
   1 while $value =~ s/var\(\s*--[\w-]+\s*\)/V/
     or $value =~ s/var\(\s*--[\w-]+\s*,\s*([^()]*)\)/V $1/
-    or $value =~ s/(?:rgba?|hsla?)\(([^()]*\bV\b[^()]*)\)/$1/;
+    or $value =~ s/(?:rgba?|hsla?|color-mix)\(([^()]*\bV\b[^()]*)\)/$1/;
   return has_color_literal($value);
 }
 
@@ -96,6 +97,10 @@ ok literal_outside_var('var(--bs-x, var(--bs-y, #fff))'),
 
 ok !literal_outside_var('rgba(var(--bs-white-rgb), 0.55)'),
   'literalOutsideVar__control_with_a_wrapped_reference__is_clean';
+ok !literal_outside_var('color-mix(in srgb, var(--bs-white) 55%, transparent)'),
+  'literalOutsideVar__control_with_a_reference_mixed_with_transparent__is_clean';
+ok literal_outside_var('color-mix(in srgb, #ffffff 55%, transparent)'),
+  'literalOutsideVar__control_with_a_literal_mixed_with_transparent__counts_as_a_literal';
 
 is_deeply [ unknown_variables(\%global, @root_tokens) ], [],
   'themeTokens__root_token__reads_only_global_bootstrap_variables';

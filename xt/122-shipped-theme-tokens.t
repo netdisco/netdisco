@@ -57,6 +57,7 @@ foreach my $case (
   [ '.radio label::before', 'background-color', 'var(--nd-radio-bg)' ],
   [ '.radio label::after', 'background-color', 'var(--nd-radio-dot)' ],
   [ 'tr.group', 'background-color', 'var(--nd-group-row-bg) !important' ],
+  [ '.nd_hero-row .bg-body-tertiary', 'background-color', 'var(--nd-hero-bg) !important' ],
 ) {
   my ($selector, $property, $value) = @$case;
   ok( (grep { $_->{property} eq $property and $_->{value} eq $value

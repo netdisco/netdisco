@@ -30,7 +30,7 @@
    all. */
 :root {
   --nd-table-head-bg: var(--bs-tertiary-bg);
-  --nd-hero-bg-rgb: var(--bs-secondary-bg-rgb);
+  --nd-hero-bg: var(--bs-secondary-bg);
   --nd-inventory-head: var(--bs-secondary-color);
   --nd-power-off: var(--bs-danger);
   --nd-power-on: var(--bs-success);
@@ -42,8 +42,8 @@
   --nd-search-placeholder: var(--bs-gray-500);
   --nd-search-focus-color: var(--bs-body-color);
   --nd-search-focus-bg: var(--bs-body-bg);
-  --nd-navbar-icon: rgba(var(--bs-white-rgb), 0.55);
-  --nd-navbar-text: rgba(var(--bs-white-rgb), 0.55);
+  --nd-navbar-icon: color-mix(in srgb, var(--bs-white) 55%, transparent);
+  --nd-navbar-text: color-mix(in srgb, var(--bs-white) 55%, transparent);
   --nd-navbar-bg: #1a1a1a;
   --nd-menu-bg: var(--bs-body-bg);
   --nd-menu-border: var(--bs-border-color);
@@ -92,9 +92,9 @@
   --nd-netmap-bg: var(--bs-body-bg);
   --nd-netmap-running: #997404;
   --nd-netmap-settled: var(--bs-success);
-  --nd-netmap-legend-bg: rgba(var(--bs-body-bg-rgb), 0.85);
+  --nd-netmap-legend-bg: color-mix(in srgb, var(--bs-body-bg) 85%, transparent);
   --nd-netmap-select: var(--bs-link-color);
-  --nd-netmap-select-fill: rgba(var(--bs-link-color-rgb), 0.1);
+  --nd-netmap-select-fill: color-mix(in srgb, var(--bs-link-color) 10%, transparent);
   --nd-snmp-label-hover-bg: var(--bs-secondary-bg);
   --nd-snmp-empty: var(--bs-secondary-color);
   --nd-netmap-label: var(--bs-body-color);
@@ -915,7 +915,7 @@ div.nd_acl-rule-list {
    its larger, lighter type and gray. Built from utility classes now, so its
    padding arrives flagged and only a flag displaces it. */
 .nd_hero-row .bg-body-tertiary {
-  --bs-tertiary-bg-rgb: var(--nd-hero-bg-rgb);
+  background-color: var(--nd-hero-bg) !important;
   --bs-border-radius-lg: 6px;
   padding: 30px 60px 40px 90px !important;
   margin-bottom: 30px !important;
