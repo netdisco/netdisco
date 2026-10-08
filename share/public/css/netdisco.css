@@ -207,6 +207,13 @@
   :is(.form-control, .form-select, .form-check-input, .input-group-text) {
   border-color: var(--nd-control-border);
 }
+/* The caption beside a sidebar checkbox has no border here, so the edge Bootstrap
+   squares to join it reads as clipped. !important because Bootstrap's join rule
+   is six classes deep. */
+:where(:root:not([data-bs-theme]), [data-bs-theme="dark"])
+  .input-group > .input-group-text:has(+ .nd_checkboxlabel) {
+  border-radius: var(--bs-border-radius) !important;
+}
 
 /* Form controls, buttons and dropdown menus hardcode 1rem rather than reading
    --bs-body-font-size, so the block above does not reach them. These are the

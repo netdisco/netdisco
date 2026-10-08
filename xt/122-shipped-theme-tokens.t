@@ -180,6 +180,16 @@ ok( (grep { $_->{selector} eq '[data-bs-theme="dark"]'
               and $_->{value} eq 'var(--bs-gray-500)' } @dark),
   'darkTheme__control_border_token__is_bootstrap_gray_500' );
 
+# The sidebar checkbox boxes sit beside a borderless caption in light and dark,
+# so Bootstrap's squared joining edge reads as clipped. Classic borders the
+# caption and keeps the join.
+my $CHECKBOX_BOX = ':where(:root:not([data-bs-theme]), [data-bs-theme="dark"]) '
+  . '.input-group > .input-group-text:has(+ .nd_checkboxlabel)';
+ok( (grep { $_->{selector} eq $CHECKBOX_BOX
+              and $_->{property} eq 'border-radius'
+              and $_->{value} eq 'var(--bs-border-radius) !important' } @nd),
+  'netdiscoCss__sidebar_checkbox_box__rounds_all_four_corners_in_light_and_dark' );
+
 # navbar_disco.png is opaque with its own background, so a theme that paints
 # the bar another color shows the artwork as a rectangle.
 ok( (grep { $_->{selector} eq '.navbar.bg-dark'
