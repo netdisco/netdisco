@@ -3,6 +3,7 @@ Unreleased
   [ENHANCEMENTS]
 
   * #1714 show the installed MIB Bundle version in System Information
+  * drop redundant indexes and add four that existing queries lack
 
 2.110000 - 2026-10-04
 

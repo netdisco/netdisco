@@ -528,6 +528,7 @@ share/schema_versions/App-Netdisco-DB-96-97-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-97-98-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-98-99-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-99-100-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-100-101-PostgreSQL.sql
 share/views/admintask.tt
 share/views/ajax/admintask/acleditor.tt
 share/views/ajax/admintask/aclmanager.tt
@@ -677,6 +678,7 @@ xt/117-theme-bootstrap-variables.t
 xt/118-web-theme-scope-warning.t
 xt/119-mib-bundle-version.t
 xt/12-port-order-helper.t
+xt/128-schema-101-index-hygiene.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t
