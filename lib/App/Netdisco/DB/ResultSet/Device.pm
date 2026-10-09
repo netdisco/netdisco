@@ -9,6 +9,14 @@ use Regexp::Common 'net';
 use NetAddr::IP::Lite ':lower';
 use NetAddr::MAC ();
 
+# a device by its own address or an alias; the device half covers devices
+# with no row for their own address in device_ip
+sub _own_or_alias {
+  my $cidr = shift;
+  return \[ 'SELECT ip FROM device WHERE ip <<= ? UNION SELECT ip FROM device_ip WHERE alias <<= ?',
+            $cidr, $cidr ];
+}
+
 require Dancer::Logger;
 
 =head1 ADDITIONAL METHODS
@@ -164,10 +172,7 @@ sub search_aliases {
     if ($by_ip) {
         my $ip = NetAddr::IP::Lite->new($q)
           or return undef; # could be a MAC address!
-        $clause = [
-            'me.ip'  => { '<<=' => $ip->cidr },
-            'device_ips.alias' => { '<<=' => $ip->cidr },
-        ];
+        $clause = [ 'me.ip' => { -in => _own_or_alias($ip->cidr) } ];
         $sorter = \[q{CASE WHEN (me.ip <<= ?) THEN 1 ELSE 0 END}, $ip->cidr];
     }
     else {
@@ -188,7 +193,7 @@ sub search_aliases {
         '+select' => [ { coalesce => $sorter, -as => 'in_device' } ],
         order_by => [{ -desc => 'in_device' }, { -asc => [qw/ me.dns me.ip /] } ],
         group_by => ['me.ip'],
-        join => 'device_ips',
+        ($by_ip ? () : (join => 'device_ips')),
       }
     );
 }
@@ -333,7 +338,7 @@ sub search_by_field {
 
     my @joins = (
       ($mac ? qw/ports/ : ()),
-      (($p->{dns} or $p->{ip}) ? qw/device_ips/ : ()),
+      ($p->{dns} ? qw/device_ips/ : ()),
     );
 
     return $rs
@@ -370,11 +375,14 @@ sub search_by_field {
               'device_ips.dns' => { '-ilike' => "\%$p->{dns}\%" },
             ]) : ()),
 
-          ($p->{ip} ? (
-            -or => [
-              'me.ip' => { '<<=' => $p->{ip}->cidr },
-              'device_ips.alias' => { '<<=' => $p->{ip}->cidr },
-            ]) : ()),
+          # with match all and a name, the subnet must hold on the same alias
+          # row that matched the name, which only the join can express
+          ($p->{ip} ? (($p->{matchall} and $p->{dns})
+            ? (-or => [
+                'me.ip' => { '<<=' => $p->{ip}->cidr },
+                'device_ips.alias' => { '<<=' => $p->{ip}->cidr },
+              ])
+            : ('me.ip' => { -in => _own_or_alias($p->{ip}->cidr) })) : ()),
         ],
       },
       {
@@ -439,10 +447,7 @@ sub search_fuzzy {
     if ($qc =~ m{^(?:$RE{net}{IPv4}|$RE{net}{IPv6})(?:/\d+)?$}i
         and my $ip = NetAddr::IP::Lite->new($qc)) {
 
-        $ip_clause = [
-            'me.ip'  => { '<<=' => $ip->cidr },
-            'device_ips_by_address_or_name.alias' => { '<<=' => $ip->cidr },
-        ];
+        $ip_clause = [ 'me.ip' => { -in => _own_or_alias($ip->cidr) } ];
         $ipbind = $ip->cidr;
     }
 

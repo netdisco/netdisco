@@ -3,7 +3,7 @@ Unreleased
   [ENHANCEMENTS]
 
   * #1714 show the installed MIB Bundle version in System Information
-  * faster IP Inventory, and device search by complete MAC address
+  * faster IP Inventory, and device search by complete MAC or IP address
 
   [BUG FIXES]
 

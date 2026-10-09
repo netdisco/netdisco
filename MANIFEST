@@ -680,6 +680,7 @@ xt/119-mib-bundle-version.t
 xt/12-port-order-helper.t
 xt/130-ip-inventory-query.t
 xt/131-device-search-exact-mac.t
+xt/132-device-search-by-address.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t
