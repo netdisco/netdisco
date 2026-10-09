@@ -1,3 +1,13 @@
+2.112000 - tbd
+
+  [ENHANCEMENTS]
+
+  * #1726 faster IP Inventory, and device search by complete MAC or IP address
+
+  [BUG FIXES]
+
+  * #1726 IP Inventory no longer lists a used address as never seen, and shows the most recently seen MAC for an IP with several
+
 2.111000 - 2026-10-08
 
   [ENHANCEMENTS]

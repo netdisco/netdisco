@@ -686,6 +686,9 @@ xt/124-classic-bootstrap2-components.t
 xt/125-classic-token-coverage.t
 xt/126-theme-by-name.t
 xt/127-sidebar-split-button.t
+xt/130-ip-inventory-query.t
+xt/131-device-search-exact-mac.t
+xt/132-device-search-by-address.t
 xt/133-web-theme-default-auto.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t

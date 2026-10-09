@@ -9,6 +9,14 @@ use Regexp::Common 'net';
 use NetAddr::IP::Lite ':lower';
 use NetAddr::MAC ();
 
+# a device by its own address or an alias; the device half covers devices
+# with no row for their own address in device_ip
+sub _own_or_alias {
+  my $cidr = shift;
+  return \[ 'SELECT ip FROM device WHERE ip <<= ? UNION SELECT ip FROM device_ip WHERE alias <<= ?',
+            $cidr, $cidr ];
+}
+
 require Dancer::Logger;
 
 =head1 ADDITIONAL METHODS
@@ -63,6 +71,23 @@ sub ports_with_mac {
   return $rs->search(undef,{
     # NOTE: bind param list order is significant
     join => ['ports_by_mac'],
+    bind => [$mac],
+  });
+}
+
+=head2 ports_with_exact_mac( $mac )
+
+Like C<ports_with_mac>, for one complete MAC address in IEEE form, compared by
+equality rather than as text.
+
+=cut
+
+sub ports_with_exact_mac {
+  my ($rs, $mac) = @_;
+
+  return $rs->search(undef,{
+    # NOTE: bind param list order is significant
+    join => ['ports_by_exact_mac'],
     bind => [$mac],
   });
 }
@@ -147,10 +172,7 @@ sub search_aliases {
     if ($by_ip) {
         my $ip = NetAddr::IP::Lite->new($q)
           or return undef; # could be a MAC address!
-        $clause = [
-            'me.ip'  => { '<<=' => $ip->cidr },
-            'device_ips.alias' => { '<<=' => $ip->cidr },
-        ];
+        $clause = [ 'me.ip' => { -in => _own_or_alias($ip->cidr) } ];
         $sorter = \[q{CASE WHEN (me.ip <<= ?) THEN 1 ELSE 0 END}, $ip->cidr];
     }
     else {
@@ -171,7 +193,7 @@ sub search_aliases {
         '+select' => [ { coalesce => $sorter, -as => 'in_device' } ],
         order_by => [{ -desc => 'in_device' }, { -asc => [qw/ me.dns me.ip /] } ],
         group_by => ['me.ip'],
-        join => 'device_ips',
+        ($by_ip ? () : (join => 'device_ips')),
       }
     );
 }
@@ -316,7 +338,7 @@ sub search_by_field {
 
     my @joins = (
       ($mac ? qw/ports/ : ()),
-      (($p->{dns} or $p->{ip}) ? qw/device_ips/ : ()),
+      ($p->{dns} ? qw/device_ips/ : ()),
     );
 
     return $rs
@@ -353,11 +375,14 @@ sub search_by_field {
               'device_ips.dns' => { '-ilike' => "\%$p->{dns}\%" },
             ]) : ()),
 
-          ($p->{ip} ? (
-            -or => [
-              'me.ip' => { '<<=' => $p->{ip}->cidr },
-              'device_ips.alias' => { '<<=' => $p->{ip}->cidr },
-            ]) : ()),
+          # with match all and a name, the subnet must hold on the same alias
+          # row that matched the name, which only the join can express
+          ($p->{ip} ? (($p->{matchall} and $p->{dns})
+            ? (-or => [
+                'me.ip' => { '<<=' => $p->{ip}->cidr },
+                'device_ips.alias' => { '<<=' => $p->{ip}->cidr },
+              ])
+            : ('me.ip' => { -in => _own_or_alias($p->{ip}->cidr) })) : ()),
         ],
       },
       {
@@ -422,10 +447,7 @@ sub search_fuzzy {
     if ($qc =~ m{^(?:$RE{net}{IPv4}|$RE{net}{IPv6})(?:/\d+)?$}i
         and my $ip = NetAddr::IP::Lite->new($qc)) {
 
-        $ip_clause = [
-            'me.ip'  => { '<<=' => $ip->cidr },
-            'device_ips_by_address_or_name.alias' => { '<<=' => $ip->cidr },
-        ];
+        $ip_clause = [ 'me.ip' => { -in => _own_or_alias($ip->cidr) } ];
         $ipbind = $ip->cidr;
     }
 
@@ -435,9 +457,15 @@ sub search_fuzzy {
       ($mac and $mac->as_ieee
       and (($mac->as_ieee eq '00:00:00:00:00:00')
         or ($mac->as_ieee !~ m/^$RE{net}{MAC}$/i)));
+    my $exact = ($mac ? 1 : 0);
     $mac = ($mac ? $mac->as_ieee : $q);
 
-    return $rs->ports_with_mac($mac)
+    my $with_ports = $exact ? $rs->ports_with_exact_mac($mac) : $rs->ports_with_mac($mac);
+    my @mac_clause = $exact
+      ? ( 'me.mac' => $mac, 'ports_by_exact_mac.mac' => $mac )
+      : ( 'me.mac::text' => { '-ilike' => $mac}, 'ports_by_mac.mac::text' => { '-ilike' => $mac} );
+
+    return $with_ports
               ->device_ips_with_address_or_name($q, $ipbind)
               ->search(
       {
@@ -452,10 +480,7 @@ sub search_fuzzy {
             $rs->search({ 'modules.serial' => $qc },
                         { join => 'modules', columns => 'ip' })->as_query()
           },
-          -or => [
-            'me.mac::text' => { '-ilike' => $mac},
-            'ports_by_mac.mac::text' => { '-ilike' => $mac},
-          ],
+          -or => [ @mac_clause ],
           -or => [
             'me.dns'      => { '-ilike' => $q },
             'device_ips_by_address_or_name.dns' => { '-ilike' => $q },
