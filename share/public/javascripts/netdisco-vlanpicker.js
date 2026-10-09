@@ -195,6 +195,8 @@
    */
   function settle(field) {
     field.value = labelFor(choices, field.dataset.vlan || '');
+    // what the cell draws while the field is not being edited (see the stylesheet)
+    /** @type {HTMLElement} */ (field.closest('td')).dataset.filter = field.value;
     field.placeholder = '';
     close();
   }
