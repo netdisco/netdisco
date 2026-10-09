@@ -1,4 +1,7 @@
 [% PROCESS 'externallinks.tt' -%]
+[% IF vlan_choices %]
+<script type="application/json" id="nd-vlan-choices">[% vlan_choices.replace('<', '\u003c') | none %]</script>
+[% END %]
 <table id="dp-data-table" class="table table-bordered table-striped" width="100%" cellspacing="0"
   data-nd-table='{
   "columnDefs": [
@@ -251,12 +254,18 @@
 
       [% IF params.c_pvid %]
       [% IF params.c_admin AND row.port_acl_pvid %]
-      <td class="nd_editable-cell" contenteditable="true" data-default="[% row.vlan | html_entity %]"
+      [% SET pvid = '' %]
+      [% SET pvid_label = '' %]
+      [% IF row.vlan AND row.vlan > 0 %]
+        [% SET pvid = row.vlan %]
+        [% SET pvid_label = (params.p_vlan_names AND row.get_column('native_vlan_name')) || row.vlan %]
+      [% END %]
+      <td class="nd_editable-cell" data-default="[% pvid | html_entity %]"
+        data-order="[% pvid_label | html_entity %]" data-filter="[% pvid_label | html_entity %]"
         data-field="c_pvid" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
-      <i class="far fa-pen-to-square nd_edit-icon"></i>
-      <div class="nd_editable-cell-content">
-        [% IF row.vlan AND row.vlan > 0 %][% row.vlan | html_entity %][% END %]
-      </div>
+      <input type="text" class="nd_pvid-search" autocomplete="off" aria-label="Native VLAN"
+        size="[% pvid_label.length || 4 %]" value="[% pvid_label | html_entity %]"
+        data-vlan="[% pvid | html_entity %]">
       </td>
       [% ELSE %]
       <td>

@@ -620,8 +620,11 @@ div.content > div.tab-content table.nd_floatinghead thead {
   white-space: nowrap;
 }
 
-/* The theme's own focus colours, which the fifteen non-search fields kept. */
-.nd_typeahead-menu li.nd_typeahead-active {
+/* The theme's own focus colours, which the fifteen non-search fields kept. The
+   VLAN picker's menu lights the row under the pointer the same way, so that the
+   pointer and the arrow keys show one kind of highlight. */
+.nd_typeahead-menu li.nd_typeahead-active,
+.nd_typeahead-menu.nd_vlan-menu li:hover {
   border: 1px solid var(--nd-menu-active-border);
   background: var(--nd-menu-active-bg);
   color: var(--nd-menu-active-color);
@@ -1029,6 +1032,36 @@ div.nd_acl-rule-list {
 
 .nd_editable-cell > .nd_editable-cell-content {
   margin-right: 25px;
+}
+
+/* The Native VLAN picker is a text field that fills its cell, so the cell's own
+   padding moves into the field and a press anywhere in the cell opens the list.
+   The arrow says that it does. */
+.nd_editable-cell[data-field="c_pvid"] {
+  padding: 0;
+  cursor: pointer;
+}
+
+.nd_pvid-search {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  padding: .5rem 1.6rem .5rem .5rem;
+  border: 0;
+  background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E") no-repeat right .6rem center;
+  color: inherit;
+  font: inherit;
+  cursor: text;
+}
+
+.nd_pvid-search:hover {
+  background-color: var(--bs-tertiary-bg);
+}
+
+/* Lit from the inside, so it reads as the cell's own edge and not a box above it. */
+.nd_pvid-search:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--bs-primary, #0d6efd);
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */

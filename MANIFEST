@@ -384,6 +384,7 @@ share/public/javascripts/netdisco-tables.js
 share/public/javascripts/netdisco-theme.js
 share/public/javascripts/netdisco-toast.js
 share/public/javascripts/netdisco-typeahead.js
+share/public/javascripts/netdisco-vlanpicker.js
 share/public/javascripts/netdisco.js
 share/public/javascripts/portsort.js
 share/public/javascripts/versionsort.js
