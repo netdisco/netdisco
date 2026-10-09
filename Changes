@@ -1,9 +1,10 @@
-Unreleased
+2.111000 - 2026-10-08
 
   [ENHANCEMENTS]
 
   * this release needs Safari 16.4, Firefox 113, Chrome 111 or Edge 111, or
     newer
+  * #1704 add a classic web theme
   * #1714 show the installed MIB Bundle version in System Information
   * #1718 add a dark theme and keep the previous colors in the classic theme only
   * buttons, badges, form fields, menus, the navbar, the pager, tables and
