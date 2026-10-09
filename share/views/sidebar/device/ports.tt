@@ -138,7 +138,16 @@
                       </select>
                     </div>
                   </li>
+                  <li>
+                    <em class="text-muted">Show VLANs as:</em><br/>
+                    <select id="nd_vlan-display" class="form-select" name="p_vlan_display">
+                      [% FOREACH choice IN [ [ 'id', 'VLAN ID' ], [ 'name', 'VLAN Name' ], [ 'both', 'VLAN Name and ID' ] ] %]
+                      <option value="[% choice.0 %]"[% ' selected="selected"' IF vars.sidebar_defaults.device_ports.p_vlan_display == choice.0 %]>[% choice.1 %]</option>
+                      [% END %]
+                    </select>
+                  </li>
                   [% FOREACH item IN settings.port_display_properties %]
+                  [% NEXT IF item.name == 'p_vlan_display' %]
                   <li>
                     <label class="form-check">
                       <input type="checkbox" id="[% item.name | html_entity %]"

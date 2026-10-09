@@ -167,9 +167,9 @@ sidebar_defaults:
     age_unit:       { default: months }
     p_fold_dotzero: { label: 'Fold .0 subinterfaces', default: checked, idx: 0 }
     p_fold_subinterfaces: { label: 'Fold all subinterfaces', default: null, idx: 1 }
-    p_vlan_names:   { label: 'Use VLAN Names', default: null, idx: 2 }
-    p_hide1002:     { label: 'Hide VLAN 1002-1005', default: null, idx: 3 }
-    p_include_hidden: { label: 'Include Hidden Ports', default: null, idx: 4 }
+    p_vlan_display: { default: id }
+    p_hide1002:     { label: 'Hide VLAN 1002-1005', default: null, idx: 2 }
+    p_include_hidden: { label: 'Include Hidden Ports', default: null, idx: 3 }
   device_netmap:
     showips:     { default: null }
     showspeed:   { default: null }
