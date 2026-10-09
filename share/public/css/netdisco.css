@@ -1034,16 +1034,29 @@ div.nd_acl-rule-list {
   margin-right: 25px;
 }
 
-/* The Native VLAN picker is a text field that fills its cell, so the cell's own
-   padding moves into the field and a press anywhere in the cell opens the list.
-   The arrow says that it does. */
+/* The Native VLAN picker's field lies over its cell, which draws the label itself
+   (from its data-filter) while the field is not being edited, because a text
+   field cannot wrap and counts for nothing in the column's width. A long name
+   wraps at its spaces, and the VLAN number in brackets, having none, stays whole. */
 .nd_editable-cell[data-field="c_pvid"] {
+  position: relative;
   padding: 0;
   cursor: pointer;
 }
 
-.nd_pvid-search {
+.nd_editable-cell[data-field="c_pvid"]::after {
+  content: attr(data-filter);
   display: block;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: 20rem;
+  overflow-wrap: break-word;
+  padding: .5rem 1.6rem .5rem .5rem;
+}
+
+.nd_pvid-search {
+  position: absolute;
+  inset: 0;
   box-sizing: border-box;
   width: 100%;
   padding: .5rem 1.6rem .5rem .5rem;
@@ -1054,6 +1067,10 @@ div.nd_acl-rule-list {
   cursor: text;
 }
 
+.nd_pvid-search:not(:focus) {
+  color: transparent;
+}
+
 .nd_pvid-search:hover {
   background-color: var(--bs-tertiary-bg);
 }
@@ -1061,6 +1078,7 @@ div.nd_acl-rule-list {
 /* Lit from the inside, so it reads as the cell's own edge and not a box above it. */
 .nd_pvid-search:focus {
   outline: none;
+  background-color: var(--bs-body-bg, #fff);
   box-shadow: inset 0 0 0 2px var(--bs-primary, #0d6efd);
 }
 
