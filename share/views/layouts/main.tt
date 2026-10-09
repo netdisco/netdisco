@@ -214,6 +214,7 @@
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-daterange.js?v=[% asset_version | none %]"></script>
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-netmap.js?v=[% asset_version | none %]"></script>
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-deferred-nodes.js?v=[% asset_version | none %]"></script>
+<script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-vlanpicker.js?v=[% asset_version | none %]"></script>
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-portcontrol.js?v=[% asset_version | none %]"></script>
 
 [% FOREACH add_js IN settings._additional_javascript %]

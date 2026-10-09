@@ -24,6 +24,20 @@ my %node_result_class = (
     active_nodes_with_age => 'Virtual::ActiveNodeWithAge',
 );
 
+# The rows of the c_pvid picker's menu. The label is what the table shows for
+# a VLAN, so its name when p_vlan_names is set (or its number, for a VLAN with
+# no name) and its number otherwise; the value is always the number, which is
+# what the port is set to. Split out from the route so xt can call it without
+# a database.
+sub _vlan_choices {
+    my ($vlans, $use_names) = @_;
+    return [ map {{
+      label => (($use_names and defined $_->{description} and length $_->{description})
+                ? $_->{description} : $_->{vlan}),
+      value => $_->{vlan},
+    }} @$vlans ];
+}
+
 # Fetches nodes for one device and groups them by port name. Split out from
 # the route so xt can call it without a session, the route being require_login.
 #
@@ -639,9 +653,22 @@ get '/ajax/content/device/ports' => require_login sub {
 
     # add acl on port config
     # this has the merged yaml and database config
+    my $vlan_choices = undef;
     if (param('c_admin') and user_has_role('port_control')) {
       # for native vlan change
       map {$_->{port_acl_pvid} = port_acl_pvid($_, $device, logged_in_user)} @results;
+
+      # the picker's menu is the same for every port, so it is encoded once
+      # here and not once per row
+      if (param('c_pvid')) {
+        my @device_vlans = $device->vlans->search(
+          { vlan => { '>' => 0 },
+            (param('p_hide1002') ? (-or => [vlan => {'<', 1002},
+                                            vlan => {'>', 1005}]) : ()) },
+          { order_by => 'vlan' })->hri->all;
+        $vlan_choices = to_json( _vlan_choices(\@device_vlans, param('p_vlan_names')) );
+      }
+
       # for up/down and poe
       map {$_->{port_acl_service} = port_acl_service($_, $device, logged_in_user)} @results;
       # for name/descr change
@@ -668,6 +695,7 @@ get '/ajax/content/device/ports' => require_login sub {
           ips   => $ips_name,
           device => $device,
           vlans  => $vlans,
+          vlan_choices => $vlan_choices,
           deferred_node_params => $deferred_node_params,
         }, { layout => 'noop' };
     }

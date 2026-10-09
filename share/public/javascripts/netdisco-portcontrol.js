@@ -26,11 +26,24 @@ function formValues(fields) {
   return out;
 }
 
-// Resets a cell's editable text to the value the server rendered; a bare
-// control cell carries no .nd_editable-cell-content and is left alone.
+// Resets a cell's editable text, or its VLAN picker, to the value the server
+// rendered; a bare control cell carries no .nd_editable-cell-content and is
+// left alone.
 function resetCellContent(td) {
   var content = td.querySelector('.nd_editable-cell-content');
   if (content) content.textContent = td.dataset.default;
+  var picker = td.querySelector('.nd_pvid-search');
+  if (picker instanceof HTMLInputElement) {
+    picker.dataset.vlan = td.dataset.default;
+    picker.value = picker.defaultValue;
+  }
+}
+
+// What a cell sends as the new value: the VLAN picker shows a label, so it
+// sends the VLAN number kept beside it, and every other cell sends its text.
+function cellValue(td) {
+  var picker = td.querySelector('.nd_pvid-search');
+  return (picker instanceof HTMLInputElement) ? picker.dataset.vlan : td.textContent.trim();
 }
 
 // event.target is only ever an Element for the events delegated in this
@@ -160,7 +173,7 @@ function port_control (e) {
     ,port: td.dataset.forPort
     ,field: td.dataset.field
     ,action: (getAction(e) || getAction(td))
-    ,value: td.textContent.trim()
+    ,value: cellValue(td)
     ,reason: reason
     ,log: logmessage
   }));
@@ -182,7 +195,7 @@ function port_control (e) {
 /**
  * Opens the confirmation modal for a VLAN change, saving the port once the
  * user dismisses it.
- * @param {HTMLElement} cell the contenteditable cell holding the new VLAN
+ * @param {HTMLElement} cell the contenteditable cell, or the VLAN picker, holding the new VLAN
  * @returns {void}
  */
 function confirmPvidChange(cell) {
@@ -299,6 +312,14 @@ document.addEventListener('DOMContentLoaded', function() {
       var t = targetClosest(event, '#nd_portlog-submit');
       if (!t || !portsPane.contains(t)) return;
       nd_save_ok = true;
+    });
+
+    // a VLAN chosen in the Native VLAN picker (see netdisco-vlanpicker.js),
+    // which takes the place of the Enter that confirms a typed one
+    portsPane.addEventListener('nd:vlan-picked', function (event) {
+      var picker = targetClosest(event, '.nd_pvid-search');
+      if (!picker || !portsPane.contains(picker)) return;
+      confirmPvidChange(picker);
     });
 
     // activity for port up/down control, power enable/disable control
