@@ -455,3 +455,16 @@ jobs:
 
       - name: Label, link and selection colors read --nd-netmap-* tokens
         run: node --test xt/js/netmap-theme-colors.test.js
+
+  theme-resolver:
+    name: the color mode is chosen before first paint by one resolver
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Sources, auto mode and sheet linking
+        run: node --test xt/js/theme-resolver.test.js

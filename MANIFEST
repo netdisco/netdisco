@@ -381,6 +381,7 @@ share/public/javascripts/netdisco-portcontrol.js
 share/public/javascripts/netdisco-request.js
 share/public/javascripts/netdisco-swagger.js
 share/public/javascripts/netdisco-tables.js
+share/public/javascripts/netdisco-theme.js
 share/public/javascripts/netdisco-toast.js
 share/public/javascripts/netdisco-typeahead.js
 share/public/javascripts/netdisco.js
@@ -683,7 +684,9 @@ xt/122-shipped-theme-tokens.t
 xt/123-web-theme-attribute.t
 xt/124-classic-bootstrap2-components.t
 xt/125-classic-token-coverage.t
+xt/126-theme-by-name.t
 xt/127-sidebar-split-button.t
+xt/133-web-theme-default-auto.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t
@@ -787,6 +790,7 @@ xt/js/submit-dispatch.test.js
 xt/js/swagger-spec-url.test.js
 xt/js/tab-request-sync.test.js
 xt/js/tables-registry.test.js
+xt/js/theme-resolver.test.js
 xt/js/toast.test.js
 xt/js/toggle-build.test.js
 xt/js/tooltip-dismissal.test.js

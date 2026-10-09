@@ -36,6 +36,19 @@ function netmapThemeColor(name, fallback) {
 }
 
 /**
+ * Stops the previous map's theme watcher and render loop, if one exists.
+ * @returns {void}
+ */
+function destroyPreviousGraph() {
+  if (graph && graph.themeObserver) {
+    graph.themeObserver.disconnect();
+  }
+  if (graph && graph.fg && typeof graph.fg._destructor === 'function') {
+    graph.fg._destructor();
+  }
+}
+
+/**
  * @typedef {object} NdNetmapWindowProps
  * @property {object} [graph]
  * @property {{move: (function(PointerEvent): void), up: (function(PointerEvent): void)}} [__ndNetmapPointerHandlers]
@@ -85,9 +98,7 @@ function ndNetmap(pane) {
     // loop is still running; without tearing it down first, its stale
     // onEngineStop fires against the new, still-settling graph through the
     // reassigned global saveMapPositions and can autosave half-settled positions
-    if (graph && graph.fg && typeof graph.fg._destructor === 'function') {
-      graph.fg._destructor();
-    }
+    destroyPreviousGraph();
 
     // from here the bottom-right spinner carries the signal through layout to
     // settle, so the two never show at once
@@ -235,11 +246,19 @@ function ndNetmap(pane) {
       }
     }
 
-    // read once per render; the theme cannot change without a page load
-    const LINK_COLOR = netmapThemeColor('--nd-netmap-link', '#adb5bd');
-    const SELECT_COLOR = netmapThemeColor('--nd-netmap-select', '#0d6efd');
-    const LABEL_COLOR = netmapThemeColor('--nd-netmap-label', '#212529');
-    const SPEED_COLOR = netmapThemeColor('--nd-netmap-speed', '#212529');
+    // read again on every color mode change, which needs no page load
+    const colors = { link: '', select: '', label: '', speed: '' };
+    /**
+     * Reads the map's canvas colors from the theme tokens into `colors`.
+     * @returns {void}
+     */
+    function readNetmapColors() {
+      colors.link = netmapThemeColor('--nd-netmap-link', '#adb5bd');
+      colors.select = netmapThemeColor('--nd-netmap-select', '#0d6efd');
+      colors.label = netmapThemeColor('--nd-netmap-label', '#212529');
+      colors.speed = netmapThemeColor('--nd-netmap-speed', '#212529');
+    }
+    readNetmapColors();
 
     const netmapPaneEl = document.getElementById('netmap_pane');
     const netmapPaneParent = netmapPaneEl && netmapPaneEl.parentElement;
@@ -261,7 +280,7 @@ function ndNetmap(pane) {
         return l.INFOSTRING;
       })
       .linkWidth(1)
-      .linkColor(() => LINK_COLOR)
+      .linkColor(() => colors.link)
       .minZoom(0.1)
       .maxZoom(10)
       .cooldownTime(Infinity)
@@ -359,8 +378,16 @@ function ndNetmap(pane) {
       });
     };
 
+    const themeObserver = new MutationObserver(function () {
+      readNetmapColors();
+      // force-graph pauses drawing once the engine stops; setting the zoom
+      // marks the canvas for one more frame
+      fg.zoom(fg.zoom());
+    });
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-bs-theme'] });
     graph = {
       fg: fg,
+      themeObserver: themeObserver,
       centernode: mapdata['centernode'],
       nodeDataById: function (id) {
         let hit = null;
@@ -605,7 +632,7 @@ function ndNetmap(pane) {
       if (n.selected) {
         ctx.beginPath();
         ctx.arc(n.x, n.y, n.radius + 2, 0, 2 * Math.PI);
-        ctx.strokeStyle = SELECT_COLOR;
+        ctx.strokeStyle = colors.select;
         ctx.lineWidth = 1.5 / scale;
         ctx.stroke();
       }
@@ -614,7 +641,7 @@ function ndNetmap(pane) {
       }
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
-      ctx.fillStyle = LABEL_COLOR;
+      ctx.fillStyle = colors.label;
 
       // Drawn from the two fields rather than splitting LABEL: a device name
       // may contain spaces, and a two-word split drops the rest of it.
@@ -641,7 +668,7 @@ function ndNetmap(pane) {
       }
       ctx.font = (map.dataset.ndLinkLabelSize || 5) + 'px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillStyle = SPEED_COLOR;
+      ctx.fillStyle = colors.speed;
       ctx.fillText(l.SPEED, (l.source.x + l.target.x) / 2, (l.source.y + l.target.y) / 2);
     });
 
