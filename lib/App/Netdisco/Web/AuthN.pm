@@ -76,12 +76,15 @@ sub _api_unauthorized {
 # auth data passed, then the hook simply returns, no session is set, and the
 # user is redirected to login page.
 hook 'before' => sub {
+    my $theme_by_name = qr{\A\Q@{[ uri_for('/theme/')->path ]}\E[A-Za-z0-9_-]+\.css\z};
+
     # return if request is for endpoints not requiring a session
     return if (
       request->path eq uri_for('/login')->path
       or request->path eq uri_for('/logout')->path
       or request->path eq uri_for('/swagger.json')->path
       or request->path eq uri_for('/theme.css')->path
+      or request->path =~ $theme_by_name
       or index(request->path, uri_for('/swagger-ui')->path) == 0
       or (setting('health_path')  and request->path eq uri_for(setting('health_path'))->path)
       or (setting('metrics_path') and request->path eq uri_for(setting('metrics_path'))->path)

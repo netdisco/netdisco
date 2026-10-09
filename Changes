@@ -1,13 +1,34 @@
-Unreleased
+2.112000 - tbd
 
   [ENHANCEMENTS]
 
-  * #1714 show the installed MIB Bundle version in System Information
   * #1726 faster IP Inventory, and device search by complete MAC or IP address
 
   [BUG FIXES]
 
   * #1726 IP Inventory no longer lists a used address as never seen, and shows the most recently seen MAC for an IP with several
+
+2.111000 - 2026-10-08
+
+  [ENHANCEMENTS]
+
+  * this release needs Safari 16.4, Firefox 113, Chrome 111 or Edge 111, or
+    newer
+  * #1704 add a classic web theme
+  * #1714 show the installed MIB Bundle version in System Information
+  * #1718 add a dark theme and keep the previous colors in the classic theme only
+  * buttons, badges, form fields, menus, the navbar, the pager, tables and
+    netdisco's own elements now use Bootstrap's palette; set web_theme: classic
+    to keep the previous colors
+  * #1723 add web_theme: auto and make it the default
+  * with no web_theme set, the interface follows the browser's light or dark
+    preference; set web_theme: light to keep it light
+  * light and auto are reserved web_theme values; a site theme with either
+    name is no longer used
+
+  [BUG FIXES]
+
+  * the Update View button and its menu caret share a bottom edge
 
 2.110000 - 2026-10-04
 
