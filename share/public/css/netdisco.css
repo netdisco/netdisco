@@ -18,15 +18,208 @@
      one part of the page drawn in the system stack. */
   --bs-font-sans-serif: "Helvetica Neue", Helvetica, Arial, sans-serif;
   --bs-body-line-height: 18px;
-  /* The old body color was #333333 against the replacement's #212529. Both halves
-     are stated because other rules read rgba(var(--bs-body-color-rgb), ...). Muted
-     text and table cells resolve elsewhere and are set separately. */
-  --bs-body-color: #333333;
-  --bs-body-color-rgb: 51, 51, 51;
   /* Every corner in the old stylesheet was 4px and the replacement rounds them
      to 6px from this one variable. A drop-down menu was always 6px and reads the
      same variable, so it is restated below rather than left to follow. */
   --bs-border-radius: 4px;
+}
+
+/* Netdisco's own colors, on Bootstrap's global variables so each follows the
+   color mode. A literal is a Bootstrap palette color with no variable. A theme
+   sets these under its own data-bs-theme selector; themes/classic.css sets them
+   all. */
+:root {
+  --nd-table-head-bg: var(--bs-tertiary-bg);
+  --nd-secondary-bg: var(--bs-secondary-bg);
+  --nd-control-border: var(--bs-gray-600);
+  --nd-hero-bg: var(--nd-secondary-bg);
+  --nd-inventory-head: var(--bs-secondary-color);
+  --nd-power-off: var(--bs-danger);
+  --nd-power-on: var(--bs-success);
+  --nd-field-success-bg: var(--bs-success-bg-subtle);
+  --nd-field-success-border: var(--bs-form-valid-border-color);
+  --nd-search-color: var(--bs-white);
+  --nd-search-bg: var(--bs-gray-800);
+  --nd-search-border: var(--bs-gray-600);
+  --nd-search-placeholder: var(--bs-gray-500);
+  --nd-search-focus-color: var(--bs-body-color);
+  --nd-search-focus-bg: var(--bs-body-bg);
+  --nd-navbar-icon: color-mix(in srgb, var(--bs-white) 55%, transparent);
+  --nd-navbar-text: color-mix(in srgb, var(--bs-white) 55%, transparent);
+  --nd-navbar-bg: #1a1a1a;
+  --nd-menu-bg: var(--bs-body-bg);
+  --nd-menu-border: var(--bs-border-color);
+  --nd-menu-active-border: var(--bs-primary);
+  --nd-menu-active-bg: var(--bs-primary);
+  --nd-menu-active-color: var(--bs-white);
+  --nd-suggest-active-border: var(--bs-primary);
+  --nd-suggest-active-bg: var(--bs-primary);
+  --nd-suggest-active-top: var(--bs-primary);
+  --nd-suggest-active-bottom: var(--bs-primary);
+  --nd-suggest-active-color: var(--bs-white);
+  --nd-snmp-guide: var(--bs-border-color);
+  --nd-snmp-label: var(--bs-body-color);
+  --nd-snmp-found-bg: var(--bs-highlight-bg);
+  --nd-snmp-found-color: var(--bs-highlight-color);
+  --nd-snmp-spinner: var(--bs-link-color);
+  --nd-toast-color: var(--bs-white);
+  --nd-toast-success: var(--bs-success);
+  --nd-toast-error: var(--bs-danger);
+  --nd-toast-info: #087990;
+  --nd-link-button-color: var(--bs-body-color);
+  --nd-link-button-hover-color: var(--bs-white);
+  --nd-link-button-hover-bg: var(--bs-primary);
+  --nd-heading-bg: var(--nd-secondary-bg);
+  --nd-delete-color: var(--bs-white);
+  --nd-stealth-link: var(--bs-body-color);
+  --nd-device-name: var(--bs-warning-text-emphasis);
+  --nd-single-tab: #984c0c;
+  --nd-archived: #997404;
+  --nd-log-icon: var(--bs-body-color);
+  --nd-editing-bg: var(--bs-warning-bg-subtle);
+  --nd-collapser: var(--bs-link-color);
+  --nd-arrow-neutral: var(--bs-secondary-color);
+  --nd-arrow-down: #997404;
+  --nd-arrow-up: #984c0c;
+  --nd-sidebar-bg: var(--bs-tertiary-bg);
+  --nd-sidebar-border: var(--bs-border-color);
+  --nd-pin-active: var(--bs-danger);
+  --nd-sidebar-icon: var(--bs-secondary-color);
+  --nd-sidebar-hr-fill: var(--bs-border-color);
+  --nd-sidebar-hr-top: var(--bs-border-color);
+  --nd-sidebar-hr-bottom: var(--bs-body-bg);
+  --nd-netmap-control: var(--bs-body-color);
+  --nd-field-icon: var(--bs-secondary-color);
+  --nd-field-clear-color: var(--bs-link-color);
+  --nd-netmap-bg: var(--bs-body-bg);
+  --nd-netmap-running: #997404;
+  --nd-netmap-settled: var(--bs-success);
+  --nd-netmap-legend-bg: color-mix(in srgb, var(--bs-body-bg) 85%, transparent);
+  --nd-netmap-select: var(--bs-link-color);
+  --nd-netmap-select-fill: color-mix(in srgb, var(--bs-link-color) 10%, transparent);
+  --nd-snmp-label-hover-bg: var(--nd-secondary-bg);
+  --nd-snmp-empty: var(--bs-secondary-color);
+  --nd-netmap-label: var(--bs-body-color);
+  --nd-netmap-speed: var(--bs-body-color);
+  --nd-netmap-link: var(--bs-gray-500);
+  --nd-tree-bg: var(--bs-tertiary-bg);
+  --nd-tree-line: var(--bs-border-color);
+  --nd-tree-hover-bg: var(--nd-secondary-bg);
+  --nd-tree-hover-border: var(--bs-border-color);
+  --nd-tree-hover-color: var(--bs-emphasis-color);
+  --nd-radio-border: var(--nd-control-border);
+  --nd-radio-bg: var(--bs-body-bg);
+  --nd-radio-dot: var(--bs-body-color);
+  --nd-radio-checked: var(--bs-success);
+  --nd-group-row-bg: var(--nd-secondary-bg);
+  --nd-light-link: #0a58ca;
+  --nd-light-link-rgb: 10, 88, 202;
+  --nd-light-link-hover: #084298;
+  --nd-light-link-hover-rgb: 8, 66, 152;
+  --nd-light-info-icon: #087990;
+  --nd-light-warning-icon: #997404;
+  --nd-light-row-link: #084298;
+  --nd-light-row-link-rgb: 8, 66, 152;
+  --nd-light-row-link-hover: #06357a;
+  --nd-light-row-link-hover-rgb: 6, 53, 122;
+}
+
+/* Bootstrap's light link blue and its info and warning colors miss WCAG
+   contrast on netdisco's tinted backgrounds; these are darker steps of the
+   same hues. Any theme attribute, dark included, keeps its own colors. */
+:root:not([data-bs-theme]) {
+  --bs-link-color: var(--nd-light-link);
+  --bs-link-color-rgb: var(--nd-light-link-rgb);
+  --bs-link-hover-color: var(--nd-light-link-hover);
+  --bs-link-hover-color-rgb: var(--nd-light-link-hover-rgb);
+}
+:root:not([data-bs-theme]) i.text-info {
+  color: var(--nd-light-info-icon) !important;
+}
+:root:not([data-bs-theme]) i.text-warning {
+  color: var(--nd-light-warning-icon) !important;
+}
+
+/* Bootstrap's colored rows darken further on stripe, hover and selection,
+   where the light link blue drops below 4.5:1. */
+:root:not([data-bs-theme]) :is(.table-success, .table-danger, .table-info) {
+  --bs-link-color: var(--nd-light-row-link);
+  --bs-link-color-rgb: var(--nd-light-row-link-rgb);
+  --bs-link-hover-color: var(--nd-light-row-link-hover);
+  --bs-link-hover-color-rgb: var(--nd-light-row-link-hover-rgb);
+}
+
+/* Bootstrap 5's bare .btn is transparent and borderless, so the icon-only
+   buttons read as loose icons. */
+:is(:root:not([data-bs-theme]), [data-bs-theme="dark"]) .btn:not(.btn-primary, .btn-success, .btn-danger, .btn-warning, .btn-info, .btn-light, .btn-dark, .btn-link, .btn-secondary) {
+  --bs-btn-color: var(--bs-body-color);
+  --bs-btn-bg: var(--bs-tertiary-bg);
+  --bs-btn-border-color: var(--bs-border-color);
+  --bs-btn-hover-color: var(--bs-emphasis-color);
+  --bs-btn-hover-bg: var(--nd-secondary-bg);
+  --bs-btn-hover-border-color: var(--bs-border-color);
+  --bs-btn-active-color: var(--bs-emphasis-color);
+  --bs-btn-active-bg: var(--nd-secondary-bg);
+  --bs-btn-active-border-color: var(--bs-border-color);
+}
+/* Black on saturated cyan at weight 700 is heavy in dense tables; the subtle
+   step is !important because .text-bg-info is. */
+:is(:root:not([data-bs-theme]), [data-bs-theme="dark"]) .badge {
+  --bs-badge-font-weight: 600;
+}
+:is(:root:not([data-bs-theme]), [data-bs-theme="dark"]) .badge.text-bg-info {
+  color: var(--bs-info-text-emphasis) !important;
+  background-color: var(--bs-info-bg-subtle) !important;
+  border: var(--bs-border-width) solid var(--bs-info-border-subtle);
+}
+/* Netdisco uses info as its everyday button, and Bootstrap's bright cyan with
+   black text reads heavy; same subtle style as the info badge. */
+:is(:root:not([data-bs-theme]), [data-bs-theme="dark"]) .btn-info {
+  --bs-btn-color: var(--bs-info-text-emphasis);
+  --bs-btn-bg: var(--bs-info-bg-subtle);
+  --bs-btn-border-color: var(--bs-info-border-subtle);
+  --bs-btn-hover-color: var(--bs-emphasis-color);
+  --bs-btn-hover-bg: var(--bs-info-border-subtle);
+  --bs-btn-hover-border-color: var(--bs-info-border-subtle);
+  --bs-btn-active-color: var(--bs-emphasis-color);
+  --bs-btn-active-bg: var(--bs-info-border-subtle);
+  --bs-btn-active-border-color: var(--bs-info-border-subtle);
+  --bs-btn-disabled-color: var(--bs-info-text-emphasis);
+  --bs-btn-disabled-bg: var(--bs-info-bg-subtle);
+  --bs-btn-disabled-border-color: var(--bs-info-border-subtle);
+}
+/* The button's own box frames the icon. Font Awesome's default padding spaces it from the label. */
+:is(:root:not([data-bs-theme]), [data-bs-theme="dark"]) .btn .fa-border {
+  --fa-border-width: 0;
+}
+/* The delete mark is white, invisible on the soft info badge. */
+:is(:root:not([data-bs-theme]), [data-bs-theme="dark"]) .badge .nd_delete-me {
+  color: inherit;
+}
+/* White on primary blue is the loudest color on most pages. */
+:is(:root:not([data-bs-theme]), [data-bs-theme="dark"]) .pagination {
+  --bs-pagination-active-color: var(--bs-primary-text-emphasis);
+  --bs-pagination-active-bg: var(--bs-primary-bg-subtle);
+  --bs-pagination-active-border-color: var(--bs-primary-border-subtle);
+}
+/* Bootstrap's field borders are 1.3:1 against the page; WCAG 1.4.11 asks 3:1. */
+:where(:root:not([data-bs-theme]), [data-bs-theme="dark"])
+  :is(.form-control, .form-select, .form-check-input, .input-group-text) {
+  border-color: var(--nd-control-border);
+}
+/* The caption beside a sidebar checkbox has no border here, so the edge Bootstrap
+   squares to join it reads as clipped. !important because Bootstrap's join rule
+   is six classes deep. */
+:where(:root:not([data-bs-theme]), [data-bs-theme="dark"])
+  .input-group > .input-group-text:has(+ .nd_checkboxlabel) {
+  border-radius: var(--bs-border-radius) !important;
+}
+/* Even space around it in every one of these boxes; the native 13px leaves an
+   odd remainder that a 1x screen rounds a pixel off center. */
+:where(:root:not([data-bs-theme]), [data-bs-theme="dark"])
+  .input-group > .input-group-text:has(+ .nd_checkboxlabel) > input[type="checkbox"] {
+  width: 12px;
+  height: 12px;
 }
 
 /* Form controls, buttons and dropdown menus hardcode 1rem rather than reading
@@ -37,92 +230,27 @@
   font-size: 13px;
   line-height: 18px;
 }
-/* Every button sat on a ramp, highlighted along its top inside edge, shadowed
-   under its bottom outside edge, with a light shadow over the type, and slid the
-   ramp rather than repainting on hover. These are the parts no class overrode. */
+/* Button metrics, and the repeat a themed ramp needs. */
 .btn {
   --bs-btn-font-size: 13px;
   --bs-btn-padding-y: 4px;
   --bs-btn-padding-x: 12px;
   --bs-btn-line-height: 18px;
   background-repeat: repeat-x;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
 }
-/* The button with no fill of its own, which .btn alone used to draw. Classes
-   that do carry a fill are excluded by name: a color class added later must be
-   added here too. .btn-secondary is deliberately absent, having replaced a class
-   the old stylesheet never declared; .btn-light is deliberately present, there
-   being nothing to restore.
-
-   MUST STAY ABOVE THE PRESSED AND DISABLED RULES BELOW: equal weight, so below
-   them it wins and a pressed button keeps the ramp the old one dropped. */
-.btn:not(.btn-primary, .btn-success, .btn-danger, .btn-warning,
-         .btn-info, .btn-light, .btn-dark, .btn-link) {
-  --bs-btn-color: #333333;
-  --bs-btn-bg: #f5f5f5;
-  --bs-btn-border-color: #cccccc;
-  --bs-btn-hover-color: #333333;
-  --bs-btn-hover-bg: #e6e6e6;
-  --bs-btn-hover-border-color: #cccccc;
-  --bs-btn-active-color: #333333;
-  --bs-btn-active-bg: #e6e6e6;
-  --bs-btn-active-border-color: #cccccc;
-  --bs-btn-disabled-color: #333333;
-  --bs-btn-disabled-bg: #e6e6e6;
-  --bs-btn-disabled-border-color: #cccccc;
-  background-image: linear-gradient(to bottom, #ffffff, #e6e6e6);
-  border-bottom-color: #b3b3b3;
-}
-/* Hovering slid the ramp 15px up rather than repainting, uncovering the flat
-   fill below; without this each color's hover fill stays hidden under its ramp.
-   The 0.1s easing is not reproduced: restating transition to add a fourth
-   property would drop the three the framework carries. */
-.btn:hover, .btn:focus {
-  background-position: 0 -15px;
-}
-/* Pressing a button dropped its ramp, drew the flat fill under it, and turned
-   the shadow round so the face looked pushed in. */
-.btn:active, .btn.active {
-  background-image: none;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-.btn:disabled, .btn.disabled {
-  background-image: none;
-  box-shadow: none;
-}
-/* A link button drew no box, kept square corners, colored its own type and
-   underlined only under a pointer. All six carry .nd_btn-link and override the
-   color, so none of this shows today; the class should still draw what it did. */
+/* A link button keeps square corners and underlines only under a pointer. */
 .btn-link {
-  --bs-btn-color: #0088cc;
-  --bs-btn-hover-color: #005580;
-  --bs-btn-active-color: #005580;
   --bs-btn-border-radius: 0;
   text-decoration: none;
-  box-shadow: none;
 }
 .btn-link:hover, .btn-link:focus {
   text-decoration: underline;
 }
-/* The caret half of a split button had no border against its button, so a
-   highlight down its left inside edge stood in for one, and it was padded
-   tighter. More specific than the pressed state above, as the old stylesheet had
-   it. The navbar's two override the padding below. */
+/* The caret half of a split button is padded tighter than its button. The
+   navbar's two override the padding below. */
 .btn-group > .btn + .dropdown-toggle {
   padding-left: 8px;
   padding-right: 8px;
-  box-shadow: inset 1px 0 0 rgba(255, 255, 255, .125),
-              inset 0 1px 0 rgba(255, 255, 255, .2), 0 1px 2px rgba(0, 0, 0, .05);
-}
-/* The unlit half of a toggle. The old plugin marked it active and active buttons
-   drew pushed in; the new one marks it with nothing, so it reads as raised. Hung
-   on the plugin's own selector because the plugin zeroes this shadow at that
-   weight. */
-.toggle > .toggle-group > .toggle-off {
-  --bs-btn-bg: #e6e6e6;
-  background-image: none;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 /* This file loads after the framework, so the rules above would otherwise
    decide the small button metrics too, at equal specificity. State them instead
@@ -135,104 +263,21 @@
   --bs-btn-border-radius: 3px;
 }
 
-/* The five classes carrying a fill: white type, dark glyph shadow, a ramp, and a
-   border a tenth-opacity black on three sides and a quarter on the bottom. Each
-   fill is stated twice below, through --bs-btn-bg so the framework agrees, and as
-   an image, the only way to get the ramp back. background-image not the
-   shorthand, which would reset the color under it. The bottom edge is stated
-   alone, one --bs-btn-border-color being unable to say an edge differs. */
-.btn-info, .btn-primary, .btn-danger, .btn-success, .btn-warning, .btn-dark {
-  --bs-btn-color: #ffffff;
-  --bs-btn-border-color: rgba(0, 0, 0, 0.1);
-  --bs-btn-hover-color: #ffffff;
-  --bs-btn-hover-border-color: rgba(0, 0, 0, 0.1);
-  --bs-btn-active-color: #ffffff;
-  --bs-btn-active-border-color: rgba(0, 0, 0, 0.1);
-  --bs-btn-disabled-color: #ffffff;
-  --bs-btn-disabled-border-color: rgba(0, 0, 0, 0.1);
-  border-bottom-color: rgba(0, 0, 0, 0.25);
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-}
-/* and one ramp each, with the fill under it. The fill each of them shows when
-   hovered, pressed or disabled is the dark end of its own ramp, which is what
-   the ramp uncovers when it slides. .btn-dark is the class that replaced the old
-   stylesheet's inverse button. */
-.btn-info {
-  --bs-btn-bg: #49afcd;
-  --bs-btn-hover-bg: #2f96b4;
-  --bs-btn-active-bg: #2f96b4;
-  --bs-btn-disabled-bg: #2f96b4;
-  background-image: linear-gradient(to bottom, #5bc0de, #2f96b4);
-}
-.btn-primary {
-  --bs-btn-bg: #006dcc;
-  --bs-btn-hover-bg: #0044cc;
-  --bs-btn-active-bg: #0044cc;
-  --bs-btn-disabled-bg: #0044cc;
-  background-image: linear-gradient(to bottom, #0088cc, #0044cc);
-}
-.btn-danger {
-  --bs-btn-bg: #da4f49;
-  --bs-btn-hover-bg: #bd362f;
-  --bs-btn-active-bg: #bd362f;
-  --bs-btn-disabled-bg: #bd362f;
-  background-image: linear-gradient(to bottom, #ee5f5b, #bd362f);
-}
-.btn-success {
-  --bs-btn-bg: #5bb75b;
-  --bs-btn-hover-bg: #51a351;
-  --bs-btn-active-bg: #51a351;
-  --bs-btn-disabled-bg: #51a351;
-  background-image: linear-gradient(to bottom, #62c462, #51a351);
-}
-/* No page asks for the warning button and none did before, but the old
-   stylesheet declares it, so it is restored rather than left to draw a flat
-   framework yellow under black type the first time someone reaches for it. */
-.btn-warning {
-  --bs-btn-bg: #faa732;
-  --bs-btn-hover-bg: #f89406;
-  --bs-btn-active-bg: #f89406;
-  --bs-btn-disabled-bg: #f89406;
-  background-image: linear-gradient(to bottom, #fbb450, #f89406);
-}
-.btn-dark {
-  --bs-btn-bg: #363636;
-  --bs-btn-hover-bg: #222222;
-  --bs-btn-active-bg: #222222;
-  --bs-btn-disabled-bg: #222222;
-  background-image: linear-gradient(to bottom, #444444, #222222);
-}
-
-/* A badge drew 11px bold white type on a 9px-cornered pill, inset 2px and 9px,
-   from a palette of its own; the replacement sizes from its parent and insets in
-   ems. Fills go through the variables the utility classes read, because those
-   classes declare their colors flagged. */
+/* Badges keep 11px type on a 9px-cornered pill, inset 2px and 9px, where
+   Bootstrap sizes them from their parent and insets in ems. */
 .badge {
   --bs-badge-border-radius: 9px;
   --bs-badge-font-size: 10.998px;
   --bs-badge-padding-y: 2px;
   --bs-badge-padding-x: 9px;
-  --bs-secondary-rgb: 153, 153, 153;
-  --bs-success-rgb: 70, 136, 71;
-  --bs-info-rgb: 58, 135, 173;
-  --bs-danger-rgb: 185, 74, 72;
-  --bs-warning-rgb: 248, 148, 6;
   line-height: 14px;
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-}
-.badge.text-bg-info, .badge.text-bg-warning {
-  color: #ffffff !important;
 }
 /* The old stylesheet had a second pill, cornered 3px and inset 4px rather than
    9px. Two of these classes replaced it and nothing else, so each mapping is
-   exact, and the dark one also has to put back a fill three units lighter than
-   the framework's. */
+   exact. */
 .badge.text-bg-info, .badge.text-bg-dark {
   --bs-badge-border-radius: 3px;
   --bs-badge-padding-x: 4px;
-}
-.badge.text-bg-dark {
-  --bs-dark-rgb: 51, 51, 51;
 }
 /* The gray pill replaced one of each kind, so position tells them apart: the
    external link badge is always inside a link that opens in a new window and is
@@ -241,13 +286,6 @@
 a[target="_blank"] > .badge.text-bg-secondary {
   --bs-badge-border-radius: 3px;
   --bs-badge-padding-x: 4px;
-}
-/* The one badge borrowing an alert class, the old PostgreSQL warning. That class
-   now carries only custom properties an alert reads, so the badge drew white type
-   on nothing. */
-.badge.alert-danger {
-  background-color: #f2dede;
-  color: #b94a48;
 }
 .dropdown-menu {
   --bs-dropdown-font-size: 13px;
@@ -268,14 +306,6 @@ a[target="_blank"] > .badge.text-bg-secondary {
    caret artwork. */
 .form-control, .form-select {
   padding: 4px 6px;
-}
-/* Controls had their own text and border colors, #555555 and #cccccc. Neither
-   variable can carry the correction: --bs-body-color is set above for body text,
-   and --bs-border-color draws the sidebar box, tables and cards. Neither shift is
-   visible to the harness, which cannot see below 52 of 255. */
-.form-control, .form-select {
-  color: #555555;
-  border-color: #cccccc;
 }
 .form-control-sm {
   min-height: 0;
@@ -311,8 +341,6 @@ option {
   height: 18px;
   padding: 4px 5px;
   line-height: 18px;
-  background-color: #eeeeee;
-  border-color: #cccccc;
 }
 /* The old framework floated a wrapped checkbox into the 20px gutter its label
    reserves and set its 4px top margin, through the class that also drew its own
@@ -329,19 +357,14 @@ label.form-check:not(.form-check-inline) > input[type="checkbox"] {
    replacement has no equivalent, and netdisco.js adds the class to
    .input-group-text with nothing left to act on it. */
 .input-group-text.active {
-  background-color: #a9dba9;
-  border-color: #46a546;
+  background-color: var(--nd-field-success-bg);
+  border-color: var(--nd-field-success-border);
 }
-/* Every one of these spans is a read-only field that used to draw a box: an
-   off-white fill, a gray border and gray text. Its replacement draws nothing at
-   all, so the sidebar's checkbox captions became bare text sitting beside a
-   checkbox that still has its own box. */
+/* Sidebar checkbox captions: this padding, line height and radius keep each
+   caption aligned with the controls beside it. */
 .form-control-plaintext {
   padding: 4px 6px;
   line-height: 18px;
-  color: #999999;
-  background-color: #fcfcfc;
-  border: 1px solid #cccccc;
   border-radius: 4px;
 }
 
@@ -394,34 +417,16 @@ body {
    onto the container so the artwork fits it exactly. */
 .navbar {
   --bs-navbar-padding-y: 0px;
-  /* A navbar link went full white on hover; the replacement stops at 75%, which
-     composites to about #c7c7c7 here and reads as lighter gray, not a highlight.
-     The resting color already matches. */
-  --bs-navbar-hover-color: #ffffff;
-  /* The brand sat in the same gray as the links beside it and brightened with
-     them. The replacement ships it white with no hover response at all, so it
-     neither matches its neighbors at rest nor answers a pointer. */
-  --bs-navbar-brand-color: #999999;
-  --bs-navbar-brand-hover-color: #ffffff;
 }
 
-/* The bar's item for the page you are on is filled darker. Both trees mark it
-   active; the replacement styles it with color alone, which its neighbours reach
-   on hover. #111111 against the artwork's #1a1a1a. */
-.navbar .nav-link.active {
-  background-color: #111111;
-}
-/* Either side of the container the bar paints its own background, and the
-   replacement's #212529 reads as a second black against the artwork's #1a1a1a.
-   This is the artwork's own black, so the bar is one color at every width, which
-   is deliberately not what the old bar did. Flagged because the utility class
-   supplying the blue flags its own color. */
-.navbar.bg-dark {
-  background-color: #1a1a1a !important;
-}
 .navbar > .container {
   min-height: 40px;
   background: url(../images/navbar_disco.png) no-repeat;
+}
+/* navbar_disco.png carries this color as its own background, so the bar
+   around the artwork must match it in every theme. */
+.navbar.bg-dark {
+  background-color: var(--nd-navbar-bg) !important;
 }
 
 /* Links carried no underline until hovered. The replacement underlines every
@@ -435,21 +440,11 @@ a:hover, a:focus {
 }
 
 /* Navigation is the exception to the rule above: the previous framework
-   suppressed the hover underline on the navbar, its menus and the tab strips and
-   filled their background instead. Both values are its own. The active tab is
-   excluded, keeping its own fill when hovered. */
+   suppressed the hover underline on the navbar, its menus and the tab strips. */
 .navbar-brand:hover, .navbar-brand:focus,
 .nav-link:hover, .nav-link:focus,
 .dropdown-item:hover, .dropdown-item:focus {
   text-decoration: none;
-}
-.dropdown-item:hover, .dropdown-item:focus {
-  background-color: #0081c2;
-  color: #ffffff;
-}
-.nav-tabs .nav-link:not(.active):hover,
-.nav-tabs .nav-link:not(.active):focus {
-  background-color: #eeeeee;
 }
 
 /* Navbar submenus opened on hover and closed on leaving. The replacement dropped
@@ -512,9 +507,9 @@ a:hover, a:focus {
 #nq {
   width: 286px;
   padding: 4px 14px;
-  color: #ffffff;
-  background-color: #515151;
-  border-color: #111111;
+  color: var(--nd-search-color);
+  background-color: var(--nd-search-bg);
+  border-color: var(--nd-search-border);
   border-radius: 15px;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, .1), 0 1px 0 rgba(255, 255, 255, .15);
 }
@@ -523,16 +518,16 @@ a:hover, a:focus {
    state: the old stylesheet set it unconditionally, leaving the prompt pale gray
    on the white focused field. */
 #nq:not(:focus)::placeholder {
-  color: #cccccc;
+  color: var(--nd-search-placeholder);
 }
 /* Focusing turned the pill white and took its border away, growing the padding
    by that border on each side so the box stayed 286px. No static capture reaches
    a focused field, so this comes from the old declarations. */
 #nq:focus {
   padding: 5px 15px;
-  color: #333333;
+  color: var(--nd-search-focus-color);
   text-shadow: 0 1px 0 #ffffff;
-  background-color: #ffffff;
+  background-color: var(--nd-search-focus-bg);
   border: 0;
   box-shadow: 0 0 3px rgba(0, 0, 0, 0.15);
   outline: 0;
@@ -549,7 +544,7 @@ a:hover, a:focus {
   margin-top: 0px !important;
 }
 .nd_navbar-search-icon {
-  color: #999;
+  color: var(--nd-navbar-icon);
   padding-left: 5px;
   padding-right: 5px;
 }
@@ -561,7 +556,7 @@ a:hover, a:focus {
 
 /* for the "logged in as..." text */
 .nd_navbar-text {
-  color: #666;
+  color: var(--nd-navbar-text);
   padding-top: 11px;
 }
 
@@ -599,8 +594,8 @@ a:hover, a:focus {
 div.content > div.tab-content table.nd_floatinghead thead {
   position: sticky;
   top: 40px;
-  --bs-table-bg: floralWhite;
-  background-color: floralWhite;
+  --bs-table-bg: var(--nd-table-head-bg);
+  background-color: var(--nd-table-head-bg);
 }
 
 /* The suggestion menu. One element on the body for the whole page, so it is
@@ -614,8 +609,8 @@ div.content > div.tab-content table.nd_floatinghead thead {
   margin: 0;
   padding: 2px;
   list-style: none;
-  background: #ffffff;
-  border: 1px solid #aaaaaa;
+  background: var(--nd-menu-bg);
+  border: 1px solid var(--nd-menu-border);
   border-radius: 4px;
 }
 
@@ -627,19 +622,19 @@ div.content > div.tab-content table.nd_floatinghead thead {
 
 /* The theme's own focus colours, which the fifteen non-search fields kept. */
 .nd_typeahead-menu li.nd_typeahead-active {
-  border: 1px solid #999999;
-  background: #dadada;
-  color: #212121;
+  border: 1px solid var(--nd-menu-active-border);
+  background: var(--nd-menu-active-bg);
+  color: var(--nd-menu-active-color);
 }
 
 /* The two search boxes are the exception: their menu draws the picked row in
    the older framework's blue, and that row is the one Enter takes. */
 .nd_typeahead-menu.nd_search-suggestions li.nd_typeahead-active {
-  border-color: #0077b3;
-  background-color: #0081c2;
-  background-image: linear-gradient(to bottom, #0088cc, #0077b3);
+  border-color: var(--nd-suggest-active-border);
+  background-color: var(--nd-suggest-active-bg);
+  background-image: linear-gradient(to bottom, var(--nd-suggest-active-top), var(--nd-suggest-active-bottom));
   background-repeat: repeat-x;
-  color: #ffffff;
+  color: var(--nd-suggest-active-color);
 }
 
 /* The bar paints above this menu's level, and the menu's border and padding
@@ -698,7 +693,7 @@ ul.nd_snmp-tree { padding-left: 0 }
   left: 10px;
   top: 0;
   bottom: 0;
-  border-left: 1px solid #a6a6a6;
+  border-left: 1px solid var(--nd-snmp-guide);
 }
 .nd_snmp-row:last-child::before { bottom: auto; height: 12px }
 .nd_snmp-row::after {
@@ -707,7 +702,7 @@ ul.nd_snmp-tree { padding-left: 0 }
   left: 10px;
   top: 12px;
   width: 12px;
-  border-top: 1px solid #a6a6a6;
+  border-top: 1px solid var(--nd-snmp-guide);
 }
 
 /* The control this replaced was a boxed + and -, drawn from a sprite image at
@@ -742,30 +737,30 @@ ul.nd_snmp-tree { padding-left: 0 }
   line-height: 22px;
   margin: 1px 0 2px 22px;
   padding: 0 4px 0 1px;
-  color: #333;
+  color: var(--nd-snmp-label);
   text-decoration: none;
   cursor: pointer;
 }
 /* A search marks the node it found. The widget selected it and styled it as a
    match at the same time, which is where both halves of this come from. */
 .nd_snmp-label.nd_snmp-found {
-  background-color: #3392e3;
+  background-color: var(--nd-snmp-found-bg);
   border-radius: 3px;
-  color: #8b0000;
+  color: var(--nd-snmp-found-color);
   font-style: italic;
   font-weight: 700;
 }
-.nd_snmp-label:hover, .nd_snmp-label:focus { color: #333; background-color: #e8eff7 }
+.nd_snmp-label:hover, .nd_snmp-label:focus { color: var(--nd-snmp-label); background-color: var(--nd-snmp-label-hover-bg) }
 .nd_snmp-label > i { margin-right: .4em }
 
 /* The three states the tree widget this replaced set from JavaScript: in
    flight, then either a hit or, from an out of band swap, a miss. */
 #nd_snmp_loading_spinner.htmx-request {
-  color: #ffc107;
+  color: var(--nd-snmp-spinner);
   animation: fa-spin 2s infinite linear;
 }
 
-.nd_snmp-empty { list-style: none; color: #6c757d }
+.nd_snmp-empty { list-style: none; color: var(--nd-snmp-empty) }
 .nd_snmp-empty > i { margin-right: .4em }
 
 /* Notifications. Colours, transparency, box and icons are taken from toastr
@@ -776,7 +771,7 @@ ul.nd_snmp-tree { padding-left: 0 }
 .nd_toast-container .toast {
   --bs-toast-border-width: 0;
   --bs-toast-box-shadow: 0 0 12px #999999;
-  --bs-toast-color: #ffffff;
+  --bs-toast-color: var(--nd-toast-color);
   width: 300px;
   margin-bottom: 6px;
   padding: 15px 15px 15px 50px;
@@ -794,9 +789,9 @@ ul.nd_snmp-tree { padding-left: 0 }
 /* The box above carries the padding, so the body adds none of its own. */
 .nd_toast-container .toast-body { padding: 0 }
 
-.nd_toast-success { --bs-toast-bg: #51A351; background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADsSURBVEhLY2AYBfQMgf///3P8+/evAIgvA/FsIF+BavYDDWMBGroaSMMBiE8VC7AZDrIFaMFnii3AZTjUgsUUWUDA8OdAH6iQbQEhw4HyGsPEcKBXBIC4ARhex4G4BsjmweU1soIFaGg/WtoFZRIZdEvIMhxkCCjXIVsATV6gFGACs4Rsw0EGgIIH3QJYJgHSARQZDrWAB+jawzgs+Q2UO49D7jnRSRGoEFRILcdmEMWGI0cm0JJ2QpYA1RDvcmzJEWhABhD/pqrL0S0CWuABKgnRki9lLseS7g2AlqwHWQSKH4oKLrILpRGhEQCw2LiRUIa4lwAAAABJRU5ErkJggg==") }
-.nd_toast-error   { --bs-toast-bg: #BD362F; background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHOSURBVEhLrZa/SgNBEMZzh0WKCClSCKaIYOED+AAKeQQLG8HWztLCImBrYadgIdY+gIKNYkBFSwu7CAoqCgkkoGBI/E28PdbLZmeDLgzZzcx83/zZ2SSXC1j9fr+I1Hq93g2yxH4iwM1vkoBWAdxCmpzTxfkN2RcyZNaHFIkSo10+8kgxkXIURV5HGxTmFuc75B2RfQkpxHG8aAgaAFa0tAHqYFfQ7Iwe2yhODk8+J4C7yAoRTWI3w/4klGRgR4lO7Rpn9+gvMyWp+uxFh8+H+ARlgN1nJuJuQAYvNkEnwGFck18Er4q3egEc/oO+mhLdKgRyhdNFiacC0rlOCbhNVz4H9FnAYgDBvU3QIioZlJFLJtsoHYRDfiZoUyIxqCtRpVlANq0EU4dApjrtgezPFad5S19Wgjkc0hNVnuF4HjVA6C7QrSIbylB+oZe3aHgBsqlNqKYH48jXyJKMuAbiyVJ8KzaB3eRc0pg9VwQ4niFryI68qiOi3AbjwdsfnAtk0bCjTLJKr6mrD9g8iq/S/B81hguOMlQTnVyG40wAcjnmgsCNESDrjme7wfftP4P7SP4N3CJZdvzoNyGq2c/HWOXJGsvVg+RA/k2MC/wN6I2YA2Pt8GkAAAAASUVORK5CYII=") }
-.nd_toast-info    { --bs-toast-bg: #2F96B4; background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGwSURBVEhLtZa9SgNBEMc9sUxxRcoUKSzSWIhXpFMhhYWFhaBg4yPYiWCXZxBLERsLRS3EQkEfwCKdjWJAwSKCgoKCcudv4O5YLrt7EzgXhiU3/4+b2ckmwVjJSpKkQ6wAi4gwhT+z3wRBcEz0yjSseUTrcRyfsHsXmD0AmbHOC9Ii8VImnuXBPglHpQ5wwSVM7sNnTG7Za4JwDdCjxyAiH3nyA2mtaTJufiDZ5dCaqlItILh1NHatfN5skvjx9Z38m69CgzuXmZgVrPIGE763Jx9qKsRozWYw6xOHdER+nn2KkO+Bb+UV5CBN6WC6QtBgbRVozrahAbmm6HtUsgtPC19tFdxXZYBOfkbmFJ1VaHA1VAHjd0pp70oTZzvR+EVrx2Ygfdsq6eu55BHYR8hlcki+n+kERUFG8BrA0BwjeAv2M8WLQBtcy+SD6fNsmnB3AlBLrgTtVW1c2QN4bVWLATaIS60J2Du5y1TiJgjSBvFVZgTmwCU+dAZFoPxGEEs8nyHC9Bwe2GvEJv2WXZb0vjdyFT4Cxk3e/kIqlOGoVLwwPevpYHT+00T+hWwXDf4AJAOUqWcDhbwAAAAASUVORK5CYII=") }
+.nd_toast-success { --bs-toast-bg: var(--nd-toast-success); background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADsSURBVEhLY2AYBfQMgf///3P8+/evAIgvA/FsIF+BavYDDWMBGroaSMMBiE8VC7AZDrIFaMFnii3AZTjUgsUUWUDA8OdAH6iQbQEhw4HyGsPEcKBXBIC4ARhex4G4BsjmweU1soIFaGg/WtoFZRIZdEvIMhxkCCjXIVsATV6gFGACs4Rsw0EGgIIH3QJYJgHSARQZDrWAB+jawzgs+Q2UO49D7jnRSRGoEFRILcdmEMWGI0cm0JJ2QpYA1RDvcmzJEWhABhD/pqrL0S0CWuABKgnRki9lLseS7g2AlqwHWQSKH4oKLrILpRGhEQCw2LiRUIa4lwAAAABJRU5ErkJggg==") }
+.nd_toast-error   { --bs-toast-bg: var(--nd-toast-error); background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHOSURBVEhLrZa/SgNBEMZzh0WKCClSCKaIYOED+AAKeQQLG8HWztLCImBrYadgIdY+gIKNYkBFSwu7CAoqCgkkoGBI/E28PdbLZmeDLgzZzcx83/zZ2SSXC1j9fr+I1Hq93g2yxH4iwM1vkoBWAdxCmpzTxfkN2RcyZNaHFIkSo10+8kgxkXIURV5HGxTmFuc75B2RfQkpxHG8aAgaAFa0tAHqYFfQ7Iwe2yhODk8+J4C7yAoRTWI3w/4klGRgR4lO7Rpn9+gvMyWp+uxFh8+H+ARlgN1nJuJuQAYvNkEnwGFck18Er4q3egEc/oO+mhLdKgRyhdNFiacC0rlOCbhNVz4H9FnAYgDBvU3QIioZlJFLJtsoHYRDfiZoUyIxqCtRpVlANq0EU4dApjrtgezPFad5S19Wgjkc0hNVnuF4HjVA6C7QrSIbylB+oZe3aHgBsqlNqKYH48jXyJKMuAbiyVJ8KzaB3eRc0pg9VwQ4niFryI68qiOi3AbjwdsfnAtk0bCjTLJKr6mrD9g8iq/S/B81hguOMlQTnVyG40wAcjnmgsCNESDrjme7wfftP4P7SP4N3CJZdvzoNyGq2c/HWOXJGsvVg+RA/k2MC/wN6I2YA2Pt8GkAAAAASUVORK5CYII=") }
+.nd_toast-info    { --bs-toast-bg: var(--nd-toast-info); background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGwSURBVEhLtZa9SgNBEMc9sUxxRcoUKSzSWIhXpFMhhYWFhaBg4yPYiWCXZxBLERsLRS3EQkEfwCKdjWJAwSKCgoKCcudv4O5YLrt7EzgXhiU3/4+b2ckmwVjJSpKkQ6wAi4gwhT+z3wRBcEz0yjSseUTrcRyfsHsXmD0AmbHOC9Ii8VImnuXBPglHpQ5wwSVM7sNnTG7Za4JwDdCjxyAiH3nyA2mtaTJufiDZ5dCaqlItILh1NHatfN5skvjx9Z38m69CgzuXmZgVrPIGE763Jx9qKsRozWYw6xOHdER+nn2KkO+Bb+UV5CBN6WC6QtBgbRVozrahAbmm6HtUsgtPC19tFdxXZYBOfkbmFJ1VaHA1VAHjd0pp70oTZzvR+EVrx2Ygfdsq6eu55BHYR8hlcki+n+kERUFG8BrA0BwjeAv2M8WLQBtcy+SD6fNsmnB3AlBLrgTtVW1c2QN4bVWLATaIS60J2Du5y1TiJgjSBvFVZgTmwCU+dAZFoPxGEEs8nyHC9Bwe2GvEJv2WXZb0vjdyFT4Cxk3e/kIqlOGoVLwwPevpYHT+00T+hWwXDf4AJAOUqWcDhbwAAAAASUVORK5CYII=") }
 
 .nd_snmp_search_param {
   margin-top: -3px !important;
@@ -809,7 +804,7 @@ ul.nd_snmp-tree { padding-left: 0 }
   clear: both;
   font-weight: normal;
   line-height: 18px;
-  color: #333333;
+  color: var(--nd-link-button-color);
   white-space: nowrap;
   text-decoration: none;
   margin-top: 0px !important;
@@ -820,8 +815,8 @@ ul.nd_snmp-tree { padding-left: 0 }
 
 .nd_btn-link:hover, .nd_btn-link:focus {
   text-decoration: none;
-  color: #ffffff;
-  background-color: #0081c2;
+  color: var(--nd-link-button-hover-color);
+  background-color: var(--nd-link-button-hover-bg);
   background-repeat: repeat-x;
   text-shadow: none;
 }
@@ -873,17 +868,12 @@ small {
   font-size: 85%;
 }
 
-/* Inline code was a boxed thing: crimson type at 11px, inset 2px and 4px, on an
-   off-white fill inside a pale border, never wrapping. The set is restated rather
-   than reached through a variable because the framework declares only
-   --bs-code-color. The family is deliberately not put back. */
+/* Inline code is 11px, inset 2px and 4px, and never wraps. The family is
+   deliberately not put back. */
 code {
   padding: 2px 4px;
   font-size: 11px;
-  color: #d14;
   white-space: nowrap;
-  background-color: #f7f7f9;
-  border: 1px solid #e1e1e8;
   border-radius: 3px;
 }
 
@@ -895,12 +885,9 @@ pre {
   padding: 8.5px;
   margin: 0 0 9px;
   font-size: 12px;
-  color: #333333;
   white-space: pre-wrap;
   word-break: break-all;
   word-wrap: break-word;
-  background-color: #f5f5f5;
-  border: 1px solid rgba(0, 0, 0, 0.15);
   border-radius: 4px;
 }
 
@@ -911,7 +898,7 @@ pre {
 
 /* for System Information bar */
 .nd_sysinfo-heading {
-  background-color: #eeeeee;
+  background-color: var(--nd-heading-bg);
 }
 
 /* for access control list rules */
@@ -935,7 +922,7 @@ div.nd_acl-rule-list {
 
 .nd_delete-me, .nd_delete-me:hover, .nd_delete-me:focus {
   text-decoration: none;
-  color: white;
+  color: var(--nd-delete-color);
 }
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* styles to adjust the hero box used for homepage + login */
@@ -949,7 +936,7 @@ div.nd_acl-rule-list {
    its larger, lighter type and gray. Built from utility classes now, so its
    padding arrives flagged and only a flag displaces it. */
 .nd_hero-row .bg-body-tertiary {
-  --bs-tertiary-bg-rgb: 238, 238, 238;
+  background-color: var(--nd-hero-bg) !important;
   --bs-border-radius-lg: 6px;
   padding: 30px 60px 40px 90px !important;
   margin-bottom: 30px !important;
@@ -1002,7 +989,7 @@ div.nd_acl-rule-list {
 
 .nd_inventory-table-head {
   text-align: center;
-  color: lightSlateGray;
+  color: var(--nd-inventory-head);
   margin-top: 6px;
   margin-bottom: 3px;
 }
@@ -1020,7 +1007,7 @@ div.nd_acl-rule-list {
 /* still a link, but styled like normal text */
 .nd_stealth-link {
   text-decoration: none !important;
-  color: #404040;
+  color: var(--nd-stealth-link);
 }
 
 .nd_text-align-top {
@@ -1047,25 +1034,6 @@ div.nd_acl-rule-list {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* styles to position table cell content */
 
-/* Every other row was filled #f9f9f9. Its replacement lays a 5% black wash over
-   the cell instead, which comes out seven units darker on every striped row in
-   the application. Stated as the fill the wash uses, so the wash is opaque and
-   lands on the old color. */
-.table {
-  --bs-table-striped-bg: #f9f9f9;
-}
-
-/* The old stylesheet gave a cell no color, so tables drew the body's #333; the
-   replacement resolves the cell and its striped, hovered and active variants from
-   --bs-emphasis-color, which is #000 and does not follow the body. All four are
-   stated because all four resolve from it. */
-.table {
-  --bs-table-color: #333333;
-  --bs-table-striped-color: #333333;
-  --bs-table-hover-color: #333333;
-  --bs-table-active-color: #333333;
-}
-
 /* The old stylesheet ruled a table with border-top on every cell; the
    replacement rules with a bottom border, moving every rule down a row and, the
    border counting inside the height, changing both end rows' depth.
@@ -1075,14 +1043,6 @@ div.nd_acl-rule-list {
 .table > tbody > tr > * {
   border-top-width: var(--bs-border-width);
   border-bottom-width: 0;
-}
-
-/* And the color it is drawn in: #dddddd at all four places the old stylesheet
-   drew a table border, against --bs-border-color's #dee2e6. Two things this does
-   not reach: the zero-width edge of an unbordered table, where nothing is drawn
-   either way, and the contextual row classes, which tint their own borders. */
-.table {
-  --bs-table-border-color: #dddddd;
 }
 
 /* The SNMP tab's search row. The old form-inline component laid controls along
@@ -1182,7 +1142,7 @@ div.nd_acl-rule-list {
    separated, each cell draws its own, and the framework sets no color there, so
    it falls back to currentColor and every vertical rule turns near-black. */
 table.dataTable.table-bordered {
-  border: 1px solid #dddddd;
+  border: 1px solid var(--bs-table-border-color);
   border-left: 0;
   border-collapse: separate;
   border-radius: 4px;
@@ -1295,7 +1255,7 @@ td > form.nd_inline-form {
   margin-bottom: 0px;
   margin-top: 9px;
   font-weight: bold;
-  color: #6D5720;
+  color: var(--nd-device-name);
 }
 
 /* reset to normal weight for the download as CSV icon */
@@ -1321,7 +1281,7 @@ td > form.nd_inline-form {
 
 /* when there's only one tab (report, task etc) change the text color */
 .nd_single-tab {
-  color: rgb(187,112,0) !important;
+  color: var(--nd-single-tab) !important;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -1355,7 +1315,7 @@ td > form.nd_inline-form {
 }
 
 .nd_icon-archived {
-  color: #c09853;
+  color: var(--nd-archived);
 }
 
 /* port admin up/down control */
@@ -1373,7 +1333,7 @@ td > form.nd_inline-form {
 /* port admin log view */
 .nd_log-icon {
   cursor: pointer;
-  color: black;
+  color: var(--nd-log-icon);
   float: right;
   padding-left: 10px;
   margin-top: 2px;
@@ -1381,7 +1341,7 @@ td > form.nd_inline-form {
 }
 .nd_log-icon:hover, .nd_log-icon:focus {
   text-decoration: none;
-  color: black;
+  color: var(--nd-log-icon);
 }
 
 /* port power control */
@@ -1392,17 +1352,17 @@ td > form.nd_inline-form {
 /* the port power icon, whether it's on or off */
 .fa-power-off {
   vertical-align: middle;
-  color: darkRed;
+  color: var(--nd-power-off);
 }
 
 /* change color of icon from default of red (which is OK for power-off) */
 .nd_power-on {
-  color: darkGreen;
+  color: var(--nd-power-on);
 }
 
 /* style of editable content in any table - yellow background */
 [contenteditable]:focus {
-  background: #FFFFD3 !important;
+  background: var(--nd-editing-bg) !important;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -1413,7 +1373,7 @@ td > form.nd_inline-form {
    gap; the replacement draws a label inline-block with no gutter. */
 .nd_collapser {
   cursor: pointer;
-  color: #0088CC;
+  color: var(--nd-collapser);
   display: block;
   margin-bottom: 5px;
 }
@@ -1421,7 +1381,7 @@ td > form.nd_inline-form {
 /* vlans collapser also clickable and deep grey but with no link styling */
 .nd_collapse-vlans {
   cursor: pointer;
-  color: #0088CC;
+  color: var(--nd-collapser);
   text-decoration: none !important;
 }
 
@@ -1440,15 +1400,15 @@ td > form.nd_inline-form {
   float: right;
   margin-top: 1px;
   margin-right: 1px;
-  color: #555;
+  color: var(--nd-arrow-neutral);
 }
 
 /* little up arrow to the left of a label for collapsed list */
 .nd_arrow-up-down-left-down {
-  color: #a3a01e;
+  color: var(--nd-arrow-down);
 }
 .nd_arrow-up-down-left-up {
-  color: #783f03;
+  color: var(--nd-arrow-up);
 }
 
 /* A bulleted list sat 25px in with a 9px gutter; the replacement indents 2rem
@@ -1570,8 +1530,8 @@ ul ul, ul ol, ol ol, ol ul {
    shadow. The fill is 10 of 255 from white and pixelmatch at threshold 0.2
    ignores anything below 52, which is why it went unseen for so long. */
 .container-fluid > .nd_sidebar > .card {
-  background-color: #f5f5f5;
-  border-color: #e3e3e3;
+  background-color: var(--nd-sidebar-bg);
+  border-color: var(--nd-sidebar-border);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
   /* The replacement component also declares word-wrap:break-word, which inherits,
      so every word in the sidebar became breakable mid-word. The netmap toggles are
@@ -1594,7 +1554,7 @@ ul ul, ul ol, ol ol, ol ul {
 }
 
 .nd_sidebar-pin-clicked {
-  color: rgba(255,0,0,0.8) !important;
+  color: var(--nd-pin-active) !important;
 }
 
 /* The sidebar's three control icons. Both trees set 15px, but the replacement's
@@ -1609,7 +1569,7 @@ ul ul, ul ol, ol ol, ol ul {
   margin-left: -16px;
   font-size: 13px;
   line-height: 15px;
-  color: #555;
+  color: var(--nd-sidebar-icon);
   cursor: pointer;
 }
 
@@ -1619,7 +1579,7 @@ ul ul, ul ol, ol ol, ol ul {
   margin-left: -16px;
   font-size: 13px;
   line-height: 15px;
-  color: #555;
+  color: var(--nd-sidebar-icon);
   cursor: pointer;
 }
 
@@ -1629,7 +1589,7 @@ ul ul, ul ol, ol ol, ol ul {
   margin-left: -16px;
   font-size: 13px;
   line-height: 15px;
-  color: #555;
+  color: var(--nd-sidebar-icon);
   cursor: pointer;
 }
 
@@ -1638,7 +1598,7 @@ ul ul, ul ol, ol ol, ol ul {
   top: 60px;
   right: 7px;
   z-index: 1;
-  color: #555;
+  color: var(--nd-sidebar-icon);
   cursor: pointer;
   display: none;
 }
@@ -1650,13 +1610,13 @@ ul ul, ul ol, ol ol, ol ul {
    border above and a white one below and measure its height outside them, so the
    band stood 4px. */
 .nd_sidebar-hr {
-  color: black;
-  background-color: black;
+  color: var(--nd-sidebar-hr-fill);
+  background-color: var(--nd-sidebar-hr-fill);
   height: 2px;
   margin: 12px 0px 12px 0px;
   box-sizing: content-box;
-  border-top: 1px solid #eeeeee;
-  border-bottom: 1px solid #ffffff;
+  border-top: 1px solid var(--nd-sidebar-hr-top);
+  border-bottom: 1px solid var(--nd-sidebar-hr-bottom);
   opacity: 1;
 }
 
@@ -1708,7 +1668,7 @@ ul ul, ul ol, ol ol, ol ul {
 
 /* netmap maximise icon */
 #nd2_netmap-fullscreen {
-  fill: black;
+  fill: var(--nd-netmap-control);
   font-size: 15px;
 }
 
@@ -1917,7 +1877,6 @@ input#nd_port-query {
   width: 138px;
 }
 .nd_sidebar-btn-drop-drop {
-  height: 28px;
   width: 28px;
 }
 
@@ -1937,13 +1896,13 @@ input#nd_port-query {
 
 /* little icon inside of search input fields */
 .nd_field-copy-icon {
-  color: #999;
+  color: var(--nd-field-icon);
 }
 
 /* little icon inside of search input fields */
 .nd_field-clear-icon {
-  background-color: #A9DBA9;
-  color: #3A87AD;
+  background-color: var(--nd-field-success-bg);
+  color: var(--nd-field-clear-color);
 }
 
  /* same for the ports form, but the positioning is slightly different */
@@ -1954,10 +1913,10 @@ input#nd_port-query {
 
 /* change bg color for form fields which are being used in a search */
 form .clearfix.success select {
-  background-color: #A9DBA9;
+  background-color: var(--nd-field-success-bg);
 }
 form .clearfix.success input {
-  background-color: #A9DBA9;
+  background-color: var(--nd-field-success-bg);
 }
 
 /* A checkbox row stood 18px on a 19px pitch; the replacement's 24px floor
@@ -2013,6 +1972,30 @@ form .clearfix.success input {
 .radio input[type="radio"] {
   float: left;
   margin-left: -20px;
+}
+
+/* awesome-bootstrap-checkbox.css draws the radio in fixed colors. Same
+   selectors, loaded later, so these win without extra weight. */
+.radio label::before {
+  border-color: var(--nd-radio-border);
+  background-color: var(--nd-radio-bg);
+}
+.radio label::after {
+  background-color: var(--nd-radio-dot);
+}
+.radio-success input[type="radio"] + label::after,
+.radio-success input[type="radio"]:checked + label::after {
+  background-color: var(--nd-radio-checked);
+}
+.radio-success input[type="radio"]:checked + label::before {
+  border-color: var(--nd-radio-checked);
+}
+
+/* DataTables group header rows. !important outranks Bootstrap's striped and
+   hover cell backgrounds. */
+tr.group,
+tr.group:hover {
+  background-color: var(--nd-group-row-bg) !important;
 }
 
 /* A third defect in the same rows, and the only one caused by a vendored
@@ -2134,20 +2117,6 @@ div.dt-container div.nd_datatables-pager div.dt-paging ul.pagination {
   --bs-pagination-padding-y: 4px;
   --bs-pagination-padding-x: 12px;
   --bs-pagination-font-size: 13px;
-  /* The cell for the page you are on was a pale gray block with gray type, quieter
-     than the numbers either side; the replacement paints it primary blue under
-     white type. Rest only: neither stylesheet gives this cell a hover response,
-     and the framework's active rule already outweighs its hover rule. */
-  --bs-pagination-active-color: #999999;
-  --bs-pagination-active-bg: #f5f5f5;
-  --bs-pagination-active-border-color: #dddddd;
-  /* And the spent cell, Previous on the first page: gray type alone, the cell left
-     transparent, where the replacement fills it too. Transparent rather than white
-     because that is what the old stylesheet declared; the two agree only while
-     what sits behind the pager is white. */
-  --bs-pagination-disabled-color: #999999;
-  --bs-pagination-disabled-bg: transparent;
-  --bs-pagination-disabled-border-color: #dddddd;
   margin: 0;
 }
 /* The count's own 8px was the other half of that alignment: it is what put the
@@ -2165,9 +2134,9 @@ div.nd_datatables-pager {
 div.dt-processing > div:last-child {
   display: none;
 }
-/* and this restores the banner the words appeared in, a full-width band fading
-   at both ends rather than a small bordered card. Two ancestors deep because
-   dataTables.bootstrap.css is linked after this file. */
+/* and this is the full-width band the words appear in, whose fill comes from
+   the theme. Two ancestors deep because dataTables.bootstrap.css is linked
+   after this file. */
 div.dt-container div.dt-processing {
   /* the 40px is the band below the text, not the whole box, which is what it
      meant before Reboot made every element border-box */
@@ -2180,11 +2149,6 @@ div.dt-container div.dt-processing {
   font-size: 1.2em;
   border: 0;
   border-radius: 0;
-  background: linear-gradient(to right,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.9) 25%,
-    rgba(255, 255, 255, 0.9) 75%,
-    rgba(255, 255, 255, 0) 100%);
 }
 
 td.nd_nowrap {
@@ -2205,15 +2169,15 @@ td.nd_nowrap {
    dark link strokes stay visible instead of vanishing into the backdrop */
 /* one selector per rule: an unrecognized vendor-prefixed pseudo-class
    invalidates an entire comma-separated selector list, not just its branch */
-#netmap_pane:fullscreen { background-color: #fff; }
-#netmap_pane:-webkit-full-screen { background-color: #fff; }
-#netmap_pane:-moz-full-screen { background-color: #fff; }
+#netmap_pane:fullscreen { background-color: var(--nd-netmap-bg); }
+#netmap_pane:-webkit-full-screen { background-color: var(--nd-netmap-bg); }
+#netmap_pane:-moz-full-screen { background-color: var(--nd-netmap-bg); }
 #nd2_netmap-fullscreen { position: absolute; top: 12px; right: 16px; cursor: pointer; }
 #nd2_netmap-spinner { position: absolute; bottom: 14px; right: 16px;
   width: 18px; height: 18px; border-radius: 50%; }
-#nd2_netmap-spinner.nd_netmap-running { border: 4px solid #FFE4B5;
+#nd2_netmap-spinner.nd_netmap-running { border: 4px solid var(--nd-netmap-running);
   border-top-color: transparent; animation: nd2-netmap-spin 1.5s linear infinite; }
-#nd2_netmap-spinner.nd_netmap-settled { border: 0; background: #CCFFCC; }
+#nd2_netmap-spinner.nd_netmap-settled { border: 0; background: var(--nd-netmap-settled); }
 @keyframes nd2-netmap-spin { to { transform: rotate(360deg); } }
 /* The rows are the distinct COLORVALUEs of the drawn nodes, and for
    colorby=lgroup that is the raw device.location string. Measured on a 6493
@@ -2224,7 +2188,7 @@ td.nd_nowrap {
    not the wrap, is what goes fullscreen, so a vh value would stop matching the
    box the legend sits in. */
 #nd2_netmap-legend { position: absolute; top: 12px; left: 16px;
-  background: rgba(255,255,255,0.85); padding: 6px 10px; font-size: 12px;
+  background: var(--nd-netmap-legend-bg); padding: 6px 10px; font-size: 12px;
   max-width: 22em; max-height: calc(100% - 24px); overflow-y: auto; }
 /* one line per row: 46% of these labels are longer than a line, and wrapping
    them made the list 100524px instead of 56748px. Safe only because the row
@@ -2232,8 +2196,8 @@ td.nd_nowrap {
    identified by the ~42 characters that fit */
 #nd2_netmap-legend div { white-space: nowrap; overflow: hidden;
   text-overflow: ellipsis; }
-#nd2_netmap-boxselect { position: fixed; border: 1px dashed #0d6efd;
-  background: rgba(13,110,253,0.08); pointer-events: none; z-index: 100; }
+#nd2_netmap-boxselect { position: fixed; border: 1px dashed var(--nd-netmap-select);
+  background: var(--nd-netmap-select-fill); pointer-events: none; z-index: 100; }
 /* htmx hides an idle indicator with opacity and visibility, neither of which
    takes it out of flow, so the spinner's box would push every pane below it
    down for the life of the page. These set display instead; the properties are
@@ -2282,7 +2246,6 @@ td.nd_nowrap {
   flex: 0 0 auto;
   margin-left: 0;
   vertical-align: middle;
-  border-left-color: #999;
 }
 .navbar .dropend > .dropdown-toggle:hover::after,
 .navbar .dropend > .dropdown-toggle:focus::after {

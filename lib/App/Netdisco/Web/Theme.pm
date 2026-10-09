@@ -5,10 +5,26 @@ use Path::Class qw/dir file/;
 use App::Netdisco::Util::SiteLocal 'site_local_paths';
 
 use base 'Exporter';
-our @EXPORT_OK = qw/find_theme_file theme_problem_message theme_scope_message/;
+our @EXPORT_OK = qw/find_theme_file theme_problem_message theme_scope_message theme_sheet_name/;
 
 # A theme name becomes a file name, so nothing that could leave the directory.
 my $VALID_NAME = qr/\A[A-Za-z0-9_-]+\z/;
+
+# light and auto are reserved. light is the standard colors, so it needs no
+# sheet (undef). auto follows the browser's color scheme: it serves the dark
+# sheet, whose rules apply only once the page's resolver sets data-bs-theme="dark".
+my %RESERVED_SHEET = (light => undef, auto => 'dark');
+
+sub is_reserved_theme_name {
+  my $name = shift;
+  return (defined $name and exists $RESERVED_SHEET{$name}) ? 1 : 0;
+}
+
+sub theme_sheet_name {
+  my $name = shift;
+  return $RESERVED_SHEET{$name} if is_reserved_theme_name($name);
+  return $name;
+}
 
 sub find_theme_file {
   my ($name, @dirs) = @_;
@@ -50,22 +66,41 @@ sub theme_dirs {
   );
 }
 
+sub reserved_name_message {
+  my ($name, $path) = @_;
+  return sprintf q{a site theme named '%s' was found at %s, but '%s' is a reserved }
+    . q{web_theme value and the file is not used. Rename the file and set web_theme }
+    . q{to the new name.}, $name, $path, $name;
+}
+
+sub warn_about_reserved_site_files {
+  my @site_dirs = map { dir($_, 'themes')->stringify } site_local_paths();
+  foreach my $reserved (sort keys %RESERVED_SHEET) {
+    my $path = find_theme_file($reserved, @site_dirs) or next;
+    warning reserved_name_message($reserved, $path);
+  }
+}
+
 sub resolve_configured_theme {
   setting('_web_theme' => undef);
+  warn_about_reserved_site_files();
   my $name = setting('web_theme');
   return unless defined $name and length $name;
+  return if $name eq 'light';
 
+  my $sheet = theme_sheet_name($name);
   my @dirs = theme_dirs();
-  my $path = find_theme_file($name, @dirs);
+  my $path = find_theme_file($sheet, @dirs);
   return warning theme_problem_message($name, @dirs) unless $path;
 
-  my $scope = theme_scope_message($name, $path, scalar file($path)->slurp);
+  my $css = scalar file($path)->slurp;
+  my $scope = theme_scope_message($sheet, $path, $css);
   warning $scope if $scope;
 
   setting('_web_theme' => {
-    name  => $name,
-    path  => $path,
-    mtime => (stat $path)[9],
+    name       => $name,
+    path       => $path,
+    mtime      => (stat $path)[9],
   });
 }
 
@@ -78,6 +113,18 @@ get '/theme.css' => sub {
     return '';
   }
   send_file $theme->{path}, system_path => 1, content_type => 'text/css';
+};
+
+get '/theme/*.css' => sub {
+  my ($name) = splat;
+  my $path = is_reserved_theme_name($name) ? undef : find_theme_file($name, theme_dirs());
+  # No error page, for the same reason as /theme.css. A reserved name never
+  # reaches the file lookup, so a site file of that name cannot be served.
+  unless ($path) {
+    status 'not_found';
+    return '';
+  }
+  send_file $path, system_path => 1, content_type => 'text/css';
 };
 
 true;

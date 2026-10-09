@@ -281,7 +281,7 @@ addresses (after expanding IP Prefixes) will be handled one by one.
 =head1 ACTIONS
 
 For a complete list of actions and their accepted parameters, see the
-Netdisco wiki: https://github.com/netdisco/netdisco/wiki/Actions
+Netdisco wiki: https://github.com/netdisco/netdisco/wiki/Job-Actions
 
 =head1 DEBUG OPTIONS
 
