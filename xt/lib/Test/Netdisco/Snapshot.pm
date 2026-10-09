@@ -131,6 +131,11 @@ C<params.c_ssid> is enabled and one row carries two C<ssid> entries: with one
 each, the SSID cell would pass just as well on a template that reads
 C<row.ssid.ssid> directly instead of looping.
 
+C<vlan_choices> is the JSON the Native VLAN picker's menu is read from, which
+the route only sends to a user who can change a port's VLAN, and Gi1/1 is the
+one row carrying a C<vlan>, so that its picker renders a VLAN it holds rather
+than an empty field.
+
 =item C<ajax/device/port_nodes.tt>
 
 Rendered two ways: nested inside the C<ports.tt> snapshot above via
@@ -265,6 +270,7 @@ sub stash_for {
       nodes => 'client_nodes',
       ips => 'client_ips',
       mac_format_call => 'as_string',
+      vlan_choices => '[{"label":10,"value":10},{"label":20,"value":20}]',
       vlans => {
         'Gi1/1' => { vlan_count => 1 },
         'Gi1/3' => { vlan_count => 1 },
@@ -277,7 +283,7 @@ sub stash_for {
         # collapse threshold
         { port => 'Gi1/1', up_admin => 'up', up => 'up', stp => 'forwarding',
           slave_of => 1, port_acl_service => 1, port_acl_name => 1,
-          port_acl_pvid => 1, filtered_tags => ['core'], node_count => 2,
+          port_acl_pvid => 1, vlan => 10, filtered_tags => ['core'], node_count => 2,
           stitched_nodes => [ { active => 0,
               net_mac => { as_string => 'aa:bb:cc:00:01:01' },
               stitched_ips => [ { ip => '192.0.2.11', active => 1,
