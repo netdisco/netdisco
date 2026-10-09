@@ -36,6 +36,7 @@ function resetCellContent(td) {
   if (picker instanceof HTMLInputElement) {
     picker.dataset.vlan = td.dataset.default;
     picker.value = picker.defaultValue;
+    td.dataset.filter = picker.defaultValue;
   }
 }
 

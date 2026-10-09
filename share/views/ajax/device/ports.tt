@@ -264,8 +264,7 @@
         data-order="[% pvid_label | html_entity %]" data-filter="[% pvid_label | html_entity %]"
         data-field="c_pvid" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
       <input type="text" class="nd_pvid-search" autocomplete="off" aria-label="Native VLAN"
-        size="[% pvid_label.length || 4 %]" value="[% pvid_label | html_entity %]"
-        data-vlan="[% pvid | html_entity %]">
+        value="[% pvid_label | html_entity %]" data-vlan="[% pvid | html_entity %]">
       </td>
       [% ELSE %]
       <td>
