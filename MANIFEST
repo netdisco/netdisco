@@ -686,6 +686,8 @@ xt/124-classic-bootstrap2-components.t
 xt/125-classic-token-coverage.t
 xt/126-theme-by-name.t
 xt/127-sidebar-split-button.t
+xt/128-schema-101-index-hygiene.t
+xt/129-subnet-utilization-ipv6-size.t
 xt/133-web-theme-default-auto.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t

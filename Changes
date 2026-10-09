@@ -1,3 +1,13 @@
+2.112000 - tbd
+
+  [ENHANCEMENTS]
+
+  * #1725 drop redundant indexes and add four that existing queries lack
+
+  [BUG FIXES]
+
+  * #1725 Subnet Utilization reports the size of IPv6 subnets correctly
+
 2.111000 - 2026-10-08
 
   [ENHANCEMENTS]
