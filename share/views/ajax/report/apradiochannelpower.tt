@@ -29,10 +29,3 @@
     </tr>
   </thead>
 </table>
-
-<style>
-tr.group,
-tr.group:hover {
-    background-color: #ddd !important;
-}
-</style>

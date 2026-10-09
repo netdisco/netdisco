@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html[% IF settings._web_theme %] data-bs-theme="[% settings._web_theme.name | html_entity %]"[% END %]>
+<html data-nd-theme-default="[% settings._web_theme.name | html_entity %]" data-nd-theme-root="[% uri_base | none %]/theme/">
 <head>
+  <script src="[% uri_base | none %]/javascripts/netdisco-theme.js?v=[% asset_version | none %]"></script>
   <meta http-equiv="Content-type" content="text/html; charset=[% settings.charset | html_entity %]" />
   <link rel="shortcut icon" href="[% uri_base | none %]/images/favicon.ico" type="image/x-icon">
   <link rel="icon" href="[% uri_base | none %]/images/favicon.ico" type="image/x-icon">
