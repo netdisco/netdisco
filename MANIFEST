@@ -801,6 +801,7 @@ xt/js/typeahead-core.test.js
 xt/js/typeahead-source.test.js
 xt/js/view-templates.test.js
 xt/js/vlan-picker-core.test.js
+xt/js/vlan-picker-core.test.js
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFive.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFour.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestOne.pm
