@@ -3,11 +3,11 @@ Unreleased
   [ENHANCEMENTS]
 
   * #1714 show the installed MIB Bundle version in System Information
-  * faster IP Inventory, and device search by complete MAC or IP address
+  * #1726 faster IP Inventory, and device search by complete MAC or IP address
 
   [BUG FIXES]
 
-  * IP Inventory no longer lists a used address as never seen, and shows the most recently seen MAC for an IP with several
+  * #1726 IP Inventory no longer lists a used address as never seen, and shows the most recently seen MAC for an IP with several
 
 2.110000 - 2026-10-04
 
