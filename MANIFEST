@@ -679,6 +679,7 @@ xt/117-theme-bootstrap-variables.t
 xt/118-web-theme-scope-warning.t
 xt/119-mib-bundle-version.t
 xt/12-port-order-helper.t
+xt/120-hint-over-stored-tag.t
 xt/121-theme-tokens.t
 xt/122-shipped-theme-tokens.t
 xt/123-web-theme-attribute.t
