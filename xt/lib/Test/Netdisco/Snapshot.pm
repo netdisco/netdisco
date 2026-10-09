@@ -271,6 +271,10 @@ sub stash_for {
       ips => 'client_ips',
       mac_format_call => 'as_string',
       vlan_choices => '[{"label":10,"value":10},{"label":20,"value":20}]',
+      # the route's own vlan_label is private to it, so this is its default,
+      # numbers only, which leaves the table showing what it showed before
+      vlan_display => 'id',
+      vlan_label => sub { $_[0] },
       vlans => {
         'Gi1/1' => { vlan_count => 1 },
         'Gi1/3' => { vlan_count => 1 },

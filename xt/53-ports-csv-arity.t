@@ -50,6 +50,7 @@ my ($csv, $error) = render_template('ajax/device/ports_csv.tt', {
   results  => [ $row ],
   params   => \%params,
   vlans    => {},
+  vlan_label => sub { $_[0] },
   device   => { ip => '192.0.2.1' },
   nodes    => 'active_nodes',
   ips      => 'ips',
