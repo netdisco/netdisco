@@ -3,6 +3,8 @@
 
 
 
+
+<script type="application/json" id="nd-vlan-choices">[{"label":10,"value":10},{"label":20,"value":20}]</script>
 <table id="dp-data-table" class="table table-bordered table-striped" width="100%" cellspacing="0"
   data-nd-table='{
   "columnDefs": [
@@ -72,11 +74,12 @@
 
 
 
-      <td class="nd_editable-cell" contenteditable="true" data-default=""
+      <td class="nd_editable-cell" data-default="10"
+        data-order="10" data-filter="10"
         data-field="c_pvid" data-for-device="" data-for-port="Gi1/1">
-      <i class="far fa-pen-to-square nd_edit-icon"></i>
-      <div class="nd_editable-cell-content">
-      </div>
+      <input type="text" class="nd_pvid-search" autocomplete="off" aria-label="Native VLAN"
+        size="2" value="10"
+        data-vlan="10">
       </td>
 
       <td>

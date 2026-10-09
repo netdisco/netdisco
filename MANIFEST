@@ -679,6 +679,7 @@ xt/116-web-theme-layout.t
 xt/117-theme-bootstrap-variables.t
 xt/118-web-theme-scope-warning.t
 xt/119-mib-bundle-version.t
+xt/120-ports-vlan-picker.t
 xt/12-port-order-helper.t
 xt/120-hint-over-stored-tag.t
 xt/121-theme-tokens.t
@@ -799,6 +800,7 @@ xt/js/tooltip-dismissal.test.js
 xt/js/typeahead-core.test.js
 xt/js/typeahead-source.test.js
 xt/js/view-templates.test.js
+xt/js/vlan-picker-core.test.js
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFive.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFour.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestOne.pm
