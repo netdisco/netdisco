@@ -67,6 +67,23 @@ sub ports_with_mac {
   });
 }
 
+=head2 ports_with_exact_mac( $mac )
+
+Like C<ports_with_mac>, for one complete MAC address in IEEE form, compared by
+equality rather than as text.
+
+=cut
+
+sub ports_with_exact_mac {
+  my ($rs, $mac) = @_;
+
+  return $rs->search(undef,{
+    # NOTE: bind param list order is significant
+    join => ['ports_by_exact_mac'],
+    bind => [$mac],
+  });
+}
+
 =head2 with_times
 
 This is a modifier for any C<search()> (including the helpers below) which
@@ -435,9 +452,15 @@ sub search_fuzzy {
       ($mac and $mac->as_ieee
       and (($mac->as_ieee eq '00:00:00:00:00:00')
         or ($mac->as_ieee !~ m/^$RE{net}{MAC}$/i)));
+    my $exact = ($mac ? 1 : 0);
     $mac = ($mac ? $mac->as_ieee : $q);
 
-    return $rs->ports_with_mac($mac)
+    my $with_ports = $exact ? $rs->ports_with_exact_mac($mac) : $rs->ports_with_mac($mac);
+    my @mac_clause = $exact
+      ? ( 'me.mac' => $mac, 'ports_by_exact_mac.mac' => $mac )
+      : ( 'me.mac::text' => { '-ilike' => $mac}, 'ports_by_mac.mac::text' => { '-ilike' => $mac} );
+
+    return $with_ports
               ->device_ips_with_address_or_name($q, $ipbind)
               ->search(
       {
@@ -452,10 +475,7 @@ sub search_fuzzy {
             $rs->search({ 'modules.serial' => $qc },
                         { join => 'modules', columns => 'ip' })->as_query()
           },
-          -or => [
-            'me.mac::text' => { '-ilike' => $mac},
-            'ports_by_mac.mac::text' => { '-ilike' => $mac},
-          ],
+          -or => [ @mac_clause ],
           -or => [
             'me.dns'      => { '-ilike' => $q },
             'device_ips_by_address_or_name.dns' => { '-ilike' => $q },
