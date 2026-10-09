@@ -258,7 +258,7 @@
       [% SET pvid_label = '' %]
       [% IF row.vlan AND row.vlan > 0 %]
         [% SET pvid = row.vlan %]
-        [% SET pvid_label = (params.p_vlan_names AND row.get_column('native_vlan_name')) || row.vlan %]
+        [% SET pvid_label = vlan_label(row.vlan, row.native_vlan_name) %]
       [% END %]
       <td class="nd_editable-cell" data-default="[% pvid | html_entity %]"
         data-order="[% pvid_label | html_entity %]" data-filter="[% pvid_label | html_entity %]"
@@ -271,13 +271,8 @@
       <td>
         [% IF row.vlan AND row.vlan > 0 %]
         <a class="nd_linkcell"
-          [% IF params.p_vlan_names %]
-            href="[% uri_for('/search') | none %]?tab=vlan&q=[% row.get_column('native_vlan_name') | uri %]">
-              [% row.get_column('native_vlan_name') | html_entity %]</a>
-          [% ELSE %]
-            href="[% uri_for('/search') | none %]?tab=vlan&q=[% row.vlan | uri %]">
-              [% row.vlan | html_entity %]</a>
-          [% END %]
+          href="[% uri_for('/search') | none %]?tab=vlan&q=[% (vlan_display == 'name' AND row.native_vlan_name ? row.native_vlan_name : row.vlan) | uri %]">
+            [% vlan_label(row.vlan, row.native_vlan_name) | html_entity %]</a>
         [% END %]
       </td>
       [% END %]
@@ -288,8 +283,6 @@
         [% IF vlans.$portname.size %]
         [% IF vlans.$portname.vlan_count <= settings.devport_vlan_limit %]
           [% SET vlan_count = vlans.$portname.vlan_count %]
-          [% IF params.p_vlan_names %][% SET vlanlist = vlans.$portname.vlan_name_set %]
-            [% ELSE %][% SET vlanlist = vlans.$portname.vlan_set %][% END %]
           [% IF vlan_count > settings.devport_vlans_collapse_threshold %]
             <div class="nd_nodes-total">
               <strong>[% vlan_count %] VLANs</strong>
@@ -299,8 +292,9 @@
             </div>
             <div class="nd_collapsing nd_collapse-pre-hidden">
           [% END %]
-          [% FOREACH vlan IN vlanlist %]
-            <a href="[% uri_for('/search') %]?tab=vlan&q=[% vlan | uri %]">[% vlan | html_entity %]</a>
+          [% FOREACH vlan IN vlans.$portname.vlan_set %]
+            [% SET name = vlans.$portname.vlan_name_set.${loop.index} %]
+            <a href="[% uri_for('/search') %]?tab=vlan&q=[% (vlan_display == 'name' ? name : vlan) | uri %]">[% vlan_label(vlan, name) | html_entity %]</a>
             [% ', ' IF NOT loop.last %]
           [% END %]
           [% IF vlan_count > settings.devport_vlans_collapse_threshold %]

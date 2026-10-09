@@ -24,16 +24,30 @@ my %node_result_class = (
     active_nodes_with_age => 'Virtual::ActiveNodeWithAge',
 );
 
+# How the tab shows a VLAN: by its number, by its name, or by both. Anything
+# else, including no choice at all, is the number.
+sub _vlan_display {
+    my $display = shift || '';
+    return ($display =~ m/^(?:name|both)$/ ? $display : 'id');
+}
+
+# What the tab shows for one VLAN. Names come from the device, and a VLAN with
+# none (or whose name is only its number, as vlan_name_set has it) is shown by
+# its number alone.
+sub _vlan_label {
+    my ($display, $vlan, $name) = @_;
+    return $vlan if $display eq 'id'
+      or not (defined $name and length $name and $name ne $vlan);
+    return ($display eq 'both' ? "$name ($vlan)" : $name);
+}
+
 # The rows of the c_pvid picker's menu. The label is what the table shows for
-# a VLAN, so its name when p_vlan_names is set (or its number, for a VLAN with
-# no name) and its number otherwise; the value is always the number, which is
-# what the port is set to. Split out from the route so xt can call it without
-# a database.
+# a VLAN, and the value is always its number, which is what the port is set
+# to. Split out from the route so xt can call it without a database.
 sub _vlan_choices {
-    my ($vlans, $use_names) = @_;
+    my ($vlans, $display) = @_;
     return [ map {{
-      label => (($use_names and defined $_->{description} and length $_->{description})
-                ? $_->{description} : $_->{vlan}),
+      label => _vlan_label($display, $_->{vlan}, $_->{description}),
       value => $_->{vlan},
     }} @$vlans ];
 }
@@ -420,6 +434,8 @@ get '/ajax/content/device/ports' => require_login sub {
     # so far only the basic device_port data
     # now begin to join tables depending on the selected columns/options
 
+    my $vlan_display = _vlan_display(param('p_vlan_display'));
+
     # get vlans on the port
     # leave this query dormant (lazy) unless c_vmember is set or vlan filtering
     my $vlans = $set->search(
@@ -448,7 +464,7 @@ get '/ajax/content/device/ports' => require_login sub {
         )} $vlans->all };
     }
 
-    if (param('p_vlan_names')) {
+    if ($vlan_display ne 'id') {
         $set = $set->search({}, {
           'join' => 'native_vlan',
           '+select' => [qw/native_vlan.description/],
@@ -507,6 +523,11 @@ get '/ajax/content/device/ports' => require_login sub {
 
     # run query
     my @results = $set->all;
+
+    # so the template need not know whether the name was joined
+    if ($vlan_display ne 'id') {
+        $_->{native_vlan_name} = $_->get_column('native_vlan_name') for @results;
+    }
 
     # fetch and attach nodes by port name, rather than prefetching them
     my $node_fetch_scope = _node_fetch_scope(
@@ -666,7 +687,7 @@ get '/ajax/content/device/ports' => require_login sub {
             (param('p_hide1002') ? (-or => [vlan => {'<', 1002},
                                             vlan => {'>', 1005}]) : ()) },
           { order_by => 'vlan' })->hri->all;
-        $vlan_choices = to_json( _vlan_choices(\@device_vlans, param('p_vlan_names')) );
+        $vlan_choices = to_json( _vlan_choices(\@device_vlans, $vlan_display) );
       }
 
       # for up/down and poe
@@ -696,6 +717,8 @@ get '/ajax/content/device/ports' => require_login sub {
           device => $device,
           vlans  => $vlans,
           vlan_choices => $vlan_choices,
+          vlan_display => $vlan_display,
+          vlan_label => sub { _vlan_label($vlan_display, @_) },
           deferred_node_params => $deferred_node_params,
         }, { layout => 'noop' };
     }
@@ -707,6 +730,7 @@ get '/ajax/content/device/ports' => require_login sub {
           ips   => $ips_name,
           device => $device,
           vlans  => $vlans,
+          vlan_label => sub { _vlan_label($vlan_display, @_) },
         }, { layout => 'noop' };
     }
 };
