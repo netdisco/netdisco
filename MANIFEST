@@ -351,6 +351,7 @@ share/public/css/font-awesome.min.css
 share/public/css/nd_print.css
 share/public/css/netdisco.css
 share/public/css/themes/classic.css
+share/public/css/themes/dark.css
 share/public/dispatch.cgi
 share/public/dispatch.fcgi
 share/public/images/crystalclear_mag.png
@@ -677,6 +678,12 @@ xt/117-theme-bootstrap-variables.t
 xt/118-web-theme-scope-warning.t
 xt/119-mib-bundle-version.t
 xt/12-port-order-helper.t
+xt/121-theme-tokens.t
+xt/122-shipped-theme-tokens.t
+xt/123-web-theme-attribute.t
+xt/124-classic-bootstrap2-components.t
+xt/125-classic-token-coverage.t
+xt/127-sidebar-split-button.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t
@@ -762,6 +769,7 @@ xt/js/navbar-submenu.test.js
 xt/js/netmap-autosave.test.js
 xt/js/netmap-legend.test.js
 xt/js/netmap-loading.test.js
+xt/js/netmap-theme-colors.test.js
 xt/js/no-fragment-scripts.test.js
 xt/js/no-jquery.test.js
 xt/js/no-jstree.test.js
@@ -792,6 +800,7 @@ xt/lib/App/NetdiscoX/Worker/Plugin/TestSeven.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestSix.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestThree.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestTwo.pm
+xt/lib/Test/Netdisco/CssRules.pm
 xt/lib/Test/Netdisco/MungerProbe.pm
 xt/lib/Test/Netdisco/Snapshot.pm
 xt/portsort-corpus.json

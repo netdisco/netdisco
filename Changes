@@ -2,7 +2,17 @@ Unreleased
 
   [ENHANCEMENTS]
 
+  * this release needs Safari 16.4, Firefox 113, Chrome 111 or Edge 111, or
+    newer
   * #1714 show the installed MIB Bundle version in System Information
+  * #1718 add a dark theme and keep the previous colors in the classic theme only
+  * buttons, badges, form fields, menus, the navbar, the pager, tables and
+    netdisco's own elements now use Bootstrap's palette; set web_theme: classic
+    to keep the previous colors
+
+  [BUG FIXES]
+
+  * the Update View button and its menu caret share a bottom edge
 
 2.110000 - 2026-10-04
 

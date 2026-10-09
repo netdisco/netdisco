@@ -1,0 +1,73 @@
+/* Dark: Bootstrap's built-in dark color mode:
+   https://getbootstrap.com/docs/5.3/customize/color-modes/#dark-mode
+   netdisco.css maps its --nd-* colors onto Bootstrap's variables, so most follow
+   this mode without an entry here. These are the ones Bootstrap's dark variables
+   cannot express: icons, which take the light-on-dark emphasis colors, and the
+   orange and yellow netdisco uses for its own meanings, from Bootstrap's palette.
+   themes/classic.css shows how to start a theme. */
+
+[data-bs-theme="dark"] {
+  --nd-power-off: var(--bs-danger-text-emphasis);
+  --nd-power-on: var(--bs-success-text-emphasis);
+  --nd-single-tab: #feb272;
+  --nd-archived: #ffe69c;
+  --nd-arrow-down: #ffda6a;
+  --nd-arrow-up: #feb272;
+  --nd-pin-active: var(--bs-danger-text-emphasis);
+  --nd-netmap-running: var(--bs-warning);
+  --nd-netmap-settled: var(--bs-success-text-emphasis);
+  --nd-radio-checked: var(--bs-success-text-emphasis);
+  --nd-control-border: var(--bs-gray-500);
+}
+
+/* The SNMP browser's expander boxes are images drawn white with grey lines. */
+[data-bs-theme="dark"] .nd_snmp-row > details > summary::before {
+  filter: invert(0.85);
+}
+
+/* Bootstrap compiles its table color variants to fixed light values, so dark
+   mode leaves them light under light text. These are the three netdisco uses. */
+[data-bs-theme="dark"] .table-success,
+[data-bs-theme="dark"] .table-danger,
+[data-bs-theme="dark"] .table-info {
+  --bs-table-color: var(--bs-emphasis-color);
+  --bs-table-striped-color: var(--bs-emphasis-color);
+  --bs-table-active-color: var(--bs-emphasis-color);
+  --bs-table-hover-color: var(--bs-emphasis-color);
+}
+[data-bs-theme="dark"] .table-success {
+  --bs-table-bg: var(--bs-success-bg-subtle);
+  --bs-table-border-color: var(--bs-success-border-subtle);
+  --bs-table-striped-bg: var(--bs-success-bg-subtle);
+  --bs-table-active-bg: color-mix(in srgb, var(--bs-success-bg-subtle), var(--bs-success-border-subtle) 30%);
+  --bs-table-hover-bg: color-mix(in srgb, var(--bs-success-bg-subtle), var(--bs-success-border-subtle) 30%);
+}
+[data-bs-theme="dark"] .table-danger {
+  --bs-table-bg: var(--bs-danger-bg-subtle);
+  --bs-table-border-color: var(--bs-danger-border-subtle);
+  --bs-table-striped-bg: var(--bs-danger-bg-subtle);
+  --bs-table-active-bg: color-mix(in srgb, var(--bs-danger-bg-subtle), var(--bs-danger-border-subtle) 30%);
+  --bs-table-hover-bg: color-mix(in srgb, var(--bs-danger-bg-subtle), var(--bs-danger-border-subtle) 30%);
+}
+[data-bs-theme="dark"] .table-info {
+  --bs-table-bg: var(--bs-info-bg-subtle);
+  --bs-table-border-color: var(--bs-info-border-subtle);
+  --bs-table-striped-bg: var(--bs-info-bg-subtle);
+  --bs-table-active-bg: color-mix(in srgb, var(--bs-info-bg-subtle), var(--bs-info-border-subtle) 30%);
+  --bs-table-hover-bg: color-mix(in srgb, var(--bs-info-bg-subtle), var(--bs-info-border-subtle) 30%);
+}
+
+/* Bootstrap leaves .text-success and .text-danger at their light values in
+   dark mode, too dim for status icons on striped rows. Text that uses them
+   keeps Bootstrap's color. */
+[data-bs-theme="dark"] i.text-success {
+  color: var(--bs-success-text-emphasis) !important;
+}
+[data-bs-theme="dark"] i.text-danger {
+  color: var(--bs-danger-text-emphasis) !important;
+}
+
+/* Bootstrap's dark badge is the dark page color, so the chip vanishes. */
+[data-bs-theme="dark"] .badge.text-bg-dark {
+  background-color: var(--nd-secondary-bg) !important;
+}

@@ -24,6 +24,18 @@ function beginRenderListeners() {
 }
 
 /**
+ * Reads a color a theme sets as a CSS custom property, because the canvas the
+ * map is drawn on cannot see stylesheets. The fallback covers a theme that sets
+ * the property to nothing.
+ * @param {string} name the custom property, for example '--nd-netmap-label'
+ * @param {string} fallback the color to use when the property is empty
+ * @returns {string} a CSS color the canvas accepts
+ */
+function netmapThemeColor(name, fallback) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+}
+
+/**
  * @typedef {object} NdNetmapWindowProps
  * @property {object} [graph]
  * @property {{move: (function(PointerEvent): void), up: (function(PointerEvent): void)}} [__ndNetmapPointerHandlers]
@@ -223,6 +235,12 @@ function ndNetmap(pane) {
       }
     }
 
+    // read once per render; the theme cannot change without a page load
+    const LINK_COLOR = netmapThemeColor('--nd-netmap-link', '#adb5bd');
+    const SELECT_COLOR = netmapThemeColor('--nd-netmap-select', '#0d6efd');
+    const LABEL_COLOR = netmapThemeColor('--nd-netmap-label', '#212529');
+    const SPEED_COLOR = netmapThemeColor('--nd-netmap-speed', '#212529');
+
     const netmapPaneEl = document.getElementById('netmap_pane');
     const netmapPaneParent = netmapPaneEl && netmapPaneEl.parentElement;
     const fg = ForceGraph()(container)
@@ -243,7 +261,7 @@ function ndNetmap(pane) {
         return l.INFOSTRING;
       })
       .linkWidth(1)
-      .linkColor(() => 'rgba(150, 150, 150, 0.73)')
+      .linkColor(() => LINK_COLOR)
       .minZoom(0.1)
       .maxZoom(10)
       .cooldownTime(Infinity)
@@ -587,7 +605,7 @@ function ndNetmap(pane) {
       if (n.selected) {
         ctx.beginPath();
         ctx.arc(n.x, n.y, n.radius + 2, 0, 2 * Math.PI);
-        ctx.strokeStyle = '#0d6efd';
+        ctx.strokeStyle = SELECT_COLOR;
         ctx.lineWidth = 1.5 / scale;
         ctx.stroke();
       }
@@ -596,7 +614,7 @@ function ndNetmap(pane) {
       }
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
-      ctx.fillStyle = '#333';
+      ctx.fillStyle = LABEL_COLOR;
 
       // Drawn from the two fields rather than splitting LABEL: a device name
       // may contain spaces, and a two-word split drops the rest of it.
@@ -623,7 +641,7 @@ function ndNetmap(pane) {
       }
       ctx.font = (map.dataset.ndLinkLabelSize || 5) + 'px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillStyle = 'black';
+      ctx.fillStyle = SPEED_COLOR;
       ctx.fillText(l.SPEED, (l.source.x + l.target.x) / 2, (l.source.y + l.target.y) / 2);
     });
 

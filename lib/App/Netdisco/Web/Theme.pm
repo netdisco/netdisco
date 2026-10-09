@@ -59,13 +59,14 @@ sub resolve_configured_theme {
   my $path = find_theme_file($name, @dirs);
   return warning theme_problem_message($name, @dirs) unless $path;
 
-  my $scope = theme_scope_message($name, $path, scalar file($path)->slurp);
+  my $css = scalar file($path)->slurp;
+  my $scope = theme_scope_message($name, $path, $css);
   warning $scope if $scope;
 
   setting('_web_theme' => {
-    name  => $name,
-    path  => $path,
-    mtime => (stat $path)[9],
+    name       => $name,
+    path       => $path,
+    mtime      => (stat $path)[9],
   });
 }
 
