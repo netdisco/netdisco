@@ -359,6 +359,11 @@ config->{'netmap'}->{'max_devices'} =
     and config->{'sidebar_defaults'}->{'device_netmap'}->{'too_many_devices'}->{'default'} != 1000;
 delete config->{'sidebar_defaults'}->{'device_netmap'}->{'too_many_devices'};
 
+# if the Use VLAN Names checkbox was checked, then set the new p_vlan_display to 'name'
+config->{'sidebar_defaults'}->{'device_ports'}->{'p_vlan_display'}->{'default'} = 'name'
+  if config->{'sidebar_defaults'}->{'device_ports'}->{'p_vlan_names'}->{'default'};
+delete config->{'sidebar_defaults'}->{'device_ports'}->{'p_vlan_names'};
+
 # netmap settings moved into a netmap tree. These names are gone from
 # config.yml, so exists() means the site set them, and being explicit they win
 # over the too_many_devices fallback above.
