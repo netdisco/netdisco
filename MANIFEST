@@ -101,6 +101,7 @@ lib/App/Netdisco/DB/ResultSet/AccessControlListName.pm
 lib/App/Netdisco/DB/ResultSet/Admin.pm
 lib/App/Netdisco/DB/ResultSet/Device.pm
 lib/App/Netdisco/DB/ResultSet/DeviceBrowser.pm
+lib/App/Netdisco/DB/ResultSet/DeviceIp.pm
 lib/App/Netdisco/DB/ResultSet/DeviceModule.pm
 lib/App/Netdisco/DB/ResultSet/DevicePort.pm
 lib/App/Netdisco/DB/ResultSet/DevicePortLog.pm
@@ -677,6 +678,7 @@ xt/117-theme-bootstrap-variables.t
 xt/118-web-theme-scope-warning.t
 xt/119-mib-bundle-version.t
 xt/12-port-order-helper.t
+xt/130-ip-inventory-query.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t
