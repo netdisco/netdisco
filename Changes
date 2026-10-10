@@ -4,6 +4,10 @@
 
   * deployment.yml shows trusted_proxies
 
+  [BUG FIXES]
+
+  * #1717 let device_auth_tag_hint win over cached credentials again
+
 2.111000 - 2026-10-08
 
   [ENHANCEMENTS]
