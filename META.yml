@@ -30,7 +30,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.111000'
+    version: '2.112000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -494,6 +494,8 @@ provides:
     file: lib/App/Netdisco/Web/Theme.pm
   App::Netdisco::Web::TypeAhead:
     file: lib/App/Netdisco/Web/TypeAhead.pm
+  App::Netdisco::Worker::Actions:
+    file: lib/App/Netdisco/Worker/Actions.pm
   App::Netdisco::Worker::Loader:
     file: lib/App/Netdisco/Worker/Loader.pm
   App::Netdisco::Worker::Plugin:
@@ -752,5 +754,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.111000'
+version: '2.112000'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.020'
