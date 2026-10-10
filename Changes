@@ -1,15 +1,36 @@
-2.111000 - tbd
+2.112000 - tbd
 
   [ENHANCEMENTS]
 
-  * #<pr number is tbd> a backend now only takes jobs for actions it has a worker plugin or
-    python worklet for, so a backend running a reduced worker_plugins list
-    no longer fills its job slots with jobs it cannot run
+  * deployment.yml shows trusted_proxies
+  * #1724 netdisco-do --list prints the known actions and their action::stage
+    stages, as found in the configured worker plugins and python worklets
 
   [BUG FIXES]
 
-  * a backend supporting exactly two actions, or a job_prio high list of
-    exactly two, no longer loses the first of them when fetching jobs
+  * #1717 let device_auth_tag_hint win over cached credentials again
+
+2.111000 - 2026-10-08
+
+  [ENHANCEMENTS]
+
+  * this release needs Safari 16.4, Firefox 113, Chrome 111 or Edge 111, or
+    newer
+  * #1704 add a classic web theme
+  * #1714 show the installed MIB Bundle version in System Information
+  * #1718 add a dark theme and keep the previous colors in the classic theme only
+  * buttons, badges, form fields, menus, the navbar, the pager, tables and
+    netdisco's own elements now use Bootstrap's palette; set web_theme: classic
+    to keep the previous colors
+  * #1723 add web_theme: auto and make it the default
+  * with no web_theme set, the interface follows the browser's light or dark
+    preference; set web_theme: light to keep it light
+  * light and auto are reserved web_theme values; a site theme with either
+    name is no longer used
+
+  [BUG FIXES]
+
+  * the Update View button and its menu caret share a bottom edge
 
 2.110000 - 2026-10-04
 

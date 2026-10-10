@@ -4,8 +4,8 @@
     min-height:20px;
     padding:19px;
     margin-bottom:20px;
-    background-color:#fbfbfb;
-    border:1px solid #999;
+    background-color:var(--nd-tree-bg);
+    border:1px solid var(--nd-tree-line);
     -webkit-border-radius:4px;
     -moz-border-radius:4px;
     border-radius:4px;
@@ -26,14 +26,14 @@
     right:auto
 }
 .tree li::before {
-    border-left:1px solid #999;
+    border-left:1px solid var(--nd-tree-line);
     bottom:50px;
     height:100%;
     top:0;
     width:1px
 }
 .tree li::after {
-    border-top:1px solid #999;
+    border-top:1px solid var(--nd-tree-line);
     height:20px;
     top:25px;
     width:25px
@@ -41,7 +41,7 @@
 .tree li span {
     -moz-border-radius:5px;
     -webkit-border-radius:5px;
-    border:1px solid #999;
+    border:1px solid var(--nd-tree-line);
     border-radius:5px;
     display:inline-block;
     padding:3px 8px;
@@ -57,7 +57,7 @@
     height:26px
 }
 .tree li.parent_li>span:hover, .tree li.parent_li>span:hover+ul li span {
-    background:#eee;
-    border:1px solid #94a0b4;
-    color:#000
+    background:var(--nd-tree-hover-bg);
+    border:1px solid var(--nd-tree-hover-border);
+    color:var(--nd-tree-hover-color)
 }

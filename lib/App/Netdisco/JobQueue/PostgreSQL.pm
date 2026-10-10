@@ -5,6 +5,7 @@ use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::Device 'get_denied_actions';
 use App::Netdisco::Backend::Job;
+use App::Netdisco::Worker::Actions 'supported_actions';
 use App::Netdisco::DB::ExplicitLocking ':modes';
 
 use JSON::PP ();
@@ -28,48 +29,8 @@ our @EXPORT_OK = qw/
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
 my $SUPPORTED_ACTIONS;
-sub _compute_supported_actions {
-  my @supported;
-  my $add_action = sub {
-    my $action = lc shift;
-    push @supported, $action unless scalar grep {$_ eq $action} @supported;
-  };
-
-  my @core_plugins = @{ setting('worker_plugins') || [] };
-  my @user_plugins = @{ setting('extra_worker_plugins') || [] };
-
-  foreach my $plugin (@user_plugins, @core_plugins) {
-    my $p = $plugin;
-    $p =~ s/^X::/+App::NetdiscoX::Worker::Plugin::/;
-    $p = 'App::Netdisco::Worker::Plugin::' . $p if $p !~ m/^\+/;
-    $p =~ s/^\+//;
-
-    if ($p =~ m/::Plugin::([^:]+)(?:::|$)/i) {
-      next if lc $1 eq 'internal';
-      $add_action->($1);
-    }
-  }
-
-  # an action may exist only as a python worklet ('action.phase...'), which
-  # the loader runs, so it has no perl plugin above but must still be supported
-  if (setting('enable_python_worklets')) {
-    foreach my $setting (qw/python_worker_plugins extra_python_worker_plugins/) {
-      my $config = setting($setting);
-      next unless $config and ref [] eq ref $config;
-
-      foreach my $entry (@$config) {
-        my $worklet = (ref {} eq ref $entry ? (keys %$entry)[0] : $entry);
-        $add_action->($1) if $worklet and $worklet =~ m/^([^.]+)\./;
-      }
-    }
-  }
-
-  debug 'Backend supports actions: ' . join(', ', @supported);
-  return \@supported;
-}
-
 sub _get_supported_actions {
-  return $SUPPORTED_ACTIONS ||= _compute_supported_actions();
+  return $SUPPORTED_ACTIONS ||= supported_actions();
 }
 
 sub jq_warm_thrusters {

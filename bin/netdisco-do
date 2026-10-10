@@ -46,11 +46,12 @@ use NetAddr::IP qw/:rfc3021 :lower/;
 use App::Netdisco::Backend::Job;
 use App::Netdisco::JobQueue 'jq_insert';
 use App::Netdisco::Util::Device 'get_device';
+use App::Netdisco::Worker::Actions qw/supported_actions supported_stages/;
 
 use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 
-my ($port, $extra, $debug, $quiet, $queue_only, $force, $dryrun, $rollback);
+my ($port, $extra, $debug, $quiet, $queue_only, $force, $dryrun, $rollback, $list);
 my ($devices, $infotrace, $snmptrace, $sqltrace) = ([], 0, 0, 0);
 
 my $result = GetOptions(
@@ -63,6 +64,7 @@ my $result = GetOptions(
   'dry-run'    => \$dryrun,
   'quiet'      => \$quiet,
   'rollback|R' => \$rollback,
+  'list|l'     => \$list,
   'infotrace|I+' => \$infotrace,
   'snmptrace|S+' => \$snmptrace,
   'sqltrace|Q+'  => \$sqltrace,
@@ -90,6 +92,28 @@ $ENV{ND2_DB_ROLLBACK} ||= $rollback;
 
 # reconfigure logging to force console output
 Dancer::Logger->init('console', $CONFIG);
+
+if ($list) {
+  use Term::ANSIColor qw(colored);
+  my $color = (-t STDOUT and not ($ENV{NO_COLOR} or $ENV{ANSI_COLORS_DISABLED}));
+  my $paint = sub { $color ? colored(@_) : $_[0] };
+
+  my $stages = supported_stages();
+  my @actions = sort @{ supported_actions() };
+
+  print $paint->('Actions', 'bold'), '  ',
+    $paint->('(run as: netdisco-do <action> or <action>::<stage>)', 'bright_black'), "\n\n";
+
+  foreach my $a (@actions) {
+    my @st = @{ $stages->{$a} || [] };
+    printf "  %s\n", $paint->($a, 'bold green');
+    printf "    %s%s\n", $paint->("${a}::", 'bright_black'), $_ for @st;
+  }
+
+  printf "\n%d actions, %d stages\n", scalar @actions,
+    scalar map { @{ $stages->{$_} } } keys %$stages;
+  exit 0;
+}
 
 info "App::Netdisco version $App::Netdisco::VERSION loaded.";
 
@@ -249,6 +273,7 @@ netdisco-do - Run any Netdisco job from the command-line.
 =head1 SYNOPSIS
 
  ~/bin/netdisco-do <action> [-DISQR] [--enqueue] [--force] [--quiet] [-d <device> [-p <port>] [-e <extra>]]
+ ~/bin/netdisco-do --list
 
 =head1 DESCRIPTION
 
@@ -265,10 +290,6 @@ regardless of type. This may be useful for cron-driven actions, or for actions
 working across large IP spaces. Netdisco will refuse to queue more than 512
 jobs at once unless you also add the "C<--force>" option.
 
-For any action, if you wish to run one of its individual worker stages, then
-pass C<action::stage> as the first argument to C<netdisco-do>, for example
-C<discover::neighbors>.
-
 Any action taking a C<device> parameter can be passed either a hostname or IP
 address of any interface of a known or unknown device, or an IP prefix
 (subnet) which will cause C<netdisco-do> to run the action on all addresses in
@@ -279,6 +300,14 @@ The C<device> parameter may be passed multiple times. In this case, all
 addresses (after expanding IP Prefixes) will be handled one by one.
 
 =head1 ACTIONS
+
+Run C<netdisco-do --list> (or C<-l>) to print the actions known to the
+configured worker plugins, each followed by the stages (C<action::stage>) which
+can be run on their own. This reflects your config, including any
+C<extra_worker_plugins> and python worklets.
+
+To run just one of an action's individual worker stages, pass C<action::stage>
+as the first argument to C<netdisco-do>, for example C<discover::neighbors>.
 
 For a complete list of actions and their accepted parameters, see the
 Netdisco wiki: https://github.com/netdisco/netdisco/wiki/Actions

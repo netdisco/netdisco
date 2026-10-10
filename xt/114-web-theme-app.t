@@ -55,8 +55,8 @@ test_psgi $app, sub {
   like $res->header('Content-Type'), qr{^text/css}, 'themeRoute__configured_theme__is_served_as_css';
 
   my $login = $cb->(GET '/login');
-  like $login->content, qr/<html data-bs-theme="xtsite">/,
-    'loginPage__site_local_theme__carries_the_color_mode_attribute';
+  like $login->content, qr/<html data-nd-theme-default="xtsite" /,
+    'loginPage__site_local_theme__carries_the_theme_default';
   like $login->content, qr{/theme\.css\?v=\d+"},
     'loginPage__site_local_theme__links_the_theme_stylesheet';
 
