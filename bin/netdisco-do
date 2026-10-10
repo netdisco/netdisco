@@ -310,7 +310,7 @@ To run just one of an action's individual worker stages, pass C<action::stage>
 as the first argument to C<netdisco-do>, for example C<discover::neighbors>.
 
 For a complete list of actions and their accepted parameters, see the
-Netdisco wiki: https://github.com/netdisco/netdisco/wiki/Actions
+Netdisco wiki: https://github.com/netdisco/netdisco/wiki/Job-Actions
 
 =head1 DEBUG OPTIONS
 
