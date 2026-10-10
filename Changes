@@ -1,3 +1,10 @@
+2.112000 - 2026-10-10
+
+  [ENHANCEMENTS]
+
+  * #1724 netdisco-do --list prints the known actions and their action::stage
+    stages, as found in the configured worker plugins and python worklets
+
 2.111000 - 2026-10-08
 
   [ENHANCEMENTS]
