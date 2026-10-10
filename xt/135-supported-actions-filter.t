@@ -6,8 +6,7 @@
 # and never ran its jobs. job_prio.high is bound the same way. No database is
 # needed, only the bind values DBIC resolves.
 #
-# An action implemented only by a python worklet is still run by the worker
-# loader, so its jobs must not be filtered out either.
+# How the action list itself is derived is covered by 134-supported-actions.t.
 
 use strict;
 use warnings;
@@ -28,11 +27,10 @@ setting('workers')->{'BACKEND'} = 'test-backend';
 
 require App::Netdisco::JobQueue::PostgreSQL;
 
-sub supported_with {
+sub configure_workers {
   my %conf = @_;
   config->{$_} = $conf{$_} for qw/worker_plugins extra_worker_plugins
     enable_python_worklets python_worker_plugins extra_python_worker_plugins/;
-  return [ sort @{ App::Netdisco::JobQueue::PostgreSQL::_compute_supported_actions() } ];
 }
 
 my %none = (
@@ -40,31 +38,8 @@ my %none = (
   python_worker_plugins => [], extra_python_worker_plugins => [],
 );
 
-subtest 'computeSupportedActions__plugins__are_distinct_lowercased_actions_without_internal' => sub {
-  is_deeply supported_with(%none,
-      worker_plugins => [qw/Internal::BackendFQDN Discover Discover::Hooks
-                            Macsuck::Nodes DiscoverAll/],
-      extra_worker_plugins => ['X::MySite'],
-    ), [qw/discover discoverall macsuck mysite/],
-    'plugin namespaces collapse to one lowercase action each';
-};
-
-subtest 'computeSupportedActions__worklet_only_action__is_supported_when_python_is_enabled' => sub {
-  my %py = (
-    worker_plugins => ['Discover'],
-    python_worker_plugins => [ 'discover.main', { 'linter.main.cli' => { only => 'x' } } ],
-    extra_python_worker_plugins => ['Site.late'],
-  );
-
-  is_deeply supported_with(%none, %py), [qw/discover linter site/],
-    'bare and hash entries both name an action, extra worklets included';
-
-  is_deeply supported_with(%none, %py, enable_python_worklets => 0), ['discover'],
-    'worklets are ignored when python is disabled, as the loader ignores them';
-};
-
 subtest 'getsome__exactly_two_supported_actions__binds_them_both_as_one_array' => sub {
-  supported_with(%none, worker_plugins => [qw/Discover Macsuck Macsuck::Nodes/]);
+  configure_workers(%none, worker_plugins => [qw/Discover Macsuck Macsuck::Nodes/]);
   config->{job_prio}->{high} = [qw/snapshot vlan/];
 
   my @query;
