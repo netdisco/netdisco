@@ -851,6 +851,9 @@
       "App::Netdisco::Web::TypeAhead" : {
          "file" : "lib/App/Netdisco/Web/TypeAhead.pm"
       },
+      "App::Netdisco::Worker::Actions" : {
+         "file" : "lib/App/Netdisco/Worker/Actions.pm"
+      },
       "App::Netdisco::Worker::Loader" : {
          "file" : "lib/App/Netdisco/Worker/Loader.pm"
       },
