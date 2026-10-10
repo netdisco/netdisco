@@ -5,6 +5,7 @@ use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::Device 'get_denied_actions';
 use App::Netdisco::Backend::Job;
+use App::Netdisco::Worker::Actions 'supported_actions';
 use App::Netdisco::DB::ExplicitLocking ':modes';
 
 use JSON::PP ();
@@ -27,7 +28,14 @@ our @EXPORT_OK = qw/
 /;
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
+my $SUPPORTED_ACTIONS;
+sub _get_supported_actions {
+  return $SUPPORTED_ACTIONS ||= supported_actions();
+}
+
 sub jq_warm_thrusters {
+  # compute the list of supported actions at startup
+  _get_supported_actions();
   my $rs = schema(vars->{'tenant'})->resultset('DeviceSkip');
 
   schema(vars->{'tenant'})->txn_do(sub {
@@ -67,9 +75,12 @@ sub jq_getsome {
   my $jobs = schema(vars->{'tenant'})->resultset('Admin');
   my @returned = ();
 
+  # dbic reads any two element arrayref in bind as [ column, value ], so a list
+  # of exactly two would lose its first. [ undef, ... ] passes it through whole.
   my $tasty = schema(vars->{'tenant'})->resultset('Virtual::TastyJobs')
-    ->search(undef,{ bind => [
-      setting('workers')->{'BACKEND'}, setting('job_prio')->{'high'},
+    ->search(undef, { bind => [
+      setting('workers')->{'BACKEND'}, [ undef, _get_supported_actions() ],
+      [ undef, setting('job_prio')->{'high'} ],
       setting('workers')->{'BACKEND'}, setting('workers')->{'max_deferrals'},
       setting('workers')->{'retry_after'}, $num_slots,
     ]});
