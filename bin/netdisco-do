@@ -104,10 +104,10 @@ if ($list) {
   print $paint->('Actions', 'bold'), '  ',
     $paint->('(run as: netdisco-do <action> or <action>::<stage>)', 'bright_black'), "\n\n";
 
-  foreach my $a (@actions) {
-    my @st = @{ $stages->{$a} || [] };
-    printf "  %s\n", $paint->($a, 'bold green');
-    printf "    %s%s\n", $paint->("${a}::", 'bright_black'), $_ for @st;
+  foreach my $action (@actions) {
+    my @st = @{ $stages->{$action} || [] };
+    printf "  %s\n", $paint->($action, 'bold green');
+    printf "    %s%s\n", $paint->("${action}::", 'bright_black'), $_ for @st;
   }
 
   printf "\n%d actions, %d stages\n", scalar @actions,
