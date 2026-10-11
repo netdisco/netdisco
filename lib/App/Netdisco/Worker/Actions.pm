@@ -22,8 +22,7 @@ App::Netdisco::Worker::Actions
 Introspects the configured worker plugins (perl, and python worklets when
 enabled) to learn which actions, and which stages of those actions, can be run.
 Nothing is loaded, only the config is read, so this is cheap and has no side
-effects. The backend uses it to filter the job queue, and C<netdisco-do
---list> prints it.
+effects. C<netdisco-do --list> prints it.
 
 =head1 EXPORT_OK
 
@@ -88,8 +87,6 @@ sub supported_actions {
     my $action = $worker->[0];
     push @supported, $action unless scalar grep {$_ eq $action} @supported;
   }
-
-  debug 'Backend supports actions: ' . join(', ', @supported);
   return \@supported;
 }
 
