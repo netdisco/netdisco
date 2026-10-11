@@ -3,6 +3,8 @@
   [ENHANCEMENTS]
 
   * deployment.yml shows trusted_proxies
+  * #1724 netdisco-do --list prints the known actions and their action::stage
+    stages, as found in the configured worker plugins and python worklets
 
   [BUG FIXES]
 

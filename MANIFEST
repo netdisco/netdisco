@@ -246,6 +246,7 @@ lib/App/Netdisco/Web/Static.pm
 lib/App/Netdisco/Web/Statistics.pm
 lib/App/Netdisco/Web/Theme.pm
 lib/App/Netdisco/Web/TypeAhead.pm
+lib/App/Netdisco/Worker/Actions.pm
 lib/App/Netdisco/Worker/Loader.pm
 lib/App/Netdisco/Worker/Plugin.pm
 lib/App/Netdisco/Worker/Plugin/AddPseudoDevice.pm
@@ -688,6 +689,7 @@ xt/125-classic-token-coverage.t
 xt/126-theme-by-name.t
 xt/127-sidebar-split-button.t
 xt/133-web-theme-default-auto.t
+xt/134-supported-actions.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t
