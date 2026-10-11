@@ -10,6 +10,7 @@ our @EXPORT = ();
 our @EXPORT_OK = qw/
   supported_actions
   supported_stages
+  plugin_package
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -36,9 +37,23 @@ Returns a hash reference of action name to a sorted array reference of the
 stages (C<action::stage>) which can be run on their own. Only actions having
 stages are present.
 
+=head2 plugin_package
+
+Returns the full package name for a C<worker_plugins> entry (C<X::Foo> or a
+leading C<+> are expanded as the loader does). The argument is not modified.
+
 =cut
 
 my @phases = qw/check early main user store late/;
+
+# shared with Worker::Loader so that --list reports what the loader would run
+sub plugin_package {
+  my $name = shift;
+  $name =~ s/^X::/+App::NetdiscoX::Worker::Plugin::/;
+  $name = 'App::Netdisco::Worker::Plugin::' . $name if $name !~ m/^\+/;
+  $name =~ s/^\+//;
+  return $name;
+}
 
 # yields [ action, stage-or-undef ] for every configured worker
 sub _configured_workers {
@@ -48,10 +63,7 @@ sub _configured_workers {
   my @user_plugins = @{ setting('extra_worker_plugins') || [] };
 
   foreach my $plugin (@user_plugins, @core_plugins) {
-    my $p = $plugin;
-    $p =~ s/^X::/+App::NetdiscoX::Worker::Plugin::/;
-    $p = 'App::Netdisco::Worker::Plugin::' . $p if $p !~ m/^\+/;
-    $p =~ s/^\+//;
+    my $p = plugin_package($plugin);
 
     # same parse as register_worker: only the first sub-namespace is the stage
     if ($p =~ m/::Plugin::([^:]+)(?:::([^:]+))?/i) {
