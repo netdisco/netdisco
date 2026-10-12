@@ -5,6 +5,7 @@ use warnings;
 
 use Module::Load ();
 use Dancer qw/:moose :syntax/;
+use App::Netdisco::Worker::Actions qw/plugin_package/;
 
 use Moo::Role;
 use namespace::clean;
@@ -25,11 +26,8 @@ sub load_workers {
   my @user_plugins = @{ setting('extra_worker_plugins') || [] };
 
   # load worker plugins for our action
-  foreach my $plugin (@user_plugins, @core_plugins) {
-    $plugin =~ s/^X::/+App::NetdiscoX::Worker::Plugin::/;
-    $plugin = 'App::Netdisco::Worker::Plugin::'. $plugin
-      if $plugin !~ m/^\+/;
-    $plugin =~ s/^\+//;
+  foreach my $name (@user_plugins, @core_plugins) {
+    my $plugin = plugin_package($name);
 
     next unless $plugin =~ m/::Plugin::(?:\Q${action}\E|Internal)(?:::|$)/i;
     $ENV{ND2_LOG_PLUGINS} && debug "loading worker plugin $plugin";

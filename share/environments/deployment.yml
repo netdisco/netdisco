@@ -114,6 +114,15 @@ device_auth:
 # `````````````````````````````````````````````````````````````````````
 #compress_responses: false
 
+# list a reverse proxy on another host or in a container here if you use
+# token_acl or metrics_allow, or they decide on the proxy's address instead
+# of the client's. a proxy on the same host needs nothing.
+# `````````````````````````````````````````````````````````````````````
+#trusted_proxies:
+#  - '127.0.0.1'
+#  - '::1'
+#  - '192.0.2.10'
+
 # enable a health check endpoint for use with load balancers and container
 # health probes (Docker, Kubernetes). returns JSON with db and backend status.
 # responds HTTP 200 when healthy, 503 when the database is unreachable.
