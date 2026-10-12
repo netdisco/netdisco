@@ -56,10 +56,19 @@ sub get_communities {
   my $tag_name = 'snmp_auth_tag_'. $mode;
   my $stored_tag = eval { $device->community->$tag_name };
 
+  # A hint for a configured tag other than the stored one goes ahead of the
+  # last known-good credentials, so that a device answering to both can be
+  # moved to the hinted ones, as device_auth_tag_hint is documented to do.
+  # The known-good stanza stays in the list behind it, as does every other.
+  my $hint = setting('device_auth_tag_hint');
+  my $hint_wins = ($hint and $hint ne ($stored_tag // '')
+    and scalar grep { $_->{tag} and $_->{tag} eq $hint } @$config);
+
   if ($device->in_storage and $stored_tag) {
     foreach my $stanza (@$config) {
       if ($stanza->{tag} and $stored_tag eq $stanza->{tag}) {
-        push @communities, {%$stanza, only => [$device->ip]};
+        push @communities, {%$stanza, only => [$device->ip]}
+          unless $hint_wins;
         ++$seen_tags->{ $stored_tag };
         last;
       }
@@ -71,7 +80,7 @@ sub get_communities {
     read => 1, write => 0, driver => 'snmp',
     only => [$device->ip],
     community => $device->snmp_comm,
-  } if defined $device->snmp_comm and $mode eq 'read';
+  } if defined $device->snmp_comm and $mode eq 'read' and not $hint_wins;
 
   # try last-known-good v2 write
   my $snmp_comm_rw = eval { $device->community->snmp_comm_rw };
@@ -79,7 +88,7 @@ sub get_communities {
     write => 1, read => 0, driver => 'snmp',
     only => [$device->ip],
     community => $snmp_comm_rw,
-  } if $snmp_comm_rw and $mode eq 'write';
+  } if $snmp_comm_rw and $mode eq 'write' and not $hint_wins;
 
   # clean the community table of obsolete tags
   eval { $device->community->update({$tag_name => undef}) }
