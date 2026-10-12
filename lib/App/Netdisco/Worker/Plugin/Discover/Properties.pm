@@ -9,7 +9,7 @@ use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use App::Netdisco::Util::Device qw/get_device is_discoverable/;
 use App::Netdisco::Util::DNS 'hostname_from_ip';
-use App::Netdisco::Util::SNMP qw/snmp_comm_reindex get_mibdirs_shortnames/;
+use App::Netdisco::Util::SNMP qw/snmp_comm_reindex snmp_vrf_reindex get_mibdirs_shortnames/;
 use App::Netdisco::Util::Web 'sort_port';
 use App::Netdisco::DB::ExplicitLocking ':modes';
 
@@ -727,7 +727,7 @@ sub _get_ipv4_aliases {
   if (scalar @vrf_list) {
     my $guard = guard { snmp_comm_reindex($snmp, $device, 0) };
     foreach my $vrf (@vrf_list) {
-      snmp_comm_reindex($snmp, $device, $vrf);
+      snmp_vrf_reindex($snmp, $device, $vrf);
       $ip_index   = { %$ip_index,   %{$snmp->ip_index   || {}} };
       $ip_table   = { %$ip_table,   %{$snmp->ip_table   || {}} };
       $interfaces = { %$interfaces, %{$snmp->interfaces || {}} };
@@ -778,7 +778,7 @@ sub _get_ipv6_aliases {
   if (scalar @vrf_list) {
     my $guard = guard { snmp_comm_reindex($snmp, $device, 0) };
     foreach my $vrf (@vrf_list) {
-      snmp_comm_reindex($snmp, $device, $vrf);
+      snmp_vrf_reindex($snmp, $device, $vrf);
       $ipv6_index  = { %$ipv6_index,  %{$snmp->ipv6_index || {}} };
       $ipv6_addr   = { %$ipv6_addr,   %{$snmp->ipv6_addr || {}} };
       $ipv6_type   = { %$ipv6_type,   %{$snmp->ipv6_type || {}} };

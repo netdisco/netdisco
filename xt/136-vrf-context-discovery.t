@@ -12,7 +12,7 @@ use lib 'xt/lib';
 
 use App::Netdisco;
 use App::Netdisco::DB;
-use App::Netdisco::Util::SNMP 'snmp_comm_reindex';
+use App::Netdisco::Util::SNMP qw/snmp_comm_reindex snmp_vrf_reindex/;
 use App::Netdisco::Worker::Plugin::Discover::Properties ();
 use Dancer qw/:moose :script !pass/;
 
@@ -85,18 +85,30 @@ subtest 'getIpv6Aliases__one_vrf_context_unanswered__keeps_the_answering_vrf' =>
   is $aliases[0]{port}, 'Ethernet1/1', 'red VRF address keeps its port';
 };
 
-foreach my $vrf (qw/red prod-red prod_red prod.red/) {
-  subtest "snmpCommReindex__v3_vrf_named_${vrf}__uses_it_as_the_context" => sub {
+foreach my $vrf (qw/red prod-red prod_red prod.red 100/) {
+  subtest "snmpVrfReindex__v3_vrf_named_${vrf}__uses_the_name_as_the_context" => sub {
     my $snmp = FakeSNMP->new(snmp_ver => 3);
-    snmp_comm_reindex($snmp, $device, $vrf);
-    is $snmp->{context}, $vrf, 'context is the VRF name';
+    snmp_vrf_reindex($snmp, $device, $vrf);
+    is $snmp->{context}, $vrf, 'context is the VRF name, with no VLAN prefix';
   };
 }
+
+subtest 'snmpVrfReindex__v2c_vrf__uses_community_at_vrf' => sub {
+  my $snmp = FakeSNMP->new(snmp_ver => 2);
+  snmp_vrf_reindex($snmp, $device, 'prod-red');
+  is $snmp->{context}, 'prod-red', 'community labro@prod-red';
+};
 
 subtest 'snmpCommReindex__v3_numeric_vlan__uses_the_vlan_prefix' => sub {
   my $snmp = FakeSNMP->new(snmp_ver => 3);
   snmp_comm_reindex($snmp, $device, 10);
   is $snmp->{context}, 'vlan-10', 'context is vlan-10';
+};
+
+subtest 'snmpCommReindex__v3_vrf_name__still_uses_the_name_as_the_context' => sub {
+  my $snmp = FakeSNMP->new(snmp_ver => 3);
+  snmp_comm_reindex($snmp, $device, 'red');
+  is $snmp->{context}, 'red', 'callers outside this distribution may pass VRF names here';
 };
 
 subtest 'snmpCommReindex__v3_zero__resets_to_the_default_context' => sub {
