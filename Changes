@@ -8,6 +8,10 @@
   [ENHANCEMENTS]
 
   * deployment.yml shows trusted_proxies
+  * workers.queues reserves workers for some actions, so that a backlog of
+    one kind of job (say discover) cannot keep another (say portcontrol)
+    waiting. each queue is { tasks: N, actions: [...] } and its actions are
+    run only by its own workers
   * #1724 netdisco-do --list prints the known actions and their action::stage
     stages, as found in the configured worker plugins and python worklets
   * #1725 drop redundant indexes and add four that existing queries lack
