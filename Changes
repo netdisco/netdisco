@@ -9,6 +9,8 @@
   [BUG FIXES]
 
   * #1717 let device_auth_tag_hint win over cached credentials again
+  * discover no longer stops when one VRF's SNMP context does not answer
+  * SNMPv3 VRF contexts with names such as prod-red or prod_red are queried
 
 2.111000 - 2026-10-08
 

@@ -130,7 +130,7 @@ sub snmp_comm_reindex {
         debug sprintf ' [%s] reindexing to "%s%s" (ver: %s, class: %s)',
         $device->ip, $prefix, $vlan, $ver, $snmp->class;
         $snmp->update(Context => ($prefix . $vlan));
-      } elsif ($vlan =~ /^[a-z0-9]+$/i && $vlan) {
+      } elsif ($vlan =~ /^\S+$/ && $vlan) {
         debug sprintf ' [%s] reindexing to "%s" (ver: %s, class: %s)',
           $device->ip, $vlan, $ver, $snmp->class;
         $snmp->update(Context => ($vlan));

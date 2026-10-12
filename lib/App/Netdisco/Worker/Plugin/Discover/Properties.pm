@@ -717,10 +717,10 @@ sub _get_ipv4_aliases {
   my ($device, $snmp) = @_;
   my @aliases;
 
-  my $ip_index   = $snmp->ip_index;
-  my $ip_table   = $snmp->ip_table;
-  my $interfaces = $snmp->interfaces;
-  my $ip_netmask = $snmp->ip_netmask;
+  my $ip_index   = $snmp->ip_index   || {};
+  my $ip_table   = $snmp->ip_table   || {};
+  my $interfaces = $snmp->interfaces || {};
+  my $ip_netmask = $snmp->ip_netmask || {};
 
   # Get IP Table per VRF if supported
   my @vrf_list = _get_vrf_list($device, $snmp);
@@ -728,10 +728,10 @@ sub _get_ipv4_aliases {
     my $guard = guard { snmp_comm_reindex($snmp, $device, 0) };
     foreach my $vrf (@vrf_list) {
       snmp_comm_reindex($snmp, $device, $vrf);
-      $ip_index   = { %$ip_index,   %{$snmp->ip_index}   };
-      $ip_table   = { %$ip_table,   %{$snmp->ip_table}   };
-      $interfaces = { %$interfaces, %{$snmp->interfaces} };
-      $ip_netmask = { %$ip_netmask, %{$snmp->ip_netmask} };
+      $ip_index   = { %$ip_index,   %{$snmp->ip_index   || {}} };
+      $ip_table   = { %$ip_table,   %{$snmp->ip_table   || {}} };
+      $interfaces = { %$interfaces, %{$snmp->interfaces || {}} };
+      $ip_netmask = { %$ip_netmask, %{$snmp->ip_netmask || {}} };
     }
   }
 
@@ -783,7 +783,7 @@ sub _get_ipv6_aliases {
       $ipv6_addr   = { %$ipv6_addr,   %{$snmp->ipv6_addr || {}} };
       $ipv6_type   = { %$ipv6_type,   %{$snmp->ipv6_type || {}} };
       $ipv6_pfxlen = { %$ipv6_pfxlen, %{$snmp->ipv6_addr_prefixlength || {}} };
-      $interfaces  = { %$interfaces,  %{$snmp->interfaces} };
+      $interfaces  = { %$interfaces,  %{$snmp->interfaces || {}} };
     }
   }
 
