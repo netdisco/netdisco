@@ -50,7 +50,8 @@ true). Dies if an action is in more than one queue.
 =head2 queue_for( \@queues, $action )
 
 Returns the entry of C<@queues> (as from C<worker_queues>) which runs the
-given action.
+given action. Actions not reserved go to the general pool, or if that has no
+workers, to the first reserved queue.
 
 =head2 total_workers
 
@@ -98,7 +99,10 @@ sub queue_for {
     return $queue if $queue->{only}
       and scalar grep { $_ eq $action } @{ $queue->{actions} };
   }
-  return $queues->[0];
+
+  # a node with only reserved queues still has to run its internal jobs
+  return $queues->[0] if $queues->[0]->{tasks};
+  return $queues->[1] || $queues->[0];
 }
 
 sub total_workers {

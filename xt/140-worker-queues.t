@@ -63,6 +63,15 @@ subtest 'queueFor__an_action__is_run_by_the_queue_that_owns_it' => sub {
          [discover => 'general'], [primeskiplist => 'general']);
 };
 
+subtest 'queueFor__general_pool_without_workers__hands_its_jobs_to_a_reserved_queue' => sub {
+  configure(0, { vlans => { tasks => 1, actions => ['vlan'] } });
+  my @queues = worker_queues();
+
+  is queue_for(\@queues, 'primeskiplist')->{name}, 'vlans',
+    'internal jobs still have workers to run on';
+  is queue_for(\@queues, 'vlan')->{name}, 'vlans', 'a reserved action is unchanged';
+};
+
 subtest 'workerQueues__queue_that_cannot_run_anything__is_ignored' => sub {
   configure(2, {
     idle    => { tasks => 0, actions => ['discover'] },

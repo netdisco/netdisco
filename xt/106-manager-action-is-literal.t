@@ -21,7 +21,6 @@ use Try::Tiny;
 use Dancer qw/:moose :script !pass/;
 
 config->{logger} = 'null';
-config->{workers}->{tasks} = 1;
 
 my (@queued, @locked, @running);
 
@@ -70,7 +69,10 @@ sub manage {
   @queued = (job(@$queued_job));
   @locked = ();
 
-  my $self = bless { queue => bless({}, 'FakeQueue') }, 'FakeManager';
+  my $self = bless { queues => [{
+    name => 'general', tasks => 1, actions => [], only => 0,
+    queue => bless({}, 'FakeQueue'),
+  }] }, 'FakeManager';
   my $stopped = '';
   try { App::Netdisco::Backend::Role::Manager::worker_body($self) }
   catch { $stopped = $_ };

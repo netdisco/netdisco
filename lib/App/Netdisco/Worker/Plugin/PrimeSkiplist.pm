@@ -7,7 +7,7 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Util::Device 'get_denied_actions';
-use App::Netdisco::Util::MCE 'parse_max_workers';
+use App::Netdisco::Backend::Queues 'total_workers';
 use App::Netdisco::Backend::Job;
 
 use Try::Tiny;
@@ -28,7 +28,7 @@ register_worker({ phase => 'main' }, sub {
   debug sprintf 'priming device action skip list for %d devices',
     scalar keys %actionset;
 
-  my $max_workers = parse_max_workers( setting('workers')->{tasks} ) || 0;
+  my $max_workers = total_workers();
 
   try {
     schema(vars->{'tenant'})->txn_do(sub {
