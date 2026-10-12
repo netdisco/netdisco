@@ -10,12 +10,12 @@
   * deployment.yml shows trusted_proxies
   * #1724 netdisco-do --list prints the known actions and their action::stage
     stages, as found in the configured worker plugins and python worklets
-  * Statistics shows the PostgreSQL version in red when it is older than 14
+  * #1730 warn of the PostgreSQL 14 floor, and show the version in red below
+    14 in Statistics
 
   [BUG FIXES]
 
   * #1717 let device_auth_tag_hint win over cached credentials again
-  * Statistics shows PostgreSQL 10 and newer as 18.6, not 18.00.6
 
 2.111000 - 2026-10-08
 
