@@ -25,6 +25,7 @@
   * #1731 discover no longer stops when one VRF's SNMP context does not answer
   * #1731 SNMPv3 VRF contexts are queried by their exact name, such as
     prod-red or 100, never with the VLAN context prefix
+  * API object last_node for a port no longer fails with a server error
 
 2.111000 - 2026-10-08
 

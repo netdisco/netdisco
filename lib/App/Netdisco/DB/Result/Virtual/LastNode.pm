@@ -3,7 +3,7 @@ package App::Netdisco::DB::Result::Virtual::LastNode;
 use strict;
 use warnings;
 
-use base 'DBIx::Class::Core';
+use base 'App::Netdisco::DB::Result';
 
 __PACKAGE__->table_class('DBIx::Class::ResultSource::View');
 
