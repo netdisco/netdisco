@@ -7,6 +7,7 @@
     stages, as found in the configured worker plugins and python worklets
   * #1725 drop redundant indexes and add four that existing queries lack
   * #1726 faster IP Inventory, and device search by complete MAC or IP address
+  * #1734 job log by device and device delete use their indexes
 
   [BUG FIXES]
 

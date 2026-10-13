@@ -695,6 +695,8 @@ xt/131-device-search-exact-mac.t
 xt/132-device-search-by-address.t
 xt/133-web-theme-default-auto.t
 xt/134-supported-actions.t
+xt/137-job-log-device-filter.t
+xt/138-device-port-delete-node-set.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t
