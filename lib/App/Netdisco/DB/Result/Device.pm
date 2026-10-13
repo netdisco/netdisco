@@ -173,6 +173,24 @@ __PACKAGE__->has_many( ports_by_mac => 'App::Netdisco::DB::Result::DevicePort',
   { cascade_copy => 0, cascade_update => 0, cascade_delete => 0 }
 );
 
+=head2 ports_by_exact_mac
+
+Like C<ports_by_mac>, but matches one complete MAC address by equality, which
+the port MAC index can serve. Use C<ports_with_exact_mac> to pass the address.
+
+=cut
+
+__PACKAGE__->has_many( ports_by_exact_mac => 'App::Netdisco::DB::Result::DevicePort',
+  sub {
+    my $args = shift;
+    return {
+      "$args->{foreign_alias}.ip" => { -ident => "$args->{self_alias}.ip" },
+      "$args->{foreign_alias}.mac" => { '=', \'?' },
+    };
+  },
+  { cascade_copy => 0, cascade_update => 0, cascade_delete => 0 }
+);
+
 =head2 module_serials
 
 Returns the set chassis modules on this Device.

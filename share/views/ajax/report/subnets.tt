@@ -14,7 +14,7 @@
     <tr>
       <td class="nd_center-cell"><a href="[% uri_for('/report/ipinventory') | none %]?subnet=[% row.subnet | uri %]&daterange=[% params.daterange | uri %]&age_invert=[% params.age_invert | uri %]&limit=[% row.subnet_size | uri %]">
                [% row.subnet | html_entity %]</a></td>
-      <td class="nd_center-cell">[% row.subnet_size | format_number %]</td>
+      <td class="nd_center-cell">[% IF row.subnet.match(':') %]2<sup>[% 128 - row.subnet.split('/').last %]</sup>[% ELSE %][% row.subnet_size | format_number %][% END %]</td>
       <td class="nd_center-cell">[% row.active | format_number %]</td>
       <td class="nd_center-cell">[% row.percent | html_entity %]</td>
     </tr>

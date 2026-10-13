@@ -284,12 +284,9 @@ sub jq_log {
   return schema(vars->{'tenant'})->resultset('Admin')->search({
     (param('backend') ? ('me.backend' => param('backend')) : ()),
     (param('action') ? ('me.action' => param('action')) : ()),
-    (param('device') ? (
-      -or => [
-        { 'me.device' => param('device') },
-        { 'target.ip' => param('device') },
-      ],
-    ) : ()),
+    # not target.ip: the join makes it equal to me.device, and an OR with it
+    # stops PostgreSQL using the admin(device) index
+    (param('device') ? ('me.device' => param('device')) : ()),
     (param('username') ? ('me.username' => param('username')) : ()),
     (param('status') ? (
       (param('status') eq 'Running') ? (
