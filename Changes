@@ -5,10 +5,12 @@
   * deployment.yml shows trusted_proxies
   * #1724 netdisco-do --list prints the known actions and their action::stage
     stages, as found in the configured worker plugins and python worklets
+  * #1725 drop redundant indexes and add four that existing queries lack
 
   [BUG FIXES]
 
   * #1717 let device_auth_tag_hint win over cached credentials again
+  * #1725 Subnet Utilization reports the size of IPv6 subnets correctly
 
 2.111000 - 2026-10-08
 
