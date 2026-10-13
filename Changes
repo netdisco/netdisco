@@ -1,5 +1,10 @@
 2.112000 - tbd
 
+  [NOTICE]
+
+  * a future release will need PostgreSQL 14 or newer; plan the upgrade now
+    (see Release Notes on the wiki)
+
   [ENHANCEMENTS]
 
   * deployment.yml shows trusted_proxies
@@ -8,12 +13,15 @@
   * #1725 drop redundant indexes and add four that existing queries lack
   * #1726 faster IP Inventory, and device search by complete MAC or IP address
   * #1734 job log by device and device delete use their indexes
+  * #1730 warn of the PostgreSQL 14 floor, and show the version in red below
+    14 in Statistics
 
   [BUG FIXES]
 
   * #1717 let device_auth_tag_hint win over cached credentials again
   * #1725 Subnet Utilization reports the size of IPv6 subnets correctly
   * #1726 IP Inventory no longer lists a used address as never seen, and shows the most recently seen MAC for an IP with several
+  * #1730 Statistics shows PostgreSQL 10 and newer as 18.6, not 18.00.6
 
 2.111000 - 2026-10-08
 
