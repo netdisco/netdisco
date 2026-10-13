@@ -696,6 +696,7 @@ xt/132-device-search-by-address.t
 xt/133-web-theme-default-auto.t
 xt/134-supported-actions.t
 xt/135-statistics-postgres-floor.t
+xt/136-vrf-context-discovery.t
 xt/137-job-log-device-filter.t
 xt/138-device-port-delete-node-set.t
 xt/20-checkacl.t

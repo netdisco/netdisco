@@ -14,6 +14,7 @@ our @EXPORT = ();
 our @EXPORT_OK = qw/
   get_communities
   snmp_comm_reindex
+  snmp_vrf_reindex
   get_mibdirs
   get_mibdirs_shortnames
   decode_and_munge
@@ -112,6 +113,23 @@ or v3 empty context.
 
 sub snmp_comm_reindex {
   my ($snmp, $device, $vlan) = @_;
+  return _reindex($snmp, $device, $vlan, 'vlan');
+}
+
+=head2 snmp_vrf_reindex( $snmp, $device, $vrf )
+
+As C<snmp_comm_reindex>, but for a VRF's SNMP context: on SNMPv3 the context
+is the VRF name as given, never the VLAN context prefix.
+
+=cut
+
+sub snmp_vrf_reindex {
+  my ($snmp, $device, $vrf) = @_;
+  return _reindex($snmp, $device, $vrf, 'vrf');
+}
+
+sub _reindex {
+  my ($snmp, $device, $index, $kind) = @_;
   my $ver = $snmp->snmp_ver;
   my $vtp = $snmp->vtp_version;
 
@@ -126,14 +144,16 @@ sub snmp_comm_reindex {
       }
       $prefix ||= 'vlan-';
 
-      if ($vlan =~ /^[0-9]+$/i && $vlan) {
+      # snmp_comm_reindex has been passed VRF names too, so for a VLAN only
+      # a number takes the prefix
+      if ($kind eq 'vlan' && $index =~ /^[0-9]+$/ && $index) {
         debug sprintf ' [%s] reindexing to "%s%s" (ver: %s, class: %s)',
-        $device->ip, $prefix, $vlan, $ver, $snmp->class;
-        $snmp->update(Context => ($prefix . $vlan));
-      } elsif ($vlan =~ /^[a-z0-9]+$/i && $vlan) {
+        $device->ip, $prefix, $index, $ver, $snmp->class;
+        $snmp->update(Context => ($prefix . $index));
+      } elsif ($index =~ /^\S+$/ && $index) {
         debug sprintf ' [%s] reindexing to "%s" (ver: %s, class: %s)',
-          $device->ip, $vlan, $ver, $snmp->class;
-        $snmp->update(Context => ($vlan));
+          $device->ip, $index, $ver, $snmp->class;
+        $snmp->update(Context => ($index));
       } else {
         debug sprintf ' [%s] reindexing without context (ver: %s, class: %s)',
           $device->ip, $ver, $snmp->class;
@@ -143,10 +163,10 @@ sub snmp_comm_reindex {
   else {
       my $comm = $snmp->snmp_comm;
 
-      debug sprintf ' [%s] reindexing to vlan %s (ver: %s, class: %s)',
-        $device->ip, $vlan, $ver, $snmp->class;
-      $vlan ? $snmp->update(Community => $comm . '@' . $vlan)
-            : $snmp->update(Community => $comm);
+      debug sprintf ' [%s] reindexing to %s %s (ver: %s, class: %s)',
+        $device->ip, $kind, $index, $ver, $snmp->class;
+      $index ? $snmp->update(Community => $comm . '@' . $index)
+             : $snmp->update(Community => $comm);
   }
 
   $snmp->cache({ _vtp_version => $vtp });
