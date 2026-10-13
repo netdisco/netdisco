@@ -292,8 +292,12 @@ sub delete {
         $ip, $gone, _plural($gone), $set ) ) if defined Dancer::Logger::logger();
   }
 
+  # a list, not a subquery: given a subquery, PostgreSQL can merge-join
+  # through node_pkey instead of using the (switch, port, active) index
+  my @switches = $ports->search(undef, { columns => ['ip'], distinct => 1 })
+                       ->get_column('ip')->all;
   $schema->resultset('Node')->search(
-    { switch => { '-in' => $ports->as_query }},
+    { switch => { '-in' => \@switches }},
   )->delete(@_);
 
   # now let DBIC do its thing
