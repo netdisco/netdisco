@@ -6,11 +6,13 @@
   * #1724 netdisco-do --list prints the known actions and their action::stage
     stages, as found in the configured worker plugins and python worklets
   * #1725 drop redundant indexes and add four that existing queries lack
+  * #1726 faster IP Inventory, and device search by complete MAC or IP address
 
   [BUG FIXES]
 
   * #1717 let device_auth_tag_hint win over cached credentials again
   * #1725 Subnet Utilization reports the size of IPv6 subnets correctly
+  * #1726 IP Inventory no longer lists a used address as never seen, and shows the most recently seen MAC for an IP with several
 
 2.111000 - 2026-10-08
 
