@@ -63,7 +63,8 @@
             </tr>
             <tr>
               <th><a href="http://www.postgresql.org" target="_blank">PostgreSQL</a></th>
-              <th>[% '<span class="badge alert-danger">' IF stats.pg_ver.remove('\.\d+') < 9.6 %][% stats.pg_ver | html_entity %][% '</span>' IF stats.pg_ver.remove('\.\d+') < 9.6 %]</th>
+              [% pg_major = stats.pg_ver.match('^(\d+)\.').0 %]
+              <th>[% '<span class="badge alert-danger">' IF pg_major AND pg_major < 14 %][% stats.pg_ver | html_entity %][% '</span>' IF pg_major AND pg_major < 14 %]</th>
             </tr>
             <tr>
               <th><a href="https://www.perl.org" target="_blank">Perl</a>

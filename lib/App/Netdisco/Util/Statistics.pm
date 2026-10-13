@@ -7,7 +7,7 @@ use Time::Piece; # for OO localtime
 
 use base 'Exporter';
 our @EXPORT = ();
-our @EXPORT_OK = qw/pretty_version update_stats/;
+our @EXPORT_OK = qw/pretty_version postgres_version update_stats/;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
@@ -34,7 +34,7 @@ sub update_stats {
   my $schema = schema(vars->{'tenant'});
   eval { require SNMP::Info };
   my $snmpinfo_ver = ($@ ? 'n/a' : $SNMP::Info::VERSION);
-  my $postgres_ver = pretty_version($schema->storage->dbh->{pg_server_version}, 2);
+  my $postgres_ver = postgres_version($schema->storage->dbh->{pg_server_version});
 
   # roll everything back if we're testing
   my $txn_guard = $ENV{ND2_DB_ROLLBACK}
@@ -113,6 +113,26 @@ sub pretty_version {
   $version =~ s/\.000/.0/g;
   $version =~ s/\.0+([1-9]+)/.$1/g;
   return $version;
+}
+
+=head2 postgres_version ( $server_version_num )
+
+Formats PostgreSQL's C<server_version_num> for display: C<180006> as C<18.6>,
+and C<90624> as C<9.6.24>.
+
+Returns C<undef> unless given a whole number.
+
+=cut
+
+# From PostgreSQL 10 the number is major * 10000 + minor, so the two-digit
+# segments pretty_version() cuts would show 18.6 as 18.00.6.
+sub postgres_version {
+  my $version = shift;
+  return unless defined $version and $version =~ m/^\d+$/;
+  return sprintf '%d.%d', int($version / 10000), $version % 10000
+    if $version >= 100000;
+  return sprintf '%d.%d.%d',
+    int($version / 10000), int($version / 100) % 100, $version % 100;
 }
 
 true;
