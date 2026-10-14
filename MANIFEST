@@ -101,6 +101,7 @@ lib/App/Netdisco/DB/ResultSet/AccessControlListName.pm
 lib/App/Netdisco/DB/ResultSet/Admin.pm
 lib/App/Netdisco/DB/ResultSet/Device.pm
 lib/App/Netdisco/DB/ResultSet/DeviceBrowser.pm
+lib/App/Netdisco/DB/ResultSet/DeviceIp.pm
 lib/App/Netdisco/DB/ResultSet/DeviceModule.pm
 lib/App/Netdisco/DB/ResultSet/DevicePort.pm
 lib/App/Netdisco/DB/ResultSet/DevicePortLog.pm
@@ -434,6 +435,7 @@ share/python/tfsm/juniper_junos_show_route_forwarding-table.textfsm
 share/python/tfsm/linux_arp_-a.textfsm
 share/schema_versions/App-Netdisco-DB-1-2-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-10-11-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-100-101-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-11-12-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-12-13-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-13-14-PostgreSQL.sql
