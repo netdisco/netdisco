@@ -11,6 +11,7 @@
   * #1724 netdisco-do --list prints the known actions and their action::stage
     stages, as found in the configured worker plugins and python worklets
   * #1725 drop redundant indexes and add four that existing queries lack
+    (database schema 101: run netdisco-deploy)
   * #1726 faster IP Inventory, and device search by complete MAC or IP address
   * #1734 job log by device and device delete use their indexes
   * #1730 warn of the PostgreSQL 14 floor, and show the version in red below
