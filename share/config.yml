@@ -786,6 +786,8 @@ wap_platforms:
 
 workers:
   tasks: 'AUTO * 2'
+  # reserve workers for some actions, as { name: { tasks: N, actions: [...] } }
+  queues: {}
   timeout: 600
   sleep_time: 1
   min_runtime: 0

@@ -180,6 +180,7 @@ config->{'device_auth'}
 setting('workers')->{queue} ||= 'PostgreSQL';
 if ($ENV{ND2_SINGLE_WORKER}) {
   setting('workers')->{tasks} = 1;
+  delete setting('workers')->{queues};
   delete config->{'schedule'};
 }
 
@@ -398,6 +399,9 @@ if (exists setting('workers')->{interactives}
 # allow container orchestrators to pin worker count via env (e.g. scheduler pod sets this to 0)
 if (exists $ENV{NETDISCO_WORKERS_TASKS}) {
   setting('workers')->{tasks} = int($ENV{NETDISCO_WORKERS_TASKS});
+
+  # a pod pinned to no workers must not start the reserved ones either
+  delete setting('workers')->{queues} if not setting('workers')->{tasks};
 }
 
 # moved the timeout setting
