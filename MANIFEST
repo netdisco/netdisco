@@ -169,6 +169,7 @@ lib/App/Netdisco/Util/Python.pm
 lib/App/Netdisco/Util/SiteLocal.pm
 lib/App/Netdisco/Util/Snapshot.pm
 lib/App/Netdisco/Util/SNMP.pm
+lib/App/Netdisco/Util/SNMPText.pm
 lib/App/Netdisco/Util/Statistics.pm
 lib/App/Netdisco/Util/Token.pm
 lib/App/Netdisco/Util/Web.pm
@@ -705,6 +706,7 @@ xt/138-device-port-delete-node-set.t
 xt/139-api-object-relations-to-json.t
 xt/140-worker-queues.t
 xt/141-manager-worker-queues.t
+xt/148-decode-snmp-text.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t
