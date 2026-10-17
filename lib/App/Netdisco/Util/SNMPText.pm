@@ -93,6 +93,8 @@ sub _decode_octets {
   my $utf8 = try { Encode::decode('UTF-8', $bytes, $CHECK) };
   return ($utf8, 'UTF-8') if defined $utf8;
 
+  # a code ref defers the per-device ACL walk until a fallback is needed
+  $charsets = $charsets->() if ref $charsets eq ref sub {};
   foreach my $charset (@$charsets) {
     my $text = _decode_round_trip($bytes, $charset);
     return ($text, $charset) if defined $text;
@@ -123,18 +125,21 @@ sub _decode_round_trip {
 
 =head2 decode_snmp_text( $bytes, $device_or_undef, $field_label )
 
-Calls C<decode_text_with> using the charsets from C<snmp_charsets_for> for the
-device, or none when the device is undef. Returns the text. When the value is
-neither UTF-8 nor in a configured charset, it is stored as Latin-1 and a debug
-message names the device, C<$field_label> and the octets.
+Decodes as C<decode_text_with> does, using the charsets from
+C<snmp_charsets_for> for the device, or none when the device is undef. The
+charsets are looked up only when the value is neither ASCII nor UTF-8. Returns
+the text. When the value is neither UTF-8 nor in a configured charset, it is
+stored as Latin-1 and a debug message names the device, C<$field_label> and the
+octets.
 
 =cut
 
 sub decode_snmp_text {
   my ($bytes, $device, $field_label) = @_;
-  my $charsets = $device ? snmp_charsets_for($device) : [];
+  return $bytes if !defined $bytes or $bytes eq '';
 
-  my ($text, $how) = decode_text_with($bytes, $charsets);
+  my ($text, $how) = _decode_octets($bytes,
+    sub { $device ? snmp_charsets_for($device) : [] });
   debug sprintf ' [%s] %s bytes %s are not UTF-8 or a configured snmp_charset; stored as Latin-1',
     ($device ? $device->ip : '-'), $field_label, unpack('H*', $bytes)
     if $how eq 'latin1';

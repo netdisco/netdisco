@@ -129,6 +129,37 @@ sub discovered_device {
   return App::Netdisco::DB->resultset('Device')->new_result({ ip => '192.0.2.1', @_ });
 }
 
+sub charset_lookups_for {
+  my ($bytes, $device) = @_;
+  my $lookups = 0;
+  no warnings 'redefine';
+  my $real = \&App::Netdisco::Util::SNMPText::snmp_charsets_for;
+  local *App::Netdisco::Util::SNMPText::snmp_charsets_for = sub { $lookups++; $real->(@_) };
+  my $text = decode_snmp_text($bytes, $device, 'name');
+  return ($lookups, $text);
+}
+
+subtest 'decodeSnmpText__ascii__does_not_look_up_charsets' => sub {
+  my ($lookups) = charset_lookups_for('GigabitEthernet0/1', discovered_device());
+  is($lookups, 0);
+};
+
+subtest 'decodeSnmpText__valid_utf8__does_not_look_up_charsets' => sub {
+  my ($lookups, $text) = charset_lookups_for(sent_as('nihao', 'UTF-8'), discovered_device());
+  is($lookups, 0);
+  is($text, $words{nihao});
+};
+
+subtest 'decodeSnmpText__gbk_with_huawei_charset__looks_up_charsets_once' => sub {
+  config->{'snmp_charset'} = { 'vendor:huawei' => ['gbk'] };
+  App::Netdisco::Configuration::normalize_snmp_charset();
+  my ($lookups, $text) = charset_lookups_for("\xc4\xe3\xba\xc3", discovered_device(vendor => 'huawei'));
+  is($lookups, 1);
+  is($text, $words{nihao});
+  config->{'snmp_charset'} = { 'group:__ANY__' => [] };
+  App::Netdisco::Configuration::normalize_snmp_charset();
+};
+
 subtest 'deviceTextProperties__gbk_sysname_with_huawei_charset__decodes' => sub {
   config->{'snmp_charset'} = { 'vendor:huawei' => ['gbk'] };
   App::Netdisco::Configuration::normalize_snmp_charset();
