@@ -1,4 +1,4 @@
-2.1130000 - tbd
+2.113000 - tbd
 
   [NEW FEATURES]
 
@@ -2062,7 +2062,7 @@
 
   [NEW FEATURES]
 
-  * #937 add worker to collect various PortAccessEntity (NAC) attributes
+  * #937 add worker to collect various PortAccessEntity (NAC) attributes 
 
 2.057008 - 2022-10-18
 
@@ -2314,7 +2314,7 @@
   [BUG FIXES]
 
   * Fix datepicker.js crash introduced with CVE-2022-24785 moment.js upgrade
-
+  
 2.052003 - 2022-04-13
 
   [BUG FIXES]
@@ -3053,7 +3053,7 @@
 2.040003 - 2019-01-18
 
   [NEW FEATURES]
-
+  
   * #485 new "VLANs" device tab showing a VLAN report (inphobia)
 
   [ENHANCEMENTS]
@@ -3966,7 +3966,7 @@
   * THANK YOUs
   * [#197] Allow renumber of device to one of its alias IPs in netdisco-do
   * [#216] Ability to enter IP prefix in "Discover" form in web
-
+  
   [BUG FIXES]
 
   * [#211] Additional check for undefined SNMP::Info instance
@@ -4586,7 +4586,7 @@
 
   * [#75] Device module inventory report / search
   * [#70] SSID Search (port)
-  * [#72] Search on Vendor / OUI
+  * [#72] Search on Vendor / OUI 
   * Password Change form for all users
 
   [ENHANCEMENTS]
@@ -4642,9 +4642,9 @@
   * [#56] Support API call to /login
 
   [ENHANCEMENTS]
-
+  
   * [#69] Add search by layers to device search
-  * [#77] Log user access
+  * [#77] Log user access 
   * Try to help users more easily get a default login
   * Support upgrade from Netdisco version 0.x
   * [#54] jobqueue_refresh config for number of seconds betwen queue refresh
@@ -4662,12 +4662,12 @@
   [NEW FEATURES]
 
   * Support for Link Aggregation (port-channel, etherchannel, "trunking", etc)
-  * [#68] Devices orphaned by missing topology info report
+  * [#68] Devices orphaned by missing topology info report 
 
   [ENHANCEMENTS]
 
   * [#82] Check /etc/hosts before DNS when doing arp entry name lookup
-  * [#59] Arpnip tries to resolve link local IPv6 addresses
+  * [#59] Arpnip tries to resolve link local IPv6 addresses 
 
   [BUG FIXES]
 
@@ -4680,7 +4680,7 @@
 
   [NEW FEATURES]
 
-  * [#81] Identify wireless nodes and provide information when available
+  * [#81] Identify wireless nodes and provide information when available 
   * [#13] Support IP address ranges in *_only/*_no configuration
   * [#14] Support partial DNS names in *_only/*_no (via regexp)
 
@@ -4698,7 +4698,7 @@
   * Correct is_discoverable check in Undiscovered Neighbors report
   * Correct macsuck for Q-BRIDGE-MIB based devices
   * Allow cached SNMP community hint to override SNMP version cycle
-  * [#76] Don't include wireless in ports with multiple nodes attached report
+  * [#76] Don't include wireless in ports with multiple nodes attached report 
 
 2.021000 - 2014-01-08
 
@@ -4753,7 +4753,7 @@
 
   [ENHANCEMENTS]
 
-  * Improvements in arpnip/arpwalk and macsuck/macwalk performance
+  * Improvements in arpnip/arpwalk and macsuck/macwalk performance 
 
   [BUG FIXES]
 
