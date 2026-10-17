@@ -61,15 +61,23 @@ sub jq_warm_thrusters {
 }
 
 sub jq_getsome {
-  my $num_slots = shift;
+  my ($num_slots, %queue) = @_;
   return () unless $num_slots and $num_slots > 0;
+
+  # a reserved queue takes only its actions, the general queue takes all but
+  # the reserved ones. with neither (an empty exclusion) every action matches.
+  my $actions = $queue{actions} || [];
+  my $only    = ($queue{only} ? 'true' : 'false');
 
   my $jobs = schema(vars->{'tenant'})->resultset('Admin');
   my @returned = ();
 
+  # dbic reads any two element arrayref in bind as [ column, value ], so a list
+  # of exactly two would lose its first. [ undef, ... ] passes it through whole.
   my $tasty = schema(vars->{'tenant'})->resultset('Virtual::TastyJobs')
     ->search(undef,{ bind => [
-      setting('workers')->{'BACKEND'}, setting('job_prio')->{'high'},
+      setting('workers')->{'BACKEND'}, [ undef, $actions ], $only,
+      [ undef, setting('job_prio')->{'high'} ],
       setting('workers')->{'BACKEND'}, setting('workers')->{'max_deferrals'},
       setting('workers')->{'retry_after'}, $num_slots,
     ]});

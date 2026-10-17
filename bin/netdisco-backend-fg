@@ -30,6 +30,7 @@ BEGIN {
 }
 
 use App::Netdisco::Util::MCE; # set $0 and parse maxworkers
+use App::Netdisco::Backend::Queues 'worker_queues';
 use NetAddr::IP::Lite ':lower'; # to quench AF_INET6 symbol errors
 use Role::Tiny::With;
 
@@ -46,20 +47,27 @@ mkdir $tmp_dir if ! -d $tmp_dir;
 # process-table text
 prctl 'nd2: master';
 
-# shared local job queue
-my $queue = MCE::Queue->new;
+# a local job queue for each pool of workers (the general one, then any
+# reserved for particular actions - see workers.queues)
+my @queues = worker_queues();
+$_->{queue} = MCE::Queue->new for @queues;
+
+my $max_workers = 0;
+$max_workers += $_->{tasks} for @queues;
 
 # support a scheduler-only node
 setting('workers')->{'no_manager'} = 1
-  if setting('workers')->{tasks} eq '0';
+  if $max_workers == 0;
 
-# MCE::Util has a limit of ncpu if AUTO is used in max_workers,
-# so we parse the field ourselves.
-my $max_workers = parse_max_workers( setting('workers')->{tasks} ) || 0;
+# a queue without workers (the general pool, on a node of reserved queues only)
+# has no task, unless there are no workers at all and so this is the only one
+my @pollers = grep { $_->{tasks} } @queues;
+@pollers = ($queues[0]) if not @pollers;
 
-my @task_names   = qw/ scheduler manager poller /;
-my @task_workers = ( 1, 1, $max_workers );
-my @task_roles   = (_mk_wkr('Scheduler'), _mk_wkr('Manager'), _mk_wkr('Poller'));
+my @task_names   = ( 'scheduler', 'manager', map { "poller_$_->{name}" } @pollers );
+my @task_workers = ( 1, 1, map { $_->{tasks} } @pollers );
+my @task_roles   = ( _mk_wkr('Scheduler'), _mk_wkr('Manager'),
+                     map { _mk_wkr('Poller', $_->{queue}) } @pollers );
 
 if (!defined setting('schedule')) {
   shift @task_names; shift @task_workers; shift @task_roles;
@@ -72,6 +80,10 @@ warning sprintf "mode: %s%s | host: %s",
   ($max_workers ? " | workers: $max_workers" : ''),
   (setting('workers')->{'BACKEND'} || 'unknown');
 
+warning sprintf "queue: %s | workers: %s | actions: %s",
+  $_->{name}, $_->{tasks}, join(', ', @{ $_->{actions} })
+  for grep { $_->{only} } @queues;
+
 mce_flow {
   task_name    => \@task_names,
   max_workers  => \@task_workers,
@@ -80,10 +92,11 @@ mce_flow {
 }, @task_roles;
 
 sub _mk_wkr {
-  my $role = shift;
+  my ($role, $queue) = @_;
   return sub {
     my $self = shift;
-    $self->{queue} = $queue;
+    $self->{queue}  = $queue;
+    $self->{queues} = \@queues;
 
     prctl sprintf 'nd2: #%s %s: init', MCE->wid, lc($role);
     info sprintf 'applying role %s to worker %s', $role, MCE->wid;
