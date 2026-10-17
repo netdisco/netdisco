@@ -5,7 +5,7 @@ use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::Node 'check_mac';
 use App::Netdisco::AnyEvent::Nbtstat;
-use Encode;
+use App::Netdisco::Util::SNMPText 'decode_snmp_text';
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -132,10 +132,10 @@ sub _filter_nbname {
 
     $hash_ref->{'ip'} = $ip;
     $hash_ref->{'mac'}    = $mac;
-    $hash_ref->{'nbname'} = Encode::decode('UTF-8', $nbname);
-    $hash_ref->{'domain'} = Encode::decode('UTF-8', $domain);
+    $hash_ref->{'nbname'} = decode_snmp_text($nbname, undef, "nbtstat nbname");
+    $hash_ref->{'domain'} = decode_snmp_text($domain, undef, "nbtstat domain");
     $hash_ref->{'server'} = $server;
-    $hash_ref->{'nbuser'} = Encode::decode('UTF-8', $nbuser);
+    $hash_ref->{'nbuser'} = decode_snmp_text($nbuser, undef, "nbtstat nbuser");
         
     return;
 }

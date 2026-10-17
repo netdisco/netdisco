@@ -12,6 +12,7 @@ use App::Netdisco::Util::Device 'match_to_setting';
 use App::Netdisco::Util::Node 'check_mac';
 use App::Netdisco::Util::SNMP 'snmp_comm_reindex';
 use App::Netdisco::Util::Web 'sort_port';
+use App::Netdisco::Util::SNMPText 'decode_snmp_text';
 
 use Dancer::Plugin::DBIC 'schema';
 use Time::HiRes 'gettimeofday';
@@ -339,7 +340,7 @@ sub get_vlan_list {
       # capture the VLAN, but it's not in use on a port
       $vlans{$vlan} ||= 0;
 
-      $vlan_names{$vlan} = $name;
+      $vlan_names{$vlan} = decode_snmp_text($name, $device, "vlan $vlan name");
   }
 
   debug sprintf ' [%s] macsuck - VLANs: %s', $device->ip,

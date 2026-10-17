@@ -11,7 +11,7 @@ use App::Netdisco::Util::Device qw/get_device is_discoverable/;
 use App::Netdisco::Util::DNS 'hostname_from_ip';
 use App::Netdisco::Util::SNMP qw/snmp_comm_reindex snmp_vrf_reindex get_mibdirs_shortnames/;
 use App::Netdisco::Util::Web 'sort_port';
-use App::Netdisco::Util::SNMPText 'decode_snmp_text';
+use App::Netdisco::Util::SNMPText qw/decode_snmp_text decode_text_with/;
 use App::Netdisco::DB::ExplicitLocking ':modes';
 
 use Dancer::Plugin::DBIC 'schema';
@@ -212,7 +212,7 @@ register_worker({ phase => 'early', driver => 'snmp',
       # filter custom_fields for current valid fields
       foreach my $field (keys %ok_fields) {
           $ok_fields{$field} = exists $fields->{$field}
-            ? Encode::decode('UTF-8', $fields->{$field}) : undef;
+            ? decode_text_with($fields->{$field}, []) : undef;
       }
 
       # set new custom_fields
@@ -685,7 +685,7 @@ register_worker({ phase => 'early', driver => 'snmp',
 
         foreach my $field (keys %ok_fields) {
             $new_fields{$field} = exists $fields{$port}->{$field}
-              ? Encode::decode('UTF-8', $fields{$port}->{$field}) : undef;
+              ? decode_text_with($fields{$port}->{$field}, []) : undef;
         }
 
         # set new custom_fields

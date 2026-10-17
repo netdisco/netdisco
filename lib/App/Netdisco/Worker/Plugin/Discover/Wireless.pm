@@ -6,6 +6,7 @@ use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Transport::SNMP ();
 use Dancer::Plugin::DBIC 'schema';
+use App::Netdisco::Util::SNMPText 'decode_snmp_text';
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
@@ -57,7 +58,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
       push @ssids, {
           port      => $port,
-          ssid      => $ssidlist->{$entry},
+          ssid      => decode_snmp_text($ssidlist->{$entry}, $device, "port $port ssid"),
           broadcast => $ssidbcast->{$entry},
           bssid     => $ssidmac->{$entry},
       };

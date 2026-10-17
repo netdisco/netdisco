@@ -16,6 +16,7 @@ BEGIN {
 use App::Netdisco;
 use App::Netdisco::DB;
 use App::Netdisco::Worker::Plugin::Discover::Properties ();
+use App::Netdisco::Worker::Plugin::Macsuck::Nodes ();
 use Dancer qw/:script !pass/;
 
 no warnings 'once'; # local *glob = sub {} overrides below are single-use by design
@@ -197,6 +198,34 @@ subtest 'deviceTextProperties__whitespace_and_absent__keep_their_old_shapes' => 
   is(device_text_value($snmp, 'contact', discovered_device(), 1), '', 'absent trimmed member is empty');
   is(device_text_value($snmp, 'description', discovered_device()), 'Lab 1 ', 'raw member is not trimmed');
   ok(!defined device_text_value($snmp, 'name', discovered_device()), 'absent raw member is undef');
+};
+
+subtest 'sweep__no_lossy_utf8_decode__remains_in_workers' => sub {
+  require File::Find;
+  my @offenders;
+  File::Find::find({ no_chdir => 1, wanted => sub {
+    return unless /\.pm$/;
+    return if $File::Find::name =~ m{Util/SNMPText\.pm$};
+    open my $source, '<', $File::Find::name or die "$File::Find::name: $!";
+    while (my $line = <$source>) {
+      push @offenders, "$File::Find::name:$.: $line"
+        if $line =~ m/Encode::decode\(\s*'UTF-8'/;
+    }
+  } }, 'lib/App/Netdisco/Worker', 'lib/App/Netdisco/Util');
+  is_deeply(\@offenders, [], 'no lossy UTF-8 decode outside Util/SNMPText.pm')
+    or diag @offenders;
+};
+
+subtest 'macsuckVlanList__non_ascii_vlan_name__matches_macsuck_no_vlan' => sub {
+  my $snmp = FakeSNMP->new(
+    cisco_comm_indexing => 1,
+    i_vlan              => { 1 => 5, 2 => 6 },
+    v_name              => { 5 => sent_as('cafe', 'UTF-8'), 6 => 'plain' },
+  );
+  config->{'macsuck_no_vlan'} = [ $words{cafe} ];
+  my @ok = App::Netdisco::Worker::Plugin::Macsuck::Nodes::get_vlan_list($snmp, discovered_device());
+  delete config->{'macsuck_no_vlan'};
+  is_deeply([sort @ok], [6], 'the VLAN named with UTF-8 bytes is skipped');
 };
 
 done_testing;
