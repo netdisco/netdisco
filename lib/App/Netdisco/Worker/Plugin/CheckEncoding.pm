@@ -24,9 +24,6 @@ register_worker({ phase => 'main' }, sub {
         $devices, ($devices == 1 ? '' : 's'));
   }
 
-  # print rather than log: this is a report a person asked for, and the log
-  # level netdisco-do runs at would suppress it. DumpConfig.pm prints for the
-  # same reason.
   print "\n";
   foreach my $finding (@config_findings) {
       printf "configuration %s\n  %s\n  looks like: %s\n\n",

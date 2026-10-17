@@ -34,7 +34,6 @@ sub sent_as {
   return Encode::encode($encoding, $words{$word}, Encode::FB_CROAK | Encode::LEAVE_SRC);
 }
 
-# expected results, measured 2026-10-17
 my %expect = (   # [word, sent_as, fallbacks] => [result_is_word, how]
   'nihao UTF-8 []'      => [1, 'UTF-8'],   'nihao UTF-8 gbk'      => [1, 'UTF-8'],
   'nihao gbk []'        => [0, 'latin1'],  'nihao gbk gbk'        => [1, 'gbk'],
@@ -132,14 +131,22 @@ sub discovered_device {
   return App::Netdisco::DB->resultset('Device')->new_result({ ip => '192.0.2.1', @_ });
 }
 
+# the job cache holds charsets by device ip, so a new setting needs a reset
+sub use_snmp_charset {
+  config->{'snmp_charset'} = shift;
+  App::Netdisco::Configuration::normalize_snmp_charset();
+  App::Netdisco::Util::SNMPText::reset_snmp_charsets_cache();
+}
+
 sub charset_lookups_for {
   my ($bytes, $device) = @_;
   my $lookups = 0;
+  App::Netdisco::Util::SNMPText::reset_snmp_charsets_cache();
   no warnings 'redefine';
   my $real = \&App::Netdisco::Util::SNMPText::snmp_charsets_for;
   local *App::Netdisco::Util::SNMPText::snmp_charsets_for = sub { $lookups++; $real->(@_) };
-  my $text = decode_snmp_text($bytes, $device, 'name');
-  return ($lookups, $text);
+  my @texts = map { decode_snmp_text($_, $device, 'name') } (ref $bytes ? @$bytes : $bytes);
+  return ($lookups, @texts);
 }
 
 subtest 'decodeSnmpText__ascii__does_not_look_up_charsets' => sub {
@@ -154,23 +161,65 @@ subtest 'decodeSnmpText__valid_utf8__does_not_look_up_charsets' => sub {
 };
 
 subtest 'decodeSnmpText__gbk_with_huawei_charset__looks_up_charsets_once' => sub {
-  config->{'snmp_charset'} = { 'vendor:huawei' => ['gbk'] };
-  App::Netdisco::Configuration::normalize_snmp_charset();
+  use_snmp_charset({ 'vendor:huawei' => ['gbk'] });
   my ($lookups, $text) = charset_lookups_for("\xc4\xe3\xba\xc3", discovered_device(vendor => 'huawei'));
   is($lookups, 1);
   is($text, $words{nihao});
-  config->{'snmp_charset'} = { 'group:__ANY__' => [] };
-  App::Netdisco::Configuration::normalize_snmp_charset();
+  use_snmp_charset({ 'group:__ANY__' => [] });
+};
+
+subtest 'decodeSnmpText__two_non_utf8_values_on_one_device__one_acl_walk' => sub {
+  use_snmp_charset({ 'vendor:huawei' => ['gbk'] });
+  my ($lookups, @texts) = charset_lookups_for(["\xc4\xe3\xba\xc3", sent_as('cafe', 'gbk')],
+    discovered_device(vendor => 'huawei'));
+  is($lookups, 1, 'one walk for two values');
+  is_deeply(\@texts, [$words{nihao}, $words{cafe}], 'both decoded with the cached charsets');
+  use_snmp_charset({ 'group:__ANY__' => [] });
+};
+
+subtest 'decodeSnmpText__cache_reset__walks_again_with_new_setting' => sub {
+  use_snmp_charset({ 'vendor:huawei' => ['gbk'] });
+  is(decode_snmp_text("\xc4\xe3\xba\xc3", discovered_device(vendor => 'huawei'), 'name'),
+    $words{nihao}, 'cached with gbk');
+  use_snmp_charset({ 'group:__ANY__' => [] });
+  is(decode_snmp_text("\xc4\xe3\xba\xc3", discovered_device(vendor => 'huawei'), 'name'),
+    "\x{c4}\x{e3}\x{ba}\x{c3}", 'after the reset the new setting applies');
+};
+
+{
+  package CacheResetWorker;
+  use Moo;
+  with 'App::Netdisco::Worker::Runner';
+}
+
+subtest 'workerRunner__new_job__starts_with_an_empty_charset_cache' => sub {
+  require App::Netdisco::Backend::Job;
+  use_snmp_charset({ 'vendor:huawei' => ['gbk'] });
+  decode_snmp_text("\xc4\xe3\xba\xc3", discovered_device(vendor => 'huawei'), 'name');
+  config->{'snmp_charset'} = [{ 'group:__ANY__' => [] }];
+
+  my $job = App::Netdisco::Backend::Job->new({ job => 42, action => 'dumpconfig',
+    device => discovered_device(vendor => 'huawei'), port => 'snmp_charset' });
+  {
+    local config->{'enable_python_worklets'} = 0;
+    local $ENV{ND2_DO_QUIET} = 1;
+    no warnings 'redefine';
+    local *Dancer::Logger::info = sub {};
+    eval { CacheResetWorker->new->run($job); 1 } or diag $@;
+  }
+  is($job->status, 'done', 'the job ran') or diag $job->log;
+
+  is(decode_snmp_text("\xc4\xe3\xba\xc3", discovered_device(vendor => 'huawei'), 'name'),
+    "\x{c4}\x{e3}\x{ba}\x{c3}", 'the job dropped the cached gbk');
+  use_snmp_charset({ 'group:__ANY__' => [] });
 };
 
 subtest 'deviceTextProperties__gbk_sysname_with_huawei_charset__decodes' => sub {
-  config->{'snmp_charset'} = { 'vendor:huawei' => ['gbk'] };
-  App::Netdisco::Configuration::normalize_snmp_charset();
+  use_snmp_charset({ 'vendor:huawei' => ['gbk'] });
   my $snmp = FakeSNMP->new(name => "\xc4\xe3\xba\xc3");
   is(device_text_value($snmp, 'name', discovered_device(vendor => 'huawei')),
     $words{nihao});
-  config->{'snmp_charset'} = { 'group:__ANY__' => [] };
-  App::Netdisco::Configuration::normalize_snmp_charset();
+  use_snmp_charset({ 'group:__ANY__' => [] });
 };
 
 subtest 'deviceTextProperties__utf8_sysdescr__not_double_encoded' => sub {
@@ -231,14 +280,12 @@ subtest 'macsuckVlanList__non_ascii_vlan_name__matches_macsuck_no_vlan' => sub {
 };
 
 subtest 'showQuiet__gbk_leaf_in_hash__decodes_with_device_charset' => sub {
-  config->{'snmp_charset'} = { 'vendor:huawei' => ['gbk'] };
-  App::Netdisco::Configuration::normalize_snmp_charset();
+  use_snmp_charset({ 'vendor:huawei' => ['gbk'] });
   my $data = { name => "\xc4\xe3\xba\xc3" };
   my $decoded = decode_snmp_data($data, discovered_device(vendor => 'huawei'));
   is($decoded->{name}, $words{nihao}, 'leaf decoded with the device charset');
   is($data->{name}, "\xc4\xe3\xba\xc3", 'caller data not mutated');
-  config->{'snmp_charset'} = { 'group:__ANY__' => [] };
-  App::Netdisco::Configuration::normalize_snmp_charset();
+  use_snmp_charset({ 'group:__ANY__' => [] });
 };
 
 subtest 'showQuiet__invalid_utf8_binary__matches_today' => sub {
@@ -312,6 +359,67 @@ subtest 'scanConfigEncoding__garbled_acl__reported_with_path_and_suggestion' => 
 subtest 'scanConfigEncoding__shipped_defaults__nothing_reported' => sub {
   my @found = scan_config_encoding(config());
   is(scalar @found, 0, 'no findings in shipped defaults');
+};
+
+{
+  package PatternSchema;
+  our $pattern;
+  sub new { bless {}, shift }
+  sub resultset { $_[0] }
+  sub count { 0 }
+  sub all { () }
+  sub search {
+    my ($self, $where) = @_;
+    ($pattern) = map { $_->{'~'} } values %$where if $where;
+    return $self;
+  }
+}
+
+# the pattern as scan_stored_encoding binds it, from a perl that has not
+# loaded utf8.pm, which is when a non-ASCII literal stays a byte string
+sub pattern_from_fresh_perl {
+  my $script = q{
+    BEGIN { $ENV{DANCER_ENVDIR} = '/dev/null' }
+    die "utf8.pm preloaded\n" if $INC{'utf8.pm'};
+    require App::Netdisco::Util::SNMPText;
+    App::Netdisco::Util::SNMPText::scan_stored_encoding(PatternSchema->new, 1);
+    my $octets = $PatternSchema::pattern;
+    my $flagged = utf8::is_utf8($octets) ? 1 : 0;
+    utf8::encode($octets);
+    printf "%d %s\n", $flagged, unpack('H*', $octets);
+  };
+  my $schema_pkg = q{
+    package PatternSchema; our $pattern; sub new { bless {}, shift } sub resultset { $_[0] }
+    sub count { 0 } sub all { () }
+    sub search { my ($s, $w) = @_; ($pattern) = map { $_->{'~'} } values %$w if $w; $s }
+    package main;
+  };
+  open my $perl, '-|', $^X, '-Ilib', '-e', $schema_pkg . $script
+    or die "cannot run $^X: $!";
+  my $line = <$perl>;
+  close $perl;
+  return unless defined $line and $line =~ m/^(\d) ([0-9a-f]+)$/;
+  return ($1, Encode::decode('UTF-8', pack('H*', $2)));
+}
+
+subtest 'scanStoredEncoding__perl_without_utf8_pm__binds_a_character_string' => sub {
+  my ($flagged, $pattern) = pattern_from_fresh_perl();
+  ok(defined $flagged, 'the pattern was captured');
+  is($flagged, 1, 'utf8-flagged, so DBD::Pg sends it as UTF-8 and does not upgrade it as Latin-1');
+  is(length $pattern, 12, 'twelve characters');
+  unlike($pattern, qr/\\/, 'no escape for PostgreSQL to interpret');
+};
+
+subtest 'scanStoredEncoding__pattern__matches_garbled_and_fffd_not_correct_text' => sub {
+  App::Netdisco::Util::SNMPText::scan_stored_encoding(PatternSchema->new, 1);
+  my $pattern = $PatternSchema::pattern;
+  my $garbled_cjk = Encode::decode('iso-8859-1', sent_as('nihao', 'UTF-8'));
+  my %reported = ("Z\x{c3}\x{bc}rich" => 'garbled Latin', $garbled_cjk => 'garbled CJK',
+    "Caf\x{fffd}" => 'U+FFFD');
+  my %clean = ("\x{a9}\x{ae}" => 'copyright and registered', "\x{b0}\x{b1}" => 'degree and plus-minus',
+    "Z\x{fc}rich" => 'correct Latin', $words{nihao} => 'correct CJK');
+  like($_, qr/$pattern/, "reported: $reported{$_}") for sort keys %reported;
+  unlike($_, qr/$pattern/, "not reported: $clean{$_}") for sort keys %clean;
 };
 
 subtest 'scanConfigEncoding__regexp_values__skipped_not_crashing' => sub {

@@ -18,6 +18,7 @@ our @EXPORT_OK = qw/
   decode_snmp_data
   decode_cli_extra
   snmp_charsets_for
+  reset_snmp_charsets_cache
   looks_garbled
   ungarble
   scan_config_encoding
@@ -26,6 +27,7 @@ our @EXPORT_OK = qw/
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 my %warned;
+my %charsets_by_ip;
 my $CHECK = Encode::FB_CROAK | Encode::LEAVE_SRC;
 
 =head1 NAME
@@ -46,7 +48,8 @@ subroutines.
 
 Returns an array reference of fallback charset names configured for the
 device, most specific ACL keys first and C<group:__ANY__> last, without
-duplicates. The C<snmp_charset> setting is a list of maps from ACL to charsets.
+duplicates. The C<snmp_charset> setting is a list of maps from ACL to
+charsets.
 
 =cut
 
@@ -66,15 +69,37 @@ sub snmp_charsets_for {
   return \@charsets;
 }
 
+=head2 reset_snmp_charsets_cache()
+
+Empties the cache by device IP which C<decode_snmp_text> keeps of
+C<snmp_charsets_for>, so that one job walks the ACLs once per device. The
+worker runner calls it at the start of every job, so a changed setting or
+device applies to the next job.
+
+=cut
+
+sub reset_snmp_charsets_cache { %charsets_by_ip = () }
+
+sub _job_charsets_for {
+  my $device = shift;
+  return [] unless $device;
+  my $ip = $device->ip;
+  return snmp_charsets_for($device) unless defined $ip;
+  $charsets_by_ip{$ip} = snmp_charsets_for($device)
+    unless exists $charsets_by_ip{$ip};
+  return $charsets_by_ip{$ip};
+}
+
 =head2 decode_text_with( $bytes, \@charsets )
 
 Returns the character string for C<$bytes>. Undef and empty values are
 returned unchanged, as is a string which already holds characters above 0xFF.
 
-Plain ASCII is returned as is. Otherwise valid UTF-8 is tried first, then each
-charset in the list (accepted only if encoding the result gives back exactly
-C<$bytes> and it holds no private use or U+FFFD characters), and lastly Latin-1, which accepts any octets. A charset name which
-L<Encode> does not know is skipped, with one warning per process.
+Plain ASCII is returned as is. Otherwise valid UTF-8 is tried first, then
+each charset in the list (accepted only if encoding the result gives back
+exactly C<$bytes> and it holds no private use or U+FFFD characters), and
+lastly Latin-1, which accepts any octets. A charset name which L<Encode> does
+not know is skipped, with one warning per process.
 
 In list context returns C<($text, $how)> where C<$how> is C<ascii>, C<UTF-8>,
 the charset name, or C<latin1>.
@@ -134,10 +159,10 @@ sub _decode_round_trip {
 
 Decodes as C<decode_text_with> does, using the charsets from
 C<snmp_charsets_for> for the device, or none when the device is undef. The
-charsets are looked up only when the value is neither ASCII nor UTF-8. Returns
-the text. When the value is neither UTF-8 nor in a configured charset, it is
-stored as Latin-1 and a debug message names the device, C<$field_label> and the
-octets.
+charsets are looked up only when the value is neither ASCII nor UTF-8, and
+once per device until C<reset_snmp_charsets_cache>. Returns the text. When
+the value is neither UTF-8 nor in a configured charset, it is stored as
+Latin-1 and a debug message names the device, C<$field_label> and the octets.
 
 =cut
 
@@ -146,7 +171,7 @@ sub decode_snmp_text {
   return $bytes if !defined $bytes or $bytes eq '';
 
   my ($text, $how) = _decode_octets($bytes,
-    sub { $device ? snmp_charsets_for($device) : [] });
+    sub { _job_charsets_for($device) });
   debug sprintf ' [%s] %s bytes %s are not UTF-8 or a configured snmp_charset; stored as Latin-1',
     ($device ? $device->ip : '-'), $field_label, unpack('H*', $bytes)
     if $how eq 'latin1';
@@ -260,10 +285,11 @@ sub _walk_config {
 Reads the database only. Returns findings for stored text that looks garbled
 or holds U+FFFD, in C<device.name>, C<description>, C<vendor>, C<os> and
 C<os_ver>, C<device_port.descr>, C<device_vlan.description> and
-C<device_port_ssid.ssid>. Each finding is C<< { ip, column, value, suggestion } >>
-where C<suggestion> is undef for U+FFFD, whose original octets are not
-recoverable. At most C<$limit> findings are returned per column, followed by
-C<< { column, more => $count } >> for the rest.
+C<device_port_ssid.ssid>. Each finding is
+C<< { ip, column, value, suggestion } >> where C<suggestion> is undef for
+U+FFFD, whose original octets are not recoverable. At most C<$limit>
+findings are returned per column, followed by C<< { column, more => $count } >>
+for the rest.
 
 =cut
 
@@ -277,8 +303,9 @@ my @STORED_COLUMNS = (
 
 sub scan_stored_encoding {
   my ($schema, $limit) = @_;
-  # PostgreSQL regex escapes, so no non-ASCII bind value depends on DBD::Pg
-  my $pattern = '[Â-ô][\u0080-¿]|�';
+  # a character string, so DBD::Pg sends it as UTF-8; a non-ASCII byte literal
+  # would be upgraded as Latin-1, unless utf8.pm happened to be loaded first
+  my $pattern = "[\x{C2}-\x{F4}][\x{80}-\x{BF}]|\x{FFFD}";
   my (@findings, %charsets);
 
   foreach my $spec (@STORED_COLUMNS) {
