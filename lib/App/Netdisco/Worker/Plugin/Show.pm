@@ -31,12 +31,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $result = sub { eval { $snmp->$object() } };
 
   if ($ENV{ND2_DO_QUIET}) {
-      my $coder = JSON::PP->new->utf8(1)
-                               ->allow_nonref(1)
-                               ->allow_unknown(1)
-                               ->allow_blessed(1)
-                               ->allow_bignum(1);
-      print $coder->encode( decode_snmp_data($result->(), $device, "show $orig_object") );
+      print quiet_json($result, $device, "show $orig_object");
   }
   else {
       Data::Printer::p( $result->() );
@@ -45,5 +40,17 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   return Status->done(
     sprintf "Showed %s response from %s", $orig_object, $device->ip);
 });
+
+# the SNMP method may return a list, so it is called in scalar context
+sub quiet_json {
+  my ($result, $device, $label) = @_;
+  my $coder = JSON::PP->new->utf8(1)
+                           ->allow_nonref(1)
+                           ->allow_unknown(1)
+                           ->allow_blessed(1)
+                           ->allow_bignum(1);
+  my $value = $result->();
+  return $coder->encode( decode_snmp_data($value, $device, $label) );
+}
 
 true;

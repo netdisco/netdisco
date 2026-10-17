@@ -18,6 +18,7 @@ use App::Netdisco;
 use App::Netdisco::DB;
 use App::Netdisco::Worker::Plugin::Discover::Properties ();
 use App::Netdisco::Worker::Plugin::Macsuck::Nodes ();
+use App::Netdisco::Worker::Plugin::Show ();
 use Dancer qw/:script !pass/;
 
 no warnings 'once'; # local *glob = sub {} overrides below are single-use by design
@@ -267,7 +268,8 @@ subtest 'showQuiet__nested_structure__keys_untouched_leaves_decoded' => sub {
 subtest 'cfFromStdin__show_output__stored_text_is_single_encoded' => sub {
   my $shown = JSON::PP->new->utf8(1)->encode(decode_snmp_data(["caf\xc3\xa9"], undef));
   my $extra = decode_cli_extra($shown);
-  my $stored = JSON::PP->new->utf8(0)->encode(JSON::PP->new->utf8(0)->decode($extra));
+  my $coder = JSON::PP->new->utf8(0)->allow_nonref(1)->allow_unknown(1);
+  my $stored = $coder->decode($coder->encode($extra));
   is(unpack('H*', Encode::encode('UTF-8', $stored)), '5b22636166c3a9225d',
     'one encoding layer');
 };
@@ -275,6 +277,14 @@ subtest 'cfFromStdin__show_output__stored_text_is_single_encoded' => sub {
 subtest 'cfFromCli__ascii_extra__unchanged' => sub {
   is(decode_cli_extra('["plain"]'), '["plain"]', 'ascii unchanged');
   ok(!defined decode_cli_extra(undef), 'undef unchanged');
+};
+
+subtest 'showQuiet__list_returning_method__encodes_scalar_context_value' => sub {
+  my $quiet = \&App::Netdisco::Worker::Plugin::Show::quiet_json;
+  is($quiet->(sub { my @l = ("a", "b", "c"); @l }, "not-a-device", "show t"), "3", "multi-value list does not shift arguments");
+  is($quiet->(sub { return () }, 'not-a-device', 'show t'), 'null', 'empty list is null');
+  is($quiet->(sub { eval { die 'boom' } }, undef, 'show t'), 'null', 'failed method is null');
+  is($quiet->(sub { 'plain' }, undef, 'show t'), '"plain"', 'single value unchanged');
 };
 
 done_testing;
