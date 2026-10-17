@@ -2,7 +2,7 @@
 
   [NEW FEATURES]
 
-  * workers.queues can be used to reserve workers for some actions, so that a backlog of
+  * #1740 workers.queues can be used to reserve workers for some actions, so that a backlog of
     one kind of job (say discover) cannot keep another (say portcontrol)
     waiting. each queue is { tasks: N, actions: [...] } and its actions are
     run only by its own workers
