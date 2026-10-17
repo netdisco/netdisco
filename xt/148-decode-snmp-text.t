@@ -13,6 +13,11 @@ BEGIN {
   use_ok( 'App::Netdisco::Util::SNMPText', ':all' );
 }
 
+use App::Netdisco;
+use App::Netdisco::DB;
+use App::Netdisco::Worker::Plugin::Discover::Properties ();
+use Dancer qw/:script !pass/;
+
 no warnings 'once'; # local *glob = sub {} overrides below are single-use by design
 
 my %words = (
@@ -102,6 +107,65 @@ subtest 'decodeSnmpText__latin1_fallback__logs_debug_with_hex' => sub {
   is(decode_snmp_text("caf\xe9", undef, 'name'), "caf\x{e9}");
   is(scalar @messages, 1);
   like($messages[0], qr/\[-\] name bytes 636166e9 are not UTF-8/);
+};
+
+package FakeSNMP;
+sub new { my ($class, %vals) = @_; return bless {%vals}, $class }
+our $AUTOLOAD;
+sub AUTOLOAD {
+  my $self = shift;
+  (my $method = $AUTOLOAD) =~ s/.*:://;
+  return if $method eq 'DESTROY';
+  return $self->{$method};
+}
+
+package main;
+
+sub device_text_value {
+  return App::Netdisco::Worker::Plugin::Discover::Properties::_device_text_value(@_);
+}
+
+sub discovered_device {
+  return App::Netdisco::DB->resultset('Device')->new_result({ ip => '192.0.2.1', @_ });
+}
+
+subtest 'deviceTextProperties__gbk_sysname_with_huawei_charset__decodes' => sub {
+  config->{'snmp_charset'} = { 'vendor:huawei' => ['gbk'] };
+  App::Netdisco::Configuration::normalize_snmp_charset();
+  my $snmp = FakeSNMP->new(name => "\xc4\xe3\xba\xc3");
+  is(device_text_value($snmp, 'name', discovered_device(vendor => 'huawei')),
+    $words{nihao});
+  config->{'snmp_charset'} = { 'group:__ANY__' => [] };
+  App::Netdisco::Configuration::normalize_snmp_charset();
+};
+
+subtest 'deviceTextProperties__utf8_sysdescr__not_double_encoded' => sub {
+  my $snmp = FakeSNMP->new(description => sent_as('cafe', 'UTF-8'));
+  my $text = device_text_value($snmp, 'description', discovered_device());
+  is($text, $words{cafe});
+  is(length $text, 4);
+};
+
+subtest 'deviceTextProperties__hash_valued_property__stays_undef' => sub {
+  my $snmp = FakeSNMP->new(
+    os       => { 1 => 'HASH(0x55d0c0ffee)' },
+    location => 'HASH(0x55d0c0ffee)',
+  );
+  ok(!defined device_text_value($snmp, 'os', discovered_device()), 'hash of HASH text');
+  ok(!defined device_text_value($snmp, 'location', discovered_device(), 1), 'trimmed member');
+};
+
+subtest 'deviceTextProperties__latin1_contact__is_muller_not_replacement_char' => sub {
+  my $snmp = FakeSNMP->new(contact => sent_as('muller', 'iso-8859-1'));
+  is(device_text_value($snmp, 'contact', discovered_device(), 1), $words{muller});
+};
+
+subtest 'deviceTextProperties__whitespace_and_absent__keep_their_old_shapes' => sub {
+  my $snmp = FakeSNMP->new(location => "Lab 1  \n", description => "Lab 1 ");
+  is(device_text_value($snmp, 'location', discovered_device(), 1), 'Lab 1', 'trimmed member is trimmed');
+  is(device_text_value($snmp, 'contact', discovered_device(), 1), '', 'absent trimmed member is empty');
+  is(device_text_value($snmp, 'description', discovered_device()), 'Lab 1 ', 'raw member is not trimmed');
+  ok(!defined device_text_value($snmp, 'name', discovered_device()), 'absent raw member is undef');
 };
 
 done_testing;
