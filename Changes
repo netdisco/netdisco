@@ -11,6 +11,10 @@
 
   * #1735 System Information on the homepage starts expanded
 
+  [BUG FIXES]
+
+  * #1743 decode SNMP text before storage, with an snmp_charset fallback per device
+
 2.112000 - 2026-10-13
 
   [NOTICE]
