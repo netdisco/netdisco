@@ -943,8 +943,10 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-// index.tt: load System Information once its accordion is first opened,
-// using {once: true} in place of a stats_loaded flag.
+// index.tt: load System Information now if its accordion is rendered open,
+// else once it is first opened, using {once: true} in place of a
+// stats_loaded flag. Bootstrap fires no show.bs.collapse for an accordion
+// that starts open.
 function nd_statistics_panel() {
   var stats = document.getElementById('nd_stats');
   var nqbody = document.getElementById('nqbody');
@@ -955,7 +957,10 @@ function nd_statistics_panel() {
   var collapseStats = document.getElementById('collapse-stats');
   if (!collapseStats) return;
 
-  collapseStats.addEventListener('show.bs.collapse', function() {
+  if (collapseStats.classList.contains('show')) { loadStatistics() }
+  else { collapseStats.addEventListener('show.bs.collapse', loadStatistics, { once: true }) }
+
+  function loadStatistics() {
     fetch( stats.dataset.ndUrl,
       { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
       .then( response => {
@@ -990,7 +995,7 @@ function nd_statistics_panel() {
         }
         console.error('There has been a problem with your fetch operation:', error);
       });
-  }, { once: true });
+  }
 }
 
 // called after every ajax-loaded pane finishes settling, so a page's own

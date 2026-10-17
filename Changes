@@ -7,6 +7,10 @@
     waiting. each queue is { tasks: N, actions: [...] } and its actions are
     run only by its own workers
 
+  [ENHANCEMENTS]
+
+  * #1735 System Information on the homepage starts expanded
+
 2.112000 - 2026-10-13
 
   [NOTICE]
