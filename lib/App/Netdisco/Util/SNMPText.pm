@@ -18,6 +18,10 @@ our @EXPORT_OK = qw/
   decode_snmp_data
   decode_cli_extra
   snmp_charsets_for
+  looks_garbled
+  ungarble
+  scan_config_encoding
+  scan_stored_encoding
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -185,6 +189,119 @@ returned unchanged.
 sub decode_cli_extra {
   my ($extra) = @_;
   return decode_text_with($extra, []);
+}
+
+=head2 looks_garbled( $string )
+
+True when the string holds a character from U+00C2 to U+00F4 followed by one
+from U+0080 to U+00BF, which is how UTF-8 octets look when read as Latin-1.
+
+=cut
+
+sub looks_garbled {
+  my ($string) = @_;
+  return (defined $string and $string =~ m/[\x{C2}-\x{F4}][\x{80}-\x{BF}]/) ? 1 : 0;
+}
+
+=head2 ungarble( $string, \@charsets )
+
+Returns the text that C<$string> would have been had its characters been read
+as octets, using C<decode_text_with>. Returns undef when the string holds a
+character which Latin-1 cannot encode, so it cannot be garbled in that way.
+
+=cut
+
+sub ungarble {
+  my ($string, $charsets) = @_;
+  my $bytes = try { Encode::encode('iso-8859-1', $string, $CHECK) };
+  return undef unless defined $bytes;
+  return scalar decode_text_with($bytes, $charsets || []);
+}
+
+=head2 scan_config_encoding( $config )
+
+Walks hashes (keys and values) and arrays in C<$config> and returns a list of
+C<< { path => 'discover_no[2]', value => ..., suggestion => ... } >> for every
+string which C<looks_garbled>. Other references are skipped. Reads only the
+data it is given.
+
+=cut
+
+sub scan_config_encoding {
+  my ($config) = @_;
+  my @findings;
+  _walk_config($config, '', \@findings);
+  return @findings;
+}
+
+sub _walk_config {
+  my ($node, $path, $findings) = @_;
+  my $type = ref $node;
+
+  if (!$type) {
+    return unless looks_garbled($node);
+    push @$findings, { path => $path, value => $node,
+                       suggestion => ungarble($node, []) };
+  }
+  elsif ($type eq 'ARRAY') {
+    _walk_config($node->[$_], "$path\[$_]", $findings) for 0 .. $#$node;
+  }
+  elsif ($type eq 'HASH') {
+    foreach my $key (sort keys %$node) {
+      my $child = length $path ? "$path.$key" : $key;
+      _walk_config($key, "$child (key)", $findings) if looks_garbled($key);
+      _walk_config($node->{$key}, $child, $findings);
+    }
+  }
+}
+
+=head2 scan_stored_encoding( $schema, $limit )
+
+Reads the database only. Returns findings for stored text that looks garbled
+or holds U+FFFD, in C<device.name>, C<description>, C<vendor>, C<os> and
+C<os_ver>, C<device_port.descr>, C<device_vlan.description> and
+C<device_port_ssid.ssid>. Each finding is C<< { ip, column, value, suggestion } >>
+where C<suggestion> is undef for U+FFFD, whose original octets are not
+recoverable. At most C<$limit> findings are returned per column, followed by
+C<< { column, more => $count } >> for the rest.
+
+=cut
+
+my @STORED_COLUMNS = (
+  [Device => 'device', 'name'], [Device => 'device', 'description'],
+  [Device => 'device', 'vendor'], [Device => 'device', 'os'],
+  [Device => 'device', 'os_ver'], [DevicePort => 'device_port', 'descr'],
+  [DeviceVlan => 'device_vlan', 'description'],
+  [DevicePortSsid => 'device_port_ssid', 'ssid'],
+);
+
+sub scan_stored_encoding {
+  my ($schema, $limit) = @_;
+  # PostgreSQL regex escapes, so no non-ASCII bind value depends on DBD::Pg
+  my $pattern = '[Â-ô][\u0080-¿]|�';
+  my (@findings, %charsets);
+
+  foreach my $spec (@STORED_COLUMNS) {
+    my ($source, $table, $column) = @$spec;
+    my $rs = $schema->resultset($source)->search(
+      { $column => { '~' => $pattern } },
+      { columns => ['ip', $column], order_by => ['ip', $column] });
+    my $total = $rs->count;
+
+    foreach my $row ($rs->search(undef, { rows => $limit })->all) {
+      my $value = $row->get_column($column);
+      my $ip = $row->get_column('ip');
+      $charsets{$ip} ||= do {
+        my $device = $schema->resultset('Device')->find($ip);
+        snmp_charsets_for($device);
+      };
+      push @findings, { ip => $ip, column => "$table.$column", value => $value,
+        suggestion => (looks_garbled($value) ? ungarble($value, $charsets{$ip}) : undef) };
+    }
+    push @findings, { column => "$table.$column", more => $total - $limit }
+      if $total > $limit;
+  }
+  return @findings;
 }
 
 1;

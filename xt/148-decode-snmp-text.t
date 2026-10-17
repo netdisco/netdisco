@@ -287,4 +287,37 @@ subtest 'showQuiet__list_returning_method__encodes_scalar_context_value' => sub 
   is($quiet->(sub { 'plain' }, undef, 'show t'), '"plain"', 'single value unchanged');
 };
 
+subtest 'looksGarbled__utf8_read_as_latin1__true' => sub {
+  ok(looks_garbled("Z\x{c3}\x{bc}rich"), 'Z-A-tilde-umlaut-rich is garbled');
+};
+
+subtest 'looksGarbled__correct_and_ascii_text__false' => sub {
+  ok(!looks_garbled($_), "not garbled: $_") for ("Z\x{fc}rich", 'core-sw1', "M\x{fc}ller", "caf\x{e9}");
+};
+
+subtest 'ungarble__garbled_zurich__returns_zurich' => sub {
+  is(ungarble("Z\x{c3}\x{bc}rich", []), "Z\x{fc}rich", 'repaired');
+  is(ungarble("\x{4f60}", []), undef, 'not Latin-1 encodable gives undef');
+};
+
+subtest 'scanConfigEncoding__garbled_acl__reported_with_path_and_suggestion' => sub {
+  my @found = scan_config_encoding({ discover_no => ['10.0.0.0/8', "name:Z\x{c3}\x{bc}rich-.*"] });
+  is(scalar @found, 1, 'one finding');
+  is($found[0]->{path}, 'discover_no[1]', 'path');
+  is($found[0]->{suggestion}, "name:Z\x{fc}rich-.*", 'suggestion');
+  my @keyed = scan_config_encoding({ outer => { "Z\x{c3}\x{bc}rich" => 'x' } });
+  is(scalar @keyed, 1, 'a garbled hash key is reported');
+};
+
+subtest 'scanConfigEncoding__shipped_defaults__nothing_reported' => sub {
+  my @found = scan_config_encoding(config());
+  is(scalar @found, 0, 'no findings in shipped defaults');
+};
+
+subtest 'scanConfigEncoding__regexp_values__skipped_not_crashing' => sub {
+  my @found;
+  ok(eval { @found = scan_config_encoding({ a => qr/x/, b => sub { 1 }, c => [qr/y/, undef] }); 1 }, 'lives');
+  is(scalar @found, 0, 'nothing reported');
+};
+
 done_testing;

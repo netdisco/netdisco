@@ -258,6 +258,7 @@ lib/App/Netdisco/Worker/Plugin/Arpnip/Hooks.pm
 lib/App/Netdisco/Worker/Plugin/Arpnip/Nodes.pm
 lib/App/Netdisco/Worker/Plugin/Arpnip/Subnets.pm
 lib/App/Netdisco/Worker/Plugin/Arpwalk.pm
+lib/App/Netdisco/Worker/Plugin/CheckEncoding.pm
 lib/App/Netdisco/Worker/Plugin/CheckSiteLocal.pm
 lib/App/Netdisco/Worker/Plugin/Contact.pm
 lib/App/Netdisco/Worker/Plugin/Delete.pm

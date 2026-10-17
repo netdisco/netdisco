@@ -897,6 +897,7 @@ worker_plugins:
   - 'Arpnip::Nodes'
   - 'Arpnip::Subnets'
   - 'Arpwalk'
+  - 'CheckEncoding'
   - 'CheckSiteLocal'
   - 'Contact'
   - 'Delete'
