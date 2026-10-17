@@ -4,6 +4,8 @@ package App::Netdisco::Util::SNMPText;
 
 use Dancer qw/:syntax :script/;
 
+use App::Netdisco::Util::Permission 'acl_matches';
+
 use Encode ();
 use Try::Tiny;
 
@@ -36,11 +38,26 @@ subroutines.
 =head2 snmp_charsets_for( $device )
 
 Returns an array reference of fallback charset names configured for the
-device. Currently always empty.
+device, most specific ACL keys first and C<group:__ANY__> last, without
+duplicates. The C<snmp_charset> setting is a list of maps from ACL to charsets.
 
 =cut
 
-sub snmp_charsets_for { return [] }
+sub snmp_charsets_for {
+  my ($device) = @_;
+  return [] unless $device;
+
+  my (@charsets, %seen);
+  foreach my $map (@{ setting('snmp_charset') || [] }) {
+    my @keys = ((sort { $a cmp $b } grep { $_ ne q{group:__ANY__} } keys %$map),
+                (exists $map->{'group:__ANY__'} ? 'group:__ANY__' : ()));
+    foreach my $key (@keys) {
+      next unless acl_matches($device, $key);
+      push @charsets, grep { not $seen{$_}++ } @{ $map->{$key} };
+    }
+  }
+  return \@charsets;
+}
 
 =head2 decode_text_with( $bytes, \@charsets )
 

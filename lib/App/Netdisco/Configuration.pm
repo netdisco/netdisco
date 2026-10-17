@@ -314,6 +314,29 @@ if (ref {} eq ref setting('ignore_deviceports')) {
 }
 else { config->{'ignore_deviceports'} ||= [] }
 
+normalize_snmp_charset();
+
+sub normalize_snmp_charset {
+  my $raw = config->{'snmp_charset'};
+  my @maps = (ref [] eq ref $raw) ? @$raw : ($raw);
+  my @normalized;
+
+  foreach my $map (@maps) {
+    $map = { 'group:__ANY__' => $map } if defined $map and q{} eq ref $map;
+    next unless ref {} eq ref $map;
+    push @normalized, { map { ($_ => _charset_list($map->{$_})) } keys %$map };
+  }
+
+  config->{'snmp_charset'}
+    = scalar @normalized ? \@normalized : [ { 'group:__ANY__' => [] } ];
+}
+
+sub _charset_list {
+  my ($value) = @_;
+  my @names = (ref [] eq ref $value) ? @$value : ($value);
+  return [ grep { defined and q{} eq ref $_ and length } @names ];
+}
+
 # copy old ignore_* into new settings
 if (scalar @{ config->{'ignore_interfaces'} }) {
   config->{'host_groups'}->{'__IGNORE_INTERFACES__'}
