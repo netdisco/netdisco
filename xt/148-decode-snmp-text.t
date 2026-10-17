@@ -7,6 +7,7 @@ BEGIN { $ENV{DANCER_ENVDIR} = '/dev/null'; }
 use Test::More 1.302083;
 use Test::File::ShareDir::Dist { 'App-Netdisco' => 'share/' };
 use Encode ();
+use JSON::PP ();
 
 BEGIN {
   use_ok( 'App::Netdisco::Configuration' );
@@ -226,6 +227,54 @@ subtest 'macsuckVlanList__non_ascii_vlan_name__matches_macsuck_no_vlan' => sub {
   my @ok = App::Netdisco::Worker::Plugin::Macsuck::Nodes::get_vlan_list($snmp, discovered_device());
   delete config->{'macsuck_no_vlan'};
   is_deeply([sort @ok], [6], 'the VLAN named with UTF-8 bytes is skipped');
+};
+
+subtest 'showQuiet__gbk_leaf_in_hash__decodes_with_device_charset' => sub {
+  config->{'snmp_charset'} = { 'vendor:huawei' => ['gbk'] };
+  App::Netdisco::Configuration::normalize_snmp_charset();
+  my $data = { name => "\xc4\xe3\xba\xc3" };
+  my $decoded = decode_snmp_data($data, discovered_device(vendor => 'huawei'));
+  is($decoded->{name}, $words{nihao}, 'leaf decoded with the device charset');
+  is($data->{name}, "\xc4\xe3\xba\xc3", 'caller data not mutated');
+  config->{'snmp_charset'} = { 'group:__ANY__' => [] };
+  App::Netdisco::Configuration::normalize_snmp_charset();
+};
+
+subtest 'showQuiet__invalid_utf8_binary__matches_today' => sub {
+  my $coder = JSON::PP->new->utf8(1)->allow_nonref(1);
+  my $raw = "\x00\x1a\xff\xfe";
+  is($coder->encode(decode_snmp_data($raw, undef)), $coder->encode($raw),
+    'binary output unchanged');
+};
+
+subtest 'showQuiet__nested_structure__keys_untouched_leaves_decoded' => sub {
+  my $obj = bless {}, 'Some::Thing';
+  my $code = sub { 1 };
+  my $in = { sent_as('cafe', 'UTF-8') => [ sent_as('cafe', 'UTF-8'), { deep => sent_as('cafe', 'UTF-8') }, undef, 7, $obj, $code ] };
+  my $out = decode_snmp_data($in, undef);
+  my ($key) = keys %$out;
+  is($key, sent_as('cafe', 'UTF-8'), 'hash key left as bytes');
+  my $list = $out->{$key};
+  is($list->[0], $words{cafe}, 'array leaf decoded');
+  is($list->[1]{deep}, $words{cafe}, 'nested hash leaf decoded');
+  ok(!defined $list->[2], 'undef stays undef');
+  is($list->[3], 7, 'number unchanged');
+  is($list->[4], $obj, 'blessed object passes through');
+  is($list->[5], $code, 'code ref passes through');
+  is($in->{$key}[0], sent_as('cafe', 'UTF-8'), 'input not mutated');
+};
+
+subtest 'cfFromStdin__show_output__stored_text_is_single_encoded' => sub {
+  my $shown = JSON::PP->new->utf8(1)->encode(decode_snmp_data(["caf\xc3\xa9"], undef));
+  my $extra = decode_cli_extra($shown);
+  my $stored = JSON::PP->new->utf8(0)->encode(JSON::PP->new->utf8(0)->decode($extra));
+  is(unpack('H*', Encode::encode('UTF-8', $stored)), '5b22636166c3a9225d',
+    'one encoding layer');
+};
+
+subtest 'cfFromCli__ascii_extra__unchanged' => sub {
+  is(decode_cli_extra('["plain"]'), '["plain"]', 'ascii unchanged');
+  ok(!defined decode_cli_extra(undef), 'undef unchanged');
 };
 
 done_testing;

@@ -46,6 +46,7 @@ use NetAddr::IP qw/:rfc3021 :lower/;
 use App::Netdisco::Backend::Job;
 use App::Netdisco::JobQueue 'jq_insert';
 use App::Netdisco::Util::Device 'get_device';
+use App::Netdisco::Util::SNMPText 'decode_cli_extra';
 use App::Netdisco::Worker::Actions qw/supported_actions supported_stages/;
 
 use Getopt::Long;
@@ -206,6 +207,8 @@ if ($action =~ m/^(?:cf_|macsuck|arpnip)/ and $extra) {
         }
     }
 }
+
+$extra = decode_cli_extra($extra) if $action =~ m/^cf_/;
 
 # some actions do not take a device parameter
 @hostlist = (undef) if 0 == scalar @hostlist;

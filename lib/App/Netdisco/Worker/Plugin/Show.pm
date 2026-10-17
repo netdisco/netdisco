@@ -7,6 +7,7 @@ use aliased 'App::Netdisco::Worker::Status';
 use JSON::PP ();
 use Data::Printer ();
 use App::Netdisco::Transport::SNMP;
+use App::Netdisco::Util::SNMPText 'decode_snmp_data';
 
 register_worker({ phase => 'check' }, sub {
   return Status->error('Missing device (-d).')
@@ -35,7 +36,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
                                ->allow_unknown(1)
                                ->allow_blessed(1)
                                ->allow_bignum(1);
-      print $coder->encode( $result->() );
+      print $coder->encode( decode_snmp_data($result->(), $device, "show $orig_object") );
   }
   else {
       Data::Printer::p( $result->() );

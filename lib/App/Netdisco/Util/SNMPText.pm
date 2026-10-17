@@ -8,12 +8,15 @@ use App::Netdisco::Util::Permission 'acl_matches';
 
 use Encode ();
 use Try::Tiny;
+use Scalar::Util 'blessed';
 
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
   decode_text_with
   decode_snmp_text
+  decode_snmp_data
+  decode_cli_extra
   snmp_charsets_for
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
@@ -145,6 +148,43 @@ sub decode_snmp_text {
     if $how eq 'latin1';
 
   return $text;
+}
+
+=head2 decode_snmp_data( $data, $device_or_undef, $field_label )
+
+Returns a copy of C<$data> in which every defined plain scalar, in hashes and
+arrays to any depth, has been through C<decode_snmp_text>. Hash keys are left
+as they are, and blessed objects and code references pass through unchanged.
+C<$field_label> defaults to C<data>. The argument is never modified.
+
+=cut
+
+sub decode_snmp_data {
+  my ($data, $device, $field_label) = @_;
+  $field_label = 'data' unless defined $field_label;
+
+  return $data if blessed $data;
+  my $type = ref $data;
+  return [ map { decode_snmp_data($_, $device, $field_label) } @$data ]
+    if $type eq 'ARRAY';
+  return { map { $_ => decode_snmp_data($data->{$_}, $device, $field_label) } keys %$data }
+    if $type eq 'HASH';
+  return $data if $type;
+
+  return decode_snmp_text($data, $device, $field_label);
+}
+
+=head2 decode_cli_extra( $extra )
+
+Decodes the C<-e> text given to C<netdisco-do> for a C<cf_> action, which
+arrives as raw octets, with no device charsets. Undef and empty values are
+returned unchanged.
+
+=cut
+
+sub decode_cli_extra {
+  my ($extra) = @_;
+  return decode_text_with($extra, []);
 }
 
 1;
