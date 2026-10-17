@@ -41,11 +41,15 @@ subroutines.
 
 =head1 EXPORT_OK
 
-=head2 jq_getsome( $num? )
+=head2 jq_getsome( $num, [ actions => \@actions, only => 1 ] )
 
-Returns a list of randomly selected queued jobs. Default is to return one job,
-unless C<$num> is provided. Jobs are returned as objects which implement the
-Netdisco job instance interface (see below).
+Returns a list of randomly selected queued jobs, at most C<$num> of them. Jobs
+are returned as objects which implement the Netdisco job instance interface
+(see below).
+
+With C<actions>, jobs for those actions are left out. With C<only> as well,
+only jobs for those actions are returned. This is how the backend gives each
+of its worker queues (see C<workers.queues>) its own jobs.
 
 =head2 jq_locked()
 
