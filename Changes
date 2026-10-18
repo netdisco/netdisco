@@ -13,6 +13,9 @@
 
   [BUG FIXES]
 
+  * deleting a manual topology link resets its two ports only when a manual
+    link was deleted. naming the two ends of a discovered uplink no longer
+    clears its is_uplink flag, which let portctl_uplinks pass for it
   * portctl_topology now switches manual topology off for port_control users
     at the Manual Device Topology page and its routes, not only the shortcut
     on device ports. admins are unaffected

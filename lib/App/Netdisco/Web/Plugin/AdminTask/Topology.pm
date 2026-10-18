@@ -128,8 +128,8 @@ ajax '/ajax/control/admin/topology/del' => require_any_role [qw(admin port_contr
       unless _scope_ok(param('dev1'), param('port1'))
          and _scope_ok(param('dev2'), param('port2'));
 
-    schema(vars->{'tenant'})->txn_do(sub {
-      my $device = schema(vars->{'tenant'})->resultset('Topology')
+    my $gone = schema(vars->{'tenant'})->txn_do(sub {
+      return schema(vars->{'tenant'})->resultset('Topology')
         ->search({
           dev1  => param('dev1'),
           port1 => param('port1'),
@@ -137,6 +137,11 @@ ajax '/ajax/control/admin/topology/del' => require_any_role [qw(admin port_contr
           port2 => param('port2'),
         })->delete;
     });
+
+    # only a deleted manual link may reset its ports: naming the two ends of a
+    # discovered uplink would otherwise clear its is_uplink flag, and with it
+    # the portctl_uplinks guard. DBI reports "no rows" as the true "0E0"
+    return '' unless 0 + ($gone || 0);
 
     # re-set remote device details in affected ports
     # could fail for bad device or port names
