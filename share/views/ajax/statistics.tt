@@ -28,7 +28,10 @@
               <th>[% stats.node_table_count | format_number %] nodes logged, of which [% stats.node_active_count | format_number %] are active</th>
             </tr>
             <tr>
-              <th>[% stats.phone_count | format_number %] phones, [% stats.wap_count | format_number %] wireless access points</th>
+              <th>[% stats.phone_count | format_number %] phones</th>
+            </tr>
+            <tr>
+              <th>[% stats.wap_count | format_number %] wireless access points</th>
             </tr>
             <tr>
               <th>[% stats.ip_table_count | format_number %] IPs logged, of which [% stats.ip_active_count | format_number %] are active</th>
@@ -58,6 +61,10 @@
               <th>[% stats.snmpinfo_ver | html_entity %]</th>
             </tr>
             <tr>
+              <th><a href="https://github.com/netdisco/netdisco-mibs" target="_blank" title="Installed bundle version; individual MIB files may have local changes">MIB Bundle</a></th>
+              <th>[% mib_bundle_version || 'Unknown' | html_entity %]</th>
+            </tr>
+            <tr>
               <th><a href="https://metacpan.org/module/netdisco-db-deploy" target="_blank">DB Schema</a></th>
               <th>[% stats.schema_ver | html_entity %]</th>
             </tr>
@@ -73,10 +80,6 @@
             <tr>
               <th><a href="https://www.python.org" target="_blank">Python</a></th>
               <th>[% stats.python_ver || 'n/a' | html_entity %]</th>
-            </tr>
-            <tr>
-              <th><a href="https://github.com/netdisco/netdisco-mibs" target="_blank" title="Installed bundle version; individual MIB files may have local changes">MIB Bundle</a></th>
-              <th>[% mib_bundle_version || 'Unknown' | html_entity %]</th>
             </tr>
           </tbody>
         </table>
