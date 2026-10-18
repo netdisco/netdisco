@@ -75,7 +75,10 @@ job (C<Worker::Runner> calls C<forget_effective_config>).
 
 sub effective_setting {
     my $name = shift;
-    my $overlay = vars->{'effective_config'}
+    # kept per tenant, because /t/<tenant>/ sets the tenant and forwards
+    # without clearing vars, after the outer request's hooks may have built
+    # the default tenant's overlay
+    my $overlay = vars->{'effective_config'}->{ vars->{'tenant'} || 'netdisco' }
       ||= _build_overlay( _load_managed_acls() );
     return (exists $overlay->{$name} ? $overlay->{$name} : setting($name));
 }

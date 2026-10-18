@@ -118,6 +118,25 @@ subtest 'effectiveSetting__the_tenant__is_part_of_each_synthesized_group_name' =
     'and the default tenant when none is set';
 };
 
+subtest 'effectiveSetting__a_tenant_set_after_a_default_tenant_read__gets_its_own_overlay' => sub {
+  # /t/<tenant>/ sets the tenant and forwards without clearing vars, so a
+  # before hook of the outer request may already have built the default's
+  stub_managed_acls({ dbrole => [ [[$IN], ['port:Gi1/1']] ] });
+
+  var tenant => undef;
+  ok exists effective_setting('host_groups')->{synthesized_group_netdisco_1},
+    'the outer request reads the default tenant';
+
+  var tenant => 'east';
+  ok exists effective_setting('host_groups')->{synthesized_group_east_1},
+    'the forwarded tenant request does not reuse it';
+  is_deeply effective_setting('portctl_by_role')->{dbrole},
+    { 'group:synthesized_group_east_1' => ['port:Gi1/1'] },
+    'and its roles name its own groups';
+
+  var tenant => undef;
+};
+
 subtest 'effectiveSetting__many_reads__load_the_database_once' => sub {
   my $calls = stub_managed_acls({ dbrole => [ [[$IN]] ] });
   effective_setting('portctl_by_role') for 1 .. 5;
