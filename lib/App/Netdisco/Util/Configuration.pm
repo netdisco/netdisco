@@ -28,6 +28,12 @@ the corresponding C<hosts_groups> ACL in configuration.
 sub refresh_managed_acl {
     my $name = shift;
 
+    # the group is rebuilt on every refresh: this runs on every API request in
+    # a long-lived web worker, and adding to the last refresh's group kept rows
+    # deleted in the ACL editor in force, and grew the group each time. an ACL
+    # with no rows leaves no group, which refuses, as an empty list would not.
+    delete config->{'host_groups'}->{$name->acl_name};
+
     foreach my $map (sort {$a->id <=> $b->id} $name->mappings->all) {
         # take every left and optionally right acl (if host_host or host_port) and
         # synthesize them into little host groups

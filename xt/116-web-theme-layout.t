@@ -32,4 +32,18 @@ like $themed, qr{netdisco\.css.*/theme\.css}s,
 my $odd = render_main({ name => 'a"b', path => '/x', mtime => 1 });
 like $odd, qr/data-nd-theme-default="a&quot;b"/, 'mainLayout__theme_name__is_escaped_in_the_attribute';
 
+# The user menu's theme switch is icon-only so there is nothing to translate,
+# but each button still needs words for hover text and screen readers.
+my $auto = render_main({ name => 'auto', path => '/x', mtime => 1 });
+my @choices = $auto =~ m/data-nd-theme-choice="([^"]+)"/g;
+is_deeply \@choices, [qw/light auto dark/], 'mainLayout__auto__offers_light_computer_dark_in_order';
+foreach my $label ('Light', 'Same as computer', 'Dark') {
+  like $auto, qr/<button[^>]*data-nd-theme-choice="[^"]+"[^>]*title="\Q$label\E" aria-label="\Q$label\E"/,
+    'mainLayout__auto__labels_the_' . (lc($label) =~ s/ /_/gr) . '_button';
+}
+like $auto, qr/data-nd-theme-choice.*Log Out/s, 'mainLayout__auto__puts_the_switch_above_log_out';
+
+unlike $themed, qr/data-nd-theme-choice/, 'mainLayout__configured_theme__has_no_switch';
+unlike $plain, qr/data-nd-theme-choice/, 'mainLayout__no_theme__has_no_switch';
+
 done_testing;

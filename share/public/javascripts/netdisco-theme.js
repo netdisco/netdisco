@@ -5,14 +5,38 @@
 
   const root = document.documentElement;
   const darkQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  const STORAGE_KEY = 'netdisco-theme';
+
+  /**
+   * Reads the user menu's saved choice. Only light and dark are kept: any
+   * other name would be linked as a stylesheet, and auto is the absence of a
+   * choice. A browser with site data blocked throws on any access.
+   * @returns {string|undefined} 'light', 'dark', or undefined for none
+   */
+  function readSaved() {
+    try {
+      const value = window.localStorage.getItem(STORAGE_KEY);
+      return value === 'light' || value === 'dark' ? value : undefined;
+    } catch (e) {
+      return undefined;
+    }
+  }
+
+  // Held here as well as in storage so the switch still works for this page
+  // when storage is blocked.
+  let saved = readSaved();
 
   /**
    * Where a theme choice can come from, highest priority first. Each returns a
-   * theme name, or undefined to defer to the next. A per-user choice goes in
-   * ahead of the server's configured default.
+   * theme name, or undefined to defer to the next. The user menu's choice
+   * counts only under auto: an admin who configures a theme outright has
+   * picked it for everyone, and the switch is not shown.
    * @type {Array<function(): (string|undefined)>}
    */
-  const sources = [() => root.dataset.ndThemeDefault];
+  const sources = [
+    () => (root.dataset.ndThemeDefault === 'auto' ? saved : undefined),
+    () => root.dataset.ndThemeDefault,
+  ];
 
   /**
    * Picks the first theme name any source offers.
@@ -73,7 +97,32 @@
     else root.removeAttribute('data-bs-theme');
   }
 
+  /**
+   * Records the user menu's choice and applies it. 'auto' forgets any saved
+   * choice, so the page goes back to following the browser's preference.
+   * @param {string} name 'light', 'dark' or 'auto'
+   * @returns {void}
+   */
+  function choose(name) {
+    saved = name === 'light' || name === 'dark' ? name : undefined;
+    try {
+      if (saved) window.localStorage.setItem(STORAGE_KEY, saved);
+      else window.localStorage.removeItem(STORAGE_KEY);
+    } catch (e) {
+      // Blocked storage: the choice lasts for this page only.
+    }
+    apply();
+  }
+
+  /**
+   * The user menu's current choice, for showing which switch button is on.
+   * @returns {string} 'light', 'dark' or 'auto'
+   */
+  function chosen() {
+    return saved || 'auto';
+  }
+
   apply();
   if (darkQuery) darkQuery.addEventListener('change', apply);
-  window.ndTheme = { sources, apply };
+  window.ndTheme = { sources, apply, choose, chosen };
 })();
