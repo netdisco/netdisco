@@ -1,3 +1,10 @@
+2.114000 - tbd
+
+  [ENHANCEMENTS]
+
+  * #1756 System Information on the homepage shows phones and wireless
+    access points on their own lines, and MIB Bundle after SNMP::Info
+
 2.113000 - 2026-10-18
 
   [NEW FEATURES]
