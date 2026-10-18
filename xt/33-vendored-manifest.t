@@ -95,14 +95,14 @@ my @VENDORED = (
         package    => 'datatables.net-bs5',
         file       => [qw/javascripts dataTables.bootstrap.js/],
         sha256     => '1806022582576a6ee8a1922881d26c939e85e7c99962ae287ab729e9a4796a33',
-        pinned_for => '3.0.3',
+        pinned_for => '3.1.4',
     },
     {   # The stylesheet half of the same package states no version either, and
         # pinning one half without the other lets the two disagree quietly.
         package    => 'datatables.net-bs5',
         file       => [qw/css dataTables.bootstrap.css/],
-        sha256     => '02eb90f742a251cd6eac1cc5886b5b7b066a57ae97d28127189f15396d0bf8b3',
-        pinned_for => '3.0.3',
+        sha256     => '5ff84d5553f3a60b4927ae5732c2e3799d10c348f10d5b5ebf49f0035352aa05',
+        pinned_for => '3.1.4',
     },
     {   # The 4.x builds state the version as a property assignment where the
         # 2.x builds minified it into an object literal, so this pattern is
