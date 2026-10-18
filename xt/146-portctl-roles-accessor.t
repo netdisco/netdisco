@@ -25,6 +25,8 @@ use lib 'xt/lib';
 use App::Netdisco;
 use App::Netdisco::DB; # Device rows built in memory, never stored
 use App::Netdisco::Backend::Job;
+use App::Netdisco::Worker::Plugin::DumpConfig; # registers its worker in vars
+use JSON::PP ();
 use Dancer qw/:moose :script !pass/;
 use App::Netdisco::Util::Configuration qw/effective_setting forget_effective_config/;
 use App::Netdisco::Util::Permission qw/check_acl acl_matches_only/;
@@ -50,6 +52,16 @@ my $PORT = { ip => $IN, port => 'Gi1/1' };
 { package MyWorker;
   use Moo;
   with 'App::Netdisco::Worker::Runner';
+}
+
+# runs the dumpconfig worker as netdisco-do -Q does, returning what it printed
+sub dumpconfig_json {
+  my $key = shift;
+  local $ENV{ND2_DO_QUIET} = 1;
+  my ($worker) = @{ vars->{'workers'}->{'dumpconfig'}->{'main'}->{'_base_'}->{0} };
+  my $job = App::Netdisco::Backend::Job->new({
+    job => 0, action => 'dumpconfig', subaction => $key });
+  return JSON::PP->new->allow_nonref->decode( $worker->($job)->log );
 }
 
 subtest 'effectiveSetting__a_setting_with_no_database_content__is_the_yaml_value' => sub {
@@ -223,6 +235,42 @@ subtest 'runner__the_next_job_in_one_process__sees_a_changed_role' => sub {
   is $run->(), 'error', 'the next job sees the change, because run() starts afresh';
 
   config->{'extra_worker_plugins'} = [];
+};
+
+subtest 'dumpconfig__portctl_by_role_and_host_groups__print_the_effective_values' => sub {
+  setting('portctl_by_role' => { yamlrole => [$IN] });
+  stub_managed_acls({ dbrole => [ [[$IN], ['port:Gi1/1']] ] });
+
+  is_deeply [ sort keys %{ dumpconfig_json('portctl_by_role') } ], [qw/dbrole yamlrole/],
+    '-e portctl_by_role shows the YAML and database roles';
+  ok exists dumpconfig_json('host_groups')->{synthesized_group_netdisco_1},
+    '-e host_groups shows the synthesized group';
+
+  my $all = dumpconfig_json('');
+  ok exists $all->{portctl_by_role}->{dbrole}, 'a full dump carries the effective roles';
+  ok exists $all->{host_groups}->{synthesized_group_netdisco_1}, 'and the effective groups';
+  is dumpconfig_json('snmptimeout'), setting('snmptimeout'), 'any other key prints its YAML value';
+
+  setting('portctl_by_role' => {});
+};
+
+subtest 'dumpconfig__the_database_unreachable__prints_the_yaml_with_one_warning' => sub {
+  my @warned;
+  no warnings 'redefine';
+  local *App::Netdisco::Worker::Plugin::DumpConfig::warning = sub { push @warned, join '', @_ };
+  setting('portctl_by_role' => { yamlrole => [$IN] });
+  stub_managed_acls(undef, dies => "could not connect to server\n");
+
+  is_deeply dumpconfig_json('portctl_by_role'), { yamlrole => [$IN] },
+    '-e portctl_by_role falls back to the YAML';
+
+  @warned = ();
+  my $all = dumpconfig_json('');
+  is_deeply $all->{portctl_by_role}, { yamlrole => [$IN] }, 'a full dump falls back too';
+  is scalar @warned, 1, 'with one warning, not one per key';
+  like $warned[0], qr/database ACLs not included/, 'saying why';
+
+  setting('portctl_by_role' => {});
 };
 
 done_testing;

@@ -6,6 +6,11 @@ use aliased 'App::Netdisco::Worker::Status';
 
 use Data::Printer;
 use Scalar::Util 'blessed';
+use Try::Tiny;
+use App::Netdisco::Util::Configuration 'effective_setting';
+
+# settings the ACL Manager adds to, printed as Netdisco will use them
+my @effective = qw/portctl_by_role host_groups/;
 
 # domain_suffix is a compiled Regexp and url_base a URI::Based, and JSON
 # encodes neither. Data::Printer renders them, so only the quiet path needs it.
@@ -34,8 +39,26 @@ register_worker({ phase => 'main' }, sub {
 
   # Job promotes an undefined subaction to empty string, so an unkeyed
   # dumpconfig arrives here as q{} and must still dump everything.
-  my $dump = (((defined $key) and (ref $key eq q{}) and (length $key))
-    ? $CONFIG->{$key} : $CONFIG);
+  my $wanted = (((defined $key) and (ref $key eq q{}) and (length $key))
+    ? $key : undef);
+
+  # dumpconfig shows the configuration Netdisco will use, ACL Manager roles
+  # included. it is also how a broken install is diagnosed, so without the
+  # database it shows the YAML, and says so once.
+  my %effective = ();
+  if (not defined $wanted or scalar grep { $_ eq $wanted } @effective) {
+      try {
+          $effective{$_} = effective_setting($_) for @effective;
+      }
+      catch {
+          warning "dumpconfig: database ACLs not included: $_";
+          %effective = ();
+      };
+  }
+
+  my $dump = (defined $wanted
+    ? (exists $effective{$wanted} ? $effective{$wanted} : $CONFIG->{$wanted})
+    : { %$CONFIG, %effective });
   p $dump unless $ENV{ND2_DO_QUIET};
 
   return Status->done($ENV{ND2_DO_QUIET}
