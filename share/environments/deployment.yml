@@ -102,7 +102,7 @@ device_auth:
 # Latin-1 text from other devices.
 # ```````````````````````````````````````````````````````````````````````
 #snmp_charset:
-#  'vendor:h3c': ['gbk']
+#  'vendor:huawei': ['gbk']
 #  '10.20.0.0/16': ['gbk']
 
 # set to true to globally disable authentication/login.
