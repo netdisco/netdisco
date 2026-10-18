@@ -8,8 +8,7 @@ use Dancer::Plugin::Auth::Extensible;
 use URI ();
 use URL::Encode 'url_params_mixed';
 use App::Netdisco::Util::Device 'match_to_setting';
-use App::Netdisco::Util::Port 'sync_portctl_roles';
-use App::Netdisco::Util::Web qw/device_display_name request_is_device/;
+use App::Netdisco::Util::Web 'device_display_name';
 
 # build view settings for port connected nodes and devices
 set('connected_properties' => [
@@ -23,12 +22,6 @@ set('port_display_properties' => [
   map  {{ name => $_, %{ setting('sidebar_defaults')->{'device_ports'}->{$_} } }}
   grep { $_ =~ m/^p_/ } keys %{ setting('sidebar_defaults')->{'device_ports'} }
 ]);
-
-# load and cache device port control configuration
-hook 'before' => sub {
-  return unless request_is_device;
-  sync_portctl_roles();
-};
 
 hook 'before_template' => sub {
   my $tokens = shift;

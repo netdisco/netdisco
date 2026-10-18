@@ -106,7 +106,6 @@ no warnings 'redefine';
 *Dancer::Plugin::Auth::Extensible::user_roles     = sub { return wantarray ? @roles : [@roles] };
 *App::Netdisco::Web::PortControl::schema    = sub { return FakeSchema->new };
 # the device role check passes, so only the override check can refuse
-*App::Netdisco::Web::PortControl::sync_portctl_roles       = sub { return };
 *App::Netdisco::Web::PortControl::device_acl_by_role_check = sub { return 1 };
 *App::Netdisco::Web::PortControl::jq_insert = sub { push @queued, @_; return 1 };
 *App::Netdisco::Web::API::Queue::jq_insert  = sub { push @queued, @{$_[0]}; return 1 };
