@@ -10,6 +10,7 @@
   [ENHANCEMENTS]
 
   * #1735 System Information on the homepage starts expanded
+  * #1751 upgrade the vendored Swagger UI from 5.32.12 to 5.33.3
 
   [BUG FIXES]
 
