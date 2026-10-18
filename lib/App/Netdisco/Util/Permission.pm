@@ -7,6 +7,7 @@ use Dancer qw/:syntax :script/;
 use Scalar::Util qw/blessed reftype/;
 use NetAddr::IP::Lite ':lower';
 use Algorithm::Cron;
+use Try::Tiny;
 
 use App::Netdisco::Util::DNS 'hostname_from_ip';
 
@@ -198,9 +199,8 @@ sub check_acl {
 
       if ($rule =~ m/^group:(.+)$/) {
           my $group = $1;
-          setting('host_groups')->{$group} ||= [];
 
-          if ($neg xor check_acl($things, setting('host_groups')->{$group})) {
+          if ($neg xor check_acl($things, _group_rules($group))) {
             return true if not $all;
           }
           else {
@@ -426,6 +426,26 @@ sub check_acl {
   }
 
   return ($all ? true : false);
+}
+
+# YAML groups first, so a page or job that names only those never reads the
+# database. a name YAML lacks may be a group the ACL Manager synthesized (see
+# effective_setting), and an unknown one matches nothing, as it always has,
+# even when the database can't be reached.
+sub _group_rules {
+  my $group = shift;
+  my $yaml = setting('host_groups') || {};
+  return $yaml->{$group} if exists $yaml->{$group};
+
+  require App::Netdisco::Util::Configuration;
+  my $effective = try {
+    App::Netdisco::Util::Configuration::effective_setting('host_groups')
+  }
+  catch {
+    debug "group:$group not found, and ACL Manager groups are unavailable: $_";
+    undef;
+  };
+  return (($effective || {})->{$group} || []);
 }
 
 true;
