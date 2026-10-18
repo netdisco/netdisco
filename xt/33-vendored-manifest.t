@@ -6,6 +6,7 @@ use warnings;
 use Test::More 0.88;
 use File::Spec::Functions qw/catfile catdir updir/;
 use File::Basename qw/basename/;
+use ExtUtils::Manifest qw/maniskip/;
 use FindBin;
 use Digest::SHA qw/sha256_hex/;
 use JSON::PP ();
@@ -189,23 +190,29 @@ for my $entry (@VENDORED) {
     };
 }
 
-subtest 'MANIFEST__every_xt_js_suite_on_disk__is_listed' => sub {
-    # A suite missing here still runs locally and in CI, since both work
-    # from the checkout rather than a packaged tarball. Nothing short of
-    # building that tarball notices the gap, and by then the suite it
-    # dropped does not ship. This has happened twice.
+subtest 'MANIFEST__every_xt_js_suite_on_disk__ships_in_the_release' => sub {
+    # A suite left out of the tarball still runs locally and in CI, since
+    # both work from the checkout. Nothing short of building that tarball
+    # notices the gap, and by then the suite it dropped does not ship. This
+    # has happened twice.
+    #
+    # The committed MANIFEST is not what decides it: the release job deletes
+    # it and rebuilds it from disk with ./Build manifest, and pull requests
+    # leave it alone so they do not conflict over it. What can still drop a
+    # suite is a MANIFEST.SKIP pattern, which the rebuild obeys, so that is
+    # what is checked.
     my @suites = sort glob( catfile( $root, 'xt', 'js', '*.test.js' ) );
 
     ok scalar(@suites) > 0, 'found at least one xt/js/*.test.js suite on disk'
         or return;
 
-    my %listed = map { $_ => 1 } split /\n/, slurp( catfile( $root, 'MANIFEST' ) );
+    my $skipped = maniskip( catfile( $root, 'MANIFEST.SKIP' ) );
 
     for my $suite (@suites) {
         my $relative = join '/', 'xt', 'js', basename($suite);
-        ok $listed{$relative},
-            "$relative is listed in MANIFEST: add it in sorted position "
-          . "among the other xt/js entries";
+        ok !$skipped->($relative),
+            "$relative is not excluded by MANIFEST.SKIP, so the release's "
+          . "rebuilt MANIFEST lists it";
     }
 };
 
