@@ -2,7 +2,7 @@ BEGIN;
 
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'device' AND column_name = 'is_pseudo') THEN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'device' AND column_name = 'is_pseudo') THEN
     ALTER TABLE device ADD COLUMN "is_pseudo" boolean DEFAULT false;
 
     UPDATE device SET is_pseudo = false;
