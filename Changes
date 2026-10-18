@@ -12,6 +12,8 @@
   * #1735 System Information on the homepage starts expanded
   * #1751 upgrade the vendored Swagger UI from 5.32.12 to 5.33.3
   * #1753 upgrade the vendored DataTables from 3.0.3 to 3.1.4
+  * #1754 with web_theme set to auto, the user menu has a light / same as
+    computer / dark switch. the choice is remembered in that browser
 
   [BUG FIXES]
 
