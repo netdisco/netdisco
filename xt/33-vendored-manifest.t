@@ -123,8 +123,8 @@ my @VENDORED = (
         # a file we did not write.
         package    => 'swagger-ui-dist',
         file       => [qw/swagger-ui swagger-ui-bundle.js/],
-        sha256     => '8b188d7d3ee1ce26224908341bb9cdeac67f67f0b68440d2a9ac9e5f73e86d80',
-        pinned_for => '5.32.12',
+        sha256     => '3861ec4cc8e7b9fa9f250280da9350436e418137788282c753b9a2ac5fb7bd2f',
+        pinned_for => '5.33.3',
     },
 );
 
