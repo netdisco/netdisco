@@ -14,6 +14,9 @@
 
   [BUG FIXES]
 
+  * #1752 a row deleted from an API token's ACL no longer stays in force
+    until the web worker restarts, and the token's ACL group no longer grows
+    with every API request
   * #1750 deleting a manual topology link resets its two ports only when a
     manual link was deleted. naming the two ends of a discovered uplink no
     longer clears its is_uplink flag, which let portctl_uplinks pass for it
