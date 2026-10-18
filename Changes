@@ -13,6 +13,11 @@
 
   [BUG FIXES]
 
+  * port name changes are no longer refused by the backend when the device
+    ports view offered them: under portctl_nameonly, and on uplink, phone and
+    WAP ports, the portname job checked the port status ACL instead of the
+    port name ACL
+
   * offline (snapshot) jobs no longer log "not in cache" for
     lldp_v2_sys_cap, which SNMP::Info 3.980000 reads when LLDP-MIB is empty
 
