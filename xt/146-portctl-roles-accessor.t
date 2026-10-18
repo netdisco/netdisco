@@ -23,6 +23,8 @@ use Test::File::ShareDir::Dist { 'App-Netdisco' => 'share/' };
 use lib 'xt/lib';
 
 use App::Netdisco;
+use App::Netdisco::DB; # Device rows built in memory, never stored
+use App::Netdisco::Backend::Job;
 use Dancer qw/:moose :script !pass/;
 use App::Netdisco::Util::Configuration qw/effective_setting forget_effective_config/;
 use App::Netdisco::Util::Permission qw/check_acl acl_matches_only/;
@@ -43,6 +45,11 @@ my $PORT = { ip => $IN, port => 'Gi1/1' };
   sub port_control { $_[0]->{port_control} }
   sub admin        { $_[0]->{admin} }
   sub portctl_role { $_[0]->{portctl_role} }
+}
+
+{ package MyWorker;
+  use Moo;
+  with 'App::Netdisco::Worker::Runner';
 }
 
 subtest 'effectiveSetting__a_setting_with_no_database_content__is_the_yaml_value' => sub {
@@ -191,6 +198,31 @@ subtest 'roleChecks__a_token_acl_group_with_the_same_acl_id__is_not_confused_wit
     'and the token ACL still matches its own address';
 
   delete setting('host_groups')->{$_} for qw/synthesized_group_5 api_office_only/;
+};
+
+subtest 'runner__the_next_job_in_one_process__sees_a_changed_role' => sub {
+  config->{'extra_worker_plugins'} = ['X::TestRoles'];
+  config->{'device_auth'} = [];
+  my $user = Test::FakeUser->new(portctl_role => 'leafonly');
+
+  my $run = sub {
+    my $job = App::Netdisco::Backend::Job->new({
+      job => 0, action => 'testroles', username => $user,
+      device => App::Netdisco::DB->resultset('Device')->new_result({ ip => $IN }),
+    });
+    MyWorker->new->run($job);
+    return $job->status;
+  };
+
+  stub_managed_acls({ leafonly => [ [[$IN], []] ] });
+  is $run->(), 'done', 'the first job sees the role covering its device';
+
+  # the ACL Manager drops the device from the role between the two jobs.
+  # keep_cache leaves the first job's overlay in place, as netdisco-do would
+  stub_managed_acls({ leafonly => [ [[$OUT], []] ] }, keep_cache => 1);
+  is $run->(), 'error', 'the next job sees the change, because run() starts afresh';
+
+  config->{'extra_worker_plugins'} = [];
 };
 
 done_testing;

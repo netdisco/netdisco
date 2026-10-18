@@ -4,6 +4,7 @@ use Dancer qw/:moose :syntax/;
 use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::CustomFields;
+use App::Netdisco::Util::Configuration 'forget_effective_config';
 use App::Netdisco::Transport::Python ();
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
@@ -31,6 +32,9 @@ sub run {
     unless ref $job eq 'App::Netdisco::Backend::Job';
 
   $job->apply_config_overrides;
+  # one process may run many jobs (netdisco-do does), and each must see the
+  # ACL Manager roles as they are when it starts, after its own overrides
+  forget_effective_config();
   $self->job($job);
   $job->device( get_device($job->device) )
     unless scalar grep {$job->action eq $_} @{ setting('job_targets_prefix') };
