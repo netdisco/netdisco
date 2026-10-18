@@ -13,6 +13,10 @@
 
   [BUG FIXES]
 
+  * deleting a manual topology link resets its two ports only when a manual
+    link was deleted. naming the two ends of a discovered uplink no longer
+    clears its is_uplink flag, which let portctl_uplinks pass for it
+
   * offline (snapshot) jobs no longer log "not in cache" for
     lldp_v2_sys_cap, which SNMP::Info 3.980000 reads when LLDP-MIB is empty
 
