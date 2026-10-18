@@ -19,6 +19,8 @@ use File::Slurper 'read_text';
 use App::Netdisco;
 use Dancer qw/setting/;
 use App::Netdisco::Util::Port 'device_acl_by_role_check';
+use lib 'xt/lib';
+use Test::Netdisco::ManagedACL 'stub_managed_acls';
 
 { package Test::FakeUser;
   sub new { my ($c, %a) = @_; return bless { port_control => 1, admin => 0, portctl_role => undef, %a }, $c }
@@ -36,6 +38,8 @@ setting('portctl_by_role' => {
   leafonly  => { 'group:leafgroup' => [] },   # empty rhs means any port
   plainonly => [$IN],                          # the yaml list form
 });
+# no ACL Manager roles: the checks see the YAML above alone
+stub_managed_acls({});
 
 subtest 'deviceAclByRoleCheck__a_role_ACL_of_devices_and_ports__is_matched_on_the_device' => sub {
   my $user = Test::FakeUser->new(portctl_role => 'leafonly');

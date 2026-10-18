@@ -23,6 +23,8 @@ use App::Netdisco::Web;
 use App::Netdisco::Web::Auth::Provider::DBIC;
 use Dancer ':tests';
 use Dancer::Test;
+use lib 'xt/lib';
+use Test::Netdisco::ManagedACL 'stub_managed_acls';
 
 config->{logger} = 'null';
 
@@ -47,10 +49,10 @@ no warnings 'redefine';
 *Dancer::Plugin::Auth::Extensible::logged_in_user = sub { return $user };
 *App::Netdisco::Web::API::Queue::logged_in_user   = sub { return $user };
 *Dancer::Plugin::Auth::Extensible::user_roles     = sub { return wantarray ? @roles : [@roles] };
-*App::Netdisco::Web::API::Queue::sync_portctl_roles = sub { return };
 *App::Netdisco::Web::API::Queue::jq_insert = sub { push @queued, @{$_[0]}; return 1 };
 
 setting('portctl_by_role' => { leafonly => ['192.0.2.1'] });
+stub_managed_acls({});
 
 # Dancer::Handler resets the cookie jar at the start of every request and
 # Dancer::Test does not, so without this one request's session would

@@ -9,6 +9,8 @@ use Test::More 0.88;
 use App::Netdisco;
 use Dancer qw/setting/;
 use App::Netdisco::Util::Port 'port_acl_by_role_check';
+use lib 'xt/lib';
+use Test::Netdisco::ManagedACL 'stub_managed_acls';
 
 { package Test::FakeUser;
   sub new { my ($c, %a) = @_; return bless { port_control => 1, admin => 0, portctl_role => '', %a }, $c }
@@ -26,6 +28,8 @@ setting('portctl_by_role' => {
   leafonly  => { 'group:leafgroup' => [] },
   plainonly => [$IN->{ip}],
 });
+# no ACL Manager roles: the checks see the YAML above alone
+stub_managed_acls({});
 
 subtest 'portAclByRoleCheck__a_role_with_no_ACL__is_refused' => sub {
   ok !port_acl_by_role_check($PORT, $IN, Test::FakeUser->new(portctl_role => 'nosuchrole')),

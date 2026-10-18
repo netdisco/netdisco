@@ -25,13 +25,25 @@ use lib 'xt/lib';
 use App::Netdisco;
 use Dancer qw/:moose :script !pass/;
 use App::Netdisco::Util::Configuration qw/effective_setting forget_effective_config/;
-use App::Netdisco::Util::Permission 'check_acl';
+use App::Netdisco::Util::Permission qw/check_acl acl_matches_only/;
+use App::Netdisco::Util::Port qw/port_acl_by_role_check device_acl_by_role_check/;
 use Test::Netdisco::ManagedACL 'stub_managed_acls';
 
 config->{logger} = 'null';
 
 my $IN  = '192.0.2.1';
 my $OUT = '192.0.2.99';
+
+my $DIN  = { ip => $IN };
+my $DOUT = { ip => $OUT };
+my $PORT = { ip => $IN, port => 'Gi1/1' };
+
+{ package Test::FakeUser;
+  sub new { my ($c, %a) = @_; return bless { port_control => 1, admin => 0, portctl_role => '', %a }, $c }
+  sub port_control { $_[0]->{port_control} }
+  sub admin        { $_[0]->{admin} }
+  sub portctl_role { $_[0]->{portctl_role} }
+}
 
 subtest 'effectiveSetting__a_setting_with_no_database_content__is_the_yaml_value' => sub {
   stub_managed_acls({});
@@ -125,6 +137,60 @@ subtest 'checkAcl__the_database_unreachable__leaves_an_unknown_group_matching_no
   is $@, '', 'check_acl does not die';
   ok !$matched, 'the group matches nothing';
   ok check_acl($IN, ['!group:synthesized_group_netdisco_1']), 'and its negation matches, as today';
+};
+
+subtest 'roleChecks__database_roles__decide_as_sync_portctl_roles_did' => sub {
+  setting('portctl_by_role' => { yamlrole => [$IN], clash => [$OUT], empty => '' });
+  stub_managed_acls({
+    anyport => [ [[$IN], []] ],             # an empty port list: any port
+    noports => [ [[$IN], undef] ],          # port rules undef: no port
+    gi11    => [ [[$IN], ['port:Gi1/1']] ],
+    clash   => [ [[$IN]] ],                 # no right ACL row at all
+    norows  => [],
+  });
+  my $as   = sub { Test::FakeUser->new(portctl_role => shift) };
+  my $gi12 = { ip => $IN, port => 'Gi1/2' };
+
+  ok  port_acl_by_role_check($PORT, $DIN,  $as->('anyport')), 'an empty port list allows any port on the device';
+  ok !port_acl_by_role_check($PORT, $DOUT, $as->('anyport')), 'but not on another device';
+  ok !port_acl_by_role_check($PORT, $DIN,  $as->('noports')), 'port rules of undef refuse at port level';
+  ok  device_acl_by_role_check($DIN, $as->('noports')),      'and still match at device level';
+  ok  port_acl_by_role_check($PORT, $DIN, $as->('gi11')),     'a listed port is allowed';
+  ok !port_acl_by_role_check($gi12, $DIN, $as->('gi11')),     'an unlisted port is refused';
+  ok !port_acl_by_role_check($PORT, $DIN, $as->('clash')),    'a row with no right ACL refuses at port level';
+  ok  device_acl_by_role_check($DIN,  $as->('clash')),        'the database role replaced the YAML one of that name';
+  ok !device_acl_by_role_check($DOUT, $as->('clash')),        'so the YAML device no longer counts';
+  ok !port_acl_by_role_check($PORT, $DIN, $as->('norows')),   'a database role with no rows refuses ports';
+  ok !device_acl_by_role_check($DIN, $as->('norows')),        'and devices';
+  ok !port_acl_by_role_check($PORT, $DIN, $as->('empty')),    'a YAML role with no value refuses';
+  ok  port_acl_by_role_check($PORT, $DIN, $as->('yamlrole')), 'a YAML device role still allows its device';
+
+  setting('portctl_by_role' => {});
+};
+
+subtest 'roleChecks__netdisco_do_force__never_loads_the_roles' => sub {
+  my $calls = stub_managed_acls({ any => [ [[$IN], []] ] });
+  local $ENV{ND2_DO_FORCE} = 1;
+  my $user = Test::FakeUser->new(portctl_role => 'any');
+  ok port_acl_by_role_check($PORT, $DOUT, $user), 'the port check passes';
+  ok device_acl_by_role_check($DOUT, $user), 'the device check passes';
+  is $$calls, 0, 'and the database was never read';
+};
+
+subtest 'roleChecks__a_token_acl_group_with_the_same_acl_id__is_not_confused_with_a_role' => sub {
+  # refresh_managed_acl leaves a token ACL's groups in the global host_groups,
+  # named by ACL id alone, and the role's rows have the same ids here
+  setting('host_groups')->{synthesized_group_5} = [$OUT];
+  setting('host_groups')->{api_office_only}     = ['group:synthesized_group_5'];
+  stub_managed_acls({ leafonly => [ [[$IN], []] ] }, first_id => 5);
+  my $user = Test::FakeUser->new(portctl_role => 'leafonly');
+
+  ok  port_acl_by_role_check($PORT, $DIN,  $user), 'the role uses its own device rules';
+  ok !port_acl_by_role_check($PORT, $DOUT, $user), 'not the token ACL group of the same id';
+  ok  acl_matches_only($OUT, setting('host_groups')->{api_office_only}),
+    'and the token ACL still matches its own address';
+
+  delete setting('host_groups')->{$_} for qw/synthesized_group_5 api_office_only/;
 };
 
 done_testing;

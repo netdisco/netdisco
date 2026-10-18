@@ -16,6 +16,8 @@ use Test::More 0.88;
 use Test::File::ShareDir::Dist { 'App-Netdisco' => 'share/' };
 
 use App::Netdisco;
+use lib 'xt/lib';
+use Test::Netdisco::ManagedACL 'stub_managed_acls';
 use App::Netdisco::Backend::Job;
 use App::Netdisco::Util::Port ();
 
@@ -45,12 +47,11 @@ config->{logger} = 'null';
 
 my $PORT;
 
-# PortName imports these when it compiles, so they must be replaced before it
-# is loaded. neither can reach a database here.
+# PortName imports this when it compiles, so it must be replaced before it is
+# loaded. it can't reach a database here.
 BEGIN {
   no warnings 'redefine';
   *App::Netdisco::Util::Port::get_port = sub { $PORT };
-  *App::Netdisco::Util::Port::sync_portctl_roles = sub { };
 }
 
 use App::Netdisco::Worker::Plugin::PortName;
@@ -62,6 +63,7 @@ my $IN  = Test::FakeDevice->new(ip => '192.168.0.11');
 my $OUT = Test::FakeDevice->new(ip => '192.168.0.22');
 
 setting('portctl_by_role' => { plainonly => [$IN->ip] });
+stub_managed_acls({});
 
 sub check_status {
   my ($device, $user) = @_;
