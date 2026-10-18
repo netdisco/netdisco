@@ -192,6 +192,20 @@
           <li><a class="dropdown-item" href="https://github.com/netdisco/netdisco/wiki/Configuration" target="_blank">⚙️ Configuration Reference</a></li>
           <li><a class="dropdown-item" href="https://github.com/sponsors/netdisco" target="_blank">💜 Become a Sponsor</a></li>
         [% END %]
+        [%- # auto is the only setting that leaves the choice to the browser, so
+            # the only one where a per-user choice has anything to override.
+            # Icons rather than words so there is nothing to translate. -%]
+        [% IF settings._web_theme.name == 'auto' %]
+          <li><hr class="dropdown-divider"></li>
+          <li class="px-3 py-1">
+            <div class="btn-group btn-group-sm w-100 nd_theme-switch" role="group" aria-label="Theme">
+              <button type="button" class="btn btn-outline-secondary" data-nd-theme-choice="light" title="Light" aria-label="Light"><i class="fas fa-sun"></i></button>
+              <button type="button" class="btn btn-outline-secondary" data-nd-theme-choice="auto" title="Same as computer" aria-label="Same as computer"><i class="fas fa-desktop"></i></button>
+              <button type="button" class="btn btn-outline-secondary" data-nd-theme-choice="dark" title="Dark" aria-label="Dark"><i class="fas fa-moon"></i></button>
+            </div>
+          </li>
+          [% IF NOT settings.no_auth %]<li><hr class="dropdown-divider"></li>[% END %]
+        [% END %]
         [% IF NOT settings.no_auth %]
           <li><a class="dropdown-item" href="[% uri_for('/logout') | none %]">Log Out</a></li>
         [% END %]
