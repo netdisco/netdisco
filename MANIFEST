@@ -24,6 +24,7 @@ lib/App/Netdisco/Backend/Role/Scheduler.pm
 lib/App/Netdisco/Builder.pm
 lib/App/Netdisco/Configuration.pm
 lib/App/Netdisco/DB.pm
+lib/App/Netdisco/DB/Deploy.pm
 lib/App/Netdisco/DB/ExplicitLocking.pm
 lib/App/Netdisco/DB/Result.pm
 lib/App/Netdisco/DB/Result/AccessControlList.pm
@@ -114,8 +115,11 @@ lib/App/Netdisco/DB/ResultSet/NodeIp.pm
 lib/App/Netdisco/DB/ResultSet/NodeNbt.pm
 lib/App/Netdisco/DB/ResultSet/NodeWireless.pm
 lib/App/Netdisco/DB/ResultSet/Subnet.pm
+lib/App/Netdisco/DB/SchemaCheck.pm
 lib/App/Netdisco/DB/SchemaVersioned.pm
 lib/App/Netdisco/DB/SetOperations.pm
+lib/App/Netdisco/DB/StepFile.pm
+lib/App/Netdisco/DB/UpgradeMessage.pm
 lib/App/Netdisco/Environment.pm
 lib/App/Netdisco/GenericDB.pm
 lib/App/Netdisco/GenericDB/Result/Virtual/GenericReport.pm
@@ -165,6 +169,7 @@ lib/App/Netdisco/Util/Permission.pm
 lib/App/Netdisco/Util/Port.pm
 lib/App/Netdisco/Util/PortAccessEntity.pm
 lib/App/Netdisco/Util/PortMAC.pm
+lib/App/Netdisco/Util/PostgresFloor.pm
 lib/App/Netdisco/Util/Python.pm
 lib/App/Netdisco/Util/SiteLocal.pm
 lib/App/Netdisco/Util/Snapshot.pm
@@ -437,6 +442,7 @@ share/python/tfsm/linux_arp_-a.textfsm
 share/schema_versions/App-Netdisco-DB-1-2-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-10-11-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-100-101-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-101-102-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-11-12-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-12-13-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-13-14-PostgreSQL.sql
@@ -709,6 +715,12 @@ xt/142-portname-check-matches-view.t
 xt/143-api-custom-field-role-scope.t
 xt/144-portctl-topology-gate.t
 xt/145-topology-del-only-matched.t
+xt/150-schema-step-file.t
+xt/151-schema-upgrade-message.t
+xt/152-schema-step-mode.t
+xt/153-schema-deploy-args.t
+xt/154-schema-check.t
+xt/155-postgres-floor.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t

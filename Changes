@@ -1,5 +1,16 @@
 2.114000 - tbd
 
+  [NEW FEATURES]
+
+  * netdisco-db-deploy stops at a schema step that fails, from 2.023000's
+    schema on, and names the fix: repair by hand, then rerun with
+    --force-step N (in Docker, NETDISCO_DB_DEPLOY_ARGS). --check compares
+    the database with a fresh install
+  * databases created by 2.023000 or earlier get their missing indexes and
+    keys repaired (schema 102)
+  * the web interface and netdisco-db-deploy warn when PostgreSQL is older
+    than 14
+
   [ENHANCEMENTS]
 
   * #1756 System Information on the homepage shows phones and wireless
