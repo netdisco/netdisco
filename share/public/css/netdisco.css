@@ -447,6 +447,16 @@ a:hover, a:focus {
   text-decoration: none;
 }
 
+/* The user menu's light / computer / dark switch. Bootstrap gives an outline
+   secondary button the same gray for hover as for active, so the current
+   choice looked like whichever button the pointer was over. It takes the
+   menu's active colors instead. */
+.nd_theme-switch .btn {
+  --bs-btn-active-bg: var(--nd-menu-active-bg);
+  --bs-btn-active-border-color: var(--nd-menu-active-border);
+  --bs-btn-active-color: var(--nd-menu-active-color);
+}
+
 /* Navbar submenus opened on hover and closed on leaving. The replacement dropped
    the submenu component and drives dropdowns by script and click, which left one
    pinned open; the template's toggle attributes are gone for the same reason.
