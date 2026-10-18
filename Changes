@@ -13,6 +13,9 @@
 
   [BUG FIXES]
 
+  * portctl_topology now switches manual topology off for port_control users
+    at the Manual Device Topology page and its routes, not only the shortcut
+    on device ports. admins are unaffected
   * a port_control user updating custom fields through the API is now held
     to their port control role, as the web interface has held them since
     #1691: a device outside the role is refused with 403
