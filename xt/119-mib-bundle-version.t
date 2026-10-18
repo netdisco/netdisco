@@ -48,7 +48,8 @@ foreach my $version ('4.064', undef) {
     is $error, undef, 'statistics template renders';
     like $html, qr{https://github\.com/netdisco/netdisco-mibs[^>]*>MIB Bundle</a>},
       'bundle label links to the MIB repository';
-    like $html, qr{Python</a>.*MIB Bundle</a>}s, 'bundle follows Python';
+    like $html, qr{SNMP::Info</a></th>\s*<th>[^<]*</th>\s*</tr>\s*<tr>\s*<th><a [^>]*>MIB Bundle</a>},
+      'bundle row immediately follows SNMP::Info';
     my $expected = defined $version ? $version : 'Unknown';
     like $html, qr{<th>\Q$expected\E</th>}, 'version or fallback is displayed';
 }
