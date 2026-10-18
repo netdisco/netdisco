@@ -2,10 +2,10 @@
 
   [NEW FEATURES]
 
-  * #1740 workers.queues can be used to reserve workers for some actions, so that a backlog of
-    one kind of job (say discover) cannot keep another (say portcontrol)
-    waiting. each queue is { tasks: N, actions: [...] } and its actions are
-    run only by its own workers
+  * #1740 workers.queues can be used to reserve workers for some actions,
+    so that a backlog of one kind of job (say discover) cannot keep another
+    (say portcontrol) waiting. each queue is { tasks: N, actions: [...] }
+    and its actions are run only by its own workers
 
   [ENHANCEMENTS]
 
@@ -34,7 +34,6 @@
     portctl_only devices, and on uplink, phone and WAP ports, the portname
     job checked the port status ACL instead of the port name ACL. as
     documented, only portctl_by_role can refuse a port name change
-
   * offline (snapshot) jobs no longer log "not in cache" for
     lldp_v2_sys_cap, which SNMP::Info 3.980000 reads when LLDP-MIB is empty
 
