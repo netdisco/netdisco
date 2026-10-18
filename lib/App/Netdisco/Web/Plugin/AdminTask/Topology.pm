@@ -12,11 +12,22 @@ use App::Netdisco::Util::Port qw/port_acl_check port_acl_by_role_check sync_port
 use Try::Tiny;
 use NetAddr::IP::Lite ':lower';
 
+# portctl_topology is what lets port_control users at manual topology, and it
+# must switch the feature off where the work is done, not just hide the
+# shortcut on device ports: /topology/del clears is_uplink, which would let the
+# portctl_uplinks guard pass for a real uplink. the page route is registered
+# once at load, from this setting, so the routes below also check it per
+# request.
 register_admin_task({
   tag => 'topology',
   label => 'Manual Device Topology',
-  roles => [qw/admin port_control/],
+  roles => [ 'admin', (setting('portctl_topology') ? 'port_control' : ()) ],
 });
+
+sub _topology_ok {
+    return 1 if user_has_role('admin');
+    return (setting('portctl_topology') and user_has_role('port_control')) ? 1 : 0;
+}
 
 sub _sanity_ok {
     my $dev1 = NetAddr::IP::Lite->new(param('dev1'));
@@ -56,6 +67,7 @@ sub _scope_ok {
 }
 
 ajax '/ajax/control/admin/topology/add' => require_any_role [qw(admin port_control)] => sub {
+    send_error('Forbidden', 403) unless _topology_ok();
     send_error('Bad Request', 400) unless _sanity_ok();
     send_error('Forbidden', 403)
       unless _scope_ok(param('dev1'), param('port1'))
@@ -110,13 +122,14 @@ ajax '/ajax/control/admin/topology/add' => require_any_role [qw(admin port_contr
 };
 
 ajax '/ajax/control/admin/topology/del' => require_any_role [qw(admin port_control)] => sub {
+    send_error('Forbidden', 403) unless _topology_ok();
     send_error('Bad Request', 400) unless _sanity_ok();
     send_error('Forbidden', 403)
       unless _scope_ok(param('dev1'), param('port1'))
          and _scope_ok(param('dev2'), param('port2'));
 
-    schema(vars->{'tenant'})->txn_do(sub {
-      my $device = schema(vars->{'tenant'})->resultset('Topology')
+    my $gone = schema(vars->{'tenant'})->txn_do(sub {
+      return schema(vars->{'tenant'})->resultset('Topology')
         ->search({
           dev1  => param('dev1'),
           port1 => param('port1'),
@@ -124,6 +137,11 @@ ajax '/ajax/control/admin/topology/del' => require_any_role [qw(admin port_contr
           port2 => param('port2'),
         })->delete;
     });
+
+    # only a deleted manual link may reset its ports: naming the two ends of a
+    # discovered uplink would otherwise clear its is_uplink flag, and with it
+    # the portctl_uplinks guard. DBI reports "no rows" as the true "0E0"
+    return '' unless 0 + ($gone || 0);
 
     # re-set remote device details in affected ports
     # could fail for bad device or port names
@@ -166,6 +184,8 @@ ajax '/ajax/control/admin/topology/del' => require_any_role [qw(admin port_contr
 };
 
 ajax '/ajax/content/admin/topology' => require_any_role [qw(admin port_control)] => sub {
+    send_error('Forbidden', 403) unless _topology_ok();
+
     my $set = schema(vars->{'tenant'})->resultset('Topology')
       ->search({},{order_by => [qw/dev1 dev2 port1/]});
 
