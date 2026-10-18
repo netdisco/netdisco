@@ -60,6 +60,33 @@ sub txn_do    { return $_[1]->() }
 sub resultset { return $_[0] }
 sub create    { return 1 }
 
+package FakeUsersRS;
+sub new    { my ($c, $rows) = @_; return bless { rows => $rows }, $c }
+sub search { $_[0] }
+sub hri    { $_[0] }
+sub all    { @{ $_[0]->{rows} } }
+sub host_acl_names      { () }
+sub host_port_acl_names { die "the role list comes from portctl_roles() alone\n" }
+
+package FakeUsersSchema;
+sub new       { return bless {}, $_[0] }
+sub resultset { my ($s, $name) = @_;
+                return FakeUsersRS->new($name eq 'User'
+                  ? [ { username => 'someone', fullname => 'Some One',
+                        port_control => 1, portctl_role => 'dbrole' } ] : []) }
+
+package FakeACLSchema;
+our @updates;
+sub new        { return bless {}, $_[0] }
+sub txn_do     { return $_[1]->() }
+sub resultset  { $_[0] }
+sub search     { $_[0] }
+sub find       { $_[0] }
+sub update     { push @updates, $_[1]; return 1 }
+sub delete     { return 1 }
+sub left_acls  { () }
+sub right_acls { () }
+
 package main;
 
 my $user  = FakeUser->new;
@@ -79,6 +106,8 @@ no warnings 'redefine';
 *App::Netdisco::Web::API::Queue::jq_insert  = sub { return 1 };
 *App::Netdisco::Web::Plugin::AdminTask::Topology::schema     = sub { return FakeSchema->new };
 *App::Netdisco::Web::Plugin::AdminTask::Topology::get_device = sub { return FakeDevice->new($_[0]) };
+*App::Netdisco::Web::Plugin::AdminTask::Users::schema      = sub { return FakeUsersSchema->new };
+*App::Netdisco::Web::Plugin::AdminTask::ACLManager::schema = sub { return FakeACLSchema->new };
 
 setting('portctl_by_role' => {});
 setting('portctl_topology' => 1);
@@ -106,6 +135,14 @@ sub api_request {
     headers => [ 'Authorization' => 'goodtoken', 'Accept' => 'application/json',
                  'Content-Type' => 'application/json' ],
     body => $body });
+}
+
+sub web_get {
+  my $path = shift;
+  Dancer::Cookies->init;
+  set trust_x_remote_user => 1;
+  local $ENV{HTTP_X_REQUESTED_WITH} = 'XMLHttpRequest';
+  return dancer_response(GET => $path, { headers => [ 'X-REMOTE_USER' => 'someone' ] });
 }
 
 my %location = (device => '192.0.2.1', field => 'location', value => 'rack 4');
@@ -144,6 +181,36 @@ subtest 'topology__checking_both_ports__loads_the_roles_once' => sub {
   my $calls = stub_managed_acls($covers{both});
   web_request('/ajax/control/admin/topology/add', \%link);
   is $$calls, 1, 'one load serves both port checks in the request';
+};
+
+subtest 'users__the_role_dropdown__lists_yaml_and_database_roles_from_portctl_roles' => sub {
+  @roles = ('admin');
+  setting('portctl_by_role' => { yamlrole => ['192.0.2.1'] });
+  stub_managed_acls({ dbrole => [ [['192.0.2.1'], []] ] });
+
+  my $res = web_get('/ajax/content/admin/users');
+  is $res->status, 200, 'the page renders without asking for the ACL names again';
+  like $res->content, qr/value="yamlrole"/, 'a YAML role is offered';
+  like $res->content, qr/value="dbrole"/,   'and a database role';
+
+  setting('portctl_by_role' => {});
+};
+
+subtest 'aclmanager__deleting_a_role_yaml_also_defines__leaves_its_users_their_role' => sub {
+  @roles = ('admin');
+  # set after the app loaded, which the old load-time backup never saw
+  setting('portctl_by_role' => { yamlrole => ['192.0.2.1'] });
+
+  @FakeACLSchema::updates = ();
+  web_request('/ajax/control/admin/aclmanager/delete', { acl_name => 'yamlrole' });
+  is_deeply $FakeACLSchema::updates[0], {}, 'users keep a role YAML still defines';
+
+  @FakeACLSchema::updates = ();
+  web_request('/ajax/control/admin/aclmanager/delete', { acl_name => 'dbonly' });
+  ok exists $FakeACLSchema::updates[0]->{portctl_role},
+    'a role only the database defined is taken from its users';
+
+  setting('portctl_by_role' => {});
 };
 
 done_testing;

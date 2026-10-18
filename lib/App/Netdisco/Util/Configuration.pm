@@ -14,7 +14,6 @@ our @EXPORT_OK = qw/
   effective_setting
   forget_effective_config
   refresh_managed_acl
-  load_acls_from_database
   parse_params_to_config
   split_params_to_config
 /;
@@ -138,35 +137,6 @@ sub _build_overlay {
       ((scalar keys %groups)
         ? (host_groups => { %{ setting('host_groups') || {} }, %groups }) : ()),
     };
-}
-
-=head1 load_acls_from_database
-
-Loads all the managed ACLs into C<host_groups>.
-
-=cut
-
-sub load_acls_from_database {
-    # because this is always called when Netdisco loads, it might happen during tests
-    # or other circs when there's no database. exit if so.
-    {
-        # Temporarily intercept warnings within this block
-        local $SIG{__WARN__} = sub {
-            my $warning = shift;
-            # Silence only the unversioned schema warning
-            return if $warning =~ /Your DB is currently unversioned/;
-            # Pass all other warnings through
-            warn $warning;
-        };
-
-        return unless schema(vars->{'tenant'})->get_db_version;
-    }
-
-    my @names = schema(vars->{'tenant'})->resultset('AccessControlListName')
-      ->search(undef, { prefetch => { mappings => [qw/left_acl right_acl/] } })->all;
-
-    # for each named acl
-    refresh_managed_acl($_) for @names;
 }
 
 =head1 CONFIGURATION OVERRIDE

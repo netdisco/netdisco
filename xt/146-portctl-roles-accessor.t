@@ -273,4 +273,11 @@ subtest 'dumpconfig__the_database_unreachable__prints_the_yaml_with_one_warning'
   setting('portctl_by_role' => {});
 };
 
+subtest 'cleanup__the_yaml_backup_and_the_unused_loader__are_gone' => sub {
+  ok !exists config->{'portctl_by_role_shadow'},
+    'no backup of portctl_by_role is kept, because nothing rewrites it';
+  ok !App::Netdisco::Util::Configuration->can('load_acls_from_database'),
+    'load_acls_from_database, unused since #1651, is gone';
+};
+
 done_testing;
