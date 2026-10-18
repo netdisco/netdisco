@@ -88,6 +88,19 @@ subtest 'portnameCheck__on_an_uplink__allows_the_name' => sub {
     'portctl_uplinks guards port status, not the port name';
 };
 
+subtest 'portnameCheck__on_a_portctl_no_device__allows_the_name' => sub {
+  # the Configuration wiki: "with the exception of changing the port name
+  # which is always allowed", for both portctl_no and portctl_only
+  setting('portctl_no' => [$IN->ip]);
+  $PORT = Test::FakePort->new;
+  is check_status($IN, Test::FakeUser->new), 'done', 'portctl_no leaves the name alone';
+  setting('portctl_no' => []);
+
+  setting('portctl_only' => [$OUT->ip]);
+  is check_status($IN, Test::FakeUser->new), 'done', 'portctl_only leaves the name alone';
+  setting('portctl_only' => []);
+};
+
 subtest 'portnameCheck__outside_the_users_role__still_refuses' => sub {
   $PORT = Test::FakePort->new(ip => $OUT->ip);
   is check_status($OUT, Test::FakeUser->new(portctl_role => 'plainonly')), 'error',
