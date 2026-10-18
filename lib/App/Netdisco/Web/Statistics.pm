@@ -5,6 +5,8 @@ use File::Spec::Functions qw/catfile catdir/;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
+use App::Netdisco::Util::PostgresFloor '$POSTGRES_FLOOR_MAJOR';
+
 sub mib_bundle_version {
     my $home = setting('mibhome')
       || catdir(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'netdisco-mibs');
@@ -26,7 +28,8 @@ get '/ajax/content/statistics' => require_login sub {
     var( nav => 'statistics' );
     template 'ajax/statistics.tt',
         { stats => $stats, netdisco_version => $App::Netdisco::VERSION,
-          mib_bundle_version => mib_bundle_version() },
+          mib_bundle_version => mib_bundle_version(),
+          pg_floor => $POSTGRES_FLOOR_MAJOR },
         { layout => 'noop' };
 };
 

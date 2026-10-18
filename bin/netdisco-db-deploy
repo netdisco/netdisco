@@ -42,18 +42,22 @@ use Dancer::Plugin::DBIC 'schema';
 
 use Try::Tiny;
 
+use App::Netdisco::DB::Deploy qw(parse_args run_deploy);
+use App::Netdisco::DB::SchemaCheck;
+use App::Netdisco::Util::PostgresFloor 'warn_postgres_floor_all_tenants';
+
 =head1 NAME
 
 netdisco-db-deploy - Database deployment for Netdisco
 
 =head1 USAGE
 
-This script upgrades or initialises a Netdisco database schema.
+This script upgrades or initializes a Netdisco database schema.
 
- ~/bin/netdisco-db-deploy [--redeploy-all]
+ ~/bin/netdisco-db-deploy [--redeploy-all | --force-step N | --check]
 
 This script connects to the database and runs without user interaction. If
-there's no Nedisco schema, it is deployed. If there's an unversioned schema
+there's no Netdisco schema, it is deployed. If there's an unversioned schema
 then versioning is added, and updates applied.  Otherwise only necessary
 updates are applied to an already versioned schema.
 
@@ -61,10 +65,49 @@ Pre-existing requirements are that there's a working database connection and a
 user with rights to create tables in that database. These settings are defined
 in your environment YAML file (default C<~/environments/deployment.yml>).
 
-If you wish to force the redeployment of all database configuration, pass the
-C<--redeploy-all> argument on the command line. This will reset your database
-version so the database scripts will run again, but no data will be deleted
-other than what's done via the upgrade scripts.
+If an upgrade step fails, the script stops at that step and exits non-zero.
+Nothing from the failed step is applied. The message names the step file, the
+failing statement and the PostgreSQL error, and prints the commands to go on.
+
+=head1 OPTIONS
+
+=over 4
+
+=item C<--redeploy-all>
+
+Replays every upgrade step from version 2, tolerating the errors that come
+from steps already applied. It changes no data that Netdisco or an
+administrator maintains. It repeats one cleanup: step 39-40 deletes vlan-0
+node rows that duplicate the same MAC address, switch and port on another
+VLAN.
+
+=item C<--force-step N>
+
+Forces step N (from version N to N+1) when it keeps failing and you cannot fix
+the cause. N must be the next pending step. The failing statements in that
+step are skipped, the version is stamped, and a row is written to the
+C<schema_step_forced> table so the skip is recorded. The upgrade then carries
+on with the following steps. Once step N is applied, the option is no longer
+needed; if it is left in place, the script warns and carries on.
+
+=item C<--check>
+
+Compares this database's schema with a fresh install of the same version and
+lists the differences, without changing anything. It exits 0 when they match
+and 1 when they differ. It builds the fresh install in a temporary schema and
+drops it afterwards, so the database user needs the CREATE privilege on the
+database, which an owner has; without it the check exits 2 and prints how to
+grant it.
+
+=back
+
+=head1 CONTAINERS
+
+In the Netdisco Docker images and the Helm chart, this script runs when the
+container starts. To pass it one of the options above, set
+C<NETDISCO_DB_DEPLOY_ARGS> in the container's environment (for example
+C<NETDISCO_DB_DEPLOY_ARGS=--force-step 57>) and restart the container. Remove
+the setting again once the upgrade has finished.
 
 For more database info see the
 L<netdisco wiki|https://github.com/netdisco/netdisco/wiki/Database-Tips>.
@@ -89,9 +132,16 @@ Versions 5 to 16 add patches for Netdisco 1.2
 
 Version 17 onwards deploys schema upgrades for Netdisco 2
 
+=item *
+
+Version 38 (2.023000) onwards applies each step completely or not at all
+(except under C<--redeploy-all>)
+
 =back
 
 =cut
+
+my $options = try { parse_args(\@ARGV) } catch { print STDERR $_; exit 2 };
 
 my $schema = schema('netdisco');
 my $pg_ver = $schema->storage->dbh->{pg_server_version};
@@ -107,58 +157,9 @@ if ($pg_ver and $pg_ver < 90600) {
     die "\n";
 }
 
-if (scalar @ARGV and $ARGV[0] and $ARGV[0] eq '--redeploy-all') {
-    $schema->storage->dbh_do(
-      sub {
-        my ($storage, $dbh, @args) = @_;
-        $dbh->do('DROP TABLE dbix_class_schema_versions');
-      },
-    );
-}
+warn_postgres_floor_all_tenants(sub { print "\nWARNING: ", shift, "\n" });
 
-# installs the dbix_class_schema_versions table with version "1"
-# which corresponds to an empty schema
-if (not $schema->get_db_version) {
-    $schema->install(1);
-    $schema->storage->disconnect;
-}
+exit App::Netdisco::DB::SchemaCheck::run_check($schema) if $options->{check};
 
-# test for existing schema at public release version, set v=2 if so
-try {
-    $schema->storage->dbh_do(sub {
-      my ($storage, $dbh) = @_;
-      $dbh->selectrow_arrayref("SELECT * FROM device WHERE 0 = 1");
-    });
-
-    $schema->_set_db_version({version => 2})
-      if $schema->get_db_version == 1;
-    $schema->storage->disconnect;
-};
-
-# roll everything back if we're testing
-my $txn_guard = $ENV{ND2_DB_ROLLBACK}
-  ? schema('netdisco')->storage->txn_scope_guard : undef;
-
-# upgrade from whatever dbix_class_schema_versions says, to $VERSION
-# except that get_db_version will be 0 at first deploy
-my $db_version = ($schema->get_db_version || 1);
-my $target_version = $schema->schema_version;
-
-# one step at a time, in case user has applied local changes already
-for (my $i = $db_version; $i < $target_version; $i++) {
-    my $next = $i + 1;
-    try {
-        $schema->upgrade_single_step($i, $next);
-    }
-    catch {
-        warn "Error: $_"
-          if $_ !~ m/(does not exist|already exists)/;
-
-        # set row in dbix_class_schema_versions table
-        $schema->_set_db_version({version => $next})
-          if $schema->get_db_version < $next;
-    };
-}
-
-undef $txn_guard if $ENV{ND2_DB_ROLLBACK};
-exit 0;
+$options->{container} = $ENV{NETDISCO_DB_DEPLOY_CONTAINER} ? 1 : 0;
+exit run_deploy($schema, $options);
