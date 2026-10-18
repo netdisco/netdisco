@@ -9,6 +9,7 @@ use Dancer::Plugin::Auth::Extensible;
 use App::Netdisco::JobQueue 'jq_insert';
 use App::Netdisco::Backend::Job;
 use App::Netdisco::Util::DNS 'ipv4_from_hostname';
+use App::Netdisco::Util::Port qw/device_acl_by_role_check sync_portctl_roles/;
 use NetAddr::IP::Lite;
 use Try::Tiny;
 
@@ -218,11 +219,16 @@ swagger_path {
 
   send_error('Malformed body', 400) if ref $jobs ne ref [];
 
+  # a custom field job is written to the device as it is queued, with no
+  # worker check phase, so a port_control user is scoped to their role here
+  # as /ajax/portcontrol scopes the same edit from the web
+  my $scoped = not user_has_role('api_admin');
+  my $synced = 0;
+
   foreach my $job (@$jobs) {
       send_error('Malformed job', 400) if ref $job ne ref {};
       send_error('Malformed job', 400) if !defined $job->{action};
       send_error('Not Authorized', 403)
-        # TODO make this aware of port control roles per device/port
         if ($job->{action} =~ m/^cf_/ and not user_has_role('port_control'))
         or ($job->{action} !~ m/^cf_/ and not user_has_role('api_admin'));
       send_error('Action not permitted', 403)
@@ -236,6 +242,14 @@ swagger_path {
           my $ip = ipv4_from_hostname($job->{device})
             or return send_error("Cannot resolve hostname: $job->{device}", 400);
           $job->{device} = $ip;
+      }
+
+      # checked on the resolved address, which is what the job will write to.
+      # the database half of portctl_by_role is in scope once this has run
+      if ($scoped) {
+          sync_portctl_roles() unless $synced++;
+          send_error('Device is outside your port control role', 403)
+            unless device_acl_by_role_check($job->{device}, logged_in_user);
       }
 
       $job->{username} = session('logged_in_user');
