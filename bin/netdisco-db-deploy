@@ -97,7 +97,9 @@ lists the differences, without changing anything. It exits 0 when they match
 and 1 when they differ. It builds the fresh install in a temporary schema and
 drops it afterwards, so the database user needs the CREATE privilege on the
 database, which an owner has; without it the check exits 2 and prints how to
-grant it.
+grant it. The database must already be at this version: on any other version
+the check exits 2 and asks for the upgrade first, because steps not yet applied
+would show as differences.
 
 =back
 

@@ -12,7 +12,8 @@ use App::Netdisco::DB::Deploy 'run_deploy';
 
 use base 'Exporter';
 our @EXPORT_OK = qw(
-  catalog_sql normalize_lines diff_lines check_privilege_message run_check
+  catalog_sql normalize_lines diff_lines check_privilege_message
+  version_mismatch_message run_check
 );
 
 # One line per object in the bound schema; written for 9.6 and later, so no
@@ -86,6 +87,19 @@ sub check_privilege_message {
     . "  ALTER DATABASE $database OWNER TO $role;\n"
     . "  GRANT CREATE ON DATABASE $database TO $role;\n"
     . "The first matches a documented install, where Netdisco's role owns its database.";
+}
+
+# A fresh install is built at the code's version, so against a database at
+# another version every pending step would read as drift.
+sub version_mismatch_message {
+  my ($db_version, $target_version) = @_;
+  my $action = $db_version > $target_version
+    ? "This database is newer than this Netdisco: run the check with the Netdisco version that upgraded it."
+    : "Run netdisco-db-deploy to upgrade it, then run the check again.";
+  return "Cannot check the schema: this database is at schema version "
+    . ($db_version || 'none') . " and this Netdisco expects $target_version."
+    . " A comparison would mix drift with steps not yet applied, so none was"
+    . " made and nothing was changed. $action";
 }
 
 sub _read_catalog {
@@ -162,10 +176,6 @@ sub _report_differences {
 
   my $count = @{ $differences->{only_here} } + @{ $differences->{only_fresh} };
   my $target_version = $schema->schema_version;
-  my $db_version = $schema->get_db_version // 'unknown';
-  print "This database is at schema version $db_version, not $target_version;"
-    . " run netdisco-db-deploy to upgrade it before checking.\n"
-    if $db_version ne $target_version;
   my $noun = $count == 1 ? 'difference' : 'differences';
   print(($count || 'No') . " $noun from a fresh install of schema version $target_version.\n");
   return $count ? 1 : 0;
@@ -198,6 +208,11 @@ sub run_check {
   }
   if (not $facts->{can_create}) {
     print STDERR check_privilege_message($facts->{database}, $facts->{role}), "\n";
+    return 2;
+  }
+  my ($db_version, $target_version) = ($schema->get_db_version, $schema->schema_version);
+  if ($db_version != $target_version) {
+    print STDERR version_mismatch_message($db_version, $target_version), "\n";
     return 2;
   }
 

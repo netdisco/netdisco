@@ -11,6 +11,7 @@ use Test::More 0.88;
 
 use App::Netdisco::DB::SchemaCheck qw(
   catalog_sql normalize_lines diff_lines check_privilege_message
+  version_mismatch_message
 );
 
 subtest 'normalize_lines__scratch_schema_name__becomes_public' => sub {
@@ -61,4 +62,17 @@ subtest 'catalog_sql__placeholders__one_per_schema_reference' => sub {
   is($placeholders, 2, 'relations and functions each bind the schema name');
 };
 
+subtest 'version_mismatch_message__database_behind__asks_for_the_upgrade' => sub {
+  my $m = version_mismatch_message(98, 102);
+  like($m, qr/schema version 98 and this Netdisco expects 102/);
+  like($m, qr/Run netdisco-db-deploy to upgrade it/);
+};
+subtest 'version_mismatch_message__unversioned_database__says_none' => sub {
+  like(version_mismatch_message(0, 102), qr/schema version none .*Run netdisco-db-deploy/);
+};
+subtest 'version_mismatch_message__database_ahead__points_at_the_newer_netdisco' => sub {
+  my $m = version_mismatch_message(103, 102);
+  like($m, qr/newer than this Netdisco/);
+  unlike($m, qr/Run netdisco-db-deploy/);
+};
 done_testing;
