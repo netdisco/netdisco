@@ -705,7 +705,6 @@ xt/138-device-port-delete-node-set.t
 xt/139-api-object-relations-to-json.t
 xt/140-worker-queues.t
 xt/141-manager-worker-queues.t
-xt/144-portctl-topology-gate.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t
