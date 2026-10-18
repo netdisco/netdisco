@@ -535,6 +535,7 @@ lldp_rem_model
 lldp_rem_serial
 lldp_rem_sw_rev
 lldp_rem_vendor
+lldp_v2_sys_cap
 location
 model
 name
