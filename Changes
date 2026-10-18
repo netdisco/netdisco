@@ -13,20 +13,20 @@
 
   [BUG FIXES]
 
-  * deleting a manual topology link resets its two ports only when a manual
-    link was deleted. naming the two ends of a discovered uplink no longer
-    clears its is_uplink flag, which let portctl_uplinks pass for it
-  * portctl_topology now switches manual topology off for port_control users
-    at the Manual Device Topology page and its routes, not only the shortcut
-    on device ports. admins are unaffected
-  * a port_control user updating custom fields through the API is now held
-    to their port control role, as the web interface has held them since
-    #1691: a device outside the role is refused with 403
-  * port name changes are no longer refused by the backend when the device
-    ports view offered them: under portctl_nameonly, on portctl_no or
-    portctl_only devices, and on uplink, phone and WAP ports, the portname job
-    checked the port status ACL instead of the port name ACL. as documented,
-    only portctl_by_role can refuse a port name change
+  * #1750 deleting a manual topology link resets its two ports only when a
+    manual link was deleted. naming the two ends of a discovered uplink no
+    longer clears its is_uplink flag, which let portctl_uplinks pass for it
+  * #1749 portctl_topology now switches manual topology off for port_control
+    users at the Manual Device Topology page and its routes, not only the
+    shortcut on device ports. admins are unaffected
+  * #1748 a port_control user updating custom fields through the API is now
+    held to their port control role, as the web interface has held them
+    since #1691: a device outside the role is refused with 403
+  * #1747 port name changes are no longer refused by the backend when the
+    device ports view offered them: under portctl_nameonly, on portctl_no or
+    portctl_only devices, and on uplink, phone and WAP ports, the portname
+    job checked the port status ACL instead of the port name ACL. as
+    documented, only portctl_by_role can refuse a port name change
 
   * offline (snapshot) jobs no longer log "not in cache" for
     lldp_v2_sys_cap, which SNMP::Info 3.980000 reads when LLDP-MIB is empty
