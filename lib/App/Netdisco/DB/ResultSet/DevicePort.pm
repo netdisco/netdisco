@@ -327,9 +327,10 @@ strings by code unit.
 
 =cut
 
-# Checked once per process rather than per query. A failed migration leaves no
-# trace: App::Netdisco::DB::SchemaVersioned catches the error and stamps the
-# version anyway, so without this the first symptom is every Ports tab request
+# Checked once per process rather than per query. Steps 98-99 and 101-102 run
+# strict, so the function can be missing only if they were forced or replayed
+# with --redeploy-all, both of which skip failing statements and stamp the
+# version anyway. Without this the first symptom is every Ports tab request
 # failing with a bare "function port_sortkey(text) does not exist" from inside
 # a query. Deliberately no fallback to the Perl sort_port: that would hide a
 # broken deployment behind an order which is not the same one.
@@ -347,8 +348,11 @@ sub _assert_port_sortkey {
   });
 
   die "port_sortkey() is missing from the database, so ports cannot be ordered.\n"
-    . "Run netdisco-db-deploy to apply schema version 99. If it reports success\n"
-    . "and this persists, the migration failed silently: apply\n"
+    . "Run netdisco-db-deploy to apply schema version 99. If the database is\n"
+    . "already at 99 or later, a step that creates it (98-99 or 101-102) was\n"
+    . "forced or replayed with --redeploy-all and the function was skipped:\n"
+    . "check the schema_step_forced table and run netdisco-db-deploy --check,\n"
+    . "then apply\n"
     . "share/schema_versions/App-Netdisco-DB-98-99-PostgreSQL.sql by hand and\n"
     . "read the error it gives.\n"
       unless $found;

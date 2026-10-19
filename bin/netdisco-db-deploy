@@ -65,7 +65,8 @@ Pre-existing requirements are that there's a working database connection and a
 user with rights to create tables in that database. These settings are defined
 in your environment YAML file (default C<~/environments/deployment.yml>).
 
-If an upgrade step fails, the script stops at that step and exits non-zero.
+From version 38 on, if a step fails, the script stops at that step and exits
+non-zero.
 Nothing from the failed step is applied. The message names the step file, the
 failing statement and the PostgreSQL error, and prints the commands to go on.
 
@@ -84,11 +85,14 @@ VLAN.
 =item C<--force-step N>
 
 Forces step N (from version N to N+1) when it keeps failing and you cannot fix
-the cause. N must be the next pending step. The failing statements in that
-step are skipped, the version is stamped, and a row is written to the
-C<schema_step_forced> table so the skip is recorded. The upgrade then carries
-on with the following steps. Once step N is applied, the option is no longer
-needed; if it is left in place, the script warns and carries on.
+the cause. N must be the next pending step. The step is replayed the old way,
+one statement at a time, and every statement that fails is skipped. That can
+include parts of C<DO> blocks or functions that would otherwise succeed. The
+version is stamped, and a row is written to the C<schema_step_forced> table so
+the skips are recorded. The upgrade then carries on with the following steps.
+Run C<netdisco-db-deploy --check> afterwards to see what is missing. Once step
+N is applied, the option is no longer needed; if it is left in place, the
+script warns and carries on.
 
 =item C<--check>
 
@@ -139,7 +143,7 @@ Version 17 onwards deploys schema upgrades for Netdisco 2
 =item *
 
 Version 38 (2.023000) onwards applies each step completely or not at all
-(except under C<--redeploy-all>)
+(except under C<--redeploy-all> or for a step named by C<--force-step>)
 
 =back
 
@@ -161,7 +165,7 @@ if ($pg_ver and $pg_ver < 90600) {
     die "\n";
 }
 
-warn_postgres_floor_all_tenants(sub { print "\nWARNING: ", shift, "\n" });
+warn_postgres_floor_all_tenants(sub { print STDERR "\nWARNING: ", shift, "\n" });
 
 exit App::Netdisco::DB::SchemaCheck::run_check($schema) if $options->{check};
 

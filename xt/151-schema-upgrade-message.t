@@ -32,6 +32,8 @@ subtest 'strict_failure_message__native__gives_every_way_forward' => sub {
   like($m, qr/nothing from this step was applied/i);
   like($m, qr/^\s*netdisco-db-deploy --force-step 57\s*$/m);
   like($m, qr/recorded/i);
+  like($m, qr/one statement at a time and skips every statement that fails/);
+  like($m, qr/parts of DO blocks or functions that would otherwise succeed/);
   unlike($m, qr/--check/);
   like($m, qr/before it in this run were applied and stay applied/);
   like($m, qr/pg_dump .*netdisco/);
@@ -94,6 +96,7 @@ subtest 'forced_step_summary__step_and_count__one_line_naming_the_record' => sub
   unlike($s, qr/\n./);
   like($s, qr/\b57\b/); like($s, qr/\b3\b/); like($s, qr/schema_step_forced/);
   unlike($s, qr/older/);
+  like($s, qr/run netdisco-db-deploy --check to see what is missing/);
 };
 
 done_testing;

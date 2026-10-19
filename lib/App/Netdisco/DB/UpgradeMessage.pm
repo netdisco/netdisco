@@ -35,8 +35,9 @@ sub _action {
 }
 
 sub _force_line {
-  return 'Forcing skips the failing statements in that step, stamps the new '
-    . 'version, and writes a row to the schema_step_forced table so the skip is recorded.';
+  return 'Forcing replays the step one statement at a time and skips every statement that fails,'
+    . ' which can include parts of DO blocks or functions that would otherwise succeed.'
+    . ' It stamps the new version and writes a row to the schema_step_forced table so the skips are recorded.';
 }
 
 sub strict_failure_message {
@@ -109,7 +110,7 @@ sub tolerant_summary {
 sub forced_step_summary {
   my %arg = @_;
   return "Step $arg{from} was forced: $arg{skipped} failing statements were skipped "
-    . 'and recorded in the schema_step_forced table.';
+    . 'and recorded in the schema_step_forced table; run netdisco-db-deploy --check to see what is missing.';
 }
 
 sub unexpected_error_message {

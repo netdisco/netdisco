@@ -75,4 +75,48 @@ subtest 'version_mismatch_message__database_ahead__points_at_the_newer_netdisco'
   like($m, qr/newer than this Netdisco/);
   unlike($m, qr/Run netdisco-db-deploy/);
 };
+# A stand-in schema for run_check's version gate. Its dbh refuses CREATE
+# SCHEMA, so a call that passes the gate stops at the scratch schema with a
+# message of its own.
+{
+  package Local::GateDbh;
+  sub new { bless {}, shift }
+  sub selectrow_hashref { return { schema_name => 'public', database => 'nd', role => 'nd', can_create => 1 } }
+  sub quote_identifier { return qq{"$_[1]"} }
+  sub do { die "stand-in refuses $_[1]\n" }
+  package Local::GateSchema;
+  sub new { my ($class, %arg) = @_; bless { %arg, dbh => Local::GateDbh->new }, $class }
+  sub storage { return $_[0] }
+  sub dbh { return $_[0]{dbh} }
+  sub get_db_version { return $_[0]{db_version} }
+  sub schema_version { return $_[0]{schema_version} }
+}
+
+sub run_gate {
+  my ($db_version, $schema_version) = @_;
+  my $err = '';
+  open my $err_handle, '>', \$err or die $!;
+  local *STDERR = $err_handle;
+  my $code = App::Netdisco::DB::SchemaCheck::run_check(
+    Local::GateSchema->new(db_version => $db_version, schema_version => $schema_version));
+  return ($code, $err);
+}
+
+subtest 'run_check__database_behind__exits_2_asking_for_the_upgrade' => sub {
+  my ($code, $err) = run_gate(101, 102);
+  is($code, 2);
+  like($err, qr/schema version 101 and this Netdisco expects 102/);
+  like($err, qr/Run netdisco-db-deploy to upgrade it/);
+};
+subtest 'run_check__database_ahead__exits_2_naming_the_newer_netdisco' => sub {
+  my ($code, $err) = run_gate(103, 102);
+  is($code, 2);
+  like($err, qr/newer than this Netdisco/);
+  unlike($err, qr/temporary schema/, 'stops before the scratch schema');
+};
+subtest 'run_check__same_version__passes_the_gate' => sub {
+  my ($code, $err) = run_gate(102, 102);
+  like($err, qr/creating the temporary schema "ndcheck_\d+" failed/, 'reaches the scratch schema');
+  unlike($err, qr/this Netdisco/, 'no version message');
+};
 done_testing;
