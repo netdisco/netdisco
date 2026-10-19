@@ -96,8 +96,8 @@ sub _strict_step {
 
   try {
     $parsed->{no_transaction}
-      ? $apply_and_stamp->()
-      : $self->storage->txn_do($apply_and_stamp);
+      ? $self->_in_quiet_session($apply_and_stamp)
+      : $self->_in_quiet_transaction($apply_and_stamp);
     $result->{ok} = 1;
   }
   catch {
@@ -114,21 +114,56 @@ sub _tolerant_step {
   my $strict_result = $self->_strict_step($step_file, $to, $before_stamp);
   return $strict_result if $strict_result->{ok};
 
+  my $no_transaction = parse_step_file($step_file)->{no_transaction};
   my $result = _new_step_result($step_file);
-  foreach my $statement (@{ legacy_statements($step_file) }) {
-    my $failure;
-    try {
-      $self->storage->txn_do(sub { $self->_do_capturing_failure($statement, \$failure) });
-    }
-    catch { _tally_tolerated_failure($result, $failure, $statement, $_) };
-  }
+  my $replay = sub {
+    $self->_replay_statement($_, $result, $no_transaction)
+      for @{ legacy_statements($step_file) };
+  };
+  $no_transaction ? $self->_in_quiet_session($replay) : $replay->();
 
-  $self->storage->txn_do(sub {
+  $self->_in_quiet_transaction(sub {
     $before_stamp->($result->{skipped}) if $before_stamp;
     $self->_set_db_version({version => $to});
   });
   $result->{ok} = 1;
   return $result;
+}
+
+# PostgreSQL refuses statements such as CREATE INDEX CONCURRENTLY inside a
+# transaction, so a no-transaction step replays them bare.
+sub _replay_statement {
+  my ($self, $statement, $result, $no_transaction) = @_;
+  my $failure;
+  my $run = sub { $self->_do_capturing_failure($statement, \$failure) };
+  try { $no_transaction ? $run->() : $self->_in_quiet_transaction($run) }
+  catch { _tally_tolerated_failure($result, $failure, $statement, $_) };
+}
+
+# The IF [NOT] EXISTS forms in old steps raise NOTICE "skipping" lines that
+# read as faults. A step can still set it back to notice for a NOTICE it
+# means the user to see, as 101-102 does.
+sub _in_quiet_transaction {
+  my ($self, $code) = @_;
+  return $self->storage->txn_do(sub {
+    $self->storage->dbh->do('SET LOCAL client_min_messages = warning');
+    return $code->();
+  });
+}
+
+# SET LOCAL outside a transaction does nothing, so quiet the session instead
+# and put the old level back.
+sub _in_quiet_session {
+  my ($self, $code) = @_;
+  my $dbh = $self->storage->dbh;
+  my ($previous) = $dbh->selectrow_array('SHOW client_min_messages');
+  $dbh->do('SET client_min_messages = warning');
+  my $failure;
+  try { $code->() } catch { $failure = $_ };
+  # Fails only in an aborted ND2_DB_ROLLBACK transaction, whose rollback
+  # restores the level anyway.
+  try { $dbh->do('SET client_min_messages = ' . $dbh->quote($previous)) };
+  die $failure if defined $failure;
 }
 
 sub _tally_tolerated_failure {

@@ -9,6 +9,7 @@ use strict;
 use warnings;
 
 use Test::More 0.88;
+use File::Temp ();
 
 use App::Netdisco::DB::SchemaVersioned;
 use App::Netdisco::DB::StepFile qw(parse_step_file step_file_path);
@@ -89,6 +90,79 @@ subtest 'schema_version__is_102' => sub {
   open my $fh, '<', 'lib/App/Netdisco/DB.pm' or die "cannot read DB.pm: $!";
   my ($declared) = map { /\$VERSION = (\d+);/ ? $1 : () } <$fh>;
   is($declared, 102);
+};
+
+# A stand-in storage that refuses CONCURRENTLY inside a transaction, as
+# PostgreSQL does with SQLSTATE 25001, so the runner's transaction handling
+# can be tested without a database.
+{
+  package StandInDbh;
+  sub new { bless { in_transaction => 0, ran => [] }, shift }
+  sub state { $_[0]{state} }
+  sub errstr { $_[0]{errstr} }
+  sub selectrow_array { 'notice' }
+  sub quote { "'$_[1]'" }
+  sub do {
+    my ($self, $sql) = @_;
+    push @{ $self->{ran} }, [$sql, $self->{in_transaction}];
+    my ($state, $error) =
+        ($sql =~ /CONCURRENTLY/ and $self->{in_transaction})
+          ? ('25001', 'cannot run inside a transaction block')
+      : $sql =~ /existing_idx/ ? ('42P07', 'relation already exists')
+      : ();
+    ($self->{state}, $self->{errstr}) = ($state, $error);
+    die "$error\n" if $state;
+    return 1;
+  }
+
+  package StandInStorage;
+  sub new { bless { dbh => StandInDbh->new }, shift }
+  sub dbh { $_[0]{dbh} }
+  sub txn_do {
+    my ($self, $code) = @_;
+    local $self->{dbh}{in_transaction} = 1;
+    return $code->();
+  }
+
+  package StandInSchema;
+  our @ISA = ('App::Netdisco::DB::SchemaVersioned');
+  sub new { bless { storage => StandInStorage->new }, shift }
+  sub storage { $_[0]{storage} }
+  sub _set_db_version { 1 }
+}
+
+sub step_file_with {
+  my $sql = shift;
+  my $fh = File::Temp->new(SUFFIX => '.sql');
+  print {$fh} $sql;
+  close $fh;
+  return $fh;
+}
+
+subtest 'tolerant_step__no_transaction_file__fallback_runs_outside_transactions' => sub {
+  my $file = step_file_with("-- netdisco: no-transaction\n"
+    . "CREATE INDEX CONCURRENTLY existing_idx ON device (ip);\n"
+    . "CREATE INDEX CONCURRENTLY new_idx ON device (dns);\n");
+  my $schema = StandInSchema->new;
+  my $result = $schema->_tolerant_step("$file", 2);
+  my @ran = @{ $schema->storage->dbh->{ran} };
+  is($result->{expected}, 1, 'existing index tolerated');
+  is_deeply($result->{unexpected}, [], 'nothing refused for running in a transaction');
+  is(scalar(grep { $_->[0] =~ /CONCURRENTLY/ and $_->[1] } @ran), 0, 'no CONCURRENTLY inside a transaction');
+  is(scalar(grep { $_->[0] =~ /new_idx/ } @ran), 1, 'new index created once');
+};
+subtest 'strict_step__transactional_file__quiets_notices_first_in_the_transaction' => sub {
+  my $file = step_file_with("CREATE TABLE IF NOT EXISTS t (a integer);\n");
+  my $schema = StandInSchema->new;
+  ok($schema->_strict_step("$file", 2)->{ok});
+  is_deeply($schema->storage->dbh->{ran}[0], ['SET LOCAL client_min_messages = warning', 1]);
+};
+subtest 'strict_step__no_transaction_file__quiets_the_session_then_restores_it' => sub {
+  my $file = step_file_with("-- netdisco: no-transaction\nCREATE INDEX CONCURRENTLY new_idx ON device (dns);\n");
+  my $schema = StandInSchema->new;
+  ok($schema->_strict_step("$file", 2)->{ok});
+  my @settings = map { $_->[0] } grep { $_->[0] =~ /client_min_messages/ } @{ $schema->storage->dbh->{ran} };
+  is_deeply(\@settings, ['SET client_min_messages = warning', "SET client_min_messages = 'notice'"]);
 };
 
 done_testing;
