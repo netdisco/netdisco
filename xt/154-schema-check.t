@@ -57,6 +57,26 @@ subtest 'normalize_lines__view_definition__hashed_after_schema_stripped' => sub 
   is($scratch, $public);
   like($scratch, qr/\Aview v [0-9a-f]{32}\z/);
 };
+subtest 'catalog_sql__not_null_constraints__left_to_the_column_line' => sub {
+  like(catalog_sql(), qr/con\.contype <> 'n'/);
+};
+subtest 'normalize_lines__pre_10_default_expansions__read_as_the_value_function' => sub {
+  my %expanded = (
+    q{('now'::text)::date} => 'CURRENT_DATE',
+    q{('now'::text)::time with time zone} => 'CURRENT_TIME',
+    q{('now'::text)::time without time zone} => 'LOCALTIME',
+    q{('now'::text)::timestamp without time zone} => 'LOCALTIMESTAMP',
+    q{now()} => 'CURRENT_TIMESTAMP',
+  );
+  for my $old (sort keys %expanded) {
+    is_deeply(normalize_lines(["column t.c date not null default $old"], 'public'),
+      normalize_lines(["column t.c date not null default $expanded{$old}"], 'public'), $old);
+  }
+};
+subtest 'normalize_lines__expansion_outside_a_default__left_alone' => sub {
+  my $line = q{index i CREATE INDEX i ON public.t USING btree (c) WHERE (c < ('now'::text)::date)};
+  is_deeply(normalize_lines([$line], 'public'), [$line]);
+};
 subtest 'catalog_sql__placeholders__one_per_schema_reference' => sub {
   my $placeholders = () = catalog_sql() =~ m/\?/g;
   is($placeholders, 2, 'relations and functions each bind the schema name');

@@ -18,6 +18,8 @@ our @EXPORT_OK = qw(
 
 # One line per object in the bound schema; written for 9.6 and later, so no
 # prokind (11+). Extensions are database-wide, so both sides list the same.
+# PostgreSQL 18 names NOT NULL constraints after the column at creation, so a
+# renamed column's name depends on history; the column line carries nullability.
 my $CATALOG_SQL = <<'EOF';
 WITH rel AS (
   SELECT c.oid, c.relname, c.relkind FROM pg_class c
@@ -37,7 +39,7 @@ SELECT line FROM (
     FROM pg_index i JOIN pg_class ic ON ic.oid = i.indexrelid JOIN rel t ON t.oid = i.indrelid
   UNION ALL
   SELECT 'constraint ' || t.relname || '.' || con.conname || ' ' || pg_get_constraintdef(con.oid)
-    FROM pg_constraint con JOIN rel t ON t.oid = con.conrelid
+    FROM pg_constraint con JOIN rel t ON t.oid = con.conrelid WHERE con.contype <> 'n'
   UNION ALL
   SELECT 'sequence ' || relname FROM rel WHERE relkind = 'S'
   UNION ALL
@@ -62,10 +64,26 @@ sub _hash_definition {
   return $line;
 }
 
+# Before PostgreSQL 10 these defaults were stored expanded, and a dump restore
+# keeps the expansion, so a database first built on 9.x reads differently.
+my %VALUE_FUNCTION = (
+  q{('now'::text)::date} => 'CURRENT_DATE',
+  q{('now'::text)::time with time zone} => 'CURRENT_TIME',
+  q{('now'::text)::time without time zone} => 'LOCALTIME',
+  q{('now'::text)::timestamp without time zone} => 'LOCALTIMESTAMP',
+  q{now()} => 'CURRENT_TIMESTAMP',
+);
+
+sub _value_function_default {
+  my $line = shift;
+  return $line unless $line =~ m/\A(column .+? default )(.+)\z/s;
+  return $1 . ($VALUE_FUNCTION{$2} // $2);
+}
+
 sub normalize_lines {
   my ($lines, $schema_name) = @_;
   my $qualified = qr/(?<![\w"])(?:\Q$schema_name\E|"\Q$schema_name\E")\./;
-  return [ map { _hash_definition(s/$qualified/public./gr) } @$lines ];
+  return [ map { _hash_definition(_value_function_default(s/$qualified/public./gr)) } @$lines ];
 }
 
 sub diff_lines {
