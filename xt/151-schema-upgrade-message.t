@@ -32,7 +32,8 @@ subtest 'strict_failure_message__native__gives_every_way_forward' => sub {
   like($m, qr/nothing from this step was applied/i);
   like($m, qr/^\s*netdisco-db-deploy --force-step 57\s*$/m);
   like($m, qr/recorded/i);
-  like($m, qr/netdisco-db-deploy --check/);
+  unlike($m, qr/--check/);
+  like($m, qr/before it in this run were applied and stay applied/);
   like($m, qr/pg_dump .*netdisco/);
   unlike($m, qr/NETDISCO_DB_DEPLOY_ARGS/);
   like($m, qr/fix the cause, then run netdisco-db-deploy again/i);
@@ -44,9 +45,13 @@ subtest 'strict_failure_message__container__names_the_setting_not_a_command' => 
   my $m = strict_failure_message(file => 'f', from => 57, statement => 's', error => 'e',
     database => 'netdisco', container => 1);
   like($m, qr/NETDISCO_DB_DEPLOY_ARGS=--force-step 57/);
-  like($m, qr/NETDISCO_DB_DEPLOY_ARGS=--check/);
+  unlike($m, qr/--check/);
+  like($m, qr/dbInit\.deployArgs: "--force-step 57"/);
+  unlike($m, qr/restart the container/i);
+  unlike($m, qr/^\s*pg_dump/m);
   unlike($m, qr/^\s*netdisco-db-deploy --force-step/m);
-  like($m, qr/fix the cause, then restart the container \(no setting needed\)/i);
+  like($m, qr/fix the cause, then start the upgrade again: rerun your docker compose up command/i);
+  like($m, qr/run helm upgrade/);
 };
 
 subtest 'strict_failure_message__undef_statement_and_error__no_warnings' => sub {
@@ -61,7 +66,15 @@ subtest 'force_refusal_message__future_step__names_next_pending' => sub {
 };
 
 subtest 'force_already_applied_message__container__says_remove_the_setting' => sub {
-  like(force_already_applied_message(requested => 57, container => 1), qr/remove.*NETDISCO_DB_DEPLOY_ARGS/i);
+  my $m = force_already_applied_message(requested => 57, container => 1);
+  like($m, qr/remove.*NETDISCO_DB_DEPLOY_ARGS/i);
+  unlike($m, qr/restart/i);
+};
+subtest 'force_already_applied_message__native__says_drop_it_next_time_not_rerun' => sub {
+  my $m = force_already_applied_message(requested => 57, container => 0);
+  like($m, qr/carries on/);
+  like($m, qr/leave --force-step off next time/);
+  unlike($m, qr/again/i);
 };
 
 subtest 'tolerant_summary__counts__one_line_pointing_at_check' => sub {

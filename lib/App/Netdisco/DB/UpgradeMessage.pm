@@ -20,11 +20,17 @@ sub is_expected_sqlstate {
 
 sub _indent { my $text = shift // ''; $text =~ s/^/    /mg; return $text }
 
+# Restarting the db-init container alone starts neither backend nor web, and
+# helm runs its db-init job only on install or upgrade.
+my $CONTAINER_RERUN = 'start the upgrade again: rerun your docker compose up command,'
+  . ' which reruns netdisco-db-init, or run helm upgrade, which reruns the db-init job.';
+
 # A container user cannot run a command, so the same action becomes a setting.
 sub _action {
   my ($container, $arguments) = @_;
   return $container
-    ? "Set NETDISCO_DB_DEPLOY_ARGS=$arguments in the container's environment, then restart the container."
+    ? "Set NETDISCO_DB_DEPLOY_ARGS=$arguments in .env for docker compose,"
+      . qq{ or dbInit.deployArgs: "$arguments" in your helm values. Then $CONTAINER_RERUN}
     : "    netdisco-db-deploy $arguments";
 }
 
@@ -47,21 +53,20 @@ sub strict_failure_message {
     '',
     _indent($arg{error}),
     '',
-    'Nothing from this step was applied, so your data is as it was before the upgrade.',
-    '',
-    'Before trying anything below, make a backup:',
-    '',
-    "    pg_dump -Fc $database > netdisco-backup.dump",
+    'Nothing from this step was applied: it was rolled back.'
+      . ' Any steps before it in this run were applied and stay applied.',
     '',
     ($container
-      ? 'Fix the cause, then restart the container (no setting needed).'
+      ? ("Before trying anything below, back up the $database database with pg_dump,"
+          . ' run from wherever the database server can be reached.')
+      : ('Before trying anything below, make a backup:', '',
+         "    pg_dump -Fc $database > netdisco-backup.dump")),
+    '',
+    ($container
+      ? "Fix the cause, then $CONTAINER_RERUN No setting is needed."
       : 'Fix the cause, then run netdisco-db-deploy again:'),
     '',
     ($container ? () : ('    netdisco-db-deploy', '')),
-    ($container ? 'To see where things stand without changing anything:' : 'To see where things stand without changing anything, run:'),
-    '',
-    _action($container, '--check'),
-    '',
     'If you cannot fix the cause and want to carry on anyway, you can force this step. '
       . _force_line() . ($container ? '' : ' Run:'),
     '',
@@ -85,8 +90,9 @@ sub force_refusal_message {
 sub force_already_applied_message {
   my %arg = @_;
   my $removal = $arg{container}
-    ? 'Remove --force-step from NETDISCO_DB_DEPLOY_ARGS and restart the container.'
-    : 'Run netdisco-db-deploy again without --force-step.';
+    ? 'The upgrade carries on without it. Remove --force-step from'
+      . ' NETDISCO_DB_DEPLOY_ARGS (dbInit.deployArgs with helm) before the next start.'
+    : 'The upgrade carries on without it; leave --force-step off next time.';
   return join "\n",
     "Step $arg{requested} has already been applied, so there is nothing to force.",
     '',

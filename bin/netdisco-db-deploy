@@ -105,11 +105,13 @@ would show as differences.
 
 =head1 CONTAINERS
 
-In the Netdisco Docker images and the Helm chart, this script runs when the
-container starts. To pass it one of the options above, set
-C<NETDISCO_DB_DEPLOY_ARGS> in the container's environment (for example
-C<NETDISCO_DB_DEPLOY_ARGS=--force-step 57>) and restart the container. Remove
-the setting again once the upgrade has finished.
+In the Netdisco Docker images and the Helm chart, this script runs in the
+db-init container. To pass it one of the options above, set
+C<NETDISCO_DB_DEPLOY_ARGS> (for example
+C<NETDISCO_DB_DEPLOY_ARGS=--force-step 57> in F<.env> for docker compose, or
+C<dbInit.deployArgs> in the helm values), then rerun your C<docker compose up>
+command or C<helm upgrade>. Remove the setting again once the upgrade has
+finished.
 
 For more database info see the
 L<netdisco wiki|https://github.com/netdisco/netdisco/wiki/Database-Tips>.
