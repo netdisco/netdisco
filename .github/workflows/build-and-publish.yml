@@ -169,7 +169,7 @@ jobs:
           mkdir -p /tmp/transport-stage-${{ matrix.arch }}
 
       - name: Build images with Bake and Cache
-        uses: docker/bake-action@v7.4.0
+        uses: docker/bake-action@v7.5.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMITTISH: ${{ env.COMMITTISH }}
