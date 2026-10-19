@@ -86,6 +86,42 @@ subtest 'step_101__device_route__is_one_guarded_do_block' => sub {
   is(scalar @blocks, 1);
   like($blocks[0], qr/IF to_regclass.*IF EXISTS \(SELECT 1 FROM device_route\).*RAISE NOTICE.*ELSE\s+DROP TABLE device_route/s);
 };
+# an unscoped lookup sees the live tables while --check builds its scratch
+# install in another schema of the same database
+sub lookups_scoped {
+  my $block = shift;
+  my $lookups = () = $block =~ /information_schema\.\w+\b/g;
+  my $scoped = () = $block =~ /information_schema\.\w+ WHERE table_schema = current_schema\(\)/g;
+  return $lookups > 0 && $lookups == $scoped && $block !~ /pg_catalog|to_regclass/;
+}
+subtest 'step_32_and_93__replay_leftover__created_only_without_the_renamed_object' => sub {
+  my %guard = (32 => qr/'snmp_auth_tag', 'snmp_auth_tag_read'.*ADD COLUMN snmp_auth_tag text/s,
+    93 => qr/'portctl_role', 'access_control_list_map'.*CREATE TABLE portctl_role/s);
+  foreach my $step (sort keys %guard) {
+    my @blocks = grep { /^DO / && $_ =~ $guard{$step} } @{ step_statements($step) };
+    is(scalar @blocks, 1, "step $step has one guarded block");
+    ok(lookups_scoped($blocks[0] // ''), "step $step scopes every lookup");
+  }
+};
+subtest 'step_101__replay_leftovers__dropped_only_when_empty_else_noticed' => sub {
+  my %drop = ('community.snmp_auth_tag' => 'ALTER TABLE community DROP COLUMN snmp_auth_tag',
+    portctl_role => 'DROP TABLE portctl_role CASCADE');
+  my %successor = ('community.snmp_auth_tag' => 'snmp_auth_tag_read', portctl_role => 'access_control_list_map');
+  my @statements = @{ step_statements(101) };
+  my $position_of = sub { my $wanted = shift; my ($index) = grep { $statements[$_] =~ $wanted } 0 .. $#statements; return $index // -1 };
+  my $notice = $position_of->(qr/^SET LOCAL client_min_messages = notice/);
+  my ($warning) = grep { $_ > $notice && $statements[$_] =~ /^SET LOCAL client_min_messages = warning/ } 0 .. $#statements;
+  foreach my $leftover (sort keys %drop) {
+    my @blocks = grep { /\Q$drop{$leftover}\E/ } @statements;
+    is(scalar @blocks, 1, "one block drops $leftover");
+    my $kept = qr/RAISE NOTICE '\Q$leftover\E kept: [^']+';/;
+    like($blocks[0] // '', qr/IF NOT EXISTS \(SELECT 1 FROM information_schema\.\w+ WHERE .*?'\Q$successor{$leftover}\E'\)\s+THEN\s+$kept\s+ELSIF EXISTS \(SELECT 1 FROM \w+(?: WHERE \w+ IS NOT NULL)?\)\s+THEN\s+$kept\s+ELSE\s+\Q$drop{$leftover}\E/s,
+      "$leftover kept with a NOTICE unless $successor{$leftover} exists and it is empty");
+    ok(lookups_scoped($blocks[0] // ''), "$leftover lookups scoped");
+    my $drop_position = $position_of->(qr/\Q$drop{$leftover}\E/);
+    ok($notice >= 0 && $notice < $drop_position && $drop_position < ($warning // -1), "$leftover NOTICE section reaches the client");
+  }
+};
 subtest 'schema_version__is_102' => sub {
   open my $fh, '<', 'lib/App/Netdisco/DB.pm' or die "cannot read DB.pm: $!";
   my ($declared) = map { /\$VERSION = (\d+);/ ? $1 : () } <$fh>;

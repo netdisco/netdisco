@@ -62,6 +62,32 @@ BEGIN
   END IF;
 END $$;
 
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'community' AND column_name = 'snmp_auth_tag') THEN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'community' AND column_name = 'snmp_auth_tag_read') THEN
+      RAISE NOTICE 'community.snmp_auth_tag kept: community has no snmp_auth_tag_read';
+    ELSIF EXISTS (SELECT 1 FROM community WHERE snmp_auth_tag IS NOT NULL) THEN
+      RAISE NOTICE 'community.snmp_auth_tag kept: it holds values';
+    ELSE
+      ALTER TABLE community DROP COLUMN snmp_auth_tag;
+    END IF;
+  END IF;
+END $$;
+
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'portctl_role') THEN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'access_control_list_map') THEN
+      RAISE NOTICE 'portctl_role kept: there is no access_control_list_map';
+    ELSIF EXISTS (SELECT 1 FROM portctl_role) THEN
+      RAISE NOTICE 'portctl_role kept: it holds rows';
+    ELSE
+      DROP TABLE portctl_role CASCADE;
+    END IF;
+  END IF;
+END $$;
+
 SET LOCAL client_min_messages = warning;
 
 CREATE TABLE IF NOT EXISTS schema_step_forced (
