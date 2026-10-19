@@ -2,7 +2,7 @@ BEGIN;
 
 DO $$
 BEGIN
-  CREATE UNIQUE INDEX jobs_queued ON admin (
+  CREATE UNIQUE INDEX IF NOT EXISTS jobs_queued ON admin (
     action,
     coalesce(subaction, '_x_'),
     coalesce(device, '255.255.255.255'),

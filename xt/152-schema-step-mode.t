@@ -103,6 +103,13 @@ subtest 'step_32_and_93__replay_leftover__created_only_without_the_renamed_objec
     ok(lookups_scoped($blocks[0] // ''), "step $step scopes every lookup");
   }
 };
+# a 2.008000 install already has jobs_queued at schema 20; without IF NOT
+# EXISTS the whole-file attempt fails and the old splitter breaks the DO block
+subtest 'step_20__jobs_queued__skips_an_existing_index_and_duplicate_jobs' => sub {
+  my @blocks = grep { /jobs_queued/ } @{ step_statements(20) };
+  is(scalar @blocks, 1, 'one statement');
+  like($blocks[0] // '', qr/^DO .*CREATE UNIQUE INDEX IF NOT EXISTS jobs_queued .*EXCEPTION WHEN unique_violation THEN\s+NULL;/s);
+};
 subtest 'step_101__replay_leftovers__dropped_only_when_empty_else_noticed' => sub {
   my %drop = ('community.snmp_auth_tag' => 'ALTER TABLE community DROP COLUMN snmp_auth_tag',
     portctl_role => 'DROP TABLE portctl_role CASCADE');
