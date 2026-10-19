@@ -447,6 +447,17 @@ a:hover, a:focus {
   text-decoration: none;
 }
 
+/* The user menu's light / computer / dark switch. The bare-button style above
+   gives hover and active the same pale gray, so the current choice looked like
+   whichever button the pointer was over. It takes the menu's active colors.
+   Set as properties rather than by overriding --bs-btn-active-*, because that
+   style's selector outranks anything short of repeating it here. */
+.nd_theme-switch .btn.active {
+  color: var(--nd-menu-active-color);
+  background-color: var(--nd-menu-active-bg);
+  border-color: var(--nd-menu-active-border);
+}
+
 /* Navbar submenus opened on hover and closed on leaving. The replacement dropped
    the submenu component and drives dropdowns by script and click, which left one
    pinned open; the template's toggle attributes are gone for the same reason.

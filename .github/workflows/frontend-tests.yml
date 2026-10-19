@@ -469,6 +469,9 @@ jobs:
       - name: Sources, auto mode and sheet linking
         run: node --test xt/js/theme-resolver.test.js
 
+      - name: The user menu's light / computer / dark switch
+        run: node --test xt/js/theme-switch.test.js
+
   statistics-panel:
     name: System Information loads when it starts open
     runs-on: ubuntu-latest

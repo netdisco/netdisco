@@ -6,6 +6,7 @@ use warnings;
 use Test::More 0.88;
 use File::Spec::Functions qw/catfile catdir updir/;
 use File::Basename qw/basename/;
+use ExtUtils::Manifest qw/maniskip/;
 use FindBin;
 use Digest::SHA qw/sha256_hex/;
 use JSON::PP ();
@@ -95,14 +96,14 @@ my @VENDORED = (
         package    => 'datatables.net-bs5',
         file       => [qw/javascripts dataTables.bootstrap.js/],
         sha256     => '1806022582576a6ee8a1922881d26c939e85e7c99962ae287ab729e9a4796a33',
-        pinned_for => '3.0.3',
+        pinned_for => '3.1.4',
     },
     {   # The stylesheet half of the same package states no version either, and
         # pinning one half without the other lets the two disagree quietly.
         package    => 'datatables.net-bs5',
         file       => [qw/css dataTables.bootstrap.css/],
-        sha256     => '02eb90f742a251cd6eac1cc5886b5b7b066a57ae97d28127189f15396d0bf8b3',
-        pinned_for => '3.0.3',
+        sha256     => '5ff84d5553f3a60b4927ae5732c2e3799d10c348f10d5b5ebf49f0035352aa05',
+        pinned_for => '3.1.4',
     },
     {   # The 4.x builds state the version as a property assignment where the
         # 2.x builds minified it into an object literal, so this pattern is
@@ -123,8 +124,8 @@ my @VENDORED = (
         # a file we did not write.
         package    => 'swagger-ui-dist',
         file       => [qw/swagger-ui swagger-ui-bundle.js/],
-        sha256     => '8b188d7d3ee1ce26224908341bb9cdeac67f67f0b68440d2a9ac9e5f73e86d80',
-        pinned_for => '5.32.12',
+        sha256     => '3861ec4cc8e7b9fa9f250280da9350436e418137788282c753b9a2ac5fb7bd2f',
+        pinned_for => '5.33.3',
     },
 );
 
@@ -189,23 +190,29 @@ for my $entry (@VENDORED) {
     };
 }
 
-subtest 'MANIFEST__every_xt_js_suite_on_disk__is_listed' => sub {
-    # A suite missing here still runs locally and in CI, since both work
-    # from the checkout rather than a packaged tarball. Nothing short of
-    # building that tarball notices the gap, and by then the suite it
-    # dropped does not ship. This has happened twice.
+subtest 'MANIFEST__every_xt_js_suite_on_disk__ships_in_the_release' => sub {
+    # A suite left out of the tarball still runs locally and in CI, since
+    # both work from the checkout. Nothing short of building that tarball
+    # notices the gap, and by then the suite it dropped does not ship. This
+    # has happened twice.
+    #
+    # The committed MANIFEST is not what decides it: the release job deletes
+    # it and rebuilds it from disk with ./Build manifest, and pull requests
+    # leave it alone so they do not conflict over it. What can still drop a
+    # suite is a MANIFEST.SKIP pattern, which the rebuild obeys, so that is
+    # what is checked.
     my @suites = sort glob( catfile( $root, 'xt', 'js', '*.test.js' ) );
 
     ok scalar(@suites) > 0, 'found at least one xt/js/*.test.js suite on disk'
         or return;
 
-    my %listed = map { $_ => 1 } split /\n/, slurp( catfile( $root, 'MANIFEST' ) );
+    my $skipped = maniskip( catfile( $root, 'MANIFEST.SKIP' ) );
 
     for my $suite (@suites) {
         my $relative = join '/', 'xt', 'js', basename($suite);
-        ok $listed{$relative},
-            "$relative is listed in MANIFEST: add it in sorted position "
-          . "among the other xt/js entries";
+        ok !$skipped->($relative),
+            "$relative is not excluded by MANIFEST.SKIP, so the release's "
+          . "rebuilt MANIFEST lists it";
     }
 };
 

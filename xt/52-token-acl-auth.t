@@ -11,6 +11,7 @@ use Test::File::ShareDir::Dist { 'App-Netdisco' => 'share/' };
 use App::Netdisco;
 use App::Netdisco::DB; # fake user row
 use App::Netdisco::Web::Auth::Provider::DBIC;
+use App::Netdisco::Util::Configuration 'refresh_managed_acl';
 
 use Dancer qw/:script !pass/;
 
@@ -229,6 +230,76 @@ my $provider = App::Netdisco::Web::Auth::Provider::DBIC->new({});
   my $authed = $provider->validate_api_token('secret-api-token');
   ok(!$authed,
     'tokenAcl__no_peer_address_at_all__is_denied_by_a_list_that_would_admit_it');
+}
+
+# Every case above starts from an empty host_groups, but a web worker serves
+# many API requests and refresh_managed_acl runs on each one. It used to push
+# onto the ACL's group without clearing it, so a row deleted in the ACL editor
+# stayed in force for the life of the worker, and the group grew by one entry
+# per request. These cases refresh again in the same process, as a second
+# request would.
+
+{
+  config->{'host_groups'} = {};
+  setting('trusted_proxies' => []);
+
+  my $office = FakeAccessControlListMap->new( id => 4,
+    left_acl => FakeAccessControlList->new(id => 4, rules => ['192.0.2.0/24']), right_acl => undef );
+  my $vpn    = FakeAccessControlListMap->new( id => 5,
+    left_acl => FakeAccessControlList->new(id => 5, rules => ['198.51.100.0/24']), right_acl => undef );
+
+  my $acl = FakeAccessControlListName->new(
+    acl_name => 'api_office_only', acl_type => 'host', mappings => [$office, $vpn] );
+  local *App::Netdisco::DB::Result::User::token_acl_name = sub { return $acl };
+  local *App::Netdisco::Util::Web::request
+    = sub { return FakeRequest->new('198.51.100.7') };
+
+  ok($provider->validate_api_token('secret-api-token'),
+    'tokenAcl__a_client_in_a_second_row__is_allowed');
+
+  # the admin deletes the VPN row; the next request reaches the same worker
+  $acl = FakeAccessControlListName->new(
+    acl_name => 'api_office_only', acl_type => 'host', mappings => [$office] );
+
+  ok(!$provider->validate_api_token('secret-api-token'),
+    'tokenAcl__a_row_deleted_since_the_last_request__no_longer_allows_its_client');
+
+  $provider->validate_api_token('secret-api-token') for 1 .. 5;
+  is(scalar @{ setting('host_groups')->{'api_office_only'} }, 1,
+    'tokenAcl__repeated_requests__leave_one_entry_per_row');
+}
+
+{
+  # the same holds for the hash refresh_managed_acl builds for a paired ACL
+  config->{'host_groups'} = {};
+
+  my $pair = sub { my $id = shift; FakeAccessControlListMap->new( id => $id,
+    left_acl  => FakeAccessControlList->new(id => 10 * $id,     rules => ['192.0.2.1']),
+    right_acl => FakeAccessControlList->new(id => 10 * $id + 1, rules => ['port:Gi1/1']) ) };
+
+  refresh_managed_acl( FakeAccessControlListName->new(
+    acl_name => 'leaf_ports', acl_type => 'host_port', mappings => [ $pair->(6), $pair->(7) ] ) );
+  refresh_managed_acl( FakeAccessControlListName->new(
+    acl_name => 'leaf_ports', acl_type => 'host_port', mappings => [ $pair->(6) ] ) );
+
+  is_deeply([ keys %{ setting('host_groups')->{'leaf_ports'} } ], ['group:synthesized_group_60'],
+    'refreshManagedAcl__a_paired_row_deleted_since_the_last_refresh__is_gone');
+}
+
+{
+  # an ACL left with no rows is refused, as one never loaded is, rather than
+  # left as an empty list, which acl_matches_only reads as "anything"
+  config->{'host_groups'} = {};
+
+  my $one = FakeAccessControlListMap->new( id => 8,
+    left_acl => FakeAccessControlList->new(id => 8, rules => ['192.0.2.0/24']), right_acl => undef );
+  refresh_managed_acl( FakeAccessControlListName->new(
+    acl_name => 'api_office_only', acl_type => 'host', mappings => [$one] ) );
+  refresh_managed_acl( FakeAccessControlListName->new(
+    acl_name => 'api_office_only', acl_type => 'host', mappings => [] ) );
+
+  ok(!exists setting('host_groups')->{'api_office_only'},
+    'refreshManagedAcl__an_acl_with_no_rows__leaves_no_group_to_match');
 }
 
 done_testing;

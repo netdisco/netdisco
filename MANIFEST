@@ -707,6 +707,10 @@ xt/138-device-port-delete-node-set.t
 xt/139-api-object-relations-to-json.t
 xt/140-worker-queues.t
 xt/141-manager-worker-queues.t
+xt/142-portname-check-matches-view.t
+xt/143-api-custom-field-role-scope.t
+xt/144-portctl-topology-gate.t
+xt/145-topology-del-only-matched.t
 xt/148-decode-snmp-text.t
 xt/149-snmp-charset-setting.t
 xt/20-checkacl.t
@@ -814,6 +818,7 @@ xt/js/swagger-spec-url.test.js
 xt/js/tab-request-sync.test.js
 xt/js/tables-registry.test.js
 xt/js/theme-resolver.test.js
+xt/js/theme-switch.test.js
 xt/js/toast.test.js
 xt/js/toggle-build.test.js
 xt/js/tooltip-dismissal.test.js

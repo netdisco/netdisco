@@ -9,7 +9,13 @@ const vm = require('node:vm');
 const source = fs.readFileSync(
   path.join(__dirname, '..', '..', 'share', 'public', 'javascripts', 'netdisco-theme.js'), 'utf8');
 
-function load({ configured, osDark }) {
+function load({ configured, osDark, stored, storageBlocked }) {
+  const saved = stored === undefined ? {} : { 'netdisco-theme': stored };
+  const localStorage = {
+    getItem: (k) => (k in saved ? saved[k] : null),
+    setItem: (k, v) => { saved[k] = String(v); },
+    removeItem: (k) => { delete saved[k]; },
+  };
   const attrs = {};
   const links = [];
   const listeners = [];
@@ -26,11 +32,16 @@ function load({ configured, osDark }) {
     createElement: () => ({ dataset: {} }),
   };
   const window = { matchMedia: () => query, document };
+  // A browser with site data blocked throws on touching localStorage at all,
+  // not only on writing to it.
+  Object.defineProperty(window, 'localStorage', {
+    get: () => { if (storageBlocked) throw new Error('SecurityError'); return localStorage; },
+  });
   const sandbox = { window, document };
   vm.createContext(sandbox);
   vm.runInContext(source, sandbox);
   const flip = (dark) => { query.matches = dark; listeners.forEach((fn) => fn()); };
-  return { attrs, links, flip, nd: window.ndTheme };
+  return { attrs, links, flip, saved, nd: window.ndTheme };
 }
 
 test('ndTheme__auto_with_a_dark_os__sets_dark', () => {
@@ -102,4 +113,67 @@ test('ndTheme__source_choosing_light__leaves_no_attribute_and_links_nothing', ()
   t.nd.apply();
   assert.equal(t.attrs['data-bs-theme'], undefined);
   assert.equal(t.links.length, 0);
+});
+
+// A per-user choice from the user menu's switch, kept in the browser. It only
+// counts while the configured default is auto: an admin who sets a theme
+// outright has picked it for everyone.
+
+test('ndTheme__auto_with_saved_dark__sets_dark_on_a_light_os', () => {
+  assert.equal(load({ configured: 'auto', osDark: false, stored: 'dark' }).attrs['data-bs-theme'], 'dark');
+});
+
+test('ndTheme__auto_with_saved_light__leaves_no_attribute_on_a_dark_os', () => {
+  assert.equal(load({ configured: 'auto', osDark: true, stored: 'light' }).attrs['data-bs-theme'], undefined);
+});
+
+test('ndTheme__saved_choice__holds_through_an_os_change', () => {
+  const t = load({ configured: 'auto', osDark: false, stored: 'dark' });
+  t.flip(false);
+  assert.equal(t.attrs['data-bs-theme'], 'dark');
+});
+
+test('ndTheme__saved_choice_under_a_configured_theme__is_ignored', () => {
+  assert.equal(load({ configured: 'classic', osDark: false, stored: 'dark' }).attrs['data-bs-theme'], 'classic');
+  assert.equal(load({ configured: 'light', osDark: false, stored: 'dark' }).attrs['data-bs-theme'], undefined);
+});
+
+test('ndTheme__saved_value_other_than_light_or_dark__is_ignored', () => {
+  // Anything else would be linked as a stylesheet, so a stale or tampered
+  // value must not reach the sheet loader.
+  const t = load({ configured: 'auto', osDark: false, stored: '../x' });
+  assert.equal(t.attrs['data-bs-theme'], undefined);
+  assert.equal(t.links.length, 0);
+});
+
+test('ndTheme__choose_dark__applies_and_saves_it', () => {
+  const t = load({ configured: 'auto', osDark: false });
+  t.nd.choose('dark');
+  assert.equal(t.attrs['data-bs-theme'], 'dark');
+  assert.equal(t.saved['netdisco-theme'], 'dark');
+});
+
+test('ndTheme__choose_auto__forgets_the_saved_choice_and_follows_the_os', () => {
+  const t = load({ configured: 'auto', osDark: true, stored: 'light' });
+  t.nd.choose('auto');
+  assert.equal(t.attrs['data-bs-theme'], 'dark');
+  assert.equal('netdisco-theme' in t.saved, false);
+});
+
+test('ndTheme__chosen__reports_the_saved_choice_or_auto', () => {
+  const t = load({ configured: 'auto', osDark: false });
+  assert.equal(t.nd.chosen(), 'auto');
+  t.nd.choose('light');
+  assert.equal(t.nd.chosen(), 'light');
+});
+
+test('ndTheme__blocked_storage__still_follows_the_os', () => {
+  assert.equal(load({ configured: 'auto', osDark: true, storageBlocked: true }).attrs['data-bs-theme'], 'dark');
+});
+
+test('ndTheme__blocked_storage__choose_still_changes_this_page', () => {
+  const t = load({ configured: 'auto', osDark: false, storageBlocked: true });
+  t.nd.choose('dark');
+  assert.equal(t.attrs['data-bs-theme'], 'dark');
+  assert.equal(t.nd.chosen(), 'dark');
 });

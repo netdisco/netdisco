@@ -1,18 +1,36 @@
-2.113000 - tbd
+2.114000 - tbd
+
+  [ENHANCEMENTS]
+
+  * #1756 System Information on the homepage shows phones and wireless
+    access points on their own lines, and MIB Bundle after SNMP::Info
+
+  [BUG FIXES]
+
+  * #1746 decode SNMP text before storage, with per-device charset fallbacks
+
+2.113000 - 2026-10-18
 
   [NEW FEATURES]
 
-  * #1740 workers.queues can be used to reserve workers for some actions, so that a backlog of
-    one kind of job (say discover) cannot keep another (say portcontrol)
-    waiting. each queue is { tasks: N, actions: [...] } and its actions are
-    run only by its own workers
+  * #1740 workers.queues can be used to reserve workers for some actions,
+    so that a backlog of one kind of job (say discover) cannot keep another
+    (say portcontrol) waiting. each queue is { tasks: N, actions: [...] }
+    and its actions are run only by its own workers
 
   [ENHANCEMENTS]
 
   * #1735 System Information on the homepage starts expanded
+  * #1751 upgrade the vendored Swagger UI from 5.32.12 to 5.33.3
+  * #1753 upgrade the vendored DataTables from 3.0.3 to 3.1.4
+  * #1754 with web_theme set to auto, the user menu has a light / same as
+    computer / dark switch. the choice is remembered in that browser
 
   [BUG FIXES]
 
+  * #1752 a row deleted from an API token's ACL no longer stays in force
+    until the web worker restarts, and the token's ACL group no longer grows
+    with every API request
   * #1750 deleting a manual topology link resets its two ports only when a
     manual link was deleted. naming the two ends of a discovered uplink no
     longer clears its is_uplink flag, which let portctl_uplinks pass for it
@@ -27,8 +45,6 @@
     portctl_only devices, and on uplink, phone and WAP ports, the portname
     job checked the port status ACL instead of the port name ACL. as
     documented, only portctl_by_role can refuse a port name change
-  * #1746 decode SNMP text before storage, with per-device charset fallbacks
-
   * offline (snapshot) jobs no longer log "not in cache" for
     lldp_v2_sys_cap, which SNMP::Info 3.980000 reads when LLDP-MIB is empty
 
