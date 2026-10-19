@@ -2,13 +2,12 @@
 
   [NEW FEATURES]
 
-  * netdisco-db-deploy stops at a schema step that fails, from 2.023000's
-    schema on, and names two ways forward: fix the cause and rerun, or
-    skip the step with --force-step N (in Docker, NETDISCO_DB_DEPLOY_ARGS).
-    --check compares the database with a fresh install
-  * databases created before 2.023000 get their missing indexes and keys
-    repaired (schema 102)
-  * the web interface and netdisco-db-deploy warn when PostgreSQL is older
+  * #1757 a schema upgrade step that fails now stops netdisco-db-deploy
+    and says what to do next, instead of leaving the database silently
+    missing tables, indexes or keys. new options: --force-step N skips a
+    step that cannot be fixed, and --check compares the database with a
+    fresh install. the upgrade also repairs missing indexes and keys on
+    databases created before 2.023000, and warns when PostgreSQL is older
     than 14
 
   [ENHANCEMENTS]
