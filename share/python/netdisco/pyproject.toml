@@ -10,7 +10,7 @@ dependencies = [
     "netmiko>=4.8.0,<5",
     "cryptography>=50.0.2,<51",
     "virtualenv>=21.14.8",
-    "sqlalchemy>=2.0.54,<3",
+    "sqlalchemy>=2.0.55,<3",
     "psycopg>=3.3.6,<4",
     "uv-build>=0.13.1,<0.14.0",
 ]
