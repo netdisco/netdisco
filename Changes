@@ -4,6 +4,8 @@
 
   * #1756 System Information on the homepage shows phones and wireless
     access points on their own lines, and MIB Bundle after SNMP::Info
+  * require SNMP::Info 3.981000, which retries failed bulkwalks with
+    fewer repeaters and then GETNEXT
 
 2.113000 - 2026-10-18
 
