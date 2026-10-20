@@ -136,6 +136,8 @@ sub _snmp_connect_generic {
     BulkWalk => ((defined setting('bulkwalk_off') && setting('bulkwalk_off'))
                  ? 0 : 1),
     BulkRepeaters => (setting('bulkwalk_repeaters') || 20),
+    # pinned so a change of SNMP::Info's default cannot change what is stored
+    IncompleteWalk => 'partial',
     MibDirs => [ get_mibdirs() ],
     IgnoreNetSNMPConf => 1,
     Debug => ($ENV{INFO_TRACE} || 0),
