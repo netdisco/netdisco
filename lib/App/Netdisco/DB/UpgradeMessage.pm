@@ -35,9 +35,8 @@ sub _action {
 }
 
 sub _force_line {
-  return 'Forcing replays the step one statement at a time and skips every statement that fails,'
-    . ' which can include parts of DO blocks or functions that would otherwise succeed.'
-    . ' It stamps the new version and writes a row to the schema_step_forced table so the skips are recorded.';
+  return 'Forcing skips the failing statements in that step, stamps the new '
+    . 'version, and writes a row to the schema_step_forced table so the skip is recorded.';
 }
 
 sub strict_failure_message {
@@ -101,16 +100,23 @@ sub force_already_applied_message {
     '';
 }
 
+sub _check_hint {
+  my ($container, $purpose) = @_;
+  return $container
+    ? ". To $purpose, " . lcfirst _action(1, '--check')
+    : "; run netdisco-db-deploy --check to $purpose.";
+}
+
 sub tolerant_summary {
   my %arg = @_;
-  return "Expected errors on $arg{expected} statements across $arg{steps} older steps were ignored; "
-    . 'run netdisco-db-deploy --check to see the result.';
+  return "Expected errors on $arg{expected} statements across $arg{steps} older steps were ignored"
+    . _check_hint($arg{container}, 'see the result');
 }
 
 sub forced_step_summary {
   my %arg = @_;
   return "Step $arg{from} was forced: $arg{skipped} failing statements were skipped "
-    . 'and recorded in the schema_step_forced table; run netdisco-db-deploy --check to see what is missing.';
+    . 'and recorded in the schema_step_forced table' . _check_hint($arg{container}, 'see what is missing');
 }
 
 sub unexpected_error_message {

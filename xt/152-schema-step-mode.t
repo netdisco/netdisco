@@ -110,9 +110,18 @@ subtest 'step_20__jobs_queued__skips_an_existing_index_and_duplicate_jobs' => su
   is(scalar @blocks, 1, 'one statement');
   like($blocks[0] // '', qr/^DO .*CREATE UNIQUE INDEX IF NOT EXISTS jobs_queued .*EXCEPTION WHEN unique_violation THEN\s+NULL;/s);
 };
+# a replay over an existing access_control_list must run the file whole, so
+# the portctl_role guard decides, not the old splitter breaking the DO block
+subtest 'step_93__access_control_list__created_only_if_missing' => sub {
+  my @creates = grep { /CREATE TABLE\b.*\baccess_control_list\b/ } @{ step_statements(93) };
+  is(scalar @creates, 1, 'one statement');
+  like($creates[0] // '', qr/^CREATE TABLE IF NOT EXISTS access_control_list \(/);
+};
 subtest 'step_101__replay_leftovers__dropped_only_when_empty_else_noticed' => sub {
-  my %drop = ('community.snmp_auth_tag' => 'ALTER TABLE community DROP COLUMN snmp_auth_tag',
-    portctl_role => 'DROP TABLE portctl_role CASCADE');
+  # no CASCADE: a site's own view or key on a leftover stops the upgrade
+  # instead of being dropped with it
+  my %drop = ('community.snmp_auth_tag' => 'ALTER TABLE community DROP COLUMN snmp_auth_tag;',
+    portctl_role => 'DROP TABLE portctl_role;');
   my %successor = ('community.snmp_auth_tag' => 'snmp_auth_tag_read', portctl_role => 'access_control_list_map');
   my @statements = @{ step_statements(101) };
   my $position_of = sub { my $wanted = shift; my ($index) = grep { $statements[$_] =~ $wanted } 0 .. $#statements; return $index // -1 };
@@ -152,7 +161,8 @@ subtest 'schema_version__is_102' => sub {
 
 # A stand-in storage that refuses CONCURRENTLY inside a transaction, as
 # PostgreSQL does with SQLSTATE 25001, so the runner's transaction handling
-# can be tested without a database.
+# can be tested without a database. It also refuses, with 42601, the pieces
+# that the old splitter cuts a DO block into.
 {
   package StandInDbh;
   sub new { bless { in_transaction => 0, ran => [] }, shift }
@@ -167,6 +177,8 @@ subtest 'schema_version__is_102' => sub {
         ($sql =~ /CONCURRENTLY/ and $self->{in_transaction})
           ? ('25001', 'cannot run inside a transaction block')
       : $sql =~ /existing_idx/ ? ('42P07', 'relation already exists')
+      : ((() = $sql =~ /\$\$/g) % 2 or $sql =~ /^\s*END\b/)
+          ? ('42601', 'syntax error')
       : ();
     ($self->{state}, $self->{errstr}) = ($state, $error);
     die "$error\n" if $state;
@@ -176,6 +188,7 @@ subtest 'schema_version__is_102' => sub {
   package StandInStorage;
   sub new { bless { dbh => StandInDbh->new }, shift }
   sub dbh { $_[0]{dbh} }
+  sub sqlt_type { 'PostgreSQL' }
   sub txn_do {
     my ($self, $code) = @_;
     local $self->{dbh}{in_transaction} = 1;
@@ -187,6 +200,13 @@ subtest 'schema_version__is_102' => sub {
   sub new { bless { storage => StandInStorage->new }, shift }
   sub storage { $_[0]{storage} }
   sub _set_db_version { 1 }
+
+  package ForcingStandInSchema;
+  our @ISA = ('StandInSchema');
+  sub new { my ($class, $file) = @_; my $self = StandInSchema::new($class); $self->{file} = $file; $self }
+  sub ddl_filename { $_[0]{file} }
+  sub upgrade_directory { '' }
+  sub record_forced_step { my ($self, $from, $skipped) = @_; $self->{forced} = [$from, $skipped] }
 }
 
 sub step_file_with {
@@ -221,6 +241,37 @@ subtest 'strict_step__no_transaction_file__quiets_the_session_then_restores_it' 
   ok($schema->_strict_step("$file", 2)->{ok});
   my @settings = map { $_->[0] } grep { $_->[0] =~ /client_min_messages/ } @{ $schema->storage->dbh->{ran} };
   is_deeply(\@settings, ['SET client_min_messages = warning', "SET client_min_messages = 'notice'"]);
+};
+
+my $do_block = "DO \$\$\nBEGIN\n  IF NOT EXISTS (SELECT 1 FROM t) THEN\n"
+  . "    ALTER TABLE device ADD COLUMN foo text;\n  END IF;\nEND\$\$;\n";
+my $forced_sql = "CREATE INDEX existing_idx ON device (ip);\n$do_block";
+sub forced_run {
+  my ($from, $mode) = @_;
+  my $file = step_file_with($forced_sql);
+  my $schema = ForcingStandInSchema->new("$file");
+  $schema->upgrade_single_step($from, $from + 1, $mode);
+  my @replayed = map { $_->[0] } grep { $_->[0] !~ /client_min_messages/ } @{ $schema->storage->dbh->{ran} };
+  # the whole-file attempt stops at the first statement
+  return ($schema, [ @replayed[1 .. $#replayed] ]);
+}
+subtest 'upgrade_single_step__forced_at_baseline__replays_do_block_whole_and_records_only_the_failure' => sub {
+  my ($schema, $replayed) = forced_run(102, 'forced');
+  is(scalar @$replayed, 2, 'two statements replayed');
+  like($replayed->[1], qr/\ADO \$\$.*ADD COLUMN foo text;.*END\$\$\z/s, 'DO block replayed as one statement');
+  is($schema->{forced}[0], 102, 'forced step recorded');
+  is_deeply([map { $_->{statement} } @{ $schema->{forced}[1] }],
+    ['CREATE INDEX existing_idx ON device (ip)'], 'only the failing statement recorded');
+};
+subtest 'upgrade_single_step__forced_below_baseline__replays_with_the_old_splitter' => sub {
+  my ($schema, $replayed) = forced_run(37, 'forced');
+  is(scalar @$replayed, 4, 'DO block cut into fragments as before');
+  is(scalar @{ $schema->{forced}[1] }, 4, 'failing statement and three fragments recorded');
+};
+subtest 'upgrade_single_step__tolerant_at_baseline__replays_with_the_old_splitter' => sub {
+  my ($schema, $replayed) = forced_run(90, 'tolerant');
+  is(scalar @$replayed, 4, 'redeploy-all replay noise unchanged');
+  ok(!exists $schema->{forced}, 'nothing recorded');
 };
 
 done_testing;

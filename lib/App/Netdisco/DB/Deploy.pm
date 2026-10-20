@@ -190,8 +190,8 @@ sub _run_steps {
     return (1, \%tally) unless $step_result;
 
     if (_is_forced_step($options, $from)) {
-      _warn($options, forced_step_summary(
-        from => $from, skipped => scalar @{ $step_result->{skipped} || [] }));
+      _warn($options, forced_step_summary(from => $from,
+        skipped => scalar @{ $step_result->{skipped} || [] }, container => $options->{container}));
       next;
     }
     _report_unexpected($options, $step_result);
@@ -220,7 +220,7 @@ sub run_deploy {
   return $refusal if defined $refusal;
 
   my ($exit_code, $tally) = _run_steps($schema, $options, $db_version, $target_version);
-  _say($options, tolerant_summary(%$tally))
+  _say($options, tolerant_summary(%$tally, container => $options->{container}))
     if $exit_code == 0 and $tally->{expected};
 
   undef $txn_guard if $ENV{ND2_DB_ROLLBACK};

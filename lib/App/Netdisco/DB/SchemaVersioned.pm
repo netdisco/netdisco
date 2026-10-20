@@ -58,9 +58,9 @@ sub upgrade_single_step {
   $self->storage->auto_savepoint(1) if $ENV{ND2_DB_ROLLBACK};
 
   return $self->_strict_step($step_file, $to) if $mode eq 'strict';
-  my $record_before_stamp = $mode eq 'forced'
-    ? sub { $self->record_forced_step($from, shift) } : undef;
-  return $self->_tolerant_step($step_file, $to, $record_before_stamp);
+  return $self->_tolerant_step($step_file, $to) if $mode eq 'tolerant';
+  return $self->_tolerant_step($step_file, $to,
+    sub { $self->record_forced_step($from, shift) }, $from >= $BASELINE);
 }
 
 sub _new_step_result {
@@ -108,17 +108,20 @@ sub _strict_step {
 }
 
 # Whole file first, so steps with dollar-quoted bodies replay cleanly; then,
-# only if that failed, the old per-statement split.
+# only if that failed, per statement. The old split breaks DO blocks apart,
+# so it is kept only for the steps that always ran that way.
 sub _tolerant_step {
-  my ($self, $step_file, $to, $before_stamp) = @_;
+  my ($self, $step_file, $to, $before_stamp, $split_as_parsed) = @_;
   my $strict_result = $self->_strict_step($step_file, $to, $before_stamp);
   return $strict_result if $strict_result->{ok};
 
-  my $no_transaction = parse_step_file($step_file)->{no_transaction};
+  my $parsed = parse_step_file($step_file);
+  my $no_transaction = $parsed->{no_transaction};
+  my $statements = $split_as_parsed
+    ? $parsed->{statements} : legacy_statements($step_file);
   my $result = _new_step_result($step_file);
   my $replay = sub {
-    $self->_replay_statement($_, $result, $no_transaction)
-      for @{ legacy_statements($step_file) };
+    $self->_replay_statement($_, $result, $no_transaction) for @$statements;
   };
   $no_transaction ? $self->_in_quiet_session($replay) : $replay->();
 

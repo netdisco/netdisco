@@ -85,11 +85,10 @@ VLAN.
 =item C<--force-step N>
 
 Forces step N (from version N to N+1) when it keeps failing and you cannot fix
-the cause. N must be the next pending step. The step is replayed the old way,
-one statement at a time, and every statement that fails is skipped. That can
-include parts of C<DO> blocks or functions that would otherwise succeed. The
-version is stamped, and a row is written to the C<schema_step_forced> table so
-the skips are recorded. The upgrade then carries on with the following steps.
+the cause. N must be the next pending step. The failing statements in that
+step are skipped, the version is stamped, and a row is written to the
+C<schema_step_forced> table so the skip is recorded. The upgrade then carries
+on with the following steps.
 Run C<netdisco-db-deploy --check> afterwards to see what is missing. Once step
 N is applied, the option is no longer needed; if it is left in place, the
 script warns and carries on.

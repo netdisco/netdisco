@@ -83,7 +83,7 @@ BEGIN
     ELSIF EXISTS (SELECT 1 FROM portctl_role) THEN
       RAISE NOTICE 'portctl_role kept: it holds rows';
     ELSE
-      DROP TABLE portctl_role CASCADE;
+      DROP TABLE portctl_role;
     END IF;
   END IF;
 END $$;

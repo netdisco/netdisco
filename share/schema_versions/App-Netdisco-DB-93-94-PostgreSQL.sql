@@ -13,7 +13,7 @@ BEGIN
 END
 $$;
 
-CREATE TABLE access_control_list (
+CREATE TABLE IF NOT EXISTS access_control_list (
     "id" SERIAL PRIMARY KEY,
     "acl_name" text,
     "rules" text[] NOT NULL DEFAULT '{}'
