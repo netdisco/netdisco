@@ -89,8 +89,6 @@ subtest 'inline_comment_lines__code_then_comment__reports_line' => sub {
 subtest 'inline_comment_lines__steps_from_101__have_none' => sub {
   # the old splitter joins lines, so an inline comment swallows the next statement
   my @files = grep { step_from($_) >= 101 } shipped_step_files();
-  # until a step from 101 exists, a subtest with no assertions would fail
-  pass('no step file from 101 exists yet') unless @files;
   foreach my $file (@files) {
     is_deeply(inline_comment_lines($file), [], $file);
   }

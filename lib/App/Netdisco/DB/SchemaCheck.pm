@@ -17,13 +17,16 @@ our @EXPORT_OK = qw(
 );
 
 # One line per object in the bound schema; written for 9.6 and later, so no
-# prokind (11+). Extensions are database-wide, so both sides list the same.
+# prokind (11+). Extensions are database-wide, so both sides list the same,
+# and objects an extension put in the schema are left out for the same reason.
 # PostgreSQL 18 names NOT NULL constraints after the column at creation, so a
 # renamed column's name depends on history; the column line carries nullability.
 my $CATALOG_SQL = <<'EOF';
 WITH rel AS (
   SELECT c.oid, c.relname, c.relkind FROM pg_class c
     JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = ?
+    AND NOT EXISTS (SELECT 1 FROM pg_depend e WHERE e.classid = 'pg_class'::regclass
+      AND e.objid = c.oid AND e.deptype = 'e')
 )
 SELECT line FROM (
   SELECT 'table ' || relname AS line FROM rel WHERE relkind IN ('r', 'p')
@@ -49,6 +52,8 @@ SELECT line FROM (
     || pg_get_functiondef(p.oid)
     FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
     WHERE n.nspname = ? AND NOT EXISTS (SELECT 1 FROM pg_aggregate g WHERE g.aggfnoid = p.oid)
+    AND NOT EXISTS (SELECT 1 FROM pg_depend e WHERE e.classid = 'pg_proc'::regclass
+      AND e.objid = p.oid AND e.deptype = 'e')
   UNION ALL
   SELECT 'extension ' || extname FROM pg_extension
 ) lines ORDER BY line COLLATE "C"
@@ -228,7 +233,7 @@ sub run_check {
     print STDERR check_privilege_message($facts->{database}, $facts->{role}), "\n";
     return 2;
   }
-  my ($db_version, $target_version) = ($schema->get_db_version, $schema->schema_version);
+  my ($db_version, $target_version) = ($schema->get_db_version // 0, $schema->schema_version);
   if ($db_version != $target_version) {
     print STDERR version_mismatch_message($db_version, $target_version), "\n";
     return 2;

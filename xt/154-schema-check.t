@@ -128,6 +128,14 @@ subtest 'run_check__database_behind__exits_2_asking_for_the_upgrade' => sub {
   like($err, qr/schema version 101 and this Netdisco expects 102/);
   like($err, qr/Run netdisco-db-deploy to upgrade it/);
 };
+subtest 'run_check__no_version_table__exits_2_without_a_perl_warning' => sub {
+  my @warnings;
+  local $SIG{__WARN__} = sub { push @warnings, @_ };
+  my ($code, $err) = run_gate(undef, 102);
+  is($code, 2);
+  like($err, qr/schema version none and this Netdisco expects 102/);
+  is_deeply(\@warnings, [], 'no uninitialized warning');
+};
 subtest 'run_check__database_ahead__exits_2_naming_the_newer_netdisco' => sub {
   my ($code, $err) = run_gate(103, 102);
   is($code, 2);
