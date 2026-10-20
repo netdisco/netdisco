@@ -1,13 +1,16 @@
-2.114000 - tbd
+2.115000 - tbd
+
+  [BUG FIXES]
+
+  * #1746 decode SNMP text before storage, with per-device charset fallbacks
+
+2.114000 - 2026-10-19
 
   [ENHANCEMENTS]
 
   * #1756 System Information on the homepage shows phones and wireless
     access points on their own lines, and MIB Bundle after SNMP::Info
-
-  [BUG FIXES]
-
-  * #1746 decode SNMP text before storage, with per-device charset fallbacks
+  * #1760 require SNMP::Info 3.981000, which retries failed bulkwalks
 
 2.113000 - 2026-10-18
 

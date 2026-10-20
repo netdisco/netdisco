@@ -711,6 +711,7 @@ xt/142-portname-check-matches-view.t
 xt/143-api-custom-field-role-scope.t
 xt/144-portctl-topology-gate.t
 xt/145-topology-del-only-matched.t
+xt/146-snmp-incomplete-walk-arg.t
 xt/148-decode-snmp-text.t
 xt/149-snmp-charset-setting.t
 xt/20-checkacl.t
