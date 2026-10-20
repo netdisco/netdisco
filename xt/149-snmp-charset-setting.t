@@ -11,6 +11,7 @@ BEGIN {
   use_ok( 'App::Netdisco::Configuration' );
   use_ok( 'App::Netdisco::DB' );
   use_ok( 'App::Netdisco::Util::SNMPText', 'snmp_charsets_for' );
+  use_ok( 'App::Netdisco::Util::Configuration', 'parse_params_to_config' );
 }
 
 use Dancer qw/:script !pass/;
@@ -66,6 +67,18 @@ subtest 'snmpCharsetsFor__no_match__returns_any_group_only' => sub {
   });
   my $device = device(ip => '198.51.100.1', vendor => 'cisco');
   is_deeply( snmp_charsets_for($device), ['big5'] );
+};
+
+# a per-job override (-e) is merged into the configuration as written, after
+# normalize_snmp_charset has run, so the reader must accept the raw forms too
+subtest 'snmpCharsetsFor__job_override_forms__read_without_dying' => sub {
+  my $device = device(ip => '192.0.2.1', vendor => 'huawei');
+  foreach my $override ('snmp_charset=gbk', '{"snmp_charset":{"vendor:huawei":["gbk"]}}',
+                        '{"snmp_charset":{"vendor:huawei":"gbk"}}') {
+    normalized(undef);
+    parse_params_to_config($override);
+    is_deeply( (eval { snmp_charsets_for($device) } || $@), ['gbk'], $override );
+  }
 };
 
 subtest 'snmpCharsetsFor__undef_device__returns_empty' => sub {

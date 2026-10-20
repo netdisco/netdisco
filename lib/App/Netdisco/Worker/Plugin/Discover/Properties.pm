@@ -48,20 +48,7 @@ register_worker({ phase => 'early', driver => 'snmp',
   my $hostname = hostname_from_ip($device->ip);
   $device->set_column( dns => $hostname ) if $hostname;
 
-  my @properties = qw/
-    snmp_ver
-    uptime
-    layers mac
-    ps1_status ps2_status
-    slots
-  /;
-
-  foreach my $property (@properties, qw/vendor os model/) {
-      my $val = $snmp->$property;
-      $val = [values %$val]->[0] if ref $val eq 'HASH';
-      $val = undef if $val and $val =~ m/^HASH\(/;
-      $device->set_column( $property => $val );
-  }
+  _set_raw_properties($snmp, $device);
 
   my @text_properties = qw/
     description name
@@ -705,6 +692,28 @@ register_worker({ phase => 'early', driver => 'snmp',
       $device->ip, scalar values %deviceports);
   });
 });
+
+# description and name are set raw too, for the snmp_charset ACLs on a new
+# device; they are decoded afterwards with the other text properties
+sub _set_raw_properties {
+  my ($snmp, $device) = @_;
+  my @properties = qw/
+    snmp_ver
+    uptime
+    layers mac
+    ps1_status ps2_status
+    slots
+    vendor os model
+    description name
+  /;
+
+  foreach my $property (@properties) {
+      my $val = $snmp->$property;
+      $val = [values %$val]->[0] if ref $val eq 'HASH';
+      $val = undef if $val and $val =~ m/^HASH\(/;
+      $device->set_column( $property => $val );
+  }
+}
 
 sub _device_text_value {
   my ($snmp, $method, $device, $trim) = @_;

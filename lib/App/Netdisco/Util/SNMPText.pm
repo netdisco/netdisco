@@ -5,6 +5,7 @@ package App::Netdisco::Util::SNMPText;
 use Dancer qw/:syntax :script/;
 
 use App::Netdisco::Util::Permission 'acl_matches';
+use App::Netdisco::Util::Configuration 'snmp_charset_maps';
 
 use Encode ();
 use Try::Tiny;
@@ -47,9 +48,9 @@ subroutines.
 =head2 snmp_charsets_for( $device )
 
 Returns an array reference of fallback charset names configured for the
-device, most specific ACL keys first and C<group:__ANY__> last, without
-duplicates. The C<snmp_charset> setting is a list of maps from ACL to
-charsets.
+device, without duplicates. The C<snmp_charset> setting is a list of maps
+from ACL to charsets. Maps are read in list order; within a map, matching
+ACL keys are read in alphabetical order, then C<group:__ANY__>.
 
 =cut
 
@@ -58,7 +59,8 @@ sub snmp_charsets_for {
   return [] unless $device;
 
   my (@charsets, %seen);
-  foreach my $map (@{ setting('snmp_charset') || [] }) {
+  # a per-job override is merged in as written, after normalize_snmp_charset
+  foreach my $map (@{ snmp_charset_maps(setting('snmp_charset')) }) {
     my @keys = ((sort { $a cmp $b } grep { $_ ne q{group:__ANY__} } keys %$map),
                 (exists $map->{'group:__ANY__'} ? 'group:__ANY__' : ()));
     foreach my $key (@keys) {
@@ -219,13 +221,19 @@ sub decode_cli_extra {
 =head2 looks_garbled( $string )
 
 True when the string holds a character from U+00C2 to U+00F4 followed by one
-from U+0080 to U+00BF, which is how UTF-8 octets look when read as Latin-1.
+from U+0080 to U+00BF, which is how UTF-8 octets look when read as Latin-1,
+and its characters read as octets are valid UTF-8. Correct text such as an
+accented letter before a non-breaking space or a closing guillemet fails the
+second test.
 
 =cut
 
 sub looks_garbled {
   my ($string) = @_;
-  return (defined $string and $string =~ m/[\x{C2}-\x{F4}][\x{80}-\x{BF}]/) ? 1 : 0;
+  return 0 unless defined $string and $string =~ m/[\x{C2}-\x{F4}][\x{80}-\x{BF}]/;
+  my $bytes = try { Encode::encode('iso-8859-1', $string, $CHECK) };
+  return 0 unless defined $bytes;
+  return (defined try { Encode::decode('UTF-8', $bytes, $CHECK) }) ? 1 : 0;
 }
 
 =head2 ungarble( $string, \@charsets )
@@ -248,14 +256,21 @@ sub ungarble {
 Walks hashes (keys and values) and arrays in C<$config> and returns a list of
 C<< { path => 'discover_no[2]', value => ..., suggestion => ... } >> for every
 string which C<looks_garbled>. Other references are skipped. Reads only the
-data it is given.
+data it is given. Under the settings which hold device credentials
+(C<device_auth>, C<snmp_auth>, C<community>, C<community_rw>) the value and
+suggestion are C<(hidden)>.
 
 =cut
+
+my $CREDENTIAL_SETTINGS = qr/^(?:device_auth|snmp_auth|community|community_rw)\b/;
 
 sub scan_config_encoding {
   my ($config) = @_;
   my @findings;
   _walk_config($config, '', \@findings);
+  foreach my $finding (grep { $_->{path} =~ $CREDENTIAL_SETTINGS } @findings) {
+    $finding->{$_} = '(hidden)' for qw/value suggestion/;
+  }
   return @findings;
 }
 
@@ -310,23 +325,27 @@ sub scan_stored_encoding {
 
   foreach my $spec (@STORED_COLUMNS) {
     my ($source, $table, $column) = @$spec;
+    # the pattern also matches correct text, which looks_garbled then drops
     my $rs = $schema->resultset($source)->search(
       { $column => { '~' => $pattern } },
       { columns => ['ip', $column], order_by => ['ip', $column] });
-    my $total = $rs->count;
+    my ($shown, $more) = (0, 0);
 
-    foreach my $row ($rs->search(undef, { rows => $limit })->all) {
+    foreach my $row ($rs->all) {
       my $value = $row->get_column($column);
+      my $garbled = looks_garbled($value);
+      next unless $garbled or $value =~ m/\x{FFFD}/;
+      if ($shown++ >= $limit) { $more++; next }
+
       my $ip = $row->get_column('ip');
       $charsets{$ip} ||= do {
         my $device = $schema->resultset('Device')->find($ip);
         snmp_charsets_for($device);
       };
       push @findings, { ip => $ip, column => "$table.$column", value => $value,
-        suggestion => (looks_garbled($value) ? ungarble($value, $charsets{$ip}) : undef) };
+        suggestion => ($garbled ? ungarble($value, $charsets{$ip}) : undef) };
     }
-    push @findings, { column => "$table.$column", more => $total - $limit }
-      if $total > $limit;
+    push @findings, { column => "$table.$column", more => $more } if $more;
   }
   return @findings;
 }

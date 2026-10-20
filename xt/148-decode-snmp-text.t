@@ -222,6 +222,20 @@ subtest 'deviceTextProperties__gbk_sysname_with_huawei_charset__decodes' => sub 
   use_snmp_charset({ 'group:__ANY__' => [] });
 };
 
+# a new device has no stored description or name, so the raw values must be
+# set before the first decode walks the snmp_charset ACLs
+subtest 'deviceTextProperties__new_device_description_and_name_acls__match_this_discover' => sub {
+  my $snmp = FakeSNMP->new(description => "Huawei VRP \xc4\xe3\xba\xc3", name => "core-\xc4\xe3\xba\xc3");
+  foreach my $acl ('description:.*VRP.*', 'name:core-.*') {
+    use_snmp_charset({ $acl => ['gbk'] });
+    my $device = discovered_device();
+    App::Netdisco::Worker::Plugin::Discover::Properties::_set_raw_properties($snmp, $device);
+    is(device_text_value($snmp, 'description', $device), "Huawei VRP $words{nihao}", "$acl description");
+    is(device_text_value($snmp, 'name', $device), "core-$words{nihao}", "$acl name");
+  }
+  use_snmp_charset({ 'group:__ANY__' => [] });
+};
+
 subtest 'deviceTextProperties__utf8_sysdescr__not_double_encoded' => sub {
   my $snmp = FakeSNMP->new(description => sent_as('cafe', 'UTF-8'));
   my $text = device_text_value($snmp, 'description', discovered_device());
@@ -326,6 +340,33 @@ subtest 'cfFromCli__ascii_extra__unchanged' => sub {
   ok(!defined decode_cli_extra(undef), 'undef unchanged');
 };
 
+# netdisco-do in a child perl, with jq_insert printing the queued subaction
+sub queued_cf_extra {
+  my ($extra, $stdin) = @_;
+  my $driver = <<'PERL';
+BEGIN { $ENV{DANCER_ENVDIR} = '/dev/null'; }
+use Test::File::ShareDir::Dist { 'App-Netdisco' => 'share/' };
+use App::Netdisco; use App::Netdisco::JobQueue;
+no warnings 'redefine';
+*App::Netdisco::JobQueue::jq_insert = sub {
+  print join ' ', map { sprintf 'U+%04X', ord } split //, $_[0][0]{subaction}; exit 0 };
+@ARGV = ('cf_test', '--enqueue', '-e', shift);
+do './bin/netdisco-do'; die $@ if $@;
+PERL
+  open my $child, '-|', $^X, '-Ilib', '-e', $driver, $extra or die $!;
+  my $queued = do { local $/; <$child> };
+  close $child;
+  return $queued;
+}
+
+subtest 'cfFromFile__utf8_file__decoded_once' => sub {
+  require File::Temp;
+  my $file = File::Temp->new;
+  binmode $file; print $file qq{["caf\xc3\x83\xc2\xa9"]}; close $file;
+  like(queued_cf_extra('@' . $file->filename), qr/U\+0066 U\+00C3 U\+00A9 U\+0022/,
+    'the characters in the file, not decoded a second time');
+};
+
 subtest 'showQuiet__list_returning_method__encodes_scalar_context_value' => sub {
   my $quiet = \&App::Netdisco::Worker::Plugin::Show::quiet_json;
   is($quiet->(sub { my @l = ("a", "b", "c"); @l }, "not-a-device", "show t"), "3", "multi-value list does not shift arguments");
@@ -342,6 +383,20 @@ subtest 'looksGarbled__correct_and_ascii_text__false' => sub {
   ok(!looks_garbled($_), "not garbled: $_") for ("Z\x{fc}rich", 'core-sw1', "M\x{fc}ller", "caf\x{e9}");
 };
 
+# accented letters followed by NBSP, a guillemet or a degree sign are correct
+# text which the cheap pattern matches; only UTF-8 read as Latin-1 counts. A
+# whole value which also reads as UTF-8 stays ambiguous: "\x{e9}\x{a0}\x{bb}"
+# is U+983B read as Latin-1
+subtest 'looksGarbled__correct_text_matching_the_pattern__false' => sub {
+  ok(!looks_garbled($_), "not garbled: $_")
+    for ("caf\x{e9}\x{bb}", "\x{e0}\x{b0}", "\x{ab}\x{a0}Salle caf\x{e9}\x{a0}\x{bb}");
+};
+
+subtest 'scanConfigEncoding__french_location_with_nbsp__nothing_reported' => sub {
+  my @found = scan_config_encoding({ location => "\x{ab}\x{a0}Salle caf\x{e9}\x{a0}\x{bb}" });
+  is(scalar @found, 0, 'no finding');
+};
+
 subtest 'ungarble__garbled_zurich__returns_zurich' => sub {
   is(ungarble("Z\x{c3}\x{bc}rich", []), "Z\x{fc}rich", 'repaired');
   is(ungarble("\x{4f60}", []), undef, 'not Latin-1 encodable gives undef');
@@ -354,6 +409,21 @@ subtest 'scanConfigEncoding__garbled_acl__reported_with_path_and_suggestion' => 
   is($found[0]->{suggestion}, "name:Z\x{fc}rich-.*", 'suggestion');
   my @keyed = scan_config_encoding({ outer => { "Z\x{c3}\x{bc}rich" => 'x' } });
   is(scalar @keyed, 1, 'a garbled hash key is reported');
+};
+
+subtest 'scanConfigEncoding__credential_settings__path_shown_value_hidden' => sub {
+  my $garbled = "Z\x{c3}\x{bc}rich";
+  my @found = scan_config_encoding({ device_auth => [{ community => $garbled }],
+    snmp_auth => [{ auth_pass => $garbled }], community => [$garbled], community_rw => [$garbled],
+    location => $garbled });
+  is_deeply([ map { $_->{path} } @found ],
+    ['community[0]', 'community_rw[0]', 'device_auth[0].community', 'location', 'snmp_auth[0].auth_pass'], 'every path');
+  foreach my $finding (@found) {
+    my $shown = $finding->{path} eq 'location' ? $garbled : '(hidden)';
+    is($finding->{value}, $shown, "$finding->{path} value");
+    isnt($finding->{suggestion}, "Z\x{fc}rich", "$finding->{path} suggestion")
+      unless $finding->{path} eq 'location';
+  }
 };
 
 subtest 'scanConfigEncoding__shipped_defaults__nothing_reported' => sub {
@@ -420,6 +490,29 @@ subtest 'scanStoredEncoding__pattern__matches_garbled_and_fffd_not_correct_text'
     "Z\x{fc}rich" => 'correct Latin', $words{nihao} => 'correct CJK');
   like($_, qr/$pattern/, "reported: $reported{$_}") for sort keys %reported;
   unlike($_, qr/$pattern/, "not reported: $clean{$_}") for sort keys %clean;
+};
+
+{
+  package RowsSchema;
+  sub new { my ($class, @values) = @_; bless { values => \@values }, $class }
+  sub resultset { $_[0] }
+  sub find { undef }
+  sub search { $_[0] }
+  sub count { scalar @{ $_[0]{values} } }
+  sub all { map { RowsSchema::Row->new($_) } @{ $_[0]{values} } }
+  package RowsSchema::Row;
+  sub new { bless { value => $_[1] }, $_[0] }
+  sub get_column { $_[1] eq 'ip' ? '192.0.2.1' : $_[0]{value} }
+}
+
+subtest 'scanStoredEncoding__correct_text_matching_the_pattern__not_reported' => sub {
+  my $schema = RowsSchema->new("\x{ab}\x{a0}Salle caf\x{e9}\x{a0}\x{bb}", "Z\x{c3}\x{bc}rich", "Caf\x{fffd}", "\x{e0}\x{b0}");
+  my @found = grep { $_->{column} eq 'device.name' }
+    App::Netdisco::Util::SNMPText::scan_stored_encoding($schema, 1);
+  is_deeply([ map { $_->{value} } grep { exists $_->{value} } @found ], ["Z\x{c3}\x{bc}rich"],
+    'the garbled value is the one shown');
+  is_deeply([ map { $_->{more} } grep { exists $_->{more} } @found ], [1],
+    'and only the U+FFFD value is counted as more');
 };
 
 subtest 'scanConfigEncoding__regexp_values__skipped_not_crashing' => sub {
