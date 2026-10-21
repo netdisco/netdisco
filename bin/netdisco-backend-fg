@@ -32,6 +32,7 @@ BEGIN {
 use App::Netdisco::Util::PostgresFloor 'warn_postgres_floor_all_tenants';
 use App::Netdisco::Util::MCE; # set $0 and parse maxworkers
 use App::Netdisco::Backend::Queues 'worker_queues';
+use App::Netdisco::Util::SNMPText 'scan_config_encoding';
 use NetAddr::IP::Lite ':lower'; # to quench AF_INET6 symbol errors
 use Role::Tiny::With;
 
@@ -86,6 +87,9 @@ warning sprintf "queue: %s | workers: %s | actions: %s",
   for grep { $_->{only} } @queues;
 
 warn_postgres_floor_all_tenants(sub { warning shift });
+
+warning 'Your configuration contains text that looks garbled. Run "netdisco-do checkencoding" for details.'
+  if scan_config_encoding(config());
 
 mce_flow {
   task_name    => \@task_names,

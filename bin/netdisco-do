@@ -46,6 +46,7 @@ use NetAddr::IP qw/:rfc3021 :lower/;
 use App::Netdisco::Backend::Job;
 use App::Netdisco::JobQueue 'jq_insert';
 use App::Netdisco::Util::Device 'get_device';
+use App::Netdisco::Util::SNMPText 'decode_cli_extra';
 use App::Netdisco::Worker::Actions qw/supported_actions supported_stages/;
 
 use Getopt::Long;
@@ -191,6 +192,7 @@ if (not $force and scalar @hostlist > 512) {
     exit 1;
 }
 
+my $extra_is_text = 0;
 if ($action =~ m/^(?:cf_|macsuck|arpnip)/ and $extra) {
     if ($extra eq '@-' or ($quiet and $extra eq '-')) {
         $extra = do { local $/; <STDIN> };
@@ -199,6 +201,7 @@ if ($action =~ m/^(?:cf_|macsuck|arpnip)/ and $extra) {
         my $filename = $1;
         if (-f $filename) {
             $extra = read_text($filename);
+            $extra_is_text = 1;
         }
         else {
             error sprintf 'unable to read from file: %s', $filename;
@@ -206,6 +209,9 @@ if ($action =~ m/^(?:cf_|macsuck|arpnip)/ and $extra) {
         }
     }
 }
+
+# read_text has already decoded a file's UTF-8
+$extra = decode_cli_extra($extra) if $action =~ m/^cf_/ and not $extra_is_text;
 
 # some actions do not take a device parameter
 @hostlist = (undef) if 0 == scalar @hostlist;

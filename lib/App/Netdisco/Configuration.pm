@@ -314,6 +314,13 @@ if (ref {} eq ref setting('ignore_deviceports')) {
 }
 else { config->{'ignore_deviceports'} ||= [] }
 
+normalize_snmp_charset();
+
+sub normalize_snmp_charset {
+  config->{'snmp_charset'}
+    = App::Netdisco::Util::Configuration::snmp_charset_maps(config->{'snmp_charset'});
+}
+
 # copy old ignore_* into new settings
 if (scalar @{ config->{'ignore_interfaces'} }) {
   config->{'host_groups'}->{'__IGNORE_INTERFACES__'}

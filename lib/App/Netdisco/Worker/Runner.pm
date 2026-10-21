@@ -6,6 +6,7 @@ use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Util::CustomFields;
 use App::Netdisco::Transport::Python ();
 use App::Netdisco::Util::Device 'get_device';
+use App::Netdisco::Util::SNMPText 'reset_snmp_charsets_cache';
 use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use aliased 'App::Netdisco::Worker::Status';
 
@@ -32,6 +33,7 @@ sub run {
 
   $job->apply_config_overrides;
   $self->job($job);
+  reset_snmp_charsets_cache();
   $job->device( get_device($job->device) )
     unless scalar grep {$job->action eq $_} @{ setting('job_targets_prefix') };
   $self->load_workers();

@@ -8,6 +8,7 @@ use App::Netdisco::Transport::SNMP ();
 
 use aliased 'App::Netdisco::Worker::Status';
 use List::MoreUtils 'uniq';
+use App::Netdisco::Util::SNMPText 'decode_snmp_text';
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
@@ -114,7 +115,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
       push @devicevlans, {
           vlan => $vlan,
-          description => $v_name->{$entry},
+          description => decode_snmp_text($v_name->{$entry}, $device, "vlan $vlan name"),
           last_discover => \'LOCALTIMESTAMP',
       };
   }

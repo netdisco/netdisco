@@ -6,6 +6,7 @@ use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Transport::SNMP ();
 use Dancer::Plugin::DBIC 'schema';
+use App::Netdisco::Util::SNMPText 'decode_snmp_text';
 use Time::HiRes 'gettimeofday';
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
@@ -62,7 +63,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     # "unknown" - and since (mac, ssid) is the primary key, storing it under
     # that name gives the client a second identity which nothing expires.
     # Skip it and pick the client up on a pass where the walk is complete.
-    my $ssid = $cd11_ssid->{$idx};
+    my $ssid = decode_snmp_text($cd11_ssid->{$idx}, $device, "client $idx ssid");
     if (! defined $ssid or ! length $ssid) {
       if (! $have_ssids) {
         $ssid = 'unknown';

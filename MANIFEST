@@ -174,6 +174,7 @@ lib/App/Netdisco/Util/Python.pm
 lib/App/Netdisco/Util/SiteLocal.pm
 lib/App/Netdisco/Util/Snapshot.pm
 lib/App/Netdisco/Util/SNMP.pm
+lib/App/Netdisco/Util/SNMPText.pm
 lib/App/Netdisco/Util/Statistics.pm
 lib/App/Netdisco/Util/Token.pm
 lib/App/Netdisco/Util/Web.pm
@@ -262,6 +263,7 @@ lib/App/Netdisco/Worker/Plugin/Arpnip/Hooks.pm
 lib/App/Netdisco/Worker/Plugin/Arpnip/Nodes.pm
 lib/App/Netdisco/Worker/Plugin/Arpnip/Subnets.pm
 lib/App/Netdisco/Worker/Plugin/Arpwalk.pm
+lib/App/Netdisco/Worker/Plugin/CheckEncoding.pm
 lib/App/Netdisco/Worker/Plugin/CheckSiteLocal.pm
 lib/App/Netdisco/Worker/Plugin/Contact.pm
 lib/App/Netdisco/Worker/Plugin/Delete.pm
@@ -716,6 +718,8 @@ xt/143-api-custom-field-role-scope.t
 xt/144-portctl-topology-gate.t
 xt/145-topology-del-only-matched.t
 xt/146-snmp-incomplete-walk-arg.t
+xt/148-decode-snmp-text.t
+xt/149-snmp-charset-setting.t
 xt/150-schema-step-file.t
 xt/151-schema-upgrade-message.t
 xt/152-schema-step-mode.t
