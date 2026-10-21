@@ -166,12 +166,29 @@ subtest 'run_deploy__tolerant_expected_errors__one_summary_line' => sub {
   like($out, qr/^Expected errors on 3 statements across 2 older steps/);
   is(scalar(() = $out =~ m/\n/g), 1);
 };
+subtest 'run_deploy__tolerant_unexpected_only__error_then_check_pointer' => sub {
+  my $error = { statement => 'SELECT 1/0', state => '22012', error => 'division by zero' };
+  my $schema = FakeSchema->new(version => 10, target => 11,
+    results => { 10 => ok_step(unexpected => [ $error ]) });
+  my ($exit, $out, $err) = run_captured($schema, {});
+  is($exit, 0);
+  like($err, qr/SQLSTATE 22012/);
+  like($err, qr/An error in an older step is shown above; run netdisco-db-deploy --check/);
+  is($out, '');
+};
 subtest 'run_deploy__quiet__suppresses_the_summary' => sub {
   my $schema = FakeSchema->new(version => 10, target => 11,
     results => { 10 => ok_step(expected => 2) });
   my ($exit, $out, $err) = run_captured($schema, { quiet => 1 });
   is($exit, 0);
   is($out, ''); is($err, '');
+};
+subtest 'run_deploy__forced_step_applied_cleanly__says_nothing_was_forced' => sub {
+  my $schema = FakeSchema->new(version => 57, target => 58, results => { 57 => ok_step() });
+  my ($exit, $out, $err) = run_captured($schema, { force_step => 57 });
+  is($exit, 0);
+  like($err, qr/Step 57 applied without errors, so nothing was skipped or recorded/);
+  unlike($out . $err, qr/was forced/);
 };
 subtest 'run_deploy__forced_step__reported_as_forced_not_older' => sub {
   my $skipped = [ { statement => 'INSERT INTO x VALUES (1)', state => '42P01', error => 'no x' },

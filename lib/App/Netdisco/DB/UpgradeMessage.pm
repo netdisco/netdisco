@@ -7,7 +7,7 @@ use base 'Exporter';
 our @EXPORT_OK = qw(
   @EXPECTED_SQLSTATES is_expected_sqlstate strict_failure_message
   force_refusal_message force_already_applied_message tolerant_summary
-  unexpected_error_message forced_step_summary
+  unexpected_error_message forced_step_summary forced_step_clean_message
 );
 
 our @EXPECTED_SQLSTATES = qw/42P07 42701 42703 42704 42P01 42P16 42601 42883/;
@@ -109,14 +109,24 @@ sub _check_hint {
 
 sub tolerant_summary {
   my %arg = @_;
-  return "Expected errors on $arg{expected} statements across $arg{steps} older steps were ignored"
-    . _check_hint($arg{container}, 'see the result');
+  my $unexpected = $arg{unexpected} || 0;
+  my $shown = $unexpected == 1 ? 'is shown above' : 'are shown above';
+  my $summary = !$arg{expected}
+    ? ($unexpected == 1 ? 'An error in an older step' : "$unexpected errors in older steps") . " $shown"
+    : "Expected errors on $arg{expected} statements across $arg{steps} older steps were ignored"
+      . ($unexpected ? ", and $unexpected other " . ($unexpected == 1 ? 'error' : 'errors') . " $shown" : '');
+  return $summary . _check_hint($arg{container}, 'see the result');
 }
 
 sub forced_step_summary {
   my %arg = @_;
   return "Step $arg{from} was forced: $arg{skipped} failing statements were skipped "
     . 'and recorded in the schema_step_forced table' . _check_hint($arg{container}, 'see what is missing');
+}
+
+sub forced_step_clean_message {
+  my %arg = @_;
+  return "Step $arg{from} applied without errors, so nothing was skipped or recorded.";
 }
 
 sub unexpected_error_message {

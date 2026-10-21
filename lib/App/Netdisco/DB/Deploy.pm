@@ -9,6 +9,7 @@ use App::Netdisco::DB::SchemaVersioned;
 use App::Netdisco::DB::UpgradeMessage qw(
   strict_failure_message force_refusal_message force_already_applied_message
   tolerant_summary unexpected_error_message forced_step_summary
+  forced_step_clean_message
 );
 
 use base 'Exporter';
@@ -140,6 +141,14 @@ sub _report_unexpected {
   }
 }
 
+sub _report_forced {
+  my ($options, $from, $step_result) = @_;
+  my $skipped = scalar @{ $step_result->{skipped} || [] };
+  _warn($options, $skipped
+    ? forced_step_summary(from => $from, skipped => $skipped, container => $options->{container})
+    : forced_step_clean_message(from => $from));
+}
+
 sub _strict_failure_text {
   my ($schema, $options, $from, $step_result) = @_;
   my $failed = $step_result->{failed} || {};
@@ -183,23 +192,31 @@ sub _is_forced_step {
 
 sub _run_steps {
   my ($schema, $options, $db_version, $target_version) = @_;
-  my %tally = (expected => 0, steps => 0);
+  my %tally = (expected => 0, steps => 0, unexpected => 0);
 
   for (my $from = $db_version; $from < $target_version; $from++) {
     my $step_result = _apply_step($schema, $options, $from);
     return (1, \%tally) unless $step_result;
 
     if (_is_forced_step($options, $from)) {
-      _warn($options, forced_step_summary(from => $from,
-        skipped => scalar @{ $step_result->{skipped} || [] }, container => $options->{container}));
+      _report_forced($options, $from, $step_result);
       next;
     }
     _report_unexpected($options, $step_result);
+    $tally{unexpected} += scalar @{ $step_result->{unexpected} };
     next unless $step_result->{expected};
     $tally{expected} += $step_result->{expected};
     $tally{steps}++;
   }
   return (0, \%tally);
+}
+
+# a summary that follows unexpected errors goes with them, to STDERR
+sub _report_tolerant_summary {
+  my ($options, $tally) = @_;
+  return unless $tally->{expected} or $tally->{unexpected};
+  my $summary = tolerant_summary(%$tally, container => $options->{container});
+  $tally->{unexpected} ? _warn($options, $summary) : _say($options, $summary);
 }
 
 sub run_deploy {
@@ -220,8 +237,7 @@ sub run_deploy {
   return $refusal if defined $refusal;
 
   my ($exit_code, $tally) = _run_steps($schema, $options, $db_version, $target_version);
-  _say($options, tolerant_summary(%$tally, container => $options->{container}))
-    if $exit_code == 0 and $tally->{expected};
+  _report_tolerant_summary($options, $tally) if $exit_code == 0;
 
   undef $txn_guard if $ENV{ND2_DB_ROLLBACK};
   return $exit_code;

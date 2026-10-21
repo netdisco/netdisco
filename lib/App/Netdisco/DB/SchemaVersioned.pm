@@ -83,14 +83,13 @@ sub _do_capturing_failure {
 }
 
 sub _strict_step {
-  my ($self, $step_file, $to, $before_stamp) = @_;
+  my ($self, $step_file, $to) = @_;
   my $result = _new_step_result($step_file);
   my $parsed = parse_step_file($step_file);
   my $failure;
 
   my $apply_and_stamp = sub {
     $self->_do_capturing_failure($_, \$failure) for @{ $parsed->{statements} };
-    $before_stamp->([]) if $before_stamp;
     $self->_set_db_version({version => $to});
   };
 
@@ -112,7 +111,7 @@ sub _strict_step {
 # so it is kept only for the steps that always ran that way.
 sub _tolerant_step {
   my ($self, $step_file, $to, $before_stamp, $split_as_parsed) = @_;
-  my $strict_result = $self->_strict_step($step_file, $to, $before_stamp);
+  my $strict_result = $self->_strict_step($step_file, $to);
   return $strict_result if $strict_result->{ok};
 
   my $parsed = parse_step_file($step_file);
@@ -126,7 +125,7 @@ sub _tolerant_step {
   $no_transaction ? $self->_in_quiet_session($replay) : $replay->();
 
   $self->_in_quiet_transaction(sub {
-    $before_stamp->($result->{skipped}) if $before_stamp;
+    $before_stamp->($result->{skipped}) if $before_stamp and @{ $result->{skipped} };
     $self->_set_db_version({version => $to});
   });
   $result->{ok} = 1;

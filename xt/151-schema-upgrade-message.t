@@ -14,7 +14,7 @@ use Test::More 0.88;
 use App::Netdisco::DB::UpgradeMessage qw(
   is_expected_sqlstate strict_failure_message force_refusal_message
   force_already_applied_message tolerant_summary unexpected_error_message
-  forced_step_summary
+  forced_step_summary forced_step_clean_message
 );
 
 subtest 'is_expected_sqlstate__listed_and_unlisted__classified' => sub {
@@ -84,6 +84,16 @@ subtest 'tolerant_summary__counts__one_line_pointing_at_check' => sub {
   like($s, qr/63/); like($s, qr/21/); like($s, qr/--check/);
 };
 
+subtest 'tolerant_summary__unexpected_only__points_at_check' => sub {
+  my $s = tolerant_summary(expected => 0, steps => 0, unexpected => 1);
+  unlike($s, qr/\n./);
+  like($s, qr/^An error in an older step is shown above; run netdisco-db-deploy --check to see the result\.$/);
+  like(tolerant_summary(expected => 0, steps => 0, unexpected => 2), qr/^2 errors in older steps are shown above/);
+};
+subtest 'tolerant_summary__expected_and_unexpected__both_counted' => sub {
+  my $s = tolerant_summary(expected => 63, steps => 21, unexpected => 2);
+  like($s, qr/^Expected errors on 63 statements across 21 older steps were ignored, and 2 other errors are shown above; run netdisco-db-deploy --check/);
+};
 subtest 'unexpected_error_message__details__names_file_state_and_statement' => sub {
   my $m = unexpected_error_message(file => 'f.sql', statement => 'DROP TABLE y',
     state => '23505', error => 'duplicate key');
@@ -98,6 +108,11 @@ subtest 'forced_step_summary__step_and_count__one_line_naming_the_record' => sub
   like($s, qr/run netdisco-db-deploy --check to see what is missing/);
 };
 
+subtest 'forced_step_clean_message__step__says_nothing_was_skipped_or_recorded' => sub {
+  my $s = forced_step_clean_message(from => 57);
+  unlike($s, qr/\n./);
+  like($s, qr/^Step 57 applied without errors, so nothing was skipped or recorded\.$/);
+};
 subtest 'forced_step_summary__container__gives_the_setting_not_the_command' => sub {
   my $s = forced_step_summary(from => 57, skipped => 3, container => 1);
   like($s, qr/schema_step_forced table\. To see what is missing, set NETDISCO_DB_DEPLOY_ARGS=--check in \.env/);

@@ -263,6 +263,14 @@ subtest 'upgrade_single_step__forced_at_baseline__replays_do_block_whole_and_rec
   is_deeply([map { $_->{statement} } @{ $schema->{forced}[1] }],
     ['CREATE INDEX existing_idx ON device (ip)'], 'only the failing statement recorded');
 };
+subtest 'upgrade_single_step__forced_step_that_applies_cleanly__records_nothing' => sub {
+  my $file = step_file_with("CREATE TABLE IF NOT EXISTS t (a integer);\n");
+  my $schema = ForcingStandInSchema->new("$file");
+  my $result = $schema->upgrade_single_step(102, 103, 'forced');
+  ok($result->{ok}, 'applied');
+  is_deeply($result->{skipped}, [], 'nothing skipped');
+  ok(!exists $schema->{forced}, 'no schema_step_forced row');
+};
 subtest 'upgrade_single_step__forced_below_baseline__replays_with_the_old_splitter' => sub {
   my ($schema, $replayed) = forced_run(37, 'forced');
   is(scalar @$replayed, 4, 'DO block cut into fragments as before');
