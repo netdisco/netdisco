@@ -41,4 +41,15 @@ subtest '_snmp_connect_generic__net_snmp_options_sets_it__operator_value_wins' =
   is(connect_args()->{IncompleteWalk}, 'undef');
 };
 
+# the documented way back to bulkwalk as it was before SNMP::Info 3.981000
+subtest '_snmp_connect_generic__net_snmp_options_turns_off_bulk_recovery__both_reach_snmp_info' => sub {
+  my $default = connect_args();
+  ok(!exists $default->{$_}, "$_ left to SNMP::Info's default") for qw/BulkOrderCheck BulkBackoff/;
+
+  local config->{'net_snmp_options'} = { BulkOrderCheck => 0, BulkBackoff => 0 };
+  my $args = connect_args();
+  is($args->{BulkOrderCheck}, 0);
+  is($args->{BulkBackoff}, 0);
+};
+
 done_testing;
