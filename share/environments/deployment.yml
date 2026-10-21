@@ -96,6 +96,15 @@ device_auth:
 #dns:
 #  max_outstanding: 50
 
+# character sets to try when a device's SNMP text is not UTF-8, such as
+# GBK names on some H3C and Huawei devices. keys are ACLs. limit a charset
+# to the devices which need it: on group:__ANY__ it would also misread
+# Latin-1 text from other devices.
+# ```````````````````````````````````````````````````````````````````````
+#snmp_charset:
+#  'vendor:huawei': ['gbk']
+#  '10.20.0.0/16': ['gbk']
+
 # set to true to globally disable authentication/login.
 # create a user called "guest" if you want to assign port/admin rights.
 # `````````````````````````````````````````````````````````````````````

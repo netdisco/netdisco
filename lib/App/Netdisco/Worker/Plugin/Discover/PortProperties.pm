@@ -7,7 +7,7 @@ use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::Transport::SNMP ();
 use Dancer::Plugin::DBIC 'schema';
 
-use Encode;
+use App::Netdisco::Util::SNMPText 'decode_snmp_text';
 use App::Netdisco::Util::Web 'sort_port';
 use App::Netdisco::Util::Permission 'acl_matches';
 use App::Netdisco::Util::PortAccessEntity 'update_pae_attributes';
@@ -97,7 +97,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     }
 
     my $remote_cap  = $c_cap->{$idx} || [];
-    my $remote_type = Encode::decode('UTF-8', $c_platform->{$idx} || '');
+    my $remote_type = decode_snmp_text($c_platform->{$idx} || '', $device, "port $port remote_type");
 
     $properties{ $port }->{remote_is_wap} ||= 'false';
     $properties{ $port }->{remote_is_phone} ||= 'false';

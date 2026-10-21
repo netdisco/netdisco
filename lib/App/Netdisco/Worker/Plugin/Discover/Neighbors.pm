@@ -12,7 +12,7 @@ use Dancer::Plugin::DBIC 'schema';
 use List::Util 'pairs';
 use NetAddr::IP::Lite ();
 use NetAddr::MAC;
-use Encode;
+use App::Netdisco::Util::SNMPText 'decode_snmp_text';
 use Try::Tiny;
 
 =head2 discover_new_neighbors( )
@@ -189,8 +189,8 @@ sub store_neighbors {
 
       my $remote_ip   = $c_ip_entry;
       my $remote_port = undef;
-      my $remote_type = Encode::decode('UTF-8', $c_platform->{$entry} || '');
-      my $remote_id   = Encode::decode('UTF-8', $c_id->{$entry});
+      my $remote_type = decode_snmp_text($c_platform->{$entry} || '', $device, "neighbor $port remote_type");
+      my $remote_id   = decode_snmp_text($c_id->{$entry}, $device, "neighbor $port remote_id");
       my $remote_cap  = $c_cap->{$entry} || [];
 
       next NEIGHBOR unless $remote_ip;

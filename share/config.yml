@@ -754,6 +754,8 @@ discover_neighbors: true
 discover_routed_neighbors: true
 skip_modules: []
 store_modules: true
+snmp_charset:
+  'group:__ANY__': []
 ignore_deviceports:
   'group:__ANY__':
     - 'group:__IGNORE_INTERFACES__'
@@ -895,6 +897,7 @@ worker_plugins:
   - 'Arpnip::Nodes'
   - 'Arpnip::Subnets'
   - 'Arpwalk'
+  - 'CheckEncoding'
   - 'CheckSiteLocal'
   - 'Contact'
   - 'Delete'

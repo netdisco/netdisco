@@ -1,3 +1,12 @@
+2.115000 - tbd
+
+  [BUG FIXES]
+
+  * #1746 decode SNMP text before storage, with per-device charset fallbacks.
+    the new snmp_charset setting lists charsets to try, by ACL, when a
+    device's text is not UTF-8, and netdisco-do checkencoding reports text
+    that looks garbled in the configuration and the database
+
 2.114000 - 2026-10-19
 
   [ENHANCEMENTS]

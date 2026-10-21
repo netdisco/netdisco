@@ -8,7 +8,7 @@ use App::Netdisco::Transport::SNMP ();
 use App::Netdisco::Util::Permission 'acl_matches';
 use Dancer::Plugin::DBIC 'schema';
 use String::Util 'trim';
-use Encode;
+use App::Netdisco::Util::SNMPText 'decode_snmp_text';
 
 my $clean = sub {
   my $device = shift;
@@ -87,16 +87,16 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
           index  => $e_index->{$entry},
           type   => $e_type->{$entry},
           parent => $e_parent->{$entry},
-          name   => trim(Encode::decode('UTF-8', $e_name->{$entry})),
+          name   => trim(decode_snmp_text($e_name->{$entry}, $device, "entity $e_index->{$entry} name")),
           class  => $e_class->{$entry},
           pos    => $e_pos->{$entry},
-          hw_ver => trim(Encode::decode('UTF-8', $e_hwver->{$entry})),
-          fw_ver => trim(Encode::decode('UTF-8', $e_fwver->{$entry})),
-          sw_ver => trim(Encode::decode('UTF-8', $e_swver->{$entry})),
-          model  => trim(Encode::decode('UTF-8', $e_model->{$entry})),
-          serial => trim(Encode::decode('UTF-8', $e_serial->{$entry})),
+          hw_ver => trim(decode_snmp_text($e_hwver->{$entry}, $device, "entity $e_index->{$entry} hwver")),
+          fw_ver => trim(decode_snmp_text($e_fwver->{$entry}, $device, "entity $e_index->{$entry} fwver")),
+          sw_ver => trim(decode_snmp_text($e_swver->{$entry}, $device, "entity $e_index->{$entry} swver")),
+          model  => trim(decode_snmp_text($e_model->{$entry}, $device, "entity $e_index->{$entry} model")),
+          serial => trim(decode_snmp_text($e_serial->{$entry}, $device, "entity $e_index->{$entry} serial")),
           fru    => $e_fru->{$entry},
-          description => trim(Encode::decode('UTF-8', $e_descr->{$entry})),
+          description => trim(decode_snmp_text($e_descr->{$entry}, $device, "entity $e_index->{$entry} descr")),
           last_discover => \'LOCALTIMESTAMP',
       };
   }

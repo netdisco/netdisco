@@ -15,6 +15,7 @@ our @EXPORT_OK = qw/
   load_acls_from_database
   parse_params_to_config
   split_params_to_config
+  snmp_charset_maps
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -152,6 +153,36 @@ For example:
 =item * C<{"value": "unchanged", "with": ["FAILS"]}> (unsupported)
 
 =back
+
+=head1 snmp_charset_maps( $raw )
+
+Returns the C<snmp_charset> setting as a list of maps from ACL to a list of
+charset names, from any of the forms it may be written in: a charset name, a
+map whose values are a name or a list, or a list of those maps. Undef,
+references and empty names are dropped. Returns C<< [ { 'group:__ANY__' => [] } ] >>
+when nothing is left.
+
+=cut
+
+sub snmp_charset_maps {
+  my $raw = shift;
+  my @maps = (ref [] eq ref $raw) ? @$raw : ($raw);
+  my @normalized;
+
+  foreach my $map (@maps) {
+    $map = { 'group:__ANY__' => $map } if defined $map and q{} eq ref $map;
+    next unless ref {} eq ref $map;
+    push @normalized, { map { ($_ => _charset_list($map->{$_})) } keys %$map };
+  }
+
+  return scalar @normalized ? \@normalized : [ { 'group:__ANY__' => [] } ];
+}
+
+sub _charset_list {
+  my ($value) = @_;
+  my @names = (ref [] eq ref $value) ? @$value : ($value);
+  return [ grep { defined and q{} eq ref $_ and length } @names ];
+}
 
 =head1 parse_params_to_config
 

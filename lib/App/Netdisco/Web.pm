@@ -37,6 +37,7 @@ use App::Netdisco::Util::Web qw/
 use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use App::Netdisco::Util::Port 'device_acl_by_role_check';
 use App::Netdisco::Util::SiteLocal qw/scan_shadowed_files site_local_paths/;
+use App::Netdisco::Util::SNMPText 'scan_config_encoding';
 
 BEGIN {
   no warnings 'redefine';
@@ -251,6 +252,9 @@ foreach my $finding (scan_shadowed_files(
       '%s predates %s. Run "netdisco-do checksitelocal" for details.',
       $finding->{path}, $finding->{release};
 }
+
+warning 'Your configuration contains text that looks garbled. Run "netdisco-do checkencoding" for details.'
+  if scan_config_encoding(config());
 
 # after template_paths, which decides where site-local themes can live
 App::Netdisco::Web::Theme::resolve_configured_theme();

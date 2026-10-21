@@ -11,6 +11,7 @@ use App::Netdisco::Util::Device qw/get_device is_discoverable/;
 use App::Netdisco::Util::DNS 'hostname_from_ip';
 use App::Netdisco::Util::SNMP qw/snmp_comm_reindex snmp_vrf_reindex get_mibdirs_shortnames/;
 use App::Netdisco::Util::Web 'sort_port';
+use App::Netdisco::Util::SNMPText qw/decode_snmp_text decode_text_with/;
 use App::Netdisco::DB::ExplicitLocking ':modes';
 
 use Dancer::Plugin::DBIC 'schema';
@@ -47,23 +48,16 @@ register_worker({ phase => 'early', driver => 'snmp',
   my $hostname = hostname_from_ip($device->ip);
   $device->set_column( dns => $hostname ) if $hostname;
 
-  my @properties = qw/
-    snmp_ver
-    description uptime name
-    layers mac
-    ps1_type ps2_type ps1_status ps2_status
-    fan slots
-    vendor os os_ver
+  _set_raw_properties($snmp, $device);
+
+  my @text_properties = qw/
+    description name
+    ps1_type ps2_type
+    fan
+    os os_ver
   /;
 
-  foreach my $property (@properties) {
-      my $val = $snmp->$property;
-      $val = [values %$val]->[0] if ref $val eq 'HASH';
-      $val = undef if $val and $val =~ m/^HASH\(/;
-      $device->set_column( $property => $val );
-  }
-
-  my %utf8_properties = (
+  my %trimmed_text_properties = (
     qw( model    model
         serial   serial
         serial1  chassis_id
@@ -71,14 +65,6 @@ register_worker({ phase => 'early', driver => 'snmp',
         location location
     ),
   );
-
-  foreach my $property (keys %utf8_properties) {
-      my $val = $snmp->$property;
-      $val = [values %$val]->[0] if ref $val eq 'HASH';
-      ($val = Encode::decode('UTF-8', ($val || ''))) =~ s/\s+$//;
-      $val = undef if $val and $val =~ m/^HASH\(/;
-      $device->set_column( $utf8_properties{$property} => $val );
-  }
 
   $device->set_column( num_ports  => ($snmp->ports || 0) );
   $device->set_column( snmp_class => $snmp->class );
@@ -94,6 +80,7 @@ register_worker({ phase => 'early', driver => 'snmp',
   $try_vendor =~ s/^(?:\.?1.3.6.1.4.1|enterprises)// if $try_vendor;
 
   # fix up unknown vendor (enterprise number -> organization)
+  my $vendor_from_enterprise = 0;
   if ((not $device->vendor or $device->vendor eq 'unknown'
         or $device->vendor =~ m/^${enterprises_mib}/)
       and $try_vendor and $try_vendor =~ m/^\.(\d+)/) {
@@ -104,8 +91,22 @@ register_worker({ phase => 'early', driver => 'snmp',
       if ($ent) {
           debug sprintf ' ... found Enterprise "%s"', $ent->organization;
           $device->set_column( vendor => $ent->organization );
+          $vendor_from_enterprise = 1;
       }
   }
+
+  # decoded only now, so snmp_charset ACLs such as vendor: and os: see this
+  # discover's values, and the fix-ups' database values are not re-decoded
+  foreach my $property (@text_properties) {
+      $device->set_column( $property =>
+        _device_text_value($snmp, $property, $device) );
+  }
+  foreach my $property (keys %trimmed_text_properties) {
+      $device->set_column( $trimmed_text_properties{$property} =>
+        _device_text_value($snmp, $property, $device, 'trim') );
+  }
+  $device->set_column( vendor => _device_text_value($snmp, 'vendor', $device) )
+    unless $vendor_from_enterprise;
 
   # fix up model using products OID cache
   if ((not $device->model or $device->model eq 'unknown'
@@ -198,7 +199,7 @@ register_worker({ phase => 'early', driver => 'snmp',
       # filter custom_fields for current valid fields
       foreach my $field (keys %ok_fields) {
           $ok_fields{$field} = exists $fields->{$field}
-            ? Encode::decode('UTF-8', $fields->{$field}) : undef;
+            ? decode_text_with($fields->{$field}, []) : undef;
       }
 
       # set new custom_fields
@@ -428,14 +429,14 @@ register_worker({ phase => 'early', driver => 'snmp',
       # also include the Device IP alias if we have one for L3 interfaces
       $deviceports{$port} = {
           port         => $port,
-          descr        => $i_descr->{$entry},
+          descr        => decode_snmp_text($i_descr->{$entry}, $device, "port $port descr"),
           up           => $i_up->{$entry},
           up_admin     => $i_up_admin->{$entry},
           mac          => $i_mac->{$entry},
           speed        => $i_speed->{$entry},
           speed_admin  => $i_speed_admin->{$entry},
           mtu          => $i_mtu->{$entry},
-          name         => Encode::decode('UTF-8', $i_name->{$entry}),
+          name         => decode_snmp_text($i_name->{$entry}, $device, "port $port name"),
           duplex       => $i_duplex->{$entry},
           duplex_admin => $i_duplex_admin->{$entry},
           stp          => $i_stp_state->{$entry},
@@ -671,7 +672,7 @@ register_worker({ phase => 'early', driver => 'snmp',
 
         foreach my $field (keys %ok_fields) {
             $new_fields{$field} = exists $fields{$port}->{$field}
-              ? Encode::decode('UTF-8', $fields{$port}->{$field}) : undef;
+              ? decode_text_with($fields{$port}->{$field}, []) : undef;
         }
 
         # set new custom_fields
@@ -691,6 +692,39 @@ register_worker({ phase => 'early', driver => 'snmp',
       $device->ip, scalar values %deviceports);
   });
 });
+
+# description and name are set raw too, for the snmp_charset ACLs on a new
+# device; they are decoded afterwards with the other text properties
+sub _set_raw_properties {
+  my ($snmp, $device) = @_;
+  my @properties = qw/
+    snmp_ver
+    uptime
+    layers mac
+    ps1_status ps2_status
+    slots
+    vendor os model
+    description name
+  /;
+
+  foreach my $property (@properties) {
+      my $val = $snmp->$property;
+      $val = [values %$val]->[0] if ref $val eq 'HASH';
+      $val = undef if $val and $val =~ m/^HASH\(/;
+      $device->set_column( $property => $val );
+  }
+}
+
+sub _device_text_value {
+  my ($snmp, $method, $device, $trim) = @_;
+  my $val = $snmp->$method;
+  $val = [values %$val]->[0] if ref $val eq 'HASH';
+  return undef if $val and $val =~ m/^HASH\(/;
+  return decode_snmp_text($val, $device, $method) unless $trim;
+
+  (my $text = decode_snmp_text(($val || ''), $device, $method)) =~ s/\s+$//;
+  return $text;
+}
 
 # return a list of VRF which are OK to connect
 sub _get_vrf_list {
