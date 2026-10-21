@@ -230,9 +230,7 @@ sub split_params_to_config {
   }
 
   # finally, we have either a lengthy string or a struct
-  # a bare JSON literal (1.10, 0.50, true) is a plain value, not config: keep
-  # the text as given, as from_json would turn "1.10" into the number 1.1.
-  # A quoted JSON string ('"unchanged"') is still taken as its decoded content.
+  # 1769 fix json number parsing ignoring trailing zeroes (ex: 2.10 -> 2.1)
   my $value = ((defined $struct)
     ? ((ref $struct eq q{} and $orig_value !~ m/^\s*"/) ? $orig_value : $struct)
     : $orig_value);
