@@ -232,7 +232,7 @@ sub split_params_to_config {
   # finally, we have either a lengthy string or a struct
   # 1769 fix json number parsing ignoring trailing zeroes (ex: 2.10 -> 2.1)
   my $value = ((defined $struct)
-    ? $struct
+    ? ((ref $struct eq q{} and $orig_value !~ m/^\s*"/) ? $orig_value : $struct)
     : $orig_value);
 
   # if a lengthy string, it could be k=v config
