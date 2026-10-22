@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Dancer ':syntax';
-use Dancer::Plugin::DBIC 'schema';
+use DBICx::Sugar ();
 use Try::Tiny;
 
 use App::Netdisco::Util::Statistics 'postgres_version';
@@ -66,7 +66,13 @@ sub _live_version {
   my $label = shift;
   # a tenant host that drops packets must not stall boot for the TCP timeout
   local $ENV{PGCONNECT_TIMEOUT} = $ENV{PGCONNECT_TIMEOUT} || 3;
-  my $storage = schema($label)->storage;
+  # schema() would cache this one under $label; the processes forked from
+  # here would then make a second, for 'default', with its own connection
+  my $dbic = setting('plugins')->{DBIC};
+  my $options = $dbic->{$label} || {};
+  $options = $dbic->{ $options->{alias} } if $options->{alias};
+  DBICx::Sugar::config($dbic);
+  my $storage = DBICx::Sugar::schema($label, $options)->storage;
   my $version = $storage->dbh->{pg_server_version};
   # the web master forks workers, which must not inherit this connection
   $storage->disconnect;

@@ -1,7 +1,19 @@
 use strict;
 use warnings;
 
+# nothing listens on port 1, so the live lookup fails fast and no test needs
+# a database
+BEGIN {
+  $ENV{DANCER_ENVDIR} = '/dev/null';
+  $ENV{PGHOST} = '127.0.0.1';
+  $ENV{PGPORT} = 1;
+}
+
 use Test::More 0.88;
+use Scalar::Util 'refaddr';
+use App::Netdisco;
+use Dancer ':script';
+use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Util::PostgresFloor
   qw/$POSTGRES_FLOOR_MAJOR postgres_floor_warning warn_postgres_floor_all_tenants/;
 
@@ -45,5 +57,14 @@ subtest 'warn_postgres_floor_all_tenants__lookup_dies__stays_silent' => sub {
   warn_postgres_floor_all_tenants(sub { push @logged, shift },
     { labels => ['netdisco'], version_for => sub { die "no database\n" } });
   is(scalar @logged, 0);
+};
+# the backend runs this in its master process, before forking pollers. a
+# schema cached there under 'netdisco' leaves each poller a second schema,
+# for 'default', with its own connection; discover then locked device_port
+# on one and waited on that lock from the other
+subtest 'warn_postgres_floor_all_tenants__live_lookup__leaves_one_schema_per_process' => sub {
+  set logger => 'null';
+  warn_postgres_floor_all_tenants(sub {});
+  is(refaddr(schema(undef)), refaddr(schema('netdisco')), "schema(undef) is schema('netdisco')");
 };
 done_testing;
