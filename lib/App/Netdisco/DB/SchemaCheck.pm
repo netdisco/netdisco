@@ -233,7 +233,7 @@ sub run_check {
     print STDERR check_privilege_message($facts->{database}, $facts->{role}), "\n";
     return 2;
   }
-  my ($db_version, $target_version) = ($schema->get_db_version // 0, $schema->schema_version);
+  my ($db_version, $target_version) = ($schema->get_db_version, $schema->schema_version);
   if ($db_version != $target_version) {
     print STDERR version_mismatch_message($db_version, $target_version), "\n";
     return 2;

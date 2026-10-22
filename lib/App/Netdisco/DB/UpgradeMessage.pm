@@ -111,9 +111,12 @@ sub tolerant_summary {
   my %arg = @_;
   my $unexpected = $arg{unexpected} || 0;
   my $shown = $unexpected == 1 ? 'is shown above' : 'are shown above';
+  # under --redeploy-all the erroring step may be the newest, not an older one
+  my ($one, $many) = $arg{replayed}
+    ? ('a replayed step', 'replayed steps') : ('an older step', 'older steps');
   my $summary = !$arg{expected}
-    ? ($unexpected == 1 ? 'An error in an older step' : "$unexpected errors in older steps") . " $shown"
-    : "Expected errors on $arg{expected} statements across $arg{steps} older steps were ignored"
+    ? ($unexpected == 1 ? "An error in $one" : "$unexpected errors in $many") . " $shown"
+    : "Expected errors on $arg{expected} statements across $arg{steps} $many were ignored"
       . ($unexpected ? ", and $unexpected other " . ($unexpected == 1 ? 'error' : 'errors') . " $shown" : '');
   return $summary . _check_hint($arg{container}, 'see the result');
 }

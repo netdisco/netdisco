@@ -90,6 +90,12 @@ subtest 'tolerant_summary__unexpected_only__points_at_check' => sub {
   like($s, qr/^An error in an older step is shown above; run netdisco-db-deploy --check to see the result\.$/);
   like(tolerant_summary(expected => 0, steps => 0, unexpected => 2), qr/^2 errors in older steps are shown above/);
 };
+subtest 'tolerant_summary__redeploy_all__says_replayed_not_older' => sub {
+  like(tolerant_summary(expected => 0, steps => 0, unexpected => 1, replayed => 1),
+    qr/^An error in a replayed step is shown above/);
+  like(tolerant_summary(expected => 63, steps => 21, unexpected => 2, replayed => 1),
+    qr/^Expected errors on 63 statements across 21 replayed steps were ignored, and 2 other errors/);
+};
 subtest 'tolerant_summary__expected_and_unexpected__both_counted' => sub {
   my $s = tolerant_summary(expected => 63, steps => 21, unexpected => 2);
   like($s, qr/^Expected errors on 63 statements across 21 older steps were ignored, and 2 other errors are shown above; run netdisco-db-deploy --check/);

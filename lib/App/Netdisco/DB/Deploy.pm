@@ -215,7 +215,8 @@ sub _run_steps {
 sub _report_tolerant_summary {
   my ($options, $tally) = @_;
   return unless $tally->{expected} or $tally->{unexpected};
-  my $summary = tolerant_summary(%$tally, container => $options->{container});
+  my $summary = tolerant_summary(%$tally,
+    container => $options->{container}, replayed => $options->{redeploy_all});
   $tally->{unexpected} ? _warn($options, $summary) : _say($options, $summary);
 }
 
