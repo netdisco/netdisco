@@ -12,9 +12,10 @@ BEGIN;
 -- statement, including inside the $$ body, which is why this function is a
 -- single SELECT; every continuation line starts with whitespace, or its first
 -- token fuses to the previous line's last one; and no -- comment anywhere but
--- at the start of a line. Netdisco releases before 2.115000 swallowed a
--- failure here and stamped the version anyway, so the first sign was every
--- Ports tab request failing with "function port_sortkey(text) does not exist".
+-- at the start of a line. Netdisco releases before App::Netdisco::DB::Deploy
+-- swallowed a failure here and stamped the version anyway, so the first sign
+-- was every Ports tab request failing with "function port_sortkey(text) does
+-- not exist".
 
 CREATE OR REPLACE FUNCTION port_sortkey(raw text)
   RETURNS text LANGUAGE sql IMMUTABLE STRICT AS $$

@@ -1,4 +1,4 @@
-2.115000 - tbd
+2.116000 - tbd
 
   [NEW FEATURES]
 
@@ -9,6 +9,8 @@
     compares the database with a fresh install. the upgrade also repairs
     missing indexes and keys on databases created before 2.023000, and
     warns when PostgreSQL is older than 14
+
+2.115000 - 2026-10-20
 
   [BUG FIXES]
 
