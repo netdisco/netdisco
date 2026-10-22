@@ -71,8 +71,12 @@ sub _live_version {
   my $dbic = setting('plugins')->{DBIC};
   my $options = $dbic->{$label} || {};
   $options = $dbic->{ $options->{alias} } if $options->{alias};
+  # a copy, because every later schema() call shares this hash: only the
+  # probe skips DBIC's version check, which would carp at every boot
+  my %probe = (%$options,
+    options => { %{ $options->{options} || {} }, ignore_version => 1 });
   DBICx::Sugar::config($dbic);
-  my $storage = DBICx::Sugar::schema($label, $options)->storage;
+  my $storage = DBICx::Sugar::schema($label, \%probe)->storage;
   my $version = $storage->dbh->{pg_server_version};
   # the web master forks workers, which must not inherit this connection
   $storage->disconnect;

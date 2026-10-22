@@ -12,7 +12,7 @@ BEGIN {
 use Test::More 0.88;
 use Scalar::Util 'refaddr';
 use App::Netdisco;
-use Dancer ':script';
+use Dancer qw/:script :tests/;
 use Dancer::Plugin::DBIC 'schema';
 use App::Netdisco::Util::PostgresFloor
   qw/$POSTGRES_FLOOR_MAJOR postgres_floor_warning warn_postgres_floor_all_tenants/;
@@ -65,6 +65,16 @@ subtest 'warn_postgres_floor_all_tenants__lookup_dies__stays_silent' => sub {
 subtest 'warn_postgres_floor_all_tenants__live_lookup__leaves_one_schema_per_process' => sub {
   set logger => 'null';
   warn_postgres_floor_all_tenants(sub {});
+  # the test's own first schema() connects and runs the version check
+  local $SIG{__WARN__} = sub { warn @_ unless $_[0] =~ /currently unversioned/ };
   is(refaddr(schema(undef)), refaddr(schema('netdisco')), "schema(undef) is schema('netdisco')");
+};
+# the probe's connection would otherwise run DBIC's own version check, which
+# carps "currently unversioned" for a database that is merely down, at every boot
+subtest 'warn_postgres_floor_all_tenants__live_lookup__emits_no_perl_warning' => sub {
+  my @warnings;
+  local $SIG{__WARN__} = sub { push @warnings, @_ };
+  warn_postgres_floor_all_tenants(sub {});
+  is_deeply(\@warnings, [], 'no DBIC version carp from the probe');
 };
 done_testing;
