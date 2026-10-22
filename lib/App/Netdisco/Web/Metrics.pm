@@ -314,6 +314,26 @@ get $metrics_path => sub {
   }
   $output .= "\n";
 
+  # -- Duplicate devices (same query as the Duplicate Devices admin task) ----
+  $output .= _header('netdisco_duplicate_devices',
+    'Number of devices sharing a serial number with another device');
+  foreach my $tenant (@tenants) {
+    my $count = try {
+      schema($tenant)->resultset('Device')->search({
+        serial => { '-in' => schema($tenant)->resultset('Device')->search({
+            '-and' => [serial => { '!=', undef }, serial => { '!=', '' }],
+          }, {
+            group_by => ['serial'],
+            having => \'count(*) > 1',
+            columns => 'serial',
+          })->as_query
+        },
+      })->count;
+    } catch { 0 };
+    $output .= _sample('netdisco_duplicate_devices', $count, tenant => $tenant);
+  }
+  $output .= "\n";
+
   $output .= _header('netdisco_snmp_failures_by_device',
     'Number of SNMP connect failures per device and backend (top 50 by failure count)');
   foreach my $tenant (@tenants) {
