@@ -18,10 +18,13 @@ my $MIGRATION = 'share/schema_versions/App-Netdisco-DB-98-99-PostgreSQL.sql';
 
 # Read the file the way DBIx::Class::Schema::Versioned::_read_sql_file does,
 # rather than reading it as SQL: drop comment and transaction lines, join the
-# rest with NO separator, split on ";". Everything this reproduces is a rule the
-# migration has to satisfy, and each one fails silently at deploy time, because
-# App::Netdisco::DB::SchemaVersioned catches the error and stamps the version
-# anyway. Asserting the split here is the only place a violation is loud.
+# rest with NO separator, split on ";". Step 98-99 now runs whole-file and
+# strict from the baseline, but the legacy split still matters on the tolerant
+# fallback (--redeploy-all, or --force-step after a failed whole-file attempt),
+# where a violation is swallowed and the version stamped anyway. It also
+# matters for databases that deployed 98-99 before that change, which is why
+# step 101-102 recreates the function. Asserting the split here keeps a
+# violation loud.
 sub statements_as_deployed {
     open my $fh, '<', $MIGRATION or die "$MIGRATION: $!";
     my @lines = split /\n/, join '', <$fh>;

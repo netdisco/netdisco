@@ -70,8 +70,10 @@
             </tr>
             <tr>
               <th><a href="http://www.postgresql.org" target="_blank">PostgreSQL</a></th>
+              [%# fallback for renders that omit pg_floor, such as xt/135 %]
+              [% pg_floor = pg_floor || 14 %]
               [% pg_major = stats.pg_ver.match('^(\d+)\.').0 %]
-              <th>[% '<span class="badge alert-danger">' IF pg_major AND pg_major < 14 %][% stats.pg_ver | html_entity %][% '</span>' IF pg_major AND pg_major < 14 %]</th>
+              <th>[% '<span class="badge alert-danger">' IF pg_major AND pg_major < pg_floor %][% stats.pg_ver | html_entity %][% '</span>' IF pg_major AND pg_major < pg_floor %]</th>
             </tr>
             <tr>
               <th><a href="https://www.perl.org" target="_blank">Perl</a>

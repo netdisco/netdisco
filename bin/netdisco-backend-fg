@@ -29,6 +29,7 @@ BEGIN {
   setting('workers')->{'BACKEND'} ||= ($ENV{NETDISCO_BACKEND_NAME} || hostfqdn || 'fqdn-undefined');
 }
 
+use App::Netdisco::Util::PostgresFloor 'warn_postgres_floor_all_tenants';
 use App::Netdisco::Util::MCE; # set $0 and parse maxworkers
 use App::Netdisco::Backend::Queues 'worker_queues';
 use App::Netdisco::Util::SNMPText 'scan_config_encoding';
@@ -84,6 +85,8 @@ warning sprintf "mode: %s%s | host: %s",
 warning sprintf "queue: %s | workers: %s | actions: %s",
   $_->{name}, $_->{tasks}, join(', ', @{ $_->{actions} })
   for grep { $_->{only} } @queues;
+
+warn_postgres_floor_all_tenants(sub { warning shift });
 
 warning 'Your configuration contains text that looks garbled. Run "netdisco-do checkencoding" for details.'
   if scan_config_encoding(config());

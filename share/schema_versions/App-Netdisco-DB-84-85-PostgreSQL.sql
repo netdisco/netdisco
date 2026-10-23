@@ -1,6 +1,6 @@
 BEGIN;
 
-UPDATE node SET oui = NULL;
+UPDATE node SET oui = NULL WHERE oui LIKE '%:%';
 
 ALTER TABLE node ALTER COLUMN oui TYPE varchar(9);
 
