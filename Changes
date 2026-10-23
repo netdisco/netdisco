@@ -10,6 +10,10 @@
     missing indexes and keys on databases created before 2.023000, and
     warns when PostgreSQL is older than 14
 
+  [ENHANCEMENTS]
+
+  * #1771 write each ARP entry once, and skip macsuck writes that change nothing
+
 2.115000 - 2026-10-20
 
   [BUG FIXES]

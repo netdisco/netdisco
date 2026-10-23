@@ -195,15 +195,7 @@ register_worker({ phase => 'store',
 
   # a use for $now ... need to archive disappeared nodes
   my $now = vars->{'timestamp'};
-  my $archived = 0;
-
-  if (setting('node_freshness')) {
-    $archived = schema('netdisco')->resultset('Node')->search({
-      switch => $device->ip,
-      time_last => \[ "< ($now - ?::interval)",
-        setting('node_freshness') .' minutes' ],
-    })->update({ active => \'false' });
-  }
+  my $archived = archive_stale_nodes($device, $now);
 
   debug sprintf ' [%s] macsuck - removed %d fwd table entries to archive',
     $device->ip, $archived;
@@ -231,6 +223,18 @@ Optionally, a fifth argument can be the literal string passed to the time_last
 field of the database record. If not provided, it defaults to C<LOCALTIMESTAMP>.
 
 =cut
+
+sub archive_stale_nodes {
+  my ($device, $now) = @_;
+  return 0 unless setting('node_freshness');
+
+  return schema('netdisco')->resultset('Node')->search({
+    switch => $device->ip,
+    -bool => 'active',
+    time_last => \[ "< ($now - ?::interval)",
+      setting('node_freshness') .' minutes' ],
+  })->update({ active => \'false' });
+}
 
 sub store_node {
   my ($ip, $vlan, $port, $mac, $now) = @_;
@@ -639,7 +643,8 @@ sub sanity_macs {
 
                   debug sprintf ' [%s] macsuck %s - port %s is probably an uplink',
                     $device->ip, $mac, $port;
-                  $device_port->update({is_uplink => \'true'});
+                  $device_port->update({is_uplink => \'true'})
+                    unless $device_port->is_uplink;
 
                   if ($neigh_cannot_macsuck) {
                       # neighbor exists and Netdisco can speak to it, so we don't want
@@ -666,7 +671,8 @@ sub sanity_macs {
                     and exists $device_ports->{$device_port->slave_of}) {
 
                   my $parent = $device_port->slave_of;
-                  $device_ports->{$parent}->update({is_uplink => \'true'});
+                  $device_ports->{$parent}->update({is_uplink => \'true'})
+                    unless $device_ports->{$parent}->is_uplink;
 
                   # VLAN subinterfaces can be set uplink,
                   # but we don't want to move nodes there (so check is_master).

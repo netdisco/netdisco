@@ -16,6 +16,11 @@ our @EXPORT_OK = qw/
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
+# excluding the target row from the retire in store_arp lets two pollers that
+# report one IP under different MACs deadlock, so each entry first takes this
+# lock on its IP; netdisco takes no other advisory locks
+my $ARP_LOCK_CLASS = 1728;
+
 =head1 NAME
 
 App::Netdisco::Util::Node
@@ -171,8 +176,8 @@ and DNS host name. Host details are provided in a Hash ref:
     dns  => 'myhost.example.com',
  }
 
-The C<dns> entry is optional. The update will mark old entries for this IP as
-no longer C<active>.
+The C<dns> entry is optional. The update will mark other active entries for
+this IP, in any VRF, as no longer C<active>.
 
 Optionally a literal string can be passed in the second argument for the
 C<time_last> timestamp, otherwise the current timestamp (C<LOCALTIMESTAMP>) is used.
@@ -196,56 +201,40 @@ sub store_arp {
   warning sprintf 'store_arp - deprecated usage, should be store_arp($hash_ref, $now, $device_ip)' unless $device_ip;
   debug sprintf 'store_arp - device %s mac %s ip %s vrf "%s"', $device_ip // "n/a", $mac->as_ieee, $ip, $vrf;
 
+  my @key = ($mac->as_ieee, $ip, $vrf);
+  my ($upsert, @upsert_binds) = _arp_upsert_sql($now, $device_ip);
+
   schema(vars->{'tenant'})->txn_do(sub {
-    schema(vars->{'tenant'})->resultset('NodeIp')
-      ->search(
-        { ip => $ip, -bool => 'active'},
-        { columns => [qw/mac ip vrf/] })->update({active => \'false'});
-
-    my $row = schema(vars->{'tenant'})->resultset('NodeIp')
-      ->update_or_new(
-      {
-        mac => $mac->as_ieee,
-        ip => $ip,
-        vrf => $vrf,
-        dns => $name,
-        active => \'true',
-        time_last => \$now
-      },
-      {
-        key => 'primary',
-        for => 'update',
-      });
-
-    if (! $row->in_storage) {
-      $row->set_column(time_first => \$now);
-
-      if ($device_ip) {
-        # init the tracking, setting the first+last stamps to now
-        $row->set_column(seen_on_router_first => \[qq{jsonb_build_object(?::text, $now)}, $device_ip ]);
-        $row->set_column(seen_on_router_last =>  \[qq{jsonb_build_object(?::text, $now)}, $device_ip ]);
-      }
-
-      $row->insert;
-    }
-    else {
-      if ($device_ip) {
-        # set or update the last seen for this router to now
-        $row->set_column(seen_on_router_last => \[qq{
-          jsonb_set(seen_on_router_last, ?, to_jsonb($now))} => (qq!{$device_ip}!) ]);
-
-        # add the first seen for this router if first time seen, else no-op
-        $row->set_column(seen_on_router_first => \[qq{
-          CASE WHEN (seen_on_router_first->?) IS NOT NULL
-            THEN seen_on_router_first
-            ELSE jsonb_set(seen_on_router_first, ?, to_jsonb($now)) 
-          END } => ($device_ip, qq!{$device_ip}!) ]);
-
-        $row->update;
-      }
-    }
-
+    schema(vars->{'tenant'})->storage->dbh_do(sub {
+      my (undef, $dbh) = @_;
+      $dbh->do('SELECT pg_advisory_xact_lock(?, hashtext(host(?::inet)))',
+        undef, $ARP_LOCK_CLASS, $ip);
+      $dbh->do('UPDATE node_ip SET active = false'
+        .' WHERE ip = ? AND active AND NOT (mac = ? AND vrf = ?)', undef, $ip, @key[0, 2]);
+      $dbh->do($upsert, undef, @key, $name, @upsert_binds);
+    });
   });
+}
+
+# without a router (the deprecated sshcollector call) both maps are left alone
+sub _arp_upsert_sql {
+  my ($now, $device_ip) = @_;
+  my $new_map = ($device_ip ? "jsonb_build_object(?::text, $now)" : q{'{}'::jsonb});
+  my $sql = qq{INSERT INTO node_ip AS n
+      (mac, ip, vrf, dns, active, time_first, time_last, seen_on_router_first, seen_on_router_last)
+    VALUES (?, ?, ?, ?, true, $now, $now, $new_map, $new_map)
+    ON CONFLICT (mac, ip, vrf) DO UPDATE
+      SET active = true, dns = EXCLUDED.dns, time_last = EXCLUDED.time_last};
+  return $sql unless $device_ip;
+
+  $sql .= qq{,
+        seen_on_router_last = jsonb_set(n.seen_on_router_last, ?, to_jsonb($now)),
+        seen_on_router_first = CASE WHEN (n.seen_on_router_first -> ?) IS NOT NULL
+          THEN n.seen_on_router_first
+          ELSE jsonb_set(n.seen_on_router_first, ?, to_jsonb($now))
+        END};
+  my $path = "{$device_ip}";
+  return ($sql, $device_ip, $device_ip, $path, $device_ip, $path);
 }
 
 1;
