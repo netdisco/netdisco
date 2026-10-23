@@ -127,8 +127,11 @@ sub run_workers {
   foreach my $worker (@{ $self->$set }) {
     try { $job->add_status( $worker->($job) ) }
     catch {
-      debug "-> $_" if $_;
-      $job->add_status( Status->error($_) );
+      # stringify: DBIx::Class dies with an object, and jq_complete stores
+      # the job's log only when it is a plain string
+      my $error = "$_";
+      debug "-> $error" if $error;
+      $job->add_status( Status->error($error) );
     };
   }
 }
