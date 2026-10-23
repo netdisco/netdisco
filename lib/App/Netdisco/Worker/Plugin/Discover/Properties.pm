@@ -348,9 +348,7 @@ register_worker({ phase => 'early', driver => 'snmp',
       $device->ip, $gone;
     $device->device_ips->populate($resolved_aliases);
 
-    schema('netdisco')->resultset('Subnet')
-      ->update_or_create({ net => $_, last_discover => \$now },
-                         { for => 'update' }) for @subnets;
+    schema('netdisco')->resultset('Subnet')->upsert_subnet($_, $now) for @subnets;
 
     return Status->info(sprintf ' [%s] aliases - added %d new aliases and %d subnets',
       $device->ip, scalar @aliases, scalar @subnets);
