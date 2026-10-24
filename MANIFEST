@@ -120,6 +120,7 @@ lib/App/Netdisco/DB/SchemaVersioned.pm
 lib/App/Netdisco/DB/SetOperations.pm
 lib/App/Netdisco/DB/StepFile.pm
 lib/App/Netdisco/DB/UpgradeMessage.pm
+lib/App/Netdisco/DB/Upsert.pm
 lib/App/Netdisco/Environment.pm
 lib/App/Netdisco/GenericDB.pm
 lib/App/Netdisco/GenericDB/Result/Virtual/GenericReport.pm
@@ -727,10 +728,14 @@ xt/152-schema-step-mode.t
 xt/153-schema-deploy-args.t
 xt/154-schema-check.t
 xt/155-postgres-floor.t
+xt/156-incomplete-walk-helpers.t
 xt/158-store-arp-upsert.t
 xt/159-macsuck-redundant-writes.t
 xt/160-subnet-upsert.t
 xt/161-worker-error-object-text.t
+xt/162-db-upsert.t
+xt/163-db-remove-unseen.t
+xt/164-device-port-subset-delete.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t
