@@ -30,7 +30,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.115000'
+    version: '2.116000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -49,7 +49,9 @@ provides:
     file: lib/App/Netdisco/Configuration.pm
   App::Netdisco::DB:
     file: lib/App/Netdisco/DB.pm
-    version: '101'
+    version: '103'
+  App::Netdisco::DB::Deploy:
+    file: lib/App/Netdisco/DB/Deploy.pm
   App::Netdisco::DB::ExplicitLocking:
     file: lib/App/Netdisco/DB/ExplicitLocking.pm
   App::Netdisco::DB::Result:
@@ -230,10 +232,16 @@ provides:
     file: lib/App/Netdisco/DB/ResultSet/NodeWireless.pm
   App::Netdisco::DB::ResultSet::Subnet:
     file: lib/App/Netdisco/DB/ResultSet/Subnet.pm
+  App::Netdisco::DB::SchemaCheck:
+    file: lib/App/Netdisco/DB/SchemaCheck.pm
   App::Netdisco::DB::SchemaVersioned:
     file: lib/App/Netdisco/DB/SchemaVersioned.pm
   App::Netdisco::DB::SetOperations:
     file: lib/App/Netdisco/DB/SetOperations.pm
+  App::Netdisco::DB::StepFile:
+    file: lib/App/Netdisco/DB/StepFile.pm
+  App::Netdisco::DB::UpgradeMessage:
+    file: lib/App/Netdisco/DB/UpgradeMessage.pm
   App::Netdisco::Environment:
     file: lib/App/Netdisco/Environment.pm
   App::Netdisco::GenericDB:
@@ -332,6 +340,8 @@ provides:
     file: lib/App/Netdisco/Util/PortAccessEntity.pm
   App::Netdisco::Util::PortMAC:
     file: lib/App/Netdisco/Util/PortMAC.pm
+  App::Netdisco::Util::PostgresFloor:
+    file: lib/App/Netdisco/Util/PostgresFloor.pm
   App::Netdisco::Util::Python:
     file: lib/App/Netdisco/Util/Python.pm
   App::Netdisco::Util::SNMP:
@@ -762,5 +772,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.115000'
+version: '2.116000'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.020'
