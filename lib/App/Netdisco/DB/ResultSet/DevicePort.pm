@@ -257,7 +257,8 @@ sub with_vlan_count {
 =head2 delete( \%options? )
 
 Overrides the built-in L<DBIx::Class> delete method to more efficiently
-handle the removal or archiving of nodes.
+handle the removal or archiving of nodes. Deleting a subset of a device's
+ports removes per-port rows and nodes only for those ports.
 
 =cut
 

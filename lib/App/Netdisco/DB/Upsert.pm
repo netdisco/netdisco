@@ -86,10 +86,16 @@ sub upsert {
 =head2 remove_unseen( \%scope, \@seen )
 
 Deletes the rows in C<%scope> whose primary key is not in C<@seen>, with one
-plain C<DELETE> and returns the number of rows deleted. It does no cascade and
-never touches C<node> or C<device_port_log>.
+plain C<DELETE> and returns the number of rows deleted. It does no cascade, and
+it refuses the C<Node> and C<DevicePortLog> sources, whose rows are never
+deleted by this method.
 
-C<%scope> maps primary key columns to plain scalars and must be non-empty (for
+Call it on a plain C<< resultset('Source') >>. A result set carrying search
+conditions, such as C<< $device-E<gt>port_vlans >>, is refused, because only
+C<%scope> restricts the C<DELETE>.
+
+C<%scope> maps primary key columns to plain scalars and must be non-empty. When
+C<ip> is one of the source's key columns, C<%scope> must include it (for
 discover, C<< { ip =E<gt> $device-E<gt>ip } >>). It must leave at least one key
 column out, or it would name a single row. C<@seen> holds hash references with
 exactly the key columns not in C<%scope>. An empty C<@seen> deletes every row in
@@ -100,10 +106,11 @@ the scope, which is right for a complete walk that found nothing.
 sub remove_unseen {
   my ($rs, $scope, $seen) = @_;
   my ($table, @key_columns) = _upsert_target($rs, 'remove_unseen');
+  _remove_unseen_refuse_unsafe_target($rs);
   $rs->throw_exception("remove_unseen: scope must be a hash reference of primary key column to value")
     unless ref $scope eq 'HASH';
   $rs->throw_exception("remove_unseen: scope must name at least one key column of '$table' ("
-    . join(', ', @key_columns) . "); an empty scope would delete rows from every device")
+    . join(', ', @key_columns) . "); an empty scope would delete rows beyond the one device or group being refreshed")
     unless scalar keys %$scope;
   $rs->throw_exception("remove_unseen: seen must be an array reference of hash references of the key columns not in scope")
     unless ref $seen eq 'ARRAY';
@@ -116,6 +123,9 @@ sub remove_unseen {
     $rs->throw_exception("remove_unseen: scope value for '$name' must be a plain scalar, not undef or a reference")
       unless defined $scope->{$name} and not ref $scope->{$name};
   }
+  $rs->throw_exception("remove_unseen: scope for '$table' must include 'ip' or the DELETE would remove other devices' rows;"
+    . " discover callers must scope by device, for example { ip => \$device->ip }")
+    if $is_key{ip} and not exists $scope->{ip};
   my @scoped = grep { exists $scope->{$_} } @key_columns;
   my @rest   = grep { not exists $scope->{$_} } @key_columns;
   $rs->throw_exception("remove_unseen: scope covers the whole key of '$table'; leave at least one of "
@@ -133,6 +143,21 @@ sub remove_unseen {
       . join(', ', map { "?::$_\[]" } @casts) . '))';
     return 0 + $dbh->do($sql, undef, (map { $scope->{$_} } @scoped), @arrays);
   });
+}
+
+sub _remove_unseen_refuse_unsafe_target {
+  my $rs = shift;
+  my $source_name = $rs->result_source->source_name;
+  $rs->throw_exception("remove_unseen: '$source_name' rows are never deleted by this method; remove them with their own delete code")
+    if $source_name eq 'Node' or $source_name eq 'DevicePortLog';
+
+  my $where = $rs->{attrs}{where};
+  my $has_conditions = ref $where eq 'HASH' ? scalar keys %$where
+    : ref $where eq 'ARRAY' ? scalar @$where : defined $where;
+  $rs->throw_exception("remove_unseen: this result set carries search conditions, which the DELETE would ignore;"
+    . " call remove_unseen on resultset('$source_name') and pass the restriction in the scope, for example { ip => \$device->ip }")
+    if $has_conditions;
+  return;
 }
 
 sub _remove_unseen_casts {

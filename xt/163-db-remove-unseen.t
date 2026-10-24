@@ -150,4 +150,33 @@ subtest 'remove_unseen__unsafe_data_type__dies' => sub {
     qr/remove_unseen: column 'vlan' of 'device_port_vlan' has data type .* that cannot be used as a cast/, 'hostile type');
 };
 
+subtest 'remove_unseen__result_set_with_conditions__dies' => sub {
+  my $device_ports = $schema->resultset('DevicePortVlan');
+  foreach my $case (
+    [ 'search' => $device_ports->search_rs({ port => ['Gi1'] }) ],
+    [ 'me.ip search' => $device_ports->search_rs({ 'me.ip' => '192.0.2.1' }) ],
+    [ 'relationship' => $schema->resultset('Device')->new_result({ ip => '192.0.2.1' })->related_resultset('port_vlans') ],
+  ) {
+    @ran = ();
+    my ($name, $restricted) = @$case;
+    ok(!eval { $restricted->remove_unseen({ ip => '192.0.2.1' }, []); 1 }, "$name: dies");
+    like($@, qr/remove_unseen: this result set carries search conditions.*call remove_unseen on resultset\('DevicePortVlan'\)/, "$name: message");
+    is(scalar @ran, 0, "$name: nothing sent");
+  }
+};
+
+subtest 'remove_unseen__node_or_port_log_source__dies' => sub {
+  remove_dies_like('Node', { mac => '00:11:22:33:44:55' }, [],
+    qr/remove_unseen: 'Node' rows are never deleted by this method/, 'Node');
+  remove_dies_like('DevicePortLog', { ip => '192.0.2.1' }, [],
+    qr/remove_unseen: 'DevicePortLog' rows are never deleted by this method/, 'DevicePortLog');
+};
+
+subtest 'remove_unseen__scope_without_ip__dies' => sub {
+  remove_dies_like('DeviceVlan', { vlan => 10 }, [],
+    qr/remove_unseen: scope for 'device_vlan' must include 'ip'.*discover callers must scope by device/, 'DeviceVlan');
+  remove_dies_like('DevicePortVlan', { port => 'Gi1' }, [ { vlan => 1, native => 0 } ],
+    qr/remove_unseen: scope for 'device_port_vlan' must include 'ip'/, 'DevicePortVlan');
+};
+
 done_testing;
