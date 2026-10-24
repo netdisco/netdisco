@@ -65,6 +65,74 @@ sub search_by_mac {
       ->search($cond, $attrs);
 }
 
+=head2 with_port_context
+
+ my $set = $rs->search(...)->with_port_context;
+
+Adds columns describing the switch port of each Node, so that API clients can
+tell access ports from transit ports (uplinks, LAGs) without fetching the
+ports of every switch:
+
+=over 4
+
+=item *
+
+C<port_is_uplink>, C<port_remote_ip>, C<port_is_master>, C<port_slave_of>
+from C<device_port>, and C<port_remote_is_wap>, C<port_remote_is_phone> from
+C<device_port_properties>.
+
+=item *
+
+C<lag_remote_ip> is a member's C<remote_ip> for a LAG master, or the
+master's for a LAG member.
+
+=item *
+
+C<neighbor_is_device> is true when the port's remote IP, or one of its LAG
+members', is a known device address.
+
+=item *
+
+C<port_mac_count> is the number of distinct active MACs on the port, across
+all VLANs.
+
+=back
+
+The columns use correlated subqueries per row, so callers should make this
+opt-in for searches that can return many rows.
+
+=cut
+
+sub with_port_context {
+    my $rs = shift;
+    return $rs->search(undef, {
+        '+columns' => [
+          { port_is_uplink       => 'device_port.is_uplink' },
+          { port_remote_ip       => 'device_port.remote_ip' },
+          { port_is_master       => 'device_port.is_master' },
+          { port_slave_of        => 'device_port.slave_of' },
+          { port_remote_is_wap   => 'properties.remote_is_wap' },
+          { port_remote_is_phone => 'properties.remote_is_phone' },
+          # LLDP is usually on the members, not the master, and nodes on
+          # members get moved to the master by macsuck
+          { lag_remote_ip => \q{COALESCE(
+              (SELECT agg.remote_ip FROM device_port agg
+                WHERE agg.ip = me.switch AND agg.port = device_port.slave_of),
+              (SELECT mem.remote_ip FROM device_port mem
+                WHERE mem.ip = me.switch AND mem.slave_of = me.port
+                  AND mem.remote_ip IS NOT NULL
+                ORDER BY mem.port LIMIT 1))} },
+          { neighbor_is_device => \q{EXISTS(
+              SELECT 1 FROM device_ip di WHERE di.alias = device_port.remote_ip
+                OR di.alias IN (SELECT mem.remote_ip FROM device_port mem
+                                 WHERE mem.ip = me.switch AND mem.slave_of = me.port))} },
+          { port_mac_count => \q{(SELECT count(DISTINCT pn.mac) FROM node pn
+              WHERE pn.switch = me.switch AND pn.port = me.port AND pn.active)} },
+        ],
+        join => { device_port => 'properties' },
+    });
+}
+
 =head1 SPECIAL METHODS
 
 =head2 delete( \%options? )

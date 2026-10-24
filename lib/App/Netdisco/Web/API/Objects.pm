@@ -38,6 +38,9 @@ sub _node_includes {
 sub _node_to_json {
   my ($row, @includes) = @_;
   my $data = $row->TO_JSON;
+  # extra +columns such as those from with_port_context
+  my %cols = $row->get_columns;
+  $data->{$_} = $cols{$_} for grep { not $row->result_source->has_column($_) } keys %cols;
   foreach my $rel (@includes) {
     if ($NODE_INCLUDES{$rel}) {
       $data->{$rel} = [ map { $_->TO_JSON } $row->$rel->all ];
@@ -340,6 +343,12 @@ swagger_path {
       type => 'string',
       in => 'query',
     },
+    port_context => {
+      description => 'Include topology context of each Node\'s switch port (uplink, neighbor, LAG, node count)',
+      type => 'boolean',
+      default => 'false',
+      in => 'query',
+    },
   ],
   responses => { default => {} },
 }, get '/api/v1/object/device/:ip/nodes' => require_role api => sub {
@@ -351,6 +360,7 @@ swagger_path {
     ->search({ 'me.switch' => params->{ip}, ($active ? (-bool => 'me.active') : ()) },
       (@includes ? { prefetch => [@includes] } : ())) }
     or send_error('Bad Device', 404);
+  $rows = $rows->with_port_context if _bool_param(params->{port_context}, 0);
   return to_json [ map { _node_to_json($_, @includes) } $rows->all ];
 };
 

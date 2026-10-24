@@ -32,6 +32,11 @@ register_search_tab({
         type => 'boolean',
         default => 'true',
       },
+      port_context => {
+        description => 'MAC Address search will include topology context of each sighting\'s switch port (uplink, neighbor, LAG, node count)',
+        type => 'boolean',
+        default => 'false',
+      },
       show_vendor => {
         description => 'Include interface Vendor in results',
         type => 'boolean',
@@ -143,6 +148,8 @@ get '/ajax/content/search/node' => require_login sub {
           ],
           join => 'device',
       });
+
+    $sightings = $sightings->with_port_context if param('port_context');
 
     my $ips = schema(vars->{'tenant'})->resultset('NodeIp')
       ->search({-and => [@where_mac, @active, @times]}, {
