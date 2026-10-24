@@ -211,10 +211,11 @@ sub split_params_to_config {
   return (undef, undef) unless defined $orig_value;
 
   # value via "schedule:" deployment.yml would already be a Perl struct
-  my $struct = (ref $orig_value ne q{})
+  my $struct = (ref $orig_value ne q{} or $orig_value =~ m/^[e.0-9]+$/)
     ? $orig_value
     : try { from_json($orig_value) };
-    # reminder: from_json of a "" string returns the string, but unquoted throws error
+    # reminder: from_json of a "" string returns the string,
+    # unquoted string throws error, and unquoted number returns a number.
     # so struct could still be a string, or struct reference, or undef on parse error
   my $came_from_json = (((defined $struct)
     and (ref $orig_value eq q{}) and ($struct ne $orig_value)) ? true : false);
