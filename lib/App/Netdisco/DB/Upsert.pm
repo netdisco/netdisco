@@ -66,14 +66,7 @@ sub upsert {
   return 0 unless scalar @$rows;
 
   my $source = $rs->result_source;
-  my $table  = $source->name;
-  $rs->throw_exception("upsert: result source '" . $source->source_name
-    . "' has no plain table name, so it cannot be upserted; call upsert on a table result set")
-    if ref $table or not defined $table or $table !~ m/\A\w+\z/;
-
-  my @key_columns = $source->primary_columns;
-  $rs->throw_exception("upsert: table '$table' has no primary key to conflict on")
-    unless @key_columns;
+  my ($table, @key_columns) = _upsert_target($rs, 'upsert');
 
   my @columns = _upsert_columns($rs, $table, $rows->[0], $options);
   my @sorted  = _upsert_sorted_rows($rs, $table, $rows, \@columns, \@key_columns);
@@ -88,6 +81,107 @@ sub upsert {
     });
   }
   return $changed;
+}
+
+=head2 remove_unseen( \%scope, \@seen )
+
+Deletes the rows in C<%scope> whose primary key is not in C<@seen>, with one
+plain C<DELETE> and returns the number of rows deleted. It does no cascade and
+never touches C<node> or C<device_port_log>.
+
+C<%scope> maps primary key columns to plain scalars and must be non-empty (for
+discover, C<< { ip =E<gt> $device-E<gt>ip } >>). It must leave at least one key
+column out, or it would name a single row. C<@seen> holds hash references with
+exactly the key columns not in C<%scope>. An empty C<@seen> deletes every row in
+the scope, which is right for a complete walk that found nothing.
+
+=cut
+
+sub remove_unseen {
+  my ($rs, $scope, $seen) = @_;
+  my ($table, @key_columns) = _upsert_target($rs, 'remove_unseen');
+  $rs->throw_exception("remove_unseen: scope must be a hash reference of primary key column to value")
+    unless ref $scope eq 'HASH';
+  $rs->throw_exception("remove_unseen: scope must name at least one key column of '$table' ("
+    . join(', ', @key_columns) . "); an empty scope would delete rows from every device")
+    unless scalar keys %$scope;
+  $rs->throw_exception("remove_unseen: seen must be an array reference of hash references of the key columns not in scope")
+    unless ref $seen eq 'ARRAY';
+
+  my %is_key = map { $_ => 1 } @key_columns;
+  foreach my $name (sort keys %$scope) {
+    $rs->throw_exception("remove_unseen: scope column '$name' is not a primary key column of '$table'; use only "
+      . join(', ', @key_columns))
+      unless $is_key{$name};
+    $rs->throw_exception("remove_unseen: scope value for '$name' must be a plain scalar, not undef or a reference")
+      unless defined $scope->{$name} and not ref $scope->{$name};
+  }
+  my @scoped = grep { exists $scope->{$_} } @key_columns;
+  my @rest   = grep { not exists $scope->{$_} } @key_columns;
+  $rs->throw_exception("remove_unseen: scope covers the whole key of '$table'; leave at least one of "
+    . join(', ', @key_columns) . " out of the scope and pass its values in seen")
+    unless @rest;
+
+  my @casts = _remove_unseen_casts($rs, $table, \@rest);
+  my @arrays = _remove_unseen_arrays($rs, $seen, \@rest);
+  return $rs->result_source->storage->dbh_do(sub {
+    my $dbh = $_[1];
+    my $quote = sub { $dbh->quote_identifier($_[0]) };
+    my $sql = 'DELETE FROM ' . $quote->($table) . ' WHERE '
+      . join(' AND ', map { $quote->($_) . ' = ?' } @scoped)
+      . ' AND (' . join(', ', map { $quote->($_) } @rest) . ') NOT IN (SELECT * FROM unnest('
+      . join(', ', map { "?::$_\[]" } @casts) . '))';
+    return 0 + $dbh->do($sql, undef, (map { $scope->{$_} } @scoped), @arrays);
+  });
+}
+
+sub _remove_unseen_casts {
+  my ($rs, $table, $columns) = @_;
+  my $source = $rs->result_source;
+  return map {
+    my $type = $source->column_info($_)->{data_type};
+    $rs->throw_exception("remove_unseen: column '$_' of '$table' has data type "
+      . (defined $type ? "'$type'" : 'undef') . " that cannot be used as a cast; give it a plain data_type in its result class")
+      unless defined $type and $type =~ m/\A[a-z][a-z ]*\z/;
+    $type;
+  } @$columns;
+}
+
+sub _remove_unseen_arrays {
+  my ($rs, $seen, $columns) = @_;
+  my $expected = join ', ', sort @$columns;
+  my @arrays = map { [] } @$columns;
+
+  foreach my $index (0 .. $#$seen) {
+    my $row = $seen->[$index];
+    $rs->throw_exception("remove_unseen: seen row $index is not a hash reference; pass hash references of key column to value")
+      unless ref $row eq 'HASH';
+    my $actual = join ', ', sort keys %$row;
+    $rs->throw_exception("remove_unseen: seen row $index has columns ($actual) but must have exactly ($expected)")
+      unless scalar(keys %$row) == scalar(@$columns) and not grep { not exists $row->{$_} } @$columns;
+
+    foreach my $position (0 .. $#$columns) {
+      my $name = $columns->[$position];
+      $rs->throw_exception("remove_unseen: seen row $index value for '$name' must be a plain scalar, not undef or a reference")
+        unless defined $row->{$name} and not ref $row->{$name};
+      push @{ $arrays[$position] }, $row->{$name};
+    }
+  }
+  return @arrays;
+}
+
+sub _upsert_target {
+  my ($rs, $method) = @_;
+  my $source = $rs->result_source;
+  my $table  = $source->name;
+  $rs->throw_exception("$method: result source '" . $source->source_name
+    . "' has no plain table name, so $method cannot use it; call $method on a table result set")
+    if ref $table or not defined $table or $table !~ m/\A\w+\z/;
+
+  my @key_columns = $source->primary_columns;
+  $rs->throw_exception("$method: table '$table' has no primary key to identify rows by")
+    unless @key_columns;
+  return ($table, @key_columns);
 }
 
 sub _upsert_options {
