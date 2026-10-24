@@ -7,6 +7,7 @@ use base 'DBIx::Class::ResultSet';
 
 __PACKAGE__->load_components(qw/
   +App::Netdisco::DB::SetOperations
+  +App::Netdisco::DB::Upsert
   Helper::ResultSet::Shortcut
   Helper::ResultSet::CorrelateRelationship
 /);

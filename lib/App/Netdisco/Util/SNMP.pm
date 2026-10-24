@@ -19,6 +19,9 @@ our @EXPORT_OK = qw/
   get_mibdirs_shortnames
   decode_and_munge
   sortable_oid
+  walk_mark
+  incomplete_walks
+  incomplete_walk_message
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -256,6 +259,55 @@ sub sortable_oid {
   $oid =~ s/^(\.)//; my $leading = $1;
   $oid = join '.', map { sprintf("\%0${seglen}d", $_) } (split m/\./, $oid);
   return (($leading || '') . $oid);
+}
+
+=head2 walk_mark( $snmp )
+
+Returns the number of incomplete walks the L<SNMP::Info> instance has
+recorded so far, for use with C<incomplete_walks>. Returns 0 when the
+instance keeps no record.
+
+=cut
+
+sub walk_mark {
+  my $snmp = shift;
+  return 0 unless $snmp->can('walk_failures');
+  return scalar @{ $snmp->walk_failures };
+}
+
+=head2 incomplete_walks( $snmp, $mark )
+
+Returns the incomplete walk outcomes recorded since C<walk_mark> returned
+C<$mark>, in order. Returns an empty list when the instance keeps no record.
+
+=cut
+
+sub incomplete_walks {
+  my ($snmp, $mark) = @_;
+  return () unless $snmp->can('walk_failures');
+  my $failures = $snmp->walk_failures;
+  return @{$failures}[ $mark .. $#{$failures} ];
+}
+
+=head2 incomplete_walk_message( $device, $what, @outcomes )
+
+Returns a log message for C<$what> on C<$device> naming each incomplete
+walk outcome: its method, table, reason, rows read and walk method, with
+the repeaters and SNMP context when there are any.
+
+=cut
+
+sub incomplete_walk_message {
+  my ($device, $what, @outcomes) = @_;
+  my @walks = map {
+    sprintf('%s (%s) %s after %d rows by %s',
+      @{$_}{qw/method leaf reason rows walk/})
+    . (defined $_->{repeaters} ? " with $_->{repeaters} repeaters" : '')
+    . ((defined $_->{context} and length $_->{context})
+        ? " in context $_->{context}" : '')
+  } @outcomes;
+  return sprintf '[%s] %s - kept existing rows, incomplete SNMP walk: %s',
+    $device->ip, $what, join '; ', @walks;
 }
 
 true;
