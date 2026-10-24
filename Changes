@@ -27,6 +27,10 @@
 
   [ENHANCEMENTS]
 
+  * #1755 port control checks load the ACL Manager's roles themselves, at
+    most once per web request or backend job, instead of each caller
+    syncing them first; netdisco-do dumpconfig shows portctl_by_role and
+    host_groups as Netdisco uses them, database roles included
   * #1756 System Information on the homepage shows phones and wireless
     access points on their own lines, and MIB Bundle after SNMP::Info
   * #1760 require SNMP::Info 3.981000, which retries failed bulkwalks

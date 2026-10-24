@@ -59,7 +59,7 @@ ajax '/ajax/control/admin/aclmanager/delete' => require_role setting('defanged_a
     schema('netdisco')->resultset('User')
       ->search({portctl_role => $acl})
       ->update({
-        ((exists config->{'portctl_by_role_shadow'}->{$acl})
+        ((exists +(setting('portctl_by_role') || {})->{$acl})
           ? () : (portctl_role => undef, port_control => \'false')),
       });
 

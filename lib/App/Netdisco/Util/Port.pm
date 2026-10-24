@@ -6,11 +6,12 @@ use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
+use App::Netdisco::Util::Configuration qw/effective_setting forget_effective_config/;
 
 use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
-  sync_portctl_roles
+  portctl_roles sync_portctl_roles
   port_acl_service port_acl_pvid port_acl_name
   port_acl_check port_acl_by_role_check device_acl_by_role_check
   get_port get_iid get_powerid
@@ -32,43 +33,26 @@ subroutines.
 
 =head1 EXPORT_OK
 
-=head2 sync_portctl_roles()
+=head2 portctl_roles()
 
-Loads Port Control Roles from the database and merges them into the
-C<portctl_role> config. This should only be done lazily and near to the
-time of use, to be efficient and also to get latest ACL settings.
-
-If there exists an entry in C<portctl_role> config from C<deployment.yml>
-with the same name as a database role, then the database role overwrites
-it. If such a role is removed, then a backup of the original is restored.
+Returns the port control roles the checks use: C<portctl_by_role> from YAML
+with the ACL Manager's C<host_port> ACLs laid over it, by way of
+L<App::Netdisco::Util::Configuration/effective_setting>. Read roles through
+this, never C<setting('portctl_by_role')>, which holds the YAML alone.
 
 =cut
 
-sub sync_portctl_roles {
-  my @db_roles = schema(vars->{'tenant'})
-    ->resultset('AccessControlListName')->host_port_acl_names;
-  config->{'portctl_by_role'} = {};
+sub portctl_roles { return (effective_setting('portctl_by_role') || {}) }
 
-  foreach my $role (sort {$a cmp $b} keys %{ setting('portctl_by_role_shadow') }) {
-      config->{'portctl_by_role'}->{$role}
-        = (setting('portctl_by_role_shadow')->{$role} || '!group:__ANY__');
-  }
+=head2 sync_portctl_roles()
 
-  foreach my $role (@db_roles) {
-      my @rows = schema(vars->{'tenant'})->resultset('AccessControlListMap')
-        ->search({ acl_name => $role },
-                 { prefetch => [qw/left_acl right_acl/], order_by => 'me.id' })->all;
+Deprecated: the checks load the database roles themselves. This drops the
+cached roles, so the next check reads the database again, and will be removed
+in a later release.
 
-      config->{'portctl_by_role'}->{$role} = {};
-      foreach my $pair (@rows) {
-          # convert LHS device ACLs to named groups
-          my $group = 'synthesized_group_'. $pair->left_acl->id;
-          config->{'host_groups'}->{$group} = $pair->left_acl->rules;
-          config->{'portctl_by_role'}->{$role}->{'group:'. $group}
-            = $pair->right_acl->rules;
-      }
-  }
-}
+=cut
+
+sub sync_portctl_roles { forget_effective_config() }
 
 =head2 port_acl_by_role_check( $port, $device?, $user? )
 
@@ -104,7 +88,7 @@ sub port_acl_by_role_check {
     return true if ($user->admin and $user->port_control);
 
     my $role = $user->portctl_role;
-    my $acl  = $role ? setting('portctl_by_role')->{$role} : undef;
+    my $acl  = $role ? portctl_roles()->{$role} : undef;
 
     if ($acl and (ref $acl eq q{} or ref $acl eq ref [])) {
         # all ports are permitted when the role acl is a device acl
@@ -238,7 +222,7 @@ sub device_acl_by_role_check {
   return true if $user->admin;
   return true unless $user->portctl_role;
 
-  my $acl = setting('portctl_by_role')->{ $user->portctl_role };
+  my $acl = portctl_roles()->{ $user->portctl_role };
   if ($acl and (ref $acl eq q{} or ref $acl eq ref [])) {
       return acl_matches($device, $acl) ? true : false;
   }

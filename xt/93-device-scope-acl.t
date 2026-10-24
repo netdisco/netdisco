@@ -19,6 +19,8 @@ use File::Slurper 'read_text';
 use App::Netdisco;
 use Dancer qw/setting/;
 use App::Netdisco::Util::Port 'device_acl_by_role_check';
+use lib 'xt/lib';
+use Test::Netdisco::ManagedACL 'stub_managed_acls';
 
 { package Test::FakeUser;
   sub new { my ($c, %a) = @_; return bless { port_control => 1, admin => 0, portctl_role => undef, %a }, $c }
@@ -36,6 +38,8 @@ setting('portctl_by_role' => {
   leafonly  => { 'group:leafgroup' => [] },   # empty rhs means any port
   plainonly => [$IN],                          # the yaml list form
 });
+# no ACL Manager roles: the checks see the YAML above alone
+stub_managed_acls({});
 
 subtest 'deviceAclByRoleCheck__a_role_ACL_of_devices_and_ports__is_matched_on_the_device' => sub {
   my $user = Test::FakeUser->new(portctl_role => 'leafonly');
@@ -68,14 +72,11 @@ subtest 'deviceAclByRoleCheck__without_port_control_or_a_known_role__refuses' =>
   ok !device_acl_by_role_check($IN, undef), 'no user is refused';
 };
 
-subtest 'writePaths__both_scoped_routes__consult_the_check_and_sync_first' => sub {
+subtest 'writePaths__both_scoped_routes__consult_the_check' => sub {
   # an import satisfies a search for the sub name alone, so look for the calls
   my $pc = read_text('lib/App/Netdisco/Web/PortControl.pm');
   like $pc, qr/device_acl_by_role_check\( param\('device'\), logged_in_user \)/,
     'the portcontrol route puts the submitted device to the check';
-  cmp_ok index($pc, 'sync_portctl_roles();'), '<',
-         index($pc, 'device_acl_by_role_check( param'),
-    'and syncs the database roles first';
 
   my $tp = read_text('lib/App/Netdisco/Web/Plugin/AdminTask/Topology.pm');
   like $tp, qr/port_acl_by_role_check\(\$port, \$device, logged_in_user\)/,

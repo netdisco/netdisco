@@ -6,7 +6,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::JobQueue qw/jq_insert jq_userlog/;
-use App::Netdisco::Util::Port qw/device_acl_by_role_check sync_portctl_roles/;
+use App::Netdisco::Util::Port 'device_acl_by_role_check';
 use App::Netdisco::Backend::Job;
 
 my %action_map = (
@@ -39,7 +39,6 @@ ajax '/ajax/portcontrol' => require_any_role [qw(admin port_control)] => sub {
     # the details view offers these controls only for a device the role ACL
     # covers, and location, contact and the custom fields reach the queue
     # without a worker check phase to scope them
-    sync_portctl_roles();
     send_error('Forbidden', 403)
       unless user_has_role('admin')
           or device_acl_by_role_check( param('device'), logged_in_user );

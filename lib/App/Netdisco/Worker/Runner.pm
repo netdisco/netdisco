@@ -4,6 +4,7 @@ use Dancer qw/:moose :syntax/;
 use Dancer::Plugin::DBIC 'schema';
 
 use App::Netdisco::Util::CustomFields;
+use App::Netdisco::Util::Configuration 'forget_effective_config';
 use App::Netdisco::Transport::Python ();
 use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::SNMPText 'reset_snmp_charsets_cache';
@@ -32,6 +33,9 @@ sub run {
     unless ref $job eq 'App::Netdisco::Backend::Job';
 
   $job->apply_config_overrides;
+  # one process may run many jobs (netdisco-do does), and each must see the
+  # ACL Manager roles as they are when it starts, after its own overrides
+  forget_effective_config();
   $self->job($job);
   reset_snmp_charsets_cache();
   $job->device( get_device($job->device) )

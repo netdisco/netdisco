@@ -23,7 +23,6 @@ register_worker({ phase => 'check' }, sub {
 
   return Status->error('Missing vlan (-e).') unless defined $job->subaction;
 
-  sync_portctl_roles();
   return Status->error("Permission denied to alter native vlan")
     unless port_acl_pvid(vars->{'port'}, $device, $job->username);
 
