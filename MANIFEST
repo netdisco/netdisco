@@ -726,6 +726,10 @@ xt/152-schema-step-mode.t
 xt/153-schema-deploy-args.t
 xt/154-schema-check.t
 xt/155-postgres-floor.t
+xt/158-store-arp-upsert.t
+xt/159-macsuck-redundant-writes.t
+xt/160-subnet-upsert.t
+xt/161-worker-error-object-text.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t
@@ -838,6 +842,7 @@ xt/js/tooltip-dismissal.test.js
 xt/js/typeahead-core.test.js
 xt/js/typeahead-source.test.js
 xt/js/view-templates.test.js
+xt/lib/App/NetdiscoX/Worker/Plugin/TestEight.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFive.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFour.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestOne.pm

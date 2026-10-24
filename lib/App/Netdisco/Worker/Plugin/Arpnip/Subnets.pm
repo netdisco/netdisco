@@ -70,16 +70,8 @@ register_worker({ phase => 'store', title => 'store subnets' }, sub {
     || ('to_timestamp('. (join '.', gettimeofday) .')::timestamp');
 
   # update subnets with new networks
-  foreach my $subnet (keys %{ vars->{'subnets'} }) {
-      schema('netdisco')->txn_do(sub {
-        schema('netdisco')->resultset('Subnet')->update_or_create(
-        {
-          net => $subnet,
-          last_discover => \$now,
-        },
-        { for => 'update' });
-      });
-  }
+  schema('netdisco')->resultset('Subnet')->upsert_subnet($_, $now)
+    foreach keys %{ vars->{'subnets'} };
 
   debug sprintf ' [%s] arpnip - processed %s subnets',
     $device->ip, scalar keys %{ vars->{'subnets'} };

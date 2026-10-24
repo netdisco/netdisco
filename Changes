@@ -14,6 +14,11 @@
 
   * #1771 write each ARP entry once, and skip macsuck writes that change nothing
 
+  [BUG FIXES]
+
+  * #1773 stop concurrent discovers failing on a new subnet, and keep
+    worker errors in the job log
+
 2.115000 - 2026-10-20
 
   [BUG FIXES]
