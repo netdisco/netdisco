@@ -36,6 +36,8 @@ register_worker({ phase => 'early',
 
   # initialise the cache
   vars->{'fwtable'} = {};
+  vars->{'fw_ssids'} = {};
+  vars->{'fw_ssid_supported'} = 0;
 
   # cache the device ports to save hitting the database for many single rows
   vars->{'device_ports'} = {map {($_->port => $_)}
@@ -115,6 +117,8 @@ register_worker({ phase => 'main', driver => 'snmp',
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("macsuck failed: could not SNMP connect to $device");
 
+  vars->{'fw_ssid_supported'} = $snmp->can('fw_ssid') ? 1 : 0;
+
   # get forwarding table data via basic snmp connection
   my $interfaces = $snmp->interfaces || {};
   my $macs = walk_fwtable($snmp, $device, $interfaces);
@@ -184,7 +188,10 @@ register_worker({ phase => 'store',
               delete vars->{'fwtable'}->{0}->{$_}->{$mac}
                 for keys %{ vars->{'fwtable'}->{0} };
 
-              store_node($device->ip, $vlan, $port, $mac, vars->{'timestamp'});
+              store_node(
+                $device->ip, $vlan, $port, $mac, vars->{'timestamp'},
+                vars->{'fw_ssids'}->{$mac}, vars->{'fw_ssid_supported'}
+              );
               ++$node_count;
           }
       }
@@ -211,7 +218,7 @@ register_worker({ phase => 'store',
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-=head2 store_node( $ip, $vlan, $port, $mac, $now? )
+=head2 store_node( $ip, $vlan, $port, $mac, $now?, $ssid?, $store_ssid? )
 
 Writes a fresh entry to the Netdisco C<node> database table. Will mark old
 entries for this data as no longer C<active>.
@@ -221,6 +228,8 @@ Netdisco supports using ID "0".
 
 Optionally, a fifth argument can be the literal string passed to the time_last
 field of the database record. If not provided, it defaults to C<LOCALTIMESTAMP>.
+The final arguments store the client SSID when the device class exposes
+C<fw_ssid>, using the existing C<node_wireless> association table.
 
 =cut
 
@@ -237,7 +246,7 @@ sub archive_stale_nodes {
 }
 
 sub store_node {
-  my ($ip, $vlan, $port, $mac, $now) = @_;
+  my ($ip, $vlan, $port, $mac, $now, $ssid, $store_ssid) = @_;
   $now ||= 'LOCALTIMESTAMP';
   $vlan ||= 0;
 
@@ -263,8 +272,7 @@ sub store_node {
         })->update( { active => \'false' } );
 
     # new data
-    my $row = $nodes->update_or_new(
-      {
+    my %node_data = (
         switch => $ip,
         port => $port,
         vlan => $vlan,
@@ -273,7 +281,9 @@ sub store_node {
         oui => ($oui ? $oui->base : undef),
         time_last => \$now,
         (($old != 0) ? (time_recent => \$now) : ()),
-      },
+    );
+    my $row = $nodes->update_or_new(
+      \%node_data,
       {
         key => 'primary',
         for => 'update',
@@ -283,6 +293,15 @@ sub store_node {
     if (! $row->in_storage) {
         $row->set_column(time_first => \$now);
         $row->insert;
+    }
+
+    if ($store_ssid and defined $ssid and length $ssid) {
+        my $wireless = schema('netdisco')->resultset('NodeWireless');
+        $wireless->search({ mac => $mac, ssid => { '!=' => $ssid } })->delete;
+        $wireless->update_or_create(
+          { mac => $mac, ssid => $ssid, time_last => \$now },
+          { key => 'primary', for => 'update' },
+        );
     }
   });
 }
@@ -446,6 +465,7 @@ sub walk_fwtable {
 
   my $fw_mac   = $snmp->fw_mac || {};
   my $fw_port  = $snmp->fw_port || {};
+  my $fw_ssid  = $snmp->can('fw_ssid') ? ($snmp->fw_ssid || {}) : {};
   my $fw_vlan  = ($snmp->can('cisco_comm_indexing') and $snmp->cisco_comm_indexing()) 
     ? {} : $snmp->qb_fw_vlan;
   my $bp_index = $snmp->bp_index || {};
@@ -463,6 +483,9 @@ sub walk_fwtable {
       if ($mac =~ m{^06:($RE{net}{MAC})$}i) {
           $mac = $1;
       }
+
+      vars->{'fw_ssids'}->{$mac} = $fw_ssid->{$idx}
+        if exists $fw_ssid->{$idx};
 
       unless (defined $bp_id) {
           debug sprintf
