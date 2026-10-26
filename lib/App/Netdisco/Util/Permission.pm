@@ -18,6 +18,7 @@ our @EXPORT_OK = qw/
     check_acl_only
     acl_matches
     acl_matches_only
+    permitted_by_acl
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -114,6 +115,27 @@ This is an alias for L<acl_matches_only>.
 =cut
 
 sub check_acl_only { goto &acl_matches_only }
+
+=head2 permitted_by_acl( $thing, \%config )
+
+Given an object and a config hash carrying optional C<no> and C<only> ACLs
+(as custom fields, extra device port columns and external links do), returns
+true if C<$thing> is not matched by C<no> and is matched by C<only>. Returns
+false when either argument is missing.
+
+=cut
+
+# Also the permitted_by_acl template token in Web.pm, which wraps this: the
+# Ports tab builds its JSON rows in Perl and has to hide the same cells the
+# templates hide.
+sub permitted_by_acl {
+    my ($thing, $config) = @_;
+    return false unless $thing and $config;
+
+    return if acl_matches($thing, ($config->{no} || []));
+    return unless acl_matches_only($thing, ($config->{only} || []));
+    return true;
+}
 
 =head2 check_acl( $ip | $object | \%hash | \@item_list, $acl_entry | \@acl )
 
