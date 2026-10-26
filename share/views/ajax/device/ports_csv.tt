@@ -49,7 +49,7 @@
   [% END %]
 
   [% IF params.c_comment %]
-    [% myport.push(row.last_comment) %]
+    [% myport.push(row.port_comment) %]
   [% END %]
 
   [% IF params.c_type %]
@@ -131,9 +131,9 @@
   [% END %]
 
   [% IF params.c_power %]
-    [% IF row.power AND row.power.admin == 'true' %]
-      [% myport.push( row.power.status ) %]
-      [% myport.push( row.power.power || '0' ) %]
+    [% IF row.port_power AND row.port_power.admin == 'true' %]
+      [% myport.push( row.port_power.status ) %]
+      [% myport.push( row.port_power.power || '0' ) %]
     [% ELSE %]
       [% myport.push('') %]
       [% myport.push('') %]
@@ -142,9 +142,9 @@
 
   [% IF params.c_ssid %]
     [% SET ssidlist = '' %]
-    [% FOREACH s IN row.ssid %]
+    [% FOREACH s IN row.port_ssids %]
       [% SET ssidlist = ssidlist _ ',' IF NOT loop.first %]
-      [% SET ssidlist = ssidlist _ s.ssid %]
+      [% SET ssidlist = ssidlist _ s %]
     [% END %]
     [% myport.push(ssidlist) %]
   [% END %]

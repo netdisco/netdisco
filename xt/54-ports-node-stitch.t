@@ -86,7 +86,46 @@ require App::Netdisco::DB::Result::DevicePort;
 ok !App::Netdisco::DB::Result::DevicePort->can('stitched_nodes'),
   'stitched_nodes is not a method, so Template Toolkit reaches the hash key';
 
-# Required again here, unconditionally: the SKIP block above loads the module
+# _neighbor_macs replaced the stitch the template used to search for the MAC
+# behind remote_ip, so the stitch is the reference: the first node, in node
+# order, carrying an IP equal to remote_ip.
+SKIP: {
+    skip "no usable netdisco database: $why", 1 if not $schema;
+
+    my ($device_ip) = $schema->storage->dbh_do(sub {
+      $_[1]->selectrow_array(q{
+          SELECT p.ip FROM device_port p
+            JOIN node n ON n.switch = p.ip AND n.port = p.port AND n.active
+            JOIN node_ip i ON i.mac = n.mac AND i.active AND i.ip = p.remote_ip
+           LIMIT 1
+      });
+    });
+    skip 'no device in this database has a neighbor with a known MAC', 1
+      if not $device_ip;
+
+    my $device = $schema->resultset('Device')->find($device_ip);
+    my @rows = $device->ports->search({ remote_ip => { '!=' => undef } })->all;
+    App::Netdisco::Web::Plugin::Device::Ports::_stitch_nodes(
+      $schema, $device->ip, \@rows, 'active_nodes', 'ips',
+      [ \q{regexp_replace(COALESCE(me.vlan, '0'), '[^0-9]*' ,'0') :: integer},
+        'me.mac', 'ips.ip' ], []);
+
+    my %expected = ();
+    ROW: foreach my $row (@rows) {
+        foreach my $node (@{ $row->{stitched_nodes} }) {
+            next unless grep { $_->{ip} eq $row->remote_ip }
+              @{ $node->{stitched_ips} };
+            $expected{ $row->port } = $node->{mac};
+            next ROW;
+        }
+    }
+
+    is_deeply App::Netdisco::Web::Plugin::Device::Ports::_neighbor_macs(
+      $schema, $device->ip, 'active_nodes', 'ips'), \%expected,
+      'neighbor MACs match the first stitched node carrying remote_ip';
+}
+
+# Required again here, unconditionally: the SKIP blocks above load the module
 # only when the database connects, and these checks must run without one.
 require App::Netdisco::Web::Plugin::Device::Ports;
 
@@ -118,16 +157,33 @@ is_deeply App::Netdisco::Web::Plugin::Device::Ports::_node_fetch_scope(
   1, 1, \@rows_some_neighbors), [],
   'c_nodes on, c_neighbors on also fetches the whole device';
 
+# The shipped templates take the neighbor's MAC from _neighbor_macs, so
+# c_neighbors alone fetches no nodes for them.
 is App::Netdisco::Web::Plugin::Device::Ports::_node_fetch_scope(
-  0, 1, \@rows_no_neighbors), undef,
-  'c_nodes off, c_neighbors on, no remote_ip anywhere fetches nothing';
+  0, 1, \@rows_some_neighbors), undef,
+  'c_nodes off, c_neighbors on fetches nothing for the shipped templates';
+
+# A site's own older ports.tt still searches stitched_nodes for it.
+is App::Netdisco::Web::Plugin::Device::Ports::_node_fetch_scope(
+  0, 1, \@rows_no_neighbors, 1), undef,
+  'legacy template, c_neighbors on, no remote_ip anywhere fetches nothing';
 
 is_deeply App::Netdisco::Web::Plugin::Device::Ports::_node_fetch_scope(
-  0, 1, \@rows_some_neighbors), ['Gi1/1', 'Gi1/3'],
-  'c_nodes off, c_neighbors on, some remote_ip fetches only those ports';
+  0, 1, \@rows_some_neighbors, 1), ['Gi1/1', 'Gi1/3'],
+  'legacy template, c_neighbors on, some remote_ip fetches only those ports';
 
 is App::Netdisco::Web::Plugin::Device::Ports::_node_fetch_scope(
-  0, 0, \@rows_some_neighbors), undef,
+  0, 0, \@rows_some_neighbors, 1), undef,
   'c_nodes and c_neighbors both off fetches nothing';
+
+my %count_by_port = ('Gi1/1' => 30, 'Gi1/2' => 30, 'Gi1/3' => 5);
+
+is_deeply App::Netdisco::Web::Plugin::Device::Ports::_threshold_scope(
+  20, 0, \%count_by_port, \@rows_some_neighbors), ['Gi1/3'],
+  'only ports at or under the threshold have their nodes fetched';
+
+is_deeply App::Netdisco::Web::Plugin::Device::Ports::_threshold_scope(
+  20, 1, \%count_by_port, \@rows_some_neighbors), ['Gi1/1', 'Gi1/3'],
+  'a legacy template also gets an over-threshold neighbor port, for its MAC';
 
 done_testing;
