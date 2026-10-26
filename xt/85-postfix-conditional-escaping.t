@@ -36,74 +36,11 @@ sub lacks_ok {
     ok( index( $html, $needle ) < 0, $name );
 }
 
-subtest 'portsTt__discovered_neighbor_with_detailed_inventory__escapes_remote_ip_id_and_type' => sub {
-    my $stash = {
-        params   => { c_neighbors => 1, n_detailed_inventory => 1 },
-        settings => { domain_suffix => '' },
-        results  => [ {
-            remote_ip   => '<b>85a-ip</b>',
-            remote_id   => '<b>85a-id</b>',
-            remote_type => '<b>85a-type</b>',
-            # the literal-only sibling print, pinned as untouched below
-            manual_topo => 1,
-            # a hashref stands in for the row: the template reaches the
-            # branch holding these sites through get_column, not a key
-            get_column => sub {
-                my %col = ( neighbor_ip => '198.51.100.9',
-                            neighbor_dns => 'switch.example.com' );
-                return $col{ $_[0] };
-            },
-        } ],
-    };
-    my ($html, $error) = render_template('ajax/device/ports.tt', $stash);
-    is $error, undef, 'template renders without error';
-
-    contains_ok $html, '&lt;b&gt;85a-ip&lt;/b&gt;',   'remote_ip is escaped';
-    lacks_ok    $html, '<b>85a-ip</b>',               'remote_ip raw markup is absent';
-    contains_ok $html, '&lt;b&gt;85a-id&lt;/b&gt;',   'remote_id is escaped';
-    lacks_ok    $html, '<b>85a-id</b>',               'remote_id raw markup is absent';
-    contains_ok $html, '&lt;b&gt;85a-type&lt;/b&gt;', 'remote_type is escaped';
-    lacks_ok    $html, '<b>85a-type</b>',             'remote_type raw markup is absent';
-    contains_ok $html, 'class="fas fa-link text-warning"',
-        'the sibling manual-topology class literal still renders as plain text';
-};
-
-subtest 'portsTt__undiscovered_neighbor_with_detailed_inventory__escapes_remote_id_and_type' => sub {
-    my $stash = {
-        params   => { c_neighbors => 1, n_detailed_inventory => 1 },
-        settings => { domain_suffix => '' },
-        results  => [ {
-            remote_ip   => 'plain-85b-ip',
-            remote_id   => '<b>85b-id</b>',
-            remote_type => '<b>85b-type</b>',
-            # falsy, so the row lands in the ELSIF branch holding the
-            # other two sites
-            get_column => sub { return undef },
-        } ],
-    };
-    my ($html, $error) = render_template('ajax/device/ports.tt', $stash);
-    is $error, undef, 'template renders without error';
-
-    contains_ok $html, '&lt;b&gt;85b-id&lt;/b&gt;',   'remote_id is escaped';
-    lacks_ok    $html, '<b>85b-id</b>',               'remote_id raw markup is absent';
-    contains_ok $html, '&lt;b&gt;85b-type&lt;/b&gt;', 'remote_type is escaped';
-    lacks_ok    $html, '<b>85b-type</b>',             'remote_type raw markup is absent';
-};
-
-subtest 'portsTt__no_remote_id_or_type__prints_nothing_for_the_detailed_inventory_line' => sub {
-    my $stash = {
-        params   => { c_neighbors => 1, n_detailed_inventory => 1 },
-        settings => { domain_suffix => '' },
-        results  => [ {
-            remote_ip => 'plain-85c-ip',
-            get_column => sub { return undef },
-        } ],
-    };
-    my ($html, $error) = render_template('ajax/device/ports.tt', $stash);
-    is $error, undef, 'template renders without error';
-    lacks_ok $html, 'id: ',
-        'the postfix IF still suppresses output when remote_id is unset';
-};
+# ajax/device/ports.tt used to be checked here, for the neighbor's remote_ip,
+# remote_id and remote_type. It no longer draws the rows: netdisco-ports.js
+# does, from JSON, and escapes through DataTable.util.escapeHtml, where no
+# postfix IF can skip a filter. The same three cases, and the literal-only
+# class print beside them, are in xt/js/ports-table.test.js.
 
 subtest 'nodeByIpTt__row_dns__escapes_dns_and_leaves_the_archived_icon_as_markup' => sub {
     my $stash = {

@@ -555,6 +555,13 @@ sub _port_rows {
     # also get remote LLDP inventory if asked for
     $set = $set->with_remote_inventory if param('n_inventory');
 
+    # a site's own older ports.tt reads these relations, one query per port
+    # without the prefetch
+    if ($opt->{legacy}) {
+        $set = $set->search({}, { prefetch => 'ssid' }) if param('c_ssid');
+        $set = $set->search({}, { prefetch => 'power' }) if param('c_power');
+    }
+
     # Ordered in the database rather than after the fetch. The order is
     # portsort.js's, which is the one the browser shows, so this replaces a
     # sort_port pass whose result the browser overwrote anyway. $node_order
@@ -566,11 +573,11 @@ sub _port_rows {
     my @results = $set->all;
 
     # see _port_power for why these are not prefetched
-    if (param('c_power')) {
+    if (param('c_power') and not $opt->{legacy}) {
         my $power = _port_power(schema(vars->{'tenant'}), $device->ip);
         $_->{port_power} = $power->{ $_->port } for @results;
     }
-    if (param('c_ssid')) {
+    if (param('c_ssid') and not $opt->{legacy}) {
         my $ssids = _port_ssids(schema(vars->{'tenant'}), $device->ip);
         $_->{port_ssids} = ($ssids->{ $_->port } || []) for @results;
     }
@@ -761,35 +768,6 @@ sub _port_rows {
     };
 }
 
-# Whether this is a site's ajax/device/ports.tt from before the neighbor's
-# MAC came as neighbor_net_mac: one that reads stitched_nodes, where it used
-# to find it, and not neighbor_net_mac. TT comments are left out, so a note
-# naming either decides nothing. The site-local rule ports-neighbor-mac tells
-# the admin about such a copy.
-sub _ports_template_is_legacy {
-    my ($text) = @_;
-    return 0 if not defined $text;
-    (my $code = $text) =~ s/\[%#.*?%\]//gs;
-    return ($code =~ m/\bstitched_nodes\b/
-            and $code !~ m/\bneighbor_net_mac\b/) ? 1 : 0;
-}
-
-# The same for the template that resolves, cached by file and mtime.
-my %template_legacy = ();
-sub _legacy_ports_template {
-    my $file = engine('template')->view('ajax/device/ports') or return 0;
-    my $mtime = (stat $file)[9] || 0;
-    my $known = $template_legacy{$file};
-    if (not $known or $known->{mtime} != $mtime) {
-        open my $fh, '<:encoding(UTF-8)', $file or return 0;
-        my $text = do { local $/; <$fh> };
-        $known = $template_legacy{$file}
-          = { mtime => $mtime, legacy => _ports_template_is_legacy($text) };
-    }
-    return $known->{legacy};
-}
-
-
 # The table's columns, as ports.tt's <thead> loop chose them: c_admin is a mode,
 # c_links needs links configured, c_nodes and c_neighbors share one column, and
 # a hidden plugin column is left out. The browser adds the status column.
@@ -975,9 +953,9 @@ sub _port_json {
         $j{node_count} = ($row->{node_count} || 0) + 0;
         $j{search} = $row->{nodes_search}
           if length ($row->{nodes_search} || '');
-        # a port over the threshold has no stitched_nodes, and fetches its own
+        # a port over the threshold has none, and fetches its own
         $j{nodes} = [ map { _node_json($_, $c{remote_ip}, $opt) }
-          @{ $row->{stitched_nodes} } ] if $row->{stitched_nodes};
+          @{ $row->{stitched_nodes} } ] if scalar @{ $row->{stitched_nodes} || [] };
     }
 
     if ($p->{c_admin}) {
@@ -1170,13 +1148,48 @@ ajax '/ajax/data/device/port/nodes' => require_login sub {
       @{ $row->{stitched_nodes} } ] };
 };
 
+# Whether this is a site's ajax/device/ports.tt from before the loader, which
+# draws the rows itself: found by the loader the current one names.
+sub _ports_template_is_legacy {
+    my ($text) = @_;
+    return (defined $text and $text =~ m/\bdata-nd-loader=/) ? 0 : 1;
+}
+
+# The same for the template that resolves, cached by file and mtime.
+my %template_legacy = ();
+sub _legacy_ports_template {
+    my $file = engine('template')->view('ajax/device/ports') or return 0;
+    my $mtime = (stat $file)[9] || 0;
+    my $known = $template_legacy{$file};
+    if (not $known or $known->{mtime} != $mtime) {
+        open my $fh, '<:encoding(UTF-8)', $file or return 0;
+        my $text = do { local $/; <$fh> };
+        $known = $template_legacy{$file}
+          = { mtime => $mtime, legacy => _ports_template_is_legacy($text) };
+    }
+    return $known->{legacy};
+}
+
 # device ports with a description (er, name) matching
 get '/ajax/content/device/ports' => require_login sub {
-    # the CSV never reads the neighbor's MAC
-    my $data = _port_rows({
-      legacy => (request->is_ajax ? _legacy_ports_template() : 0) }) or return;
+    # the frame; the table's loader fetches /ajax/data/device/ports with this
+    # query string
+    if (request->is_ajax and not _legacy_ports_template()) {
+        my $device = schema(vars->{'tenant'})->resultset('Device')
+          ->search_for_device(param('q')) or send_error('Bad device', 400);
+        my $query = request->env->{'QUERY_STRING'} || '';
+        return template 'ajax/device/ports.tt', {
+          device => $device,
+          data_source => uri_for('/ajax/data/device/ports')->path
+            . (length $query ? ('?'. $query) : ''),
+        }, { layout => 'noop' };
+    }
+
+    # only a site's own template looks for the neighbor's MAC among the nodes
+    my $data = _port_rows({ legacy => (request->is_ajax ? 1 : 0) }) or return;
 
     if (request->is_ajax) {
+        # a site's own ajax/device/ports.tt, from before the rows came as JSON
         template 'ajax/device/ports.tt', {
           results => $data->{results},
           # kept for site-local template overrides that may still read

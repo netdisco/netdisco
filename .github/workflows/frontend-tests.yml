@@ -180,6 +180,19 @@ jobs:
       - name: Every renderer and callback a fragment names exists
         run: node --test xt/js/tables-registry.test.js
 
+  ports-table:
+    name: Ports table drawn from JSON
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Cells match the markup port control reads, folding, deferred nodes
+        run: node --test xt/js/ports-table.test.js
+
   error-reporter:
     name: global script error reporter
     runs-on: ubuntu-latest

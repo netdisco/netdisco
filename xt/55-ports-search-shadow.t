@@ -13,7 +13,7 @@ use warnings;
 use Test::More 0.88;
 use NetAddr::MAC ();
 use lib 'xt/lib';
-use Test::Netdisco::Snapshot 'render_template';
+use Test::Netdisco::PortsJSON 'fixture_payload';
 
 {
     package NetdiscoSchema;
@@ -418,25 +418,23 @@ SKIP: {
       'and the Sun form, whose octets lose their leading zeros';
 }
 
-# The shadow is only reachable if DataTables sources the column's filter text
-# from data-search, and it decides that from tbody tr:first-child alone, for the
-# whole column. Emitting the attribute on the collapsed rows only, which is what
-# this cell used to do, left the column reading rendered text and every shadow
-# ignored, while every Perl assertion above still passed. The fixture puts one
-# row over the collapse threshold and one under it, so a condition creeping back
-# onto the attribute fails here.
-subtest 'ports_tt__every_connected_nodes_cell__carries_data_search' => sub {
-    my ($html, $error) = render_template('ajax/device/ports.tt');
-    is $error, undef, 'renders' or return;
-
-    my (undef, @rows) = split m/<tr\b/, $html;
-    my @node_cells = grep { m/nd_nodes-total|nd_div-closer|data-search/ } @rows;
-    cmp_ok scalar @node_cells, '>', 1,
-      'the fixture renders more than one row carrying a nodes cell';
-
-    my $with_attr = grep { m/<td[^>]*\sdata-search="/ } @node_cells;
-    is $with_attr, scalar @node_cells,
-      'every row with a nodes cell carries data-search, not just the collapsed ones';
+# The shadow reaches the browser as each row's "search", which
+# netdisco-ports.js answers the nodes column's filter with. It used to travel
+# as data-search on the cell, which DataTables read from tbody tr:first-child
+# alone and applied to the whole column, so a condition on that attribute left
+# the column reading rendered text and every shadow ignored while every
+# assertion above still passed. A render function has no first row to decide
+# for the others, but a row that loses its "search" is still findable by
+# nothing: the fixture has one row over the collapse threshold and one under
+# it, and both have to carry theirs.
+subtest 'port_json__every_row_with_a_shadow__carries_it_as_search' => sub {
+    my $payload = fixture_payload();
+    my @with_nodes = grep { $_->{node_count} } @{ $payload->{rows} };
+    cmp_ok scalar @with_nodes, '>', 1,
+      'the fixture has more than one port with nodes';
+    is scalar(grep { defined $_->{search} and length $_->{search} } @with_nodes),
+      scalar @with_nodes,
+      'each carries its search text, not just the ones over the threshold';
 };
 
 done_testing;

@@ -192,43 +192,37 @@ others not:
 
 =item C<ajax/device/ports.tt>
 
+A frame: the rows are drawn in the browser by F<netdisco-ports.js> from JSON,
+so this snapshot is the loader's table and the port-log modal, and the only
+parts of the stash it reads are C<params.c_admin> and C<user_has_role>, stubbed
+true to reach the modal. The stash is still C<ports_fixture()>, because that
+is the one description of the Ports tab's eight fixture rows:
+F<xt/179-ports-json.t> builds their JSON, which is committed as
+F<xt/ports-fixture.json> for F<xt/js/ports-table.test.js> to draw, and
+F<xt/ports-reference-rows.html> holds the markup the template drew for them
+before the rows came as JSON, which that test compares the drawn cells with.
+
 One row per icon state (admin-down, STP-blocking, error-disabled, free,
 link-down, subinterface-fold) plus VLAN and PoE data, so every branch of the
-per-port status icon and VLAN-count logic renders at least once, plus
-C<user_has_role> stubbed true to reach the port-log modal. C<results> rows are
-plain hashrefs; C<row.get_column> and C<row.has_column_loaded> are
+per-port status icon and VLAN-count logic is reached at least once. C<results>
+rows are plain hashrefs; C<row.get_column> and C<row.has_column_loaded> are
 DBIx::Class::Row methods this harness does not model, so one row supplies
-C<has_column_loaded> as a coderef to reach the "port is free" branch, and the
-neighbour-discovery icons that depend on C<get_column> are left as a gap.
+C<has_column_loaded> as a coderef to reach the "port is free" branch.
 C<mac_format_call> is, as in production, the name of the row method the
-template should call, not the data itself. C<nodes> and C<ips> are still
-passed for site-local template compatibility, but the connected-nodes markup
-reads C<stitched_nodes> and C<stitched_ips>, so the two rows carrying nodes
-key their data there. Both also carry C<nodes_search>, the DataTables search
-shadow, so C<data-search> has real text rather than an empty string that
-would guard nothing. C<node_count> and C<settings.devport_nodes_collapse_threshold>
-are set so the two rows land on opposite sides of the threshold: Gi1/1 takes
-the deferred stub branch and Gi1/3 the C<INCLUDE> branch, which gives the
-C<data-search> check in F<xt/55-ports-search-shadow.t> a row of each kind, the
-attribute itself being unconditional. Gi1/3's C<stitched_nodes> is what the
-C<INCLUDE> renders here; the fixture below for C<port_nodes.tt> itself is what
-covers that template's own remaining branches, Gi1/1's node data having moved
-there along with them.
-
-C<params.n_ip4> and C<params.n_ip6> are both enabled, as they ship in
-F<share/config.yml>, so Gi1/3's stitched node's C<stitched_ips> renders.
-
-C<params.c_ssid> is enabled and one row carries two C<port_ssids> entries:
-with one each, the SSID cell would pass just as well on a template that reads
-a single value instead of looping.
+template should call, not the data itself. C<node_count> and
+C<settings.devport_nodes_collapse_threshold> are set so two rows land on
+opposite sides of the threshold, and both carry C<nodes_search>, the search
+shadow, so the JSON has real text for each. C<params.n_ip4> and C<params.n_ip6>
+are both enabled, as they ship in F<share/config.yml>, and one row carries two
+C<port_ssids> entries: with one each, the SSID cell would pass just as well on
+code that reads a single value instead of looping.
 
 =item C<ajax/device/port_nodes.tt>
 
-Rendered two ways: nested inside the C<ports.tt> snapshot above via
-C<INCLUDE> for the under-threshold row, and standalone here for the rest of
-this template's branches. C<row> carries the two C<stitched_nodes> moved out
-of C<ports.tt>'s own fixture, one archived and one with two C<stitched_ips>,
-so the archived-node icon and the per-node IP-collapse wrapper both render.
+Rendered on its own: it is still the answer for a site's own older
+C<ajax/device/ports.tt>, whose collapsed node lists fetch it. C<row> carries
+two C<stitched_nodes>, one archived and one with two C<stitched_ips>, so the
+archived-node icon and the per-node IP-collapse wrapper both render.
 
 =item C<layouts/main.tt>
 

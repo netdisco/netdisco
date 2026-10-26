@@ -218,4 +218,29 @@ subtest 'plugin cells' => sub {
       'and the json coderef\'s data, given the row and the device';
 };
 
+# A site's own ajax/device/ports.tt from before the rows came as JSON draws
+# them itself, and has to go on getting the rows it expects rather than a
+# frame it would render as an empty table. It is told apart by the loader the
+# current template names, so a site's copy of the current one is not
+# mistaken for it. The shipped template has to count as current, whichever
+# of the engine's paths it resolves from.
+subtest 'a site\'s own ports template' => sub {
+    my $legacy = \&App::Netdisco::Web::Plugin::Device::Ports::_ports_template_is_legacy;
+
+    ok $legacy->("<table>[% FOREACH row IN results %]<tr>[% row.port %]</tr>[% END %]</table>"),
+      'a template that draws the rows itself is the old kind';
+    ok $legacy->(''), 'an empty one is too';
+    ok $legacy->(undef), 'and one that could not be read';
+
+    my $shipped = do {
+        open my $fh, '<', 'share/views/ajax/device/ports.tt' or die $!;
+        local $/; <$fh>;
+    };
+    ok !$legacy->($shipped), 'the shipped template is current';
+    (my $site_copy = $shipped) =~ s/^/[%# a site's edit %]\n/;
+    ok !$legacy->($site_copy), 'and so is a site\'s copy of it';
+    ok $legacy->($shipped =~ s/data-nd-loader=/data-nd-other=/r),
+      'a copy that lost the loader is the old kind';
+};
+
 done_testing;

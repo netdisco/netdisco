@@ -389,6 +389,7 @@ share/public/javascripts/netdisco-daterange.js
 share/public/javascripts/netdisco-deferred-nodes.js
 share/public/javascripts/netdisco-netmap.js
 share/public/javascripts/netdisco-portcontrol.js
+share/public/javascripts/netdisco-ports.js
 share/public/javascripts/netdisco-request.js
 share/public/javascripts/netdisco-swagger.js
 share/public/javascripts/netdisco-tables.js
@@ -845,6 +846,7 @@ xt/js/no-jstree.test.js
 xt/js/page-registry.test.js
 xt/js/pane-chrome.test.js
 xt/js/pane-settling.test.js
+xt/js/ports-table.test.js
 xt/js/portsort.test.js
 xt/js/request-helper.test.js
 xt/js/snmp-tree-control.test.js
@@ -878,4 +880,5 @@ xt/lib/Test/Netdisco/MungerProbe.pm
 xt/lib/Test/Netdisco/PortsJSON.pm
 xt/lib/Test/Netdisco/Snapshot.pm
 xt/ports-fixture.json
+xt/ports-reference-rows.html
 xt/portsort-corpus.json

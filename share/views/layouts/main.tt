@@ -225,6 +225,7 @@
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-typeahead.js?v=[% asset_version | none %]"></script>
 [% IF task %]<script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-admin.js?v=[% asset_version | none %]"></script>[% END %]
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-tables.js?v=[% asset_version | none %]"></script>
+<script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-ports.js?v=[% asset_version | none %]"></script>
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-daterange.js?v=[% asset_version | none %]"></script>
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-netmap.js?v=[% asset_version | none %]"></script>
 <script type="text/javascript" src="[% uri_base | none %]/javascripts/netdisco-deferred-nodes.js?v=[% asset_version | none %]"></script>
