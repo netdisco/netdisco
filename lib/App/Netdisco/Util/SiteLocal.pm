@@ -385,17 +385,18 @@ my @FILE_RULES = (
               . 'from the shipped device.tt.',
   },
   {
-    name     => 'ports-neighbor-mac',
-    release  => '2.117001',
+    name     => 'ports-page-shadow',
+    release  => '2.117000',
     paths    => ['ajax/device/ports.tt'],
-    requires => qr/\bneighbor_net_mac\b/,
-    advice   => 'this copy looks for the neighbor\'s MAC among the port\'s '
-              . 'nodes, so when Connected Devices is shown and Connected '
-              . 'Nodes is not, the nodes of every port with a neighbor are '
-              . 'still fetched for it. It keeps working. To skip that fetch, '
-              . 'take the MAC from row.neighbor_net_mac as the shipped '
-              . 'template does. A copy that does not show the neighbor\'s MAC '
-              . 'can ignore this.',
+    requires => qr/\bdata-nd-loader=/,
+    advice   => 'this copy draws the Ports table itself, from the ports as '
+              . 'they were given to it, and so still works: the page is '
+              . 'handed those and every port is drawn on the server, which '
+              . 'is the slow way. To get the faster page, which draws only '
+              . 'the rows on screen in the browser, re-copy the shipped '
+              . 'template and re-apply the local changes; most of what a '
+              . 'copy changed in the cells can now be a plugin column '
+              . '(see register_device_port_column).',
   },
   {
     name     => 'tab-sync-attribute',

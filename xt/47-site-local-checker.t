@@ -512,9 +512,8 @@ subtest 'site_local_rules__called__describes_every_rule_the_scan_applies' => sub
         'jquery-removed', 'jquery-ui-autocomplete', 'jquery-ui-removed',
         'jstree-removed', 'layout-shadow', 'moment-removed', 'natural-js',
         'nd-submit', 'page-script-include', 'page-title-globals',
-        'portcontrol-js-renamed', 'ports-neighbor-mac', 'sidebar-reset-target',
-        'tab-page-shadow',
-        'tab-sync-attribute', 'toastr-removed' ],
+        'portcontrol-js-renamed', 'ports-page-shadow', 'sidebar-reset-target',
+        'tab-page-shadow', 'tab-sync-attribute', 'toastr-removed' ],
       'named as the report cites them, file rules included';
     ok !(grep { !length($_->{advice} || '') } @rules),
       'and every rule carries remediation advice';
@@ -618,28 +617,6 @@ subtest 'scan_shadowed_files__page_copy_keeping_the_csv_id__reports_nothing' => 
       'the anchor the response swaps into is there';
 };
 
-subtest 'scan_shadowed_files__ports_copy_without_neighbor_net_mac__reports_the_node_fetch' => sub {
-    my $tree = site_local_tree('ajax/device/ports.tt' =>
-      qq{[% FOREACH _n IN row.stitched_nodes %][% END %]\n});
-
-    my @findings = scan_shadowed_files(
-      { paths => ["$tree"], rules => ['ports-neighbor-mac'] });
-
-    is scalar @findings, 1, 'one finding for the older ports.tt';
-    is $findings[0]{rule}, 'ports-neighbor-mac', 'named the rule';
-    like $findings[0]{advice}, qr/neighbor_net_mac/,
-      'advice names the key to read';
-};
-
-subtest 'scan_shadowed_files__ports_copy_reading_neighbor_net_mac__reports_nothing' => sub {
-    my $tree = site_local_tree('ajax/device/ports.tt' =>
-      qq{[% SET neighbor_mac = row.neighbor_net_mac %]\n});
-
-    is scalar scan_shadowed_files(
-      { paths => ["$tree"], rules => ['ports-neighbor-mac'] }), 0,
-      'a copy of the current template is not a finding';
-};
-
 subtest 'scan_shadowed_files__device_copy_without_the_reset_id__reports_the_lost_link' => sub {
     my $tree = site_local_tree(
       'device.tt' => qq{<div class="nd_sidebar"></div>\n});
@@ -693,6 +670,32 @@ subtest 'scan_shadowed_files__page_copy_carrying_hx_sync__reports_nothing' => su
     is scalar scan_shadowed_files(
       { paths => ["$tree"], rules => ['tab-sync-attribute'] }), 0,
       'a copy that adopted the cancellation is not a finding';
+};
+
+subtest 'scan_shadowed_files__ports_template_that_draws_its_own_rows__reports_the_slow_page' => sub {
+    my $tree = site_local_tree(
+      'ajax/device/ports.tt' => qq{<table>\n[% FOREACH row IN results %]<tr></tr>[% END %]\n</table>\n});
+
+    my @findings = scan_shadowed_files(
+      { paths => ["$tree"], rules => ['ports-page-shadow'] });
+
+    is scalar @findings, 1, 'one finding for the old Ports template';
+    is $findings[0]{rule}, 'ports-page-shadow', 'named the rule';
+    is $findings[0]{kind}, 'file', 'reported as a file rule';
+    like $findings[0]{advice}, qr/register_device_port_column/,
+      'advice points at the plugin column that replaces most such edits';
+
+    is scalar scan_shadowed_files({ paths => ["$tree"], startup => 1 }), 0,
+      'but it still works, so it is not warned about at every worker boot';
+};
+
+subtest 'scan_shadowed_files__ports_template_naming_the_loader__reports_nothing' => sub {
+    my $tree = site_local_tree(
+      'ajax/device/ports.tt' => qq{<table id="dp-data-table" data-nd-loader="ports">\n</table>\n});
+
+    is scalar scan_shadowed_files(
+      { paths => ["$tree"], rules => ['ports-page-shadow'] }), 0,
+      'a copy of the current template is not a finding';
 };
 
 # The web application runs this at every worker boot and a site cannot turn the

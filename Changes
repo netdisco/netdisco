@@ -3,6 +3,21 @@
   [ENHANCEMENTS]
 
   * #1797 upgrade the vendored Swagger UI from 5.33.3 to 5.34.1
+  * the Ports tab is much faster on a large device: the page is a frame and
+    the browser draws the table from JSON, only the rows on screen. on a
+    4100-port device the table is usable after about 2 seconds with the
+    default columns, where it took 19, and after 8 with every column, where
+    it took 40. the data is at /ajax/data/device/ports. a plugin or custom
+    field column keeps its device_port_column.tt, drawn on the server, or
+    can draw itself in the browser: register_device_port_column takes a
+    renderer name and a json coderef, and a script registers the renderer
+    with ndPorts.registerColumn(). a site's own copy of ajax/device/ports.tt
+    keeps working as before, and checksitelocal now says it is the slow way.
+    a plugin cell hidden by its only/no ACL no longer leaves a row one cell
+    short of the header
+  * the Ports tab reads PoE, SSIDs, the last comment and each neighbor's
+    MAC with one query each rather than a join or a query per port. SSIDs
+    are listed in sorted order
 
   [BUG FIXES]
 

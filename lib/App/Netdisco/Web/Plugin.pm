@@ -293,5 +293,54 @@ Admin Menu function (job control, manual topology, pseudo devices)
 
 See L<https://github.com/netdisco/netdisco/wiki/Web-Plugins> for details.
 
+=head2 Additional Device Port Columns
+
+C<register_device_port_column> adds a column to the Ports tab. C<name> (the
+sidebar option, and the key the column's cells are found by) and C<label> are
+required; C<position> is C<left>, C<mid> or C<right>, C<default> is
+C<checked> to start with the column on, and C<only> and C<no> are ACLs which
+decide per port whether its cell is shown.
+
+The Ports table is drawn in the browser from JSON, and a column gives its
+cells in one of three ways:
+
+=over 4
+
+=item *
+
+With a F<plugin/E<lt>nameE<gt>/device_port_column.tt> template on the template
+path, which is drawn on the server for each port (C<row>, C<device>,
+C<config>, C<vlans>, C<params> and C<settings> are as they always were) and
+sent as the cell's markup. A template that fails to render is left out, and
+the column's C<field> is shown in its place.
+
+=item *
+
+With no template and no renderer, as the port's C<field> (for a custom field, C<cf_E<lt>nameE<gt>>),
+editable under Port Control when C<editable> is set and the user may edit
+port names.
+
+=item *
+
+By a script, with C<renderer> naming it and the optional C<json> coderef
+giving it data. C<json> is called as C<< ($row, $device) >> for each port the
+column's ACL allows, and its return value is sent under C<row.data.E<lt>nameE<gt>>.
+The plugin's own JavaScript (C<register_javascript>) registers the renderer:
+
+    ndPorts.registerColumn('myrenderer', {
+      html:   function (row, ctx) { return '<b>' + ndPorts.esc(row.data.mycol) + '</b>'; },
+      value:  function (row, ctx) { return row.data.mycol; },  // sort, optional
+      filter: function (row, ctx) { return row.data.mycol; },  // filter, optional
+      attrs:  function (row, ctx) { return {}; }               // the td's attributes, optional
+    });
+
+C<html> must escape what it places: C<ndPorts.esc> does. C<ctx.meta> carries
+the request's options (C<params>), the device and the thresholds, and
+C<ctx.urls> the URL prefixes the page's own cells use. This skips Template
+Toolkit for the column altogether, which is what makes it fast on a device
+with thousands of ports.
+
+=back
+
 =cut
 
