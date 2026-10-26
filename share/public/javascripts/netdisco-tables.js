@@ -13,7 +13,10 @@
 // saved table state. Three sibling attributes complete the contract:
 // data-nd-urls holds the URL prefixes the renderers need, data-nd-data names
 // the id of the application/json block holding the rows, and data-nd-admin
-// tells the subnet renderer whether to show the admin tools.
+// tells the subnet renderer whether to show the admin tools. A table whose
+// rows are too many to ship inside its fragment names a loader instead, in
+// data-nd-loader: the loader fetches the rows and builds the table itself,
+// over the same shared options.
 //
 // JSON cannot carry a function, so a column's render and a table's
 // drawCallback or initComplete are named here and referenced by name. Each
@@ -683,6 +686,12 @@ const ndTables = (function () {
     }
   };
 
+  // Named by a table's data-nd-loader. Each is a function (table, root,
+  // helpers) that gets the table's rows by itself and then calls
+  // helpers.build(table, root, options) with them. Registered by the file
+  // that owns the table, as netdisco-ports.js does.
+  const LOADERS = {};
+
   /**
    * Resolves a column or callback spec (a bare name, or an object naming one under
    * "name") against the registry it belongs to, building the function DataTables calls.
@@ -784,9 +793,10 @@ const ndTables = (function () {
    * @param {HTMLTableElement} table the <table> element carrying data-nd-table (and optionally data-nd-urls, data-nd-data)
    * @param {Element} [root] the just-swapped htmx fragment root, if any, searched first
    *   for a data-nd-data JSON block before falling back to the whole document
+   * @param {object} [overrides] DataTables options a loader supplies over the table's own spec
    * @returns {DataTable} the constructed DataTables instance
    */
-  function build(table, root) {
+  function build(table, root, overrides) {
     const spec = JSON.parse(table.dataset.ndTable || '{}');
     const urls = JSON.parse(table.dataset.ndUrls || '{}');
     // "defaults":false opts a table out of every shared option, rather
@@ -799,11 +809,26 @@ const ndTables = (function () {
     Object.keys(spec).forEach(function (k) {
       if (k !== 'customReport' && k !== 'defaults') config[k] = spec[k];
     });
-    (config.columns || []).forEach(function (col) {
-      if (col.render) col.render = resolveRenderer(col.render, urls, table);
+    // A loader's own options go over the spec's, before any name is resolved,
+    // so they may name renderers and callbacks like a spec does.
+    Object.keys(overrides || {}).forEach(function (k) {
+      config[k] = overrides[k];
     });
-    if (config.drawCallback) config.drawCallback = resolveCallback(config.drawCallback, urls, table);
-    if (config.initComplete) config.initComplete = resolveCallback(config.initComplete, urls, table);
+    // A function is already what DataTables calls: a loader may hand over a
+    // closure over its data, which no JSON spec could name.
+    const named = function (resolve, spec) {
+      return typeof spec === 'function' ? spec : resolve(spec, urls, table);
+    };
+    (config.columns || []).forEach(function (col) {
+      if (col.render) col.render = named(resolveRenderer, col.render);
+      if (col.createdCell) col.createdCell = named(resolveCallback, col.createdCell);
+    });
+    (config.columnDefs || []).forEach(function (def) {
+      if (def.createdCell) def.createdCell = named(resolveCallback, def.createdCell);
+    });
+    ['drawCallback', 'initComplete', 'createdRow'].forEach(function (k) {
+      if (config[k]) config[k] = named(resolveCallback, config[k]);
+    });
     if (table.dataset.ndData) {
       const id = table.dataset.ndData.replace(/^#/, '');
       // htmx swaps one tab pane at a time and never empties the pane it
@@ -818,21 +843,42 @@ const ndTables = (function () {
   }
 
   /**
+   * Starts a table[data-nd-loader] once: the named loader fetches the table's rows and
+   * columns itself and calls build() with them, so the table exists only after its data
+   * has arrived. A loader may return a promise; its failure is logged, as a sync throw is.
+   * @param {HTMLTableElement} table the <table> naming its loader in data-nd-loader
+   * @param {Element} [root] the just-swapped htmx fragment root, if any
+   * @returns {void}
+   */
+  function load(table, root) {
+    // init() runs again on a root it has already seen, and a loader that is
+    // still fetching has no dataTable class yet to tell it apart.
+    if (table.dataset.ndLoaderStarted) return;
+    table.dataset.ndLoaderStarted = '1';
+    const name = table.dataset.ndLoader;
+    const loader = LOADERS[name];
+    if (!loader) throw new Error('netdisco-tables: no loader named "' + name + '"');
+    const done = loader(table, root, { build: build });
+    if (done && typeof done.catch === 'function') done.catch(console.error);
+  }
+
+  /**
    * Builds every not-yet-built table[data-nd-table] under root (or the whole document),
-   * logging and skipping any table whose spec fails to build instead of letting one bad
-   * table stop the rest.
+   * and starts every table[data-nd-loader], logging and skipping any table whose spec
+   * fails to build instead of letting one bad table stop the rest.
    * @param {Element} [root] the just-swapped htmx fragment root, or the whole document when omitted
    * @returns {void}
    */
   function init(root) {
-    const tables = (root || document).querySelectorAll('table[data-nd-table]');
+    const tables = (root || document).querySelectorAll('table[data-nd-table], table[data-nd-loader]');
     Array.prototype.forEach.call(tables, function (table) {
       if (table.classList.contains('dataTable')) return;
       // One bad data-nd-table (or data-nd-urls) degrades one table, not the
       // whole pane: a throw here would otherwise escape the htmx:after:swap
       // listener and leave holdUntilSettled never called.
       try {
-        build(table, root);
+        if (table.dataset.ndLoader) load(table, root);
+        else build(table, root);
       } catch (e) {
         console.error(e);
       }
@@ -842,6 +888,7 @@ const ndTables = (function () {
   return {
     renderers: RENDERERS,
     callbacks: CALLBACKS,
+    loaders: LOADERS,
     resolveRenderer: resolveRenderer,
     resolveCallback: resolveCallback,
     build: build,

@@ -716,6 +716,79 @@ test('build__without_defaults_false__still_gets_the_shared_options', () => {
   assert.strictEqual(typeof config.language, 'object');
 });
 
+// createdRow and createdCell are the two hooks a table drawn from JSON needs
+// to put attributes on the elements DataTables makes; they resolve against
+// the callback registry like drawCallback and initComplete.
+test('build__createdRow_and_createdCell__resolve_named_callbacks', () => {
+  const built = [];
+  const t = load({ built });
+  const seen = [];
+  t.callbacks.rowMark = (args) => (tr) => seen.push(['row', args.x, tr]);
+  t.callbacks.cellMark = (args) => (td) => seen.push(['cell', args.x, td]);
+  t.build({ id: 'x', dataset: {
+    ndTable: '{"createdRow":{"name":"rowMark","x":1},"columns":[{"createdCell":{"name":"cellMark","x":2}}],"columnDefs":[{"targets":0,"createdCell":"cellMark"}]}',
+    ndUrls: '{}' }, ownerDocument: { getElementById: () => null } });
+  const config = built[0].config;
+  assert.strictEqual(typeof config.createdRow, 'function');
+  assert.strictEqual(typeof config.columns[0].createdCell, 'function');
+  assert.strictEqual(typeof config.columnDefs[0].createdCell, 'function');
+  config.createdRow('tr');
+  config.columns[0].createdCell('td');
+  assert.deepStrictEqual(seen, [['row', 1, 'tr'], ['cell', 2, 'td']], 'the spec\'s arguments reach the factory');
+});
+
+test('build__overrides__replace_the_spec_and_may_hold_functions', () => {
+  const built = [];
+  const render = () => 'x';
+  load({ built }).build(
+    { id: 'x', dataset: { ndTable: '{"order":[[1,"asc"]],"paging":false}', ndUrls: '{}' }, ownerDocument: { getElementById: () => null } },
+    undefined,
+    { order: [[2, 'desc']], data: [{ a: 1 }], columns: [{ data: 'a', render: render }] });
+  const config = built[0].config;
+  assert.deepStrictEqual(config.order, [[2, 'desc']], 'a loader\'s option wins over the spec\'s');
+  assert.strictEqual(config.paging, false, 'the spec\'s other options stay');
+  assert.strictEqual(config.processing, true, 'and so do the shared defaults');
+  assert.strictEqual(config.columns[0].render, render, 'a function is not resolved by name');
+  assert.deepStrictEqual(config.data, [{ a: 1 }]);
+});
+
+test('init__a_table_with_a_loader__starts_it_once_and_does_not_build_it', () => {
+  const built = [];
+  const t = load({ built });
+  const calls = [];
+  t.loaders.demo = (table, root, helpers) => { calls.push([table, root, typeof helpers.build]); };
+  const table = { classList: { contains: () => false }, dataset: { ndLoader: 'demo', ndTable: '{}' }, ownerDocument: { getElementById: () => null } };
+  const root = { querySelectorAll: () => [table] };
+  t.init(root);
+  t.init(root);
+  assert.strictEqual(calls.length, 1, 'a second init of the same root does not fetch again');
+  assert.strictEqual(calls[0][0], table);
+  assert.strictEqual(calls[0][1], root);
+  assert.strictEqual(calls[0][2], 'function', 'the loader is handed build()');
+  assert.strictEqual(built.length, 0, 'the table is built by the loader, not by init');
+});
+
+test('init__a_loader_that_rejects_or_is_unknown__is_logged_and_the_rest_still_load', async () => {
+  const built = [];
+  const t = load({ built });
+  t.loaders.failing = () => Promise.reject(new Error('fetch failed'));
+  const errors = [];
+  const originalError = console.error;
+  console.error = (e) => errors.push(e);
+  try {
+    const mk = (loader) => ({ classList: { contains: () => false }, dataset: { ndLoader: loader }, ownerDocument: { getElementById: () => null } });
+    const good = { classList: { contains: () => false }, dataset: { ndTable: '{}', ndUrls: '{}' }, ownerDocument: { getElementById: () => null } };
+    t.init({ querySelectorAll: () => [mk('missing'), mk('failing'), good] });
+    await new Promise((resolve) => setImmediate(resolve));
+  } finally {
+    console.error = originalError;
+  }
+  assert.strictEqual(built.length, 1, 'the ordinary table is still built');
+  assert.strictEqual(errors.length, 2, 'both failures are logged, neither escapes init');
+  assert.match(String(errors[0]), /no loader named "missing"/);
+  assert.match(String(errors[1]), /fetch failed/);
+});
+
 // Every name a fragment can ask for must exist. Reads the templates rather
 // than a list kept here, so a fragment naming a renderer that was never
 // written fails this test rather than a user's page.
@@ -792,6 +865,8 @@ test('fragments__every_table__supplies_the_url_keys_its_renderers_need', () => {
       (spec.columnDefs || []).forEach((def) => { if (def.render) specs.push({ spec: def.render, kind: 'renderer' }) });
       if (spec.drawCallback) specs.push({ spec: spec.drawCallback, kind: 'callback' });
       if (spec.initComplete) specs.push({ spec: spec.initComplete, kind: 'callback' });
+      if (spec.createdRow) specs.push({ spec: spec.createdRow, kind: 'callback' });
+      (spec.columns || []).concat(spec.columnDefs || []).forEach((col) => { if (col.createdCell) specs.push({ spec: col.createdCell, kind: 'callback' }) });
       tables.push({ file: full, urls: urls, specs: specs });
     }
   });
