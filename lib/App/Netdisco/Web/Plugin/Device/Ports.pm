@@ -313,8 +313,12 @@ sub _threshold_scope {
              or ($want_neighbors and $_->remote_ip) } @$rows ];
 }
 
-# device ports with a description (er, name) matching
-get '/ajax/content/device/ports' => require_login sub {
+# Everything the Ports tab knows about each port, decorated, filtered and
+# grouped, for whichever output the caller renders: the HTML table, the CSV
+# export, or the JSON the browser draws from. Reads param() and setting(), so
+# it runs inside a route only. Returns undef when the view has no rows, the
+# caller's "no matching records".
+sub _port_rows {
     my $q = param('q');
     my $prefer = param('prefer');
     $prefer = ''
@@ -657,28 +661,42 @@ get '/ajax/content/device/ports' => require_login sub {
     use App::Netdisco::Util::Port 'to_speed';
     map { $_->{speed_running} = to_speed( $_->speed ) } @results;
 
+    return {
+      results => \@results,
+      vlans   => $vlans,
+      device  => $device,
+      nodes_name => $nodes_name,
+      ips_name   => $ips_name,
+      deferred_node_params => $deferred_node_params,
+    };
+}
+
+# device ports with a description (er, name) matching
+get '/ajax/content/device/ports' => require_login sub {
+    my $data = _port_rows() or return;
+
     if (request->is_ajax) {
         template 'ajax/device/ports.tt', {
-          results => \@results,
+          results => $data->{results},
           # kept for site-local template overrides that may still read
           # row.$nodes or row.$ips: site-local template compatibility is
           # a project commitment, even though the shipped template no
           # longer reads them itself
-          nodes => $nodes_name,
-          ips   => $ips_name,
-          device => $device,
-          vlans  => $vlans,
-          deferred_node_params => $deferred_node_params,
+          nodes => $data->{nodes_name},
+          ips   => $data->{ips_name},
+          device => $data->{device},
+          vlans  => $data->{vlans},
+          deferred_node_params => $data->{deferred_node_params},
         }, { layout => 'noop' };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/device/ports_csv.tt', {
-          results => \@results,
-          nodes => $nodes_name,
-          ips   => $ips_name,
-          device => $device,
-          vlans  => $vlans,
+          results => $data->{results},
+          nodes => $data->{nodes_name},
+          ips   => $data->{ips_name},
+          device => $data->{device},
+          vlans  => $data->{vlans},
         }, { layout => 'noop' };
     }
 };
