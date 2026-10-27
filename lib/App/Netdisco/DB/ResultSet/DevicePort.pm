@@ -257,11 +257,45 @@ sub with_vlan_count {
 =head2 delete( \%options? )
 
 Overrides the built-in L<DBIx::Class> delete method to more efficiently
-handle the removal or archiving of nodes.
+handle the removal or archiving of nodes. Deleting a subset of a device's
+ports removes per-port rows and nodes only for those ports.
 
 =cut
 
 sub _plural { (shift || 0) == 1 ? 'entry' : 'entries' };
+
+# Equal counts mean $ports is the whole device, which keeps the cheaper SQL.
+sub _is_port_subset {
+  my ($self, $ports, @switches) = @_;
+  return 0 unless scalar @switches;
+  my $device_ports = $self->result_source->schema->resultset('DevicePort')
+    ->search({ ip => { '-in' => \@switches } });
+  return ($ports->count < $device_ports->count) ? 1 : 0;
+}
+
+sub _node_condition {
+  my ($self, $ports, $is_subset, @switches) = @_;
+
+  # A whole-device delete keeps the plain switch list: a multi-device delete
+  # would otherwise bind every port name of every device.
+  return { switch => { '-in' => \@switches } } unless $is_subset;
+
+  my %ports_of;
+  push @{ $ports_of{ $_->{ip} } }, $_->{port}
+    for $ports->search(undef, {
+      columns => [qw/ip port/],
+      result_class => 'DBIx::Class::ResultClass::HashRefInflator',
+    })->all;
+
+  # counts and rows are separate statements, so a concurrent commit can leave
+  # no rows here. Those ports are gone and own no nodes to delete; an empty
+  # -or would drop the WHERE, and the switch list would take every node
+  # on the switch, which is the whole-device bug this method avoids.
+  return { switch => { '-in' => [] } } unless %ports_of;
+
+  return { -or => [ map { { switch => $_, port => { '-in' => $ports_of{$_} } } }
+                        sort keys %ports_of ] };
+}
 
 sub delete {
   my $self = shift;
@@ -277,6 +311,19 @@ sub delete {
   }
   $ip ||= 'netdisco';
 
+  # a list, not a subquery: given a subquery, PostgreSQL can merge-join
+  # through node_pkey instead of using the (switch, port, active) index
+  my @switches = $ports->search(undef, { columns => ['ip'], distinct => 1 })
+                       ->get_column('ip')->all;
+  my $is_subset = $self->_is_port_subset($ports, @switches);
+
+  my $per_port = $is_subset
+    ? do {
+        my ($sql, @bind) = @{ ${ $self->search(undef, { columns => [qw/ip port/] })->as_query } };
+        \[ '(ip, port) IN ' . $sql, @bind ];
+      }
+    : { '-in' => $ports->as_query };
+
   foreach my $set (qw/
     DevicePortPower
     DevicePortProperties
@@ -285,19 +332,15 @@ sub delete {
     DevicePortWireless
   /) {
       my $gone = $schema->resultset($set)->search(
-        { ip => { '-in' => $ports->as_query }},
+        ($is_subset ? $per_port : { ip => $per_port }),
       )->delete;
 
       Dancer::Logger::debug( sprintf( ' [%s] db/ports - removed %d port %s from %s',
         $ip, $gone, _plural($gone), $set ) ) if defined Dancer::Logger::logger();
   }
 
-  # a list, not a subquery: given a subquery, PostgreSQL can merge-join
-  # through node_pkey instead of using the (switch, port, active) index
-  my @switches = $ports->search(undef, { columns => ['ip'], distinct => 1 })
-                       ->get_column('ip')->all;
   $schema->resultset('Node')->search(
-    { switch => { '-in' => \@switches }},
+    $self->_node_condition($ports, $is_subset, @switches),
   )->delete(@_);
 
   # now let DBIC do its thing
