@@ -51,6 +51,7 @@ sub AUTOLOAD {
   my $self = shift;
   (my $method = $AUTOLOAD) =~ s/.*:://;
   return if $method eq 'DESTROY';
+  $self->{reads}{$method}++;
   # a failing walk records itself on its first read only, as a cached table does
   if (my $failure = delete $self->{fail_on_read}{$method}) {
     push @{ $self->{walk_failures} }, $failure;
@@ -116,6 +117,7 @@ sub outcome {
 
 my (@upserts, @removals, @warnings, @device_ip_searches);
 our $stored_rows = [];
+my $last_snmp;
 
 sub run_discover {
   my (%snmp) = @_;
@@ -127,6 +129,7 @@ sub run_discover {
   $device->{'_column_data'}{'since_last_discover'} = 0;
 
   my $fake_snmp = FakeSNMP->new(%base_snmp, %snmp);
+  $last_snmp = $fake_snmp;
   no warnings 'once';
 
   local *App::Netdisco::Transport::SNMP::reader_for = sub { return $fake_snmp };
@@ -266,6 +269,64 @@ subtest 'device_ip__skip__hook_data_device_ips_from_stored_rows' => sub {
   is_deeply $attrs->{columns}, [qw/alias subnet port dns/], 'stored columns';
   is $attrs->{order_by}, 'alias', 'stored order';
   is $attrs->{result_class}, 'DBIx::Class::ResultClass::HashRefInflator', 'plain hashes';
+};
+
+# vrf_name index 3.114.101.100 is the length-prefixed context name "red"
+my %vrf_snmp = (
+  cisco_comm_indexing => 1, snmp_comm => 'public', vtp_version => 2,
+  vrf_name => { '3.114.101.100' => 'red' },
+);
+
+sub in_context { my ($method, $context) = @_; return { %{ outcome($method) }, context => $context } }
+
+subtest 'device_ip__incomplete_walk_in_vrf_context__upserts_rows' => sub {
+  run_discover(%vrf_snmp, fail_log_only => { ip_index => in_context('ip_index', 'red') });
+  is scalar(device_ip_upserts()), 1, 'one upsert';
+  is scalar(device_ip_removals()), 1, 'one removal';
+  is scalar @warnings, 0, 'no warning';
+};
+
+subtest 'device_ip__incomplete_vrf_name_walk__upserts_rows' => sub {
+  run_discover(%vrf_snmp, vrf_name => {},
+    fail_on_read => { vrf_name => outcome('vrf_name') });
+  is scalar(device_ip_upserts()), 1, 'one upsert';
+};
+
+subtest 'device_ip__incomplete_base_walk_with_vrfs__skips' => sub {
+  run_discover(%vrf_snmp, fail_log_only => { ip_index => in_context('ip_index', '') });
+  is scalar(device_ip_upserts()), 0, 'no upsert';
+  is scalar(device_ip_removals()), 0, 'no removal';
+};
+
+subtest 'device_ip__incomplete_walk_in_context_not_a_vrf__skips' => sub {
+  run_discover(%vrf_snmp, fail_log_only => { ip_index => in_context('ip_index', 'mgmt') });
+  is scalar(device_ip_upserts()), 0, 'no upsert';
+};
+
+sub absent_in { my ($method, $context) = @_;
+  return { %{ in_context($method, $context) }, reason => 'absent', complete => 1, rows => 0 } }
+
+# walk_status holds the last VRF's outcome, so a broken MIB shows in a VRF context
+subtest 'device_ip__absent_walk_on_vrf_device__skips' => sub {
+  run_discover(%vrf_snmp, walk_status => { ip_index => absent_in('ip_index', 'red') });
+  is scalar(device_ip_upserts()), 0, 'no upsert';
+};
+
+subtest 'device_ip__absent_vrf_name_walk__skips' => sub {
+  run_discover(%vrf_snmp, vrf_name => {}, walk_status => { vrf_name => absent_in('vrf_name', '') });
+  is scalar(device_ip_upserts()), 0, 'no upsert';
+};
+
+# index 3.114.101.1 decodes to no context, so that VRF is walked in the base context
+subtest 'device_ip__vrf_with_no_context__base_walk_failure_still_skips' => sub {
+  run_discover(%vrf_snmp, vrf_name => { '3.114.101.1' => 'odd' },
+    fail_log_only => { ip_index => in_context('ip_index', '') });
+  is scalar(device_ip_upserts()), 0, 'no upsert';
+};
+
+subtest 'device_ip__vrf_device__vrf_list_read_once' => sub {
+  run_discover(%vrf_snmp);
+  is $last_snmp->{reads}{vrf_name}, 1, 'one vrf_name read';
 };
 
 done_testing;

@@ -329,12 +329,15 @@ register_worker({ phase => 'early', driver => 'snmp',
   my $now = vars->{'timestamp'};
 
   my $walk_mark = walk_mark($snmp);
-  my @aliases = _dedupe_aliases(
-    _get_ipv4_aliases($device, $snmp), _get_ipv6_aliases($device, $snmp));
+  # one read of the VRF list, so the guard exempts the contexts that were walked
+  my @vrf_list = _get_vrf_list($device, $snmp);
+  my @aliases = _dedupe_aliases(_get_ipv4_aliases($device, $snmp, \@vrf_list),
+    _get_ipv6_aliases($device, $snmp, \@vrf_list));
 
-  my @incomplete = incomplete_walks_for($device, $snmp, $walk_mark, qw/
-    ip_index ip_table ip_netmask ipv6_index ipv6_addr ipv6_type
-    ipv6_addr_prefixlength interfaces/);
+  my @incomplete = _outside_vrf_contexts(\@vrf_list,
+    incomplete_walks_for($device, $snmp, $walk_mark, qw/
+      vrf_name ip_index ip_table ip_netmask ipv6_index ipv6_addr ipv6_type
+      ipv6_addr_prefixlength interfaces/));
   return _keep_stored_device_ips($device, @incomplete) if scalar @incomplete;
 
   my @subnets = List::MoreUtils::uniq grep {defined} map {$_->{subnet}} @aliases;
@@ -385,6 +388,19 @@ sub _canonical_addr {
 sub _dedupe_aliases {
   my %seen;
   return grep { not $seen{ _canonical_addr($_->{alias}) }++ } @_;
+}
+
+# VRF collection is not reliable yet, so a failed VRF walk drops that VRF's
+# addresses for one discover, as before, rather than freezing the device's rows.
+# An absent walk means the poller's MIBs are broken wherever it ran, and
+# walk_status holds only the last VRF's outcome, so absent always counts.
+sub _outside_vrf_contexts {
+  my ($vrf_list, @outcomes) = @_;
+  # a VRF name that decodes to no context was walked in the base context
+  my %vrf_context = map {($_ => 1)} grep {length} @$vrf_list;
+  return grep { ($_->{reason} // '') eq 'absent'
+                or (($_->{method} // '') ne 'vrf_name'
+                    and not $vrf_context{ $_->{context} // '' }) } @outcomes;
 }
 
 # a walk that was cut short must not look like an emptied table, so the stored
@@ -793,7 +809,7 @@ sub _get_vrf_list {
 }
 
 sub _get_ipv4_aliases {
-  my ($device, $snmp) = @_;
+  my ($device, $snmp, $vrf_list) = @_;
   my @aliases;
 
   my $ip_index   = $snmp->ip_index   || {};
@@ -802,7 +818,7 @@ sub _get_ipv4_aliases {
   my $ip_netmask = $snmp->ip_netmask || {};
 
   # Get IP Table per VRF if supported
-  my @vrf_list = _get_vrf_list($device, $snmp);
+  my @vrf_list = @{ $vrf_list || [ _get_vrf_list($device, $snmp) ] };
   if (scalar @vrf_list) {
     my $guard = guard { snmp_comm_reindex($snmp, $device, 0) };
     foreach my $vrf (@vrf_list) {
@@ -843,7 +859,7 @@ sub _get_ipv4_aliases {
 }
 
 sub _get_ipv6_aliases {
-  my ($device, $snmp) = @_;
+  my ($device, $snmp, $vrf_list) = @_;
   my @aliases;
 
   my $ipv6_index  = $snmp->ipv6_index || {};
@@ -853,7 +869,7 @@ sub _get_ipv6_aliases {
   my $interfaces  = $snmp->interfaces || {};
 
   # Get IP Table per VRF if supported
-  my @vrf_list = _get_vrf_list($device, $snmp);
+  my @vrf_list = @{ $vrf_list || [ _get_vrf_list($device, $snmp) ] };
   if (scalar @vrf_list) {
     my $guard = guard { snmp_comm_reindex($snmp, $device, 0) };
     foreach my $vrf (@vrf_list) {
