@@ -18,6 +18,9 @@
   * the Ports tab reads PoE, SSIDs, the last comment and each neighbor's
     MAC with one query each rather than a join or a query per port. SSIDs
     are listed in sorted order
+  * a Ports tab Display Columns checkbox applies at once, without Update
+    View: the table asks only for the columns it does not hold yet, and
+    keeps its order, page and filter
 
   [BUG FIXES]
 

@@ -319,7 +319,11 @@ const ndPorts = (function () {
           tip('View Port Log') +
           '></i> </a>';
         if (r.has_group) {
-          const folded = (p.p_fold_dotzero && r.only_dot_zero) || p.p_fold_subinterfaces;
+          // as toggleGroup last left it, once the table is drawn again
+          const folded =
+            r._groupFolded !== undefined
+              ? r._groupFolded
+              : (p.p_fold_dotzero && r.only_dot_zero) || p.p_fold_subinterfaces;
           h +=
             ' <span class="nd_log-icon nd_row-collapser-toggle" data-collapsed-group="' +
             esc(r.port) +
@@ -727,16 +731,22 @@ const ndPorts = (function () {
 
   // Flips every row of a group between folded and shown, and the toggle's
   // own icon. A row not drawn yet only changes in its data, which is where
-  // the table's own filter reads it from.
+  // the table's own filter reads it from. The parent port keeps the state for
+  // its icon, should the table be drawn again with other columns.
   const toggleGroup = function (api, toggle) {
     const group = toggle.getAttribute('data-collapsed-group');
+    let parent = null;
+    let folded = null;
     api.rows().every(function () {
       const row = this.data();
+      if (row.port === group) parent = row;
       if (row.group !== group) return;
       row._folded = !row._folded;
+      folded = row._folded;
       const tr = this.node();
       if (tr) tr.setAttribute('data-is-collapsed', row._folded ? 'true' : 'false');
     });
+    if (parent && folded !== null) parent._groupFolded = folded;
     const icon = toggle.querySelector('i');
     if (icon) {
       icon.classList.toggle('fa-list-ol');
@@ -887,6 +897,30 @@ const ndPorts = (function () {
     table.appendChild(body);
   };
 
+  // The DataTables options for the rows and columns, the same at the first
+  // load and when the columns change.
+  const buildOptions = function (table, c, rows, picked) {
+    const columns = [dataTableColumn('status', c, true)].concat(
+      picked.map(function (col) {
+        return dataTableColumn(col.name, c);
+      })
+    );
+    return {
+      deferRender: true,
+      data: rows,
+      columns: columns,
+      order: columns.length > 1 ? [[1, 'asc']] : [],
+      createdRow: createdRow(c),
+      initComplete: initComplete(table, c)
+    };
+  };
+
+  // What a loaded table keeps to change its columns without the server
+  // drawing it again: its context, the rows, ndTables' helpers, the DataTables
+  // API, the names of its columns, the column flags whose data the rows hold,
+  // and the chain its column changes wait on.
+  const TABLES = new WeakMap();
+
   /**
    * ndTables.loaders.ports: fetches the table's columns and rows from the
    * route in data-nd-source and builds the table from them.
@@ -923,21 +957,33 @@ const ndPorts = (function () {
             if (r.group) r._folded = startsFolded(r, c.meta.params);
           });
         }
-        const columns = [dataTableColumn('status', c, true)].concat(
-          data.columns.map(function (col) {
-            return dataTableColumn(col.name, c);
-          })
-        );
+        const options = buildOptions(table, c, rows, data.columns);
         drawHeader(table, data.columns);
-        helpers.build(table, root, {
-          deferRender: true,
-          data: rows,
-          columns: columns,
-          order: columns.length > 1 ? [[1, 'asc']] : [],
-          createdRow: createdRow(c),
-          initComplete: initComplete(table, c)
+        const api = helpers.build(table, root, options);
+        const loaded = {};
+        Object.keys(c.meta.params || {}).forEach(function (name) {
+          if (c.meta.params[name]) loaded[name] = true;
+        });
+        TABLES.set(table, {
+          c: c,
+          rows: rows,
+          root: root,
+          helpers: helpers,
+          api: api,
+          names: ['status'].concat(
+            data.columns.map(function (col) {
+              return col.name;
+            })
+          ),
+          loaded: loaded,
+          chain: Promise.resolve()
         });
         table.dataset.ndLoaded = '1';
+        // a column checkbox changed while the rows were on their way
+        if (table.dataset.ndColumnsPending) {
+          delete table.dataset.ndColumnsPending;
+          applyColumns(table);
+        }
       })
       .catch(function (err) {
         if (!table.isConnected) return;
@@ -951,6 +997,324 @@ const ndPorts = (function () {
   };
 
   ndTables.loaders.ports = load;
+
+  // --- changing the columns in place ---------------------------------------
+  //
+  // A Display Columns checkbox applies at once: the table keeps its rows, asks
+  // the data route for the columns they lack and nothing else, and is drawn
+  // again from them. Drawn again rather than shown and hidden with DataTables'
+  // column().visible(): createdCell's attributes, the cell c_nodes and
+  // c_neighbors share and its label, and what c_admin makes editable all
+  // depend on the set of columns, and are only right when the cells are made
+  // anew. Anything else in the sidebar still goes through Update View, as it
+  // changes which rows there are or what every node cell holds.
+
+  /**
+   * The table's columns for a set of options, as _port_columns in Ports.pm
+   * picks them from the same choices: those that are on, with c_nodes folded
+   * into c_neighbors when both are.
+   * @param {{name: string, label: string}[]} choices meta.choices, in order
+   * @param {{[name: string]: any}} params the column flags
+   * @returns {{name: string, label: string}[]} the columns, without the status one
+   */
+  const pickColumns = function (choices, params) {
+    const out = [];
+    (choices || []).forEach(function (item) {
+      if (!params[item.name]) return;
+      if (item.name === 'c_nodes' && params.c_neighbors) return;
+      let label = item.label;
+      if (item.name === 'c_neighbors') label = params.c_nodes ? 'Connected Nodes & Devices' : 'Connected Devices';
+      out.push({ name: item.name, label: label });
+    });
+    return out;
+  };
+
+  // The flags whose data the rows hold or could: every column offered, and
+  // c_admin, which brings each port's acl_* fields.
+  const offeredFlags = function (meta) {
+    const out = { c_admin: true };
+    (meta.choices || []).forEach(function (item) {
+      out[item.name] = true;
+    });
+    return out;
+  };
+
+  /**
+   * A URL with its column flags replaced: every name in drop and every c_*
+   * parameter taken out, then each name in on put back as the sidebar form
+   * sends a ticked box. Everything else in the query is kept as it was.
+   * @param {string} url a path with or without a query
+   * @param {string[]} drop the flags to take out
+   * @param {string[]} on the flags to put back
+   * @returns {string} the URL
+   */
+  const withFlags = function (url, drop, on) {
+    const i = url.indexOf('?');
+    const query = new URLSearchParams(i === -1 ? '' : url.slice(i + 1));
+    const out = new URLSearchParams();
+    query.forEach(function (v, k) {
+      if (drop.indexOf(k) === -1 && !/^c_/.test(k)) out.append(k, v);
+    });
+    on.forEach(function (name) {
+      out.append(name, 'on');
+    });
+    const q = out.toString();
+    return (i === -1 ? url : url.slice(0, i)) + (q ? '?' + q : '');
+  };
+
+  /**
+   * The flags to fetch: those ticked and offered whose data the rows do not
+   * hold. The search text, the ports whose nodes are fetched and the cell they
+   * share are each worked out from c_nodes and c_neighbors together, so one of
+   * the two brings the other along when it is ticked.
+   * @param {string[]} on the ticked flags
+   * @param {{[name: string]: boolean}} loaded the flags whose data the rows hold
+   * @param {{[name: string]: boolean}} offered the flags that are columns
+   * @returns {string[]} the flags missing
+   */
+  const missingFlags = function (on, loaded, offered) {
+    const missing = on.filter(function (name) {
+      return offered[name] && !loaded[name];
+    });
+    const pair = ['c_nodes', 'c_neighbors'];
+    const paired = missing.some(function (name) {
+      return pair.indexOf(name) !== -1;
+    });
+    if (paired) {
+      pair.forEach(function (name) {
+        if (on.indexOf(name) !== -1 && missing.indexOf(name) === -1) missing.push(name);
+      });
+    }
+    return missing;
+  };
+
+  /**
+   * The data route's query for only some columns: the table's own source,
+   * which holds the filter the rows were chosen by (the sidebar may hold
+   * edits not yet submitted), with every column flag out and the missing ones
+   * in. No column flag changes which ports there are.
+   * @param {string} source the table's data-nd-source
+   * @param {string[]} flags every column flag there is
+   * @param {string[]} missing the flags to fetch
+   * @returns {string} the URL
+   */
+  const partialQuery = function (source, flags, missing) {
+    return withFlags(source, flags, missing);
+  };
+
+  const NESTED = ['cells', 'fields', 'hidden_cells', 'data'];
+
+  /**
+   * Merges the answer for some columns into the rows the table holds, by
+   * port: each key replaced, the plugin column hashes merged one level deep,
+   * and the memo of each cell's text dropped. The shared meta gains the
+   * plugin column configs, VLAN names and node querystring the answer brings.
+   * Nothing is changed when the answer's ports are not the table's, as when
+   * the device was discovered again in the meantime.
+   * @param {any[]} rows the table's rows
+   * @param {any} meta the table's meta
+   * @param {any} answer the data route's answer
+   * @returns {boolean} whether the answer was merged
+   */
+  const mergeRows = function (rows, meta, answer) {
+    const fresh = (answer && answer.rows) || [];
+    const byPort = new Map();
+    fresh.forEach(function (r) {
+      byPort.set(r.port, r);
+    });
+    if (fresh.length !== rows.length || byPort.size !== fresh.length) return false;
+    const same = rows.every(function (r) {
+      return byPort.has(r.port);
+    });
+    if (!same) return false;
+    rows.forEach(function (row) {
+      const f = byPort.get(row.port);
+      Object.keys(f).forEach(function (k) {
+        if (NESTED.indexOf(k) !== -1 && row[k] && f[k] && typeof f[k] === 'object') Object.assign(row[k], f[k]);
+        else row[k] = f[k];
+      });
+      delete row._m;
+    });
+    const m = answer.meta || {};
+    meta.extra = Object.assign({}, meta.extra, m.extra);
+    meta.vlan_names = Object.assign({}, meta.vlan_names, m.vlan_names);
+    if (m.node_params) meta.node_params = m.node_params;
+    return true;
+  };
+
+  // the Display Columns checkboxes, as they are now
+  const columnBoxes = function () {
+    return Array.prototype.map.call(
+      document.querySelectorAll('#ports_form #nd_columns input[type=checkbox]'),
+      function (box) {
+        return { name: box.name, checked: Boolean(box.checked) };
+      }
+    );
+  };
+
+  // the whole pane asked for again, as Update View does
+  const refresh = function () {
+    window.htmx.trigger('#ports_form', 'submit');
+  };
+
+  // Draws the table again from the rows it holds, for the columns meta.params
+  // now names, on the same order, page, page length and filter, kept by
+  // column name where they were kept by index.
+  const rebuild = function (table, s) {
+    const picked = pickColumns(s.c.meta.choices, s.c.meta.params);
+    const names = ['status'].concat(
+      picked.map(function (col) {
+        return col.name;
+      })
+    );
+    // c_nodes and c_neighbors are one cell under either name
+    const cell = function (name) {
+      return name === 'c_nodes' ? 'c_neighbors' : name;
+    };
+    const api = s.api;
+    const order = [];
+    (api.order() || []).forEach(function (o) {
+      const pair = Array.isArray(o) ? o : [o.idx, o.dir];
+      const i = names.map(cell).indexOf(cell(s.names[pair[0]]));
+      if (i > 0) order.push([i, pair[1]]);
+    });
+    const len = api.page.len();
+    const start = len > 0 ? api.page() * len : 0;
+    const search = api.search();
+    api.destroy();
+    // a cell's text can change with the columns beside it (the nodes and
+    // neighbors cell, the edit icons under c_admin)
+    s.rows.forEach(function (r) {
+      delete r._m;
+    });
+    const options = buildOptions(table, s.c, s.rows, picked);
+    if (order.length || names.length < 2) options.order = order;
+    options.pageLength = len;
+    options.displayStart = start;
+    options.search = { search: search };
+    // the saved state is of the columns before, by index
+    options.stateLoadCallback = function () {
+      return null;
+    };
+    drawHeader(table, picked);
+    s.names = names;
+    s.api = s.helpers.build(table, s.root, options);
+  };
+
+  // Carries the columns shown into what still holds the old ones: the
+  // table's source, which Retry asks again, the CSV link, and the address
+  // bar, as HX-Replace-Url does for any other change to the tab's options.
+  const syncUrls = function (table, drop, on) {
+    table.dataset.ndSource = withFlags(table.dataset.ndSource, drop, on);
+    const csv = document.getElementById('nd_csv-download');
+    const href = csv && csv.getAttribute('href');
+    if (href && href !== '#') csv.setAttribute('href', withFlags(href, drop, on));
+    const loc = window.location;
+    if (loc && window.history && new URLSearchParams(loc.search).get('tab') === 'ports') {
+      window.history.replaceState(window.history.state, '', withFlags(loc.pathname + loc.search, drop, on) + loc.hash);
+    }
+  };
+
+  // One change of the columns, reading the checkboxes as they are when it
+  // runs: a series of clicks costs one request per column missing at most.
+  const applyNow = function (table, s) {
+    const current = function () {
+      return table.isConnected && TABLES.get(table) === s;
+    };
+    if (!current()) return undefined;
+    const meta = s.c.meta;
+    const offered = offeredFlags(meta);
+    const boxes = columnBoxes();
+    const changed = boxes.some(function (b) {
+      return offered[b.name] && Boolean(meta.params[b.name]) !== b.checked;
+    });
+    if (!changed) return undefined;
+    const on = boxes
+      .filter(function (b) {
+        return b.checked;
+      })
+      .map(function (b) {
+        return b.name;
+      });
+
+    // Port control changed the device under cells the rows still hold the
+    // old values of; and c_admin needs the reason dialog that only a frame
+    // drawn under it carries.
+    const noDialog = on.indexOf('c_admin') !== -1 && !meta.params.c_admin && !document.getElementById('nd_portlog');
+    if (table.dataset.ndEdited || noDialog) {
+      refresh();
+      return undefined;
+    }
+
+    const flags = Object.keys(offered).concat(
+      boxes.map(function (b) {
+        return b.name;
+      })
+    );
+    const missing = missingFlags(on, s.loaded, offered);
+    if (!missing.length) {
+      boxes.forEach(function (b) {
+        if (offered[b.name]) meta.params[b.name] = b.checked ? 1 : 0;
+      });
+      rebuild(table, s);
+      syncUrls(table, flags, on);
+      return undefined;
+    }
+
+    s.api.processing(true);
+    return window.ndRequest.getJSON(partialQuery(table.dataset.ndSource, flags, missing)).then(
+      function (data) {
+        if (!current()) return undefined;
+        s.api.processing(false);
+        if (!mergeRows(s.rows, meta, data)) {
+          refresh();
+          return undefined;
+        }
+        missing.forEach(function (name) {
+          s.loaded[name] = true;
+        });
+        // boxes ticked meanwhile are fetched now, those unticked are not drawn
+        return applyNow(table, s);
+      },
+      function (err) {
+        if (!current()) return undefined;
+        console.error(err);
+        s.api.processing(false);
+        refresh();
+        return undefined;
+      }
+    );
+  };
+
+  /**
+   * Shows the columns the Display Columns checkboxes ask for, fetching only
+   * those the rows lack. Changes to one table wait for each other.
+   * @param {HTMLTableElement} table a loaded Ports table
+   * @returns {Promise<void>} settles once the table shows the columns
+   */
+  const applyColumns = function (table) {
+    const s = TABLES.get(table);
+    if (!s) return Promise.resolve();
+    s.chain = s.chain
+      .then(function () {
+        return applyNow(table, s);
+      })
+      .catch(console.error);
+    return s.chain;
+  };
+
+  // A table still loading takes the change once its rows are in; a site's
+  // own ports.tt, a pane that found no ports or one that failed keep needing
+  // Update View.
+  const onColumnChange = function (evt) {
+    const box = evt.target;
+    if (!(box && box.matches && box.matches('#ports_form #nd_columns input[type=checkbox]'))) return;
+    const table = document.querySelector('#ports_pane table[data-nd-loader="ports"]');
+    if (!table) return;
+    if (table.dataset.ndLoaded) applyColumns(table);
+    else if (table.dataset.ndLoaderStarted) table.dataset.ndColumnsPending = '1';
+  };
+  if (typeof document.addEventListener === 'function') document.addEventListener('change', onColumnChange);
 
   /**
    * Registers how a plugin draws its own column, named by the "renderer" of
@@ -978,6 +1342,13 @@ const ndPorts = (function () {
     registerColumn: registerColumn,
     esc: esc,
     enc: enc,
-    load: load
+    load: load,
+    pickColumns: pickColumns,
+    withFlags: withFlags,
+    missingFlags: missingFlags,
+    partialQuery: partialQuery,
+    mergeRows: mergeRows,
+    applyColumns: applyColumns,
+    onColumnChange: onColumnChange
   };
 })();

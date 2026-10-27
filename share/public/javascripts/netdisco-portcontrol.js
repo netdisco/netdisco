@@ -171,6 +171,10 @@ function port_control (e) {
     })
     .then(function() {
       ndToast.info('Submitted change request');
+      // the Ports table holds the rows from before the change, so a change of
+      // its columns now asks for the whole pane again (netdisco-ports.js)
+      var table = td.closest('table');
+      if (table) table.dataset.ndEdited = '1';
       if (! e.classList.contains('fa-bullseye')) applyPortControlResult(e, td);
     }, function() {
       ndToast.error('Failed to submit change request');

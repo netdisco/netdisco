@@ -80,12 +80,30 @@ function frame() {
   return table;
 }
 
+// A DataTables instance as far as a change of columns reads and ends it
+function fakeDataTable(options) {
+  const dt = {
+    options,
+    destroyed: false,
+    processed: [],
+    state: { order: options.order, len: options.pageLength || 10, page: 0, search: '' },
+    order: () => dt.state.order,
+    search: () => dt.state.search,
+    processing: (on) => dt.processed.push(on),
+    destroy: () => { dt.destroyed = true; }
+  };
+  dt.page = () => dt.state.page;
+  dt.page.len = () => dt.state.len;
+  return dt;
+}
+
 // Loads netdisco-ports.js with the globals it touches stubbed. getJSON is
-// called with each url in turn and answers from `answer`.
-function load({ answer } = {}) {
+// called with each url in turn and answers from `answer`; a promise answers
+// when it settles. `document` and `win` add to the page and the window.
+function load({ answer, document, win } = {}) {
   const requests = [];
   const DataTable = { util: { escapeHtml, stripHtml: (h) => String(h).replace(/<[^>]*>/g, '') } };
-  const window = {
+  const window = Object.assign({
     ndRequest: {
       getJSON(url) {
         requests.push(url);
@@ -93,14 +111,23 @@ function load({ answer } = {}) {
         return a instanceof Error ? Promise.reject(a) : Promise.resolve(a);
       }
     }
-  };
+  }, win);
   const built = [];
+  const tables = [];
   const ndTables = { loaders: {} };
   const ndPorts = new Function('DataTable', 'document', 'window', 'ndTables', source + '\nreturn ndPorts;')(
-    DataTable, {}, window, ndTables
+    DataTable, document || {}, window, ndTables
   );
-  const helpers = { build: (table, root, overrides) => { built.push(overrides); table.tBodies = [element('tbody')]; } };
-  return { ndPorts, ndTables, requests, built, helpers, window };
+  const helpers = {
+    build: (table, root, overrides) => {
+      built.push(overrides);
+      table.tBodies = [element('tbody')];
+      const dt = fakeDataTable(overrides);
+      tables.push(dt);
+      return dt;
+    }
+  };
+  return { ndPorts, ndTables, requests, built, tables, helpers, window };
 }
 
 const settle = () => new Promise((resolve) => setImmediate(resolve));
@@ -652,6 +679,321 @@ test('nodes__a_failed_fetch__offers_a_retry_and_a_reopened_box_tries_again', asy
   capture({ target: { closest: (sel) => (sel === '.nd_collapse-vlans' ? target : null) } });
   await settle();
   assert.strictEqual(harness.requests.length, 3, 'a box that failed fetches again when opened');
+});
+
+// --- changing the columns in place -----------------------------------------
+
+test('columns_in_place__a_group_unfolded__keeps_its_icon_when_drawn_again', () => {
+  const { ndPorts } = load();
+  const parent = { port: 'Gi1/1', has_group: 1, only_dot_zero: 1, up_admin: 'up' };
+  const rows = [parent, { port: 'Gi1/1.0', group: 'Gi1/1', is_dot_zero: 1, _folded: true }];
+  const ctx = { urls: URLS, meta: { device: '', q: '', params: { p_fold_dotzero: 1 }, settings: {} } };
+  const icon = (r) => /fa-list-ol/.test(ndPorts.columnFor('c_port', ctx).html(r, ctx)) ? 'folded' : 'shown';
+  assert.strictEqual(icon(parent), 'folded');
+  const toggle = { getAttribute: () => 'Gi1/1', querySelector: () => null };
+  ndPorts.toggleGroup(fakeApi(rows), toggle);
+  assert.strictEqual(rows[1]._folded, false);
+  assert.strictEqual(icon(parent), 'shown', 'as the toggle left it, not as the options start it');
+});
+
+
+
+const colNames = (cols) => cols.map((c) => c.name);
+
+test('columns_in_place__pickColumns__chooses_what_the_server_chose_for_the_fixture', () => {
+  const { ndPorts } = load();
+  assert.deepStrictEqual(ndPorts.pickColumns(fixture.meta.choices, fixture.meta.params), fixture.columns);
+});
+
+// the same cases xt/179-ports-json.t puts to _port_columns
+test('columns_in_place__pickColumns__folds_c_nodes_into_c_neighbors_as_the_server_does', () => {
+  const { ndPorts } = load();
+  const pick = (p) => ndPorts.pickColumns(fixture.meta.choices, p);
+  assert.deepStrictEqual(pick({ c_port: 1, c_name: 1 }), [
+    { name: 'c_port', label: 'Port' }, { name: 'c_name', label: 'Name' }
+  ], 'only the columns asked for, in config order');
+  assert.deepStrictEqual(pick({ c_nodes: 1 }), [{ name: 'c_nodes', label: 'Connected Nodes' }]);
+  assert.deepStrictEqual(pick({ c_neighbors: 1 }), [{ name: 'c_neighbors', label: 'Connected Devices' }]);
+  assert.deepStrictEqual(pick({ c_nodes: 1, c_neighbors: 1 }), [
+    { name: 'c_neighbors', label: 'Connected Nodes & Devices' }
+  ]);
+  assert.deepStrictEqual(pick({ c_admin: 1, c_links: 1 }), [], 'neither c_admin nor c_links without links is a choice');
+});
+
+test('columns_in_place__partialQuery__asks_for_the_missing_columns_and_keeps_the_filter', () => {
+  const { ndPorts } = load();
+  const source = '/ajax/data/device/ports?q=10.0.0.1&f=Gi1%2F*&c_port=on&c_name=on&n_ip4=on&p_fold_dotzero=on&plug=on';
+  assert.strictEqual(
+    ndPorts.partialQuery(source, ['c_admin', 'c_port', 'c_name', 'plug'], ['c_power']),
+    '/ajax/data/device/ports?q=10.0.0.1&f=Gi1%2F*&n_ip4=on&p_fold_dotzero=on&c_power=on'
+  );
+  assert.strictEqual(
+    ndPorts.withFlags('/device?c_stale=on&tab=ports', [], ['c_port']),
+    '/device?tab=ports&c_port=on',
+    'a c_ flag outside the list is taken out too'
+  );
+  assert.strictEqual(ndPorts.withFlags('/x', [], []), '/x');
+});
+
+test('columns_in_place__missingFlags__brings_the_other_of_nodes_and_neighbors_along', () => {
+  const { ndPorts } = load();
+  const offered = { c_admin: true, c_port: true, c_nodes: true, c_neighbors: true, c_power: true };
+  const loaded = { c_port: true, c_neighbors: true };
+  assert.deepStrictEqual(ndPorts.missingFlags(['c_port', 'c_neighbors', 'c_nodes'], loaded, offered), ['c_nodes', 'c_neighbors']);
+  assert.deepStrictEqual(ndPorts.missingFlags(['c_port', 'c_nodes'], loaded, offered), ['c_nodes'], 'not when it is not ticked');
+  assert.deepStrictEqual(ndPorts.missingFlags(['c_port', 'c_neighbors', 'c_power'], loaded, offered), ['c_power'], 'nor when neither is missing');
+  assert.deepStrictEqual(ndPorts.missingFlags(['c_links', 'c_admin'], loaded, offered), ['c_admin'], 'only flags that are offered');
+});
+
+test('columns_in_place__mergeRows__merges_by_port_one_level_deep_into_the_plugin_hashes', () => {
+  const { ndPorts } = load();
+  const rows = [
+    { port: 'a', descr: 'x', cells: { one: '<b>1</b>' }, _m: { c_port: 'a' }, _folded: true },
+    { port: 'b' }
+  ];
+  const meta = { extra: { one: { editable: 0 } }, vlan_names: { 1: 'one' }, node_params: '&n_ip4=1' };
+  const ok = ndPorts.mergeRows(rows, meta, {
+    rows: [{ port: 'b', power: { admin: 'true' } }, { port: 'a', descr: 'y', cells: { two: '2' }, fields: { cf_x: 'v' } }],
+    meta: { extra: { two: { editable: 1 } }, vlan_names: { 2: 'two' }, node_params: '' }
+  });
+  assert.strictEqual(ok, true);
+  assert.deepStrictEqual(rows, [
+    { port: 'a', descr: 'y', cells: { one: '<b>1</b>', two: '2' }, fields: { cf_x: 'v' }, _folded: true },
+    { port: 'b', power: { admin: 'true' } }
+  ]);
+  assert.deepStrictEqual(meta, {
+    extra: { one: { editable: 0 }, two: { editable: 1 } },
+    vlan_names: { 1: 'one', 2: 'two' },
+    node_params: '&n_ip4=1'
+  });
+});
+
+test('columns_in_place__mergeRows__changes_nothing_when_the_ports_are_not_the_tables', () => {
+  const { ndPorts } = load();
+  const rows = [{ port: 'a' }, { port: 'b' }];
+  assert.strictEqual(ndPorts.mergeRows(rows, {}, { rows: [{ port: 'a', descr: 'y' }] }), false);
+  assert.strictEqual(ndPorts.mergeRows(rows, {}, { rows: [{ port: 'a', descr: 'y' }, { port: 'c' }] }), false);
+  assert.deepStrictEqual(rows, [{ port: 'a' }, { port: 'b' }]);
+});
+
+// The sidebar's Display Columns boxes, ticked as the fixture was asked for,
+// the CSV link and the address bar, around a loaded table. `partial` answers
+// every request after the first.
+async function columnsPage({ partial } = {}) {
+  const boxes = ['c_admin'].concat(colNames(fixture.meta.choices)).map((name) => ({
+    name, checked: Boolean(fixture.meta.params[name])
+  }));
+  const csv = element('a');
+  csv.setAttribute('href', '/ajax/content/device/ports?q=10.0.0.1&c_port=on');
+  const portlog = element('div');
+  const byId = { 'nd_csv-download': csv, nd_portlog: portlog };
+  const document = {
+    querySelectorAll: (sel) => (sel === '#ports_form #nd_columns input[type=checkbox]' ? boxes : []),
+    getElementById: (id) => byId[id] || null
+  };
+  const submits = [];
+  const replaced = [];
+  const win = {
+    htmx: { trigger: (sel, evt) => submits.push(sel + ' ' + evt) },
+    location: { pathname: '/device', search: '?tab=ports&q=10.0.0.1&c_port=on', hash: '#x' },
+    history: { state: { htmx: true }, replaceState: (state, title, url) => replaced.push([state, url]) }
+  };
+  let first = true;
+  const h = load({
+    document,
+    win,
+    answer: (url) => {
+      if (first) { first = false; return clone(fixture); }
+      return partial(url);
+    }
+  });
+  const table = frame();
+  await h.ndTables.loaders.ports(table, null, h.helpers);
+  const tick = (name, on) => { boxes.find((b) => b.name === name).checked = on; };
+  return Object.assign(h, { table, boxes, tick, csv, byId, submits, replaced });
+}
+
+// the answer for some columns: each port with only what those columns add
+const partialAnswer = (add) => () => ({
+  columns: [],
+  rows: fixture.rows.map((r) => Object.assign({ port: r.port }, add(r))),
+  meta: { extra: {}, vlan_names: {}, node_params: '' }
+});
+
+test('columns_in_place__a_column_ticked__fetches_that_column_alone_and_draws_it', async () => {
+  const page = await columnsPage({ partial: partialAnswer((r) => ({ descr: 'D ' + r.port })) });
+  page.tick('c_descr', true);
+  await page.ndPorts.applyColumns(page.table);
+
+  assert.deepStrictEqual(page.requests.slice(1), ['/ajax/data/device/ports?q=10.0.0.1&c_descr=on']);
+  assert.deepStrictEqual(page.tables[0].processed, [true, false], 'with the indicator while it waits');
+  assert.strictEqual(page.tables[0].destroyed, true);
+  assert.strictEqual(page.built.length, 2);
+  const o = page.built[1];
+  assert.strictEqual(o.data, page.built[0].data, 'drawn from the same rows');
+  assert.strictEqual(o.data[0].descr, 'D Gi1/1');
+  assert.ok(o.data.some((r) => r.power), 'which keep what they held');
+  assert.strictEqual(o.columns.length, 2 + fixture.columns.length);
+  const labels = page.table.children[0].children[0].children.map((th) => th.textContent);
+  assert.deepStrictEqual(labels.slice(0, 4), ['', 'Port', 'Description', 'Name']);
+  assert.strictEqual(o.stateLoadCallback(), null, 'the state saved for the old columns is not applied');
+});
+
+test('columns_in_place__a_column_unticked_and_ticked_again__asks_the_server_for_nothing', async () => {
+  const page = await columnsPage({ partial: () => { throw new Error('no request expected'); } });
+  page.tick('c_power', false);
+  await page.ndPorts.applyColumns(page.table);
+  page.tick('c_power', true);
+  await page.ndPorts.applyColumns(page.table);
+  assert.strictEqual(page.requests.length, 1);
+  assert.strictEqual(page.built.length, 3);
+  assert.strictEqual(page.built[1].columns.length, fixture.columns.length, 'without PoE');
+  assert.strictEqual(page.built[2].columns.length, 1 + fixture.columns.length, 'and with it again');
+  assert.deepStrictEqual(page.submits, []);
+});
+
+test('columns_in_place__the_order_page_and_filter__are_kept_by_column_name', async () => {
+  const page = await columnsPage();
+  // status c_port c_name c_tags ...: ordered on the tags, descending
+  Object.assign(page.tables[0].state, { order: [[3, 'desc']], len: 25, page: 2, search: 'Gi1' });
+  page.tick('c_name', false);
+  await page.ndPorts.applyColumns(page.table);
+  const o = page.built[1];
+  assert.deepStrictEqual(o.order, [[2, 'desc']]);
+  assert.strictEqual(o.pageLength, 25);
+  assert.strictEqual(o.displayStart, 50);
+  assert.deepStrictEqual(o.search, { search: 'Gi1' });
+
+  // the column ordered on is gone: back to the first one
+  page.tables[1].state.order = [[2, 'desc']];
+  page.tick('c_tags', false);
+  await page.ndPorts.applyColumns(page.table);
+  assert.deepStrictEqual(page.built[2].order, [[1, 'asc']]);
+});
+
+test('columns_in_place__nodes_and_neighbors__switch_label_and_keep_their_order', async () => {
+  const page = await columnsPage();
+  const last = fixture.columns.length; // c_neighbors, the shared cell
+  page.tables[0].state.order = [[last, 'asc']];
+  page.tick('c_neighbors', false);
+  await page.ndPorts.applyColumns(page.table);
+  const labels = page.table.children[0].children[0].children.map((th) => th.textContent);
+  assert.strictEqual(labels[labels.length - 1], 'Connected Nodes');
+  assert.deepStrictEqual(page.built[1].order, [[last, 'asc']], 'the same cell under its other name');
+  assert.strictEqual(page.requests.length, 1);
+});
+
+test('columns_in_place__the_source_csv_link_and_address_bar__carry_the_columns_shown', async () => {
+  const page = await columnsPage({ partial: partialAnswer(() => ({})) });
+  page.tick('c_descr', true);
+  page.tick('c_admin', false);
+  await page.ndPorts.applyColumns(page.table);
+  const on = page.boxes.filter((b) => b.checked).map((b) => b.name + '=on').join('&');
+  assert.strictEqual(page.table.dataset.ndSource, '/ajax/data/device/ports?q=10.0.0.1&' + on);
+  assert.strictEqual(page.csv.getAttribute('href'), '/ajax/content/device/ports?q=10.0.0.1&' + on);
+  assert.deepStrictEqual(page.replaced, [[{ htmx: true }, '/device?tab=ports&q=10.0.0.1&' + on + '#x']]);
+  assert.ok(!on.includes('c_admin'));
+});
+
+test('columns_in_place__a_table_port_control_changed__is_asked_for_again_whole', async () => {
+  const page = await columnsPage();
+  page.table.dataset.ndEdited = '1';
+  page.tick('c_power', false);
+  await page.ndPorts.applyColumns(page.table);
+  assert.deepStrictEqual(page.submits, ['#ports_form submit']);
+  assert.strictEqual(page.built.length, 1);
+});
+
+test('columns_in_place__c_admin_without_the_reason_dialog__is_asked_for_again_whole', async () => {
+  const page = await columnsPage();
+  page.tick('c_admin', false);
+  await page.ndPorts.applyColumns(page.table);
+  assert.strictEqual(page.built.length, 2, 'turned off in place');
+  delete page.byId.nd_portlog;
+  page.tick('c_admin', true);
+  await page.ndPorts.applyColumns(page.table);
+  assert.deepStrictEqual(page.submits, ['#ports_form submit'], 'but on again only with a frame drawn under it');
+});
+
+test('columns_in_place__an_answer_with_other_ports__is_asked_for_again_whole', async () => {
+  const page = await columnsPage({ partial: () => ({ rows: [{ port: 'Gi1/1' }], meta: {} }) });
+  page.tick('c_descr', true);
+  await page.ndPorts.applyColumns(page.table);
+  assert.deepStrictEqual(page.submits, ['#ports_form submit']);
+  assert.strictEqual(page.built.length, 1);
+});
+
+test('columns_in_place__an_answer_for_a_pane_since_replaced__is_dropped', async () => {
+  let release;
+  const page = await columnsPage({
+    partial: partialAnswer(() => ({ descr: 'late' }))
+  });
+  const wait = new Promise((resolve) => { release = resolve; });
+  page.window.ndRequest.getJSON = (url) => { page.requests.push(url); return wait.then(partialAnswer(() => ({ descr: 'late' }))); };
+  page.tick('c_descr', true);
+  const done = page.ndPorts.applyColumns(page.table);
+  page.table.isConnected = false;
+  release();
+  await done;
+  assert.strictEqual(page.built.length, 1);
+  assert.deepStrictEqual(page.submits, []);
+  assert.strictEqual(page.built[0].data[0].descr, undefined);
+});
+
+test('columns_in_place__clicks_in_a_row__cost_one_request_per_missing_column', async () => {
+  let page;
+  let calls = 0;
+  page = await columnsPage({
+    partial: partialAnswer((r) => {
+      // ticked, unticked and ticked again while the first request is out
+      if (r === fixture.rows[0] && calls++ === 0) {
+        page.tick('c_mtu', true);
+        page.ndPorts.applyColumns(page.table);
+        page.tick('c_mtu', false);
+        page.ndPorts.applyColumns(page.table);
+        page.tick('c_mtu', true);
+        page.ndPorts.applyColumns(page.table);
+      }
+      return { descr: r.port, mtu: 1500 };
+    })
+  });
+  page.tick('c_descr', true);
+  page.tick('c_ssid', false);
+  await page.ndPorts.applyColumns(page.table);
+  await page.ndPorts.applyColumns(page.table);
+  assert.deepStrictEqual(page.requests.slice(1), [
+    '/ajax/data/device/ports?q=10.0.0.1&c_descr=on',
+    '/ajax/data/device/ports?q=10.0.0.1&c_mtu=on'
+  ]);
+  const last = page.built[page.built.length - 1];
+  assert.deepStrictEqual(last.columns.length, 1 + fixture.columns.length + 1, 'with Description and MTU, without SSID');
+});
+
+test('columns_in_place__a_box_ticked_while_the_rows_load__applies_once_they_are_in', async () => {
+  let release;
+  const wait = new Promise((resolve) => { release = resolve; });
+  const boxes = ['c_admin'].concat(colNames(fixture.meta.choices)).map((name) => ({
+    name, checked: Boolean(fixture.meta.params[name])
+  }));
+  const table = frame();
+  table.dataset.ndLoader = 'ports';
+  table.dataset.ndLoaderStarted = '1';
+  const document = {
+    querySelectorAll: () => boxes,
+    querySelector: (sel) => (sel === '#ports_pane table[data-nd-loader="ports"]' ? table : null),
+    getElementById: () => null
+  };
+  const h = load({ document, answer: () => wait.then(() => clone(fixture)) });
+  const loading = h.ndTables.loaders.ports(table, null, h.helpers);
+  boxes.find((b) => b.name === 'c_power').checked = false;
+  h.ndPorts.onColumnChange({ target: { matches: (sel) => sel === '#ports_form #nd_columns input[type=checkbox]' } });
+  h.ndPorts.onColumnChange({ target: { matches: () => false } });
+  assert.strictEqual(table.dataset.ndColumnsPending, '1');
+  release();
+  await loading;
+  await settle();
+  assert.strictEqual(h.built.length, 2);
+  assert.strictEqual(h.built[1].columns.length, fixture.columns.length, 'drawn again without PoE');
 });
 
 // --- the frame ---------------------------------------------------------------
