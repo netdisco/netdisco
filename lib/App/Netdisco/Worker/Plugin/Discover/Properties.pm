@@ -9,7 +9,7 @@ use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use App::Netdisco::Util::Device qw/get_device is_discoverable/;
 use App::Netdisco::Util::DNS 'hostname_from_ip';
-use App::Netdisco::Util::SNMP qw/snmp_comm_reindex snmp_vrf_reindex get_mibdirs_shortnames/;
+use App::Netdisco::Util::SNMP qw/snmp_comm_reindex snmp_vrf_reindex get_mibdirs_shortnames walk_mark incomplete_walks/;
 use App::Netdisco::Util::Web 'sort_port';
 use App::Netdisco::Util::SNMPText qw/decode_snmp_text decode_text_with/;
 use App::Netdisco::DB::ExplicitLocking ':modes';
@@ -294,7 +294,10 @@ register_worker({ phase => 'early', driver => 'snmp',
   # cache the device ports to save hitting the database for many single rows
   vars->{'device_ports'} = { map {($_->port => $_)}
                                  $device->ports(undef, {prefetch => 'properties'})->reset->all };
+  my $walk_mark = walk_mark($snmp);
   my $interfaces = $snmp->interfaces;
+  vars->{'incomplete_walks'}{ $device->ip }{'interfaces'}
+    = [ incomplete_walks($snmp, $walk_mark) ];
 
   # OK if no interfaces
   return $pass if 0 == scalar keys %$interfaces;

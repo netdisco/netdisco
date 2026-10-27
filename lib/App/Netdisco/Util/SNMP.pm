@@ -8,6 +8,7 @@ use File::Spec::Functions qw/splitdir catdir catfile/;
 use MIME::Base64 'decode_base64';
 use SNMP::Info;
 use JSON::PP ();
+use Scalar::Util 'refaddr';
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -22,6 +23,7 @@ our @EXPORT_OK = qw/
   walk_mark
   incomplete_walks
   incomplete_walk_message
+  incomplete_walks_for
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -308,6 +310,43 @@ sub incomplete_walk_message {
   } @outcomes;
   return sprintf '[%s] %s - kept existing rows, incomplete SNMP walk: %s',
     $device->ip, $what, join '; ', @walks;
+}
+
+=head2 incomplete_walks_for( $device, $snmp, $mark, @methods )
+
+Returns the incomplete walk outcomes that could have cut short a table a
+worker is about to write: those recorded since C<walk_mark> returned C<$mark>,
+then the latest C<walk_status> of each named C<@methods> when it is not
+complete, then the job's record of the early C<interfaces> read when
+C<interfaces> is among the C<@methods>. Each outcome is returned once.
+
+C<walk_status> is read because a table walked by an earlier worker is cached,
+and reading it again records nothing, so the failure lies before C<$mark>. It
+holds the latest outcome, so a method that failed and then succeeded on a
+re-walk is not returned.
+
+Returns an empty list when C<enable_incomplete_walk_protection> is false, or
+when the instance keeps no walk record.
+
+=cut
+
+sub incomplete_walks_for {
+  my ($device, $snmp, $mark, @methods) = @_;
+  return () unless setting('enable_incomplete_walk_protection')
+    and $snmp->can('walk_failures');
+
+  my @outcomes = incomplete_walks($snmp, $mark);
+  if ($snmp->can('walk_status')) {
+    foreach my $method (@methods) {
+      my $latest = $snmp->walk_status($method);
+      push @outcomes, $latest if $latest and not $latest->{complete};
+    }
+  }
+  push @outcomes, @{ vars->{'incomplete_walks'}{ $device->ip }{'interfaces'} || [] }
+    if grep { $_ eq 'interfaces' } @methods;
+
+  my %seen;
+  return grep { not $seen{ refaddr $_ }++ } @outcomes;
 }
 
 true;
