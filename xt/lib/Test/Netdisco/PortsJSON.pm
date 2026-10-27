@@ -119,6 +119,7 @@ sub fixture_payload {
         device => '', q => '', p => \%p, only_free => 0,
         settings => $f->{settings}, vlans => $f->{vlans},
         extra_cols => [], node_params => '',
+        port_columns => PORT_COLUMNS, has_ext_links => 0,
       }),
     };
 }

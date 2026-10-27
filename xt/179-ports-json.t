@@ -4,7 +4,7 @@
 # and netdisco-ports.js draws the cells ports.tt used to. The route itself is
 # require_login and cannot be driven from here (see xt/36), so this drives
 # the builders it is made of, which are kept free of param(), setting() and
-# the session for that reason: the column list, one port's hash, one node's
+# the session for that reason: the columns offered and chosen, one port's hash, one node's
 # hash, the shared meta block, and the plugin cells ports_cells.tt still
 # draws in Template Toolkit.
 #
@@ -30,6 +30,7 @@ require App::Netdisco::Util::Permission;
 
 my $P = 'App::Netdisco::Web::Plugin::Device::Ports';
 my $columns = $P->can('_port_columns');
+my $choices = $P->can('_port_choices');
 my $port_json = $P->can('_port_json');
 my $node_json = $P->can('_node_json');
 
@@ -70,6 +71,35 @@ subtest '_port_columns' => sub {
 };
 
 my $payload = fixture_payload();
+subtest '_port_choices' => sub {
+    my @with_plugin = (@{ PORT_COLUMNS() },
+      { name => 'shown', label => 'Shown' },
+      { name => 'gone', label => 'Gone', hidden => 1 });
+
+    my $offered = names($choices->(\@with_plugin, 1));
+    is_deeply $offered, [ grep { $_ ne 'c_admin' and $_ ne 'gone' }
+      map { $_->{name} } @with_plugin ],
+      'every column in config order, without c_admin or a hidden one';
+    ok !(grep { $_ eq 'c_links' } @{ names($choices->(PORT_COLUMNS, 0)) }),
+      'c_links only with external links configured';
+    my ($n) = grep { $_->{name} eq 'c_neighbors' } @{ $choices->(PORT_COLUMNS, 1) };
+    is $n->{label}, 'Connected Devices', 'labels as configured';
+
+    # what pickColumns in netdisco-ports.js relies on: the columns are the
+    # choices that are on, c_nodes folded into c_neighbors
+    foreach my $p ({ c_port => 1, c_nodes => 1 }, { c_neighbors => 1, shown => 1 },
+                   { c_nodes => 1, c_neighbors => 1, c_admin => 1, gone => 1 }) {
+        is_deeply names($columns->($p, \@with_plugin, 1)),
+          [ grep { $p->{$_} and not ($_ eq 'c_nodes' and $p->{c_neighbors}) }
+            @{ names($choices->(\@with_plugin, 1)) } ],
+          'the columns are the choices that are on: '. join ',', sort keys %$p;
+    }
+
+    is_deeply names($payload->{meta}->{choices}), names($choices->(PORT_COLUMNS, 0)),
+      'and meta carries them';
+};
+
+
 my %row = map {( $_->{port} => $_ )} @{ $payload->{rows} };
 
 subtest '_port_json on the snapshot rows' => sub {

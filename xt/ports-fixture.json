@@ -34,6 +34,104 @@
       }
    ],
    "meta" : {
+      "choices" : [
+         {
+            "label" : "Port",
+            "name" : "c_port"
+         },
+         {
+            "label" : "Description",
+            "name" : "c_descr"
+         },
+         {
+            "label" : "Last Comment",
+            "name" : "c_comment"
+         },
+         {
+            "label" : "Type",
+            "name" : "c_type"
+         },
+         {
+            "label" : "Interface Index",
+            "name" : "c_ifindex"
+         },
+         {
+            "label" : "Last Change",
+            "name" : "c_lastchange"
+         },
+         {
+            "label" : "Name",
+            "name" : "c_name"
+         },
+         {
+            "label" : "Tags",
+            "name" : "c_tags"
+         },
+         {
+            "label" : "Speed (configured)",
+            "name" : "c_speed_admin"
+         },
+         {
+            "label" : "Speed (running)",
+            "name" : "c_speed"
+         },
+         {
+            "label" : "Duplex (configured)",
+            "name" : "c_duplex_admin"
+         },
+         {
+            "label" : "Duplex (running)",
+            "name" : "c_duplex"
+         },
+         {
+            "label" : "Error Message",
+            "name" : "c_error"
+         },
+         {
+            "label" : "Port MAC",
+            "name" : "c_mac"
+         },
+         {
+            "label" : "MTU",
+            "name" : "c_mtu"
+         },
+         {
+            "label" : "Native VLAN",
+            "name" : "c_pvid"
+         },
+         {
+            "label" : "VLAN Membership",
+            "name" : "c_vmember"
+         },
+         {
+            "label" : "PoE",
+            "name" : "c_power"
+         },
+         {
+            "label" : "SSID",
+            "name" : "c_ssid"
+         },
+         {
+            "label" : "NAC/802.1X Status",
+            "name" : "c_nac_summary"
+         },
+         {
+            "label" : "Connected Nodes",
+            "name" : "c_nodes"
+         },
+         {
+            "label" : "Connected Devices",
+            "name" : "c_neighbors"
+         },
+         {
+            "label" : "Spanning Tree",
+            "name" : "c_stp"
+         },
+         {
+            "label" : "Up/Down Status",
+            "name" : "c_up"
+         }
+      ],
       "device" : "",
       "extra" : {},
       "node_params" : "",

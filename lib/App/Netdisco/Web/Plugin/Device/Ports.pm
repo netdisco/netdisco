@@ -768,29 +768,38 @@ sub _port_rows {
     };
 }
 
-# The table's columns, as ports.tt's <thead> loop chose them: c_admin is a mode,
-# c_links needs links configured, c_nodes and c_neighbors share one column, and
-# a hidden plugin column is left out. The browser adds the status column.
+# Every column the sidebar can offer, in order: c_admin is a mode rather than a
+# column, c_links needs links configured, and a hidden plugin column is left
+# out. Sent in meta, so the browser can choose the columns again when a
+# sidebar checkbox changes, without asking the server.
+sub _port_choices {
+    my ($port_columns, $has_ext_links) = @_;
+    return [ map {{
+        name => $_->{name},
+        label => (defined $_->{label} ? $_->{label} : ''),
+      }}
+      grep { $_->{name} ne 'c_admin' and not $_->{hidden}
+             and ($_->{name} ne 'c_links' or $has_ext_links) }
+      @{ $port_columns || [] } ];
+}
+
+# The table's columns, as ports.tt's <thead> loop chose them: the choices that
+# are on, with c_nodes and c_neighbors sharing one column. The browser adds the
+# status column. netdisco-ports.js's pickColumns does the same, and
+# xt/js/ports-table.test.js checks that the two agree.
 sub _port_columns {
     my ($p, $port_columns, $has_ext_links) = @_;
 
     my @cols = ();
-    foreach my $item (@{ $port_columns || [] }) {
+    foreach my $item (@{ _port_choices($port_columns, $has_ext_links) }) {
         my $name = $item->{name};
-        next if $name eq 'c_admin';
-        next if $name eq 'c_links' and not $has_ext_links;
-        next if $name eq 'c_nodes' and $p->{c_nodes} and $p->{c_neighbors};
         next unless $p->{$name};
-        next if $item->{hidden};
+        next if $name eq 'c_nodes' and $p->{c_neighbors};
 
         my $label = $item->{label};
         $label = ($p->{c_nodes} ? 'Connected Nodes & Devices' : 'Connected Devices')
           if $name eq 'c_neighbors';
-
-        push @cols, {
-          name => $name,
-          label => (defined $label ? $label : ''),
-        };
+        push @cols, { name => $name, label => $label };
     }
     return \@cols;
 }
@@ -1005,8 +1014,8 @@ sub _vlan_names {
 }
 
 # What every port shares, sent once beside the rows: the options, thresholds,
-# plugin column configs and node_params, the querystring a collapsed port's
-# nodes are fetched with.
+# plugin column configs, the columns the sidebar offers, and node_params, the
+# querystring a collapsed port's nodes are fetched with.
 sub _port_meta {
     my ($in) = @_;
     my $p = $in->{p} || {};
@@ -1025,6 +1034,7 @@ sub _port_meta {
         ($_->{renderer} ? (renderer => $_->{renderer}) : ()),
       } )} @{ $in->{extra_cols} || [] } },
       node_params => (defined $in->{node_params} ? $in->{node_params} : ''),
+      choices => _port_choices($in->{port_columns}, $in->{has_ext_links}),
     };
 }
 
@@ -1115,6 +1125,8 @@ ajax '/ajax/data/device/ports' => require_login sub {
       vlans => $vlans,
       extra_cols => \@extra_cols,
       node_params => $data->{deferred_node_params},
+      port_columns => setting('port_columns'),
+      has_ext_links => $has_ext_links,
     });
 
     return to_json {
