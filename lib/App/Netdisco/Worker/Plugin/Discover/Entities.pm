@@ -9,29 +9,43 @@ use App::Netdisco::Util::Permission 'acl_matches';
 use Dancer::Plugin::DBIC 'schema';
 use String::Util 'trim';
 use App::Netdisco::Util::SNMPText 'decode_snmp_text';
+use App::Netdisco::Util::SNMP qw/walk_mark incomplete_walks_for incomplete_walk_message/;
 
 my $clean = sub {
   my $device = shift;
+  my $rs = schema('netdisco')->resultset('DeviceModule');
 
-  my $gone = $device->modules->delete;
-  debug sprintf ' [%s] modules - removed %d chassis modules',
-    $device->ip, $gone;
-
-  $device->modules->update_or_create({
+  $rs->upsert([{
     ip => $device->ip,
     index => 1,
     parent => 0,
     name => 'chassis',
     class => 'chassis',
     pos => -1,
-    # too verbose and link doesn't work anyway
-    # description => $device->description,
+    # cleared so a chassis entity from an earlier full walk leaves no stale values
+    type => undef,
+    hw_ver => undef,
+    fw_ver => undef,
+    description => undef,
     sw_ver => $device->os_ver,
     serial => $device->serial,
     model => $device->model,
-    fru => \'false',
+    fru => 'false',
     last_discover => \'LOCALTIMESTAMP',
-  });
+  }], { touch => ['last_discover'] });
+
+  my $gone = $rs->remove_unseen({ ip => $device->ip }, [{ index => 1 }]);
+  debug sprintf ' [%s] modules - removed %d chassis modules',
+    $device->ip, $gone;
+};
+
+# a walk that was cut short must not look like an emptied table, so the stored
+# rows stand
+my $keep_stored = sub {
+  my ($device, @incomplete) = @_;
+  my $message = incomplete_walk_message($device, 'device_module', @incomplete);
+  warning $message;
+  return Status->info($message);
 };
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
@@ -49,7 +63,13 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("discover failed: could not SNMP connect to $device");
+  my $walk_mark = walk_mark($snmp);
   my $e_index = $snmp->e_index;
+
+  # checked before the undef branch, so a cut-short e_index skips instead of
+  # wiping the modules to a chassis row
+  my @incomplete = incomplete_walks_for($device, $snmp, $walk_mark, 'e_index');
+  return $keep_stored->($device, @incomplete) if scalar @incomplete;
 
   if (!defined $e_index) {
       schema('netdisco')->txn_do($clean, $device);
@@ -71,9 +91,14 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $e_serial  = $snmp->e_serial;
   my $e_fru     = $snmp->e_fru;
 
+  @incomplete = incomplete_walks_for($device, $snmp, $walk_mark, qw/
+    e_index e_descr e_type e_parent e_name e_class e_pos e_hwver e_fwver
+    e_swver e_model e_serial e_fru/);
+  return $keep_stored->($device, @incomplete) if scalar @incomplete;
+
   # build device modules list for DBIC
   my (@modules, %seen_idx);
-  foreach my $entry (keys %$e_index) {
+  foreach my $entry (sort keys %$e_index) {
       next unless defined $e_index->{$entry};
       next if $seen_idx{ $e_index->{$entry} }++;
 
@@ -84,6 +109,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       }
 
       push @modules, {
+          ip     => $device->ip,
           index  => $e_index->{$entry},
           type   => $e_type->{$entry},
           parent => $e_parent->{$entry},
@@ -114,10 +140,12 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   }
 
   schema('netdisco')->txn_do(sub {
-    my $gone = $device->modules->delete;
+    my $rs = schema('netdisco')->resultset('DeviceModule');
+    $rs->upsert(\@modules, { touch => ['last_discover'] });
+    my $gone = $rs->remove_unseen({ ip => $device->ip },
+      [ map {{ index => $_->{index} }} @modules ]);
     debug sprintf ' [%s] modules - removed %d chassis modules',
       $device->ip, $gone;
-    $device->modules->populate(\@modules);
 
     return Status->info(sprintf ' [%s] modules - added %d new chassis modules',
       $device->ip, scalar @modules);
