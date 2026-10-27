@@ -328,6 +328,11 @@ as it was before the guard. An C<error> job queues no discover hooks, so a
 device first discovered while the MIBs are broken never sends its
 C<new_device> hook.
 
+This is not full broken-MIB detection. It sees only the walks a guarded
+worker names, and only while C<enable_incomplete_walk_protection> is on.
+Leaves read behind a composite method, such as C<i_vlan_membership>, go
+unseen, and there a broken install behaves as it did before the guard.
+
 =cut
 
 sub incomplete_walk_level {
