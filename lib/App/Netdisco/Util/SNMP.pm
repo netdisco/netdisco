@@ -324,7 +324,9 @@ Returns the L<App::Netdisco::Worker::Status> a worker returns after keeping
 its stored rows for C<@outcomes>: C<error> when any outcome is C<absent>,
 otherwise C<info>. An C<absent> walk means the poller's MIBs are broken,
 which must show on the job, while a cut-short walk leaves the job's status
-as it was before the guard.
+as it was before the guard. An C<error> job queues no discover hooks, so a
+device first discovered while the MIBs are broken never sends its
+C<new_device> hook.
 
 =cut
 
