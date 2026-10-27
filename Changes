@@ -21,6 +21,11 @@
   * a Ports tab Display Columns checkbox applies at once, without Update
     View: the table asks only for the columns it does not hold yet, and
     keeps its order, page and filter
+  * the Ports tab draws External Links in the browser when each link's
+    url holds only the variables device, fqdn, sysname, hostname, port,
+    mac and ifindex, as in [% device %]. a url with any other template
+    code, or a custom field, keeps the old way, drawn for every port by the
+    server, which is the slow way on a large device
 
   [BUG FIXES]
 

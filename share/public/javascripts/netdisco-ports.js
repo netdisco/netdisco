@@ -261,6 +261,14 @@ const ndPorts = (function () {
   };
   const NUMERIC = { type: 'num' };
 
+  // Template Toolkit's uri filter, which the server's links were given their
+  // values through: encodeURIComponent leaves !*'() alone, which it does not
+  const ttUri = function (s) {
+    return enc(s).replace(/[!*'()]/g, function (ch) {
+      return '%' + ch.charCodeAt(0).toString(16).toUpperCase();
+    });
+  };
+
   /**
    * Each built-in column. html draws the cell, attrs gives the td's own
    * attributes, and value is what the column sorts and, unless it has a
@@ -408,13 +416,37 @@ const ndPorts = (function () {
       }
     },
 
-    // drawn by the server from externallinks.tt, as a site configures them
+    // The links a site configures. The ones whose url is only the variables
+    // below are in meta.links and drawn here; any other kind needs Template
+    // Toolkit, and then the server draws the column (externallinks.tt).
     c_links: {
-      html: function (r) {
-        return (r.cells && r.cells.c_links) || '';
+      html: function (r, c) {
+        const links = c.meta.links;
+        if (!links) return (r.cells && r.cells.c_links) || '';
+        const off = r.links_off || [];
+        const vars = Object.assign({}, c.meta.link_vars, {
+          port: ttUri(r.port),
+          mac: ttUri(r.mac),
+          ifindex: ttUri(r.ifindex)
+        });
+        return links
+          .map(function (link, i) {
+            if (off.indexOf(i) !== -1) return '';
+            const url = String(link.url).replace(/\[%\s*(\w+)\s*%\]/g, function (m, name) {
+              return has(vars, name) ? vars[name] : '';
+            });
+            return (
+              '<a href="' +
+              esc(url) +
+              '" target="_blank"><span class="badge text-bg-secondary"><i class="fas fa-up-right-from-square"></i> ' +
+              esc(link.displayname) +
+              '</span></a>'
+            );
+          })
+          .join(' ');
       },
-      value: function (r) {
-        return strip((r.cells && r.cells.c_links) || '');
+      value: function (r, c) {
+        return strip(COLUMNS.c_links.html(r, c));
       }
     },
 
@@ -1138,6 +1170,10 @@ const ndPorts = (function () {
     const m = answer.meta || {};
     meta.extra = Object.assign({}, meta.extra, m.extra);
     meta.vlan_names = Object.assign({}, meta.vlan_names, m.vlan_names);
+    if (m.links) {
+      meta.links = m.links;
+      meta.link_vars = m.link_vars;
+    }
     if (m.node_params) meta.node_params = m.node_params;
     return true;
   };
@@ -1337,6 +1373,7 @@ const ndPorts = (function () {
     columnFor: columnFor,
     dataTableColumn: dataTableColumn,
     nodesHtml: nodesHtml,
+    ttUri: ttUri,
     startsFolded: startsFolded,
     toggleGroup: toggleGroup,
     registerColumn: registerColumn,

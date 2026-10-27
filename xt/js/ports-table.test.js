@@ -1021,3 +1021,44 @@ test('frame__every_loader_a_template_names__is_registered_by_a_script', () => {
   assert.ok(found.length > 0);
   found.forEach((name) => assert.ok(source.includes('ndTables.loaders.' + name + ' ='), name + ' has a loader'));
 });
+
+// --- external links, drawn here ----------------------------------------------
+
+const LINK_META = {
+  links: [
+    { url: 'https://g/d?dev=[% device %]&host=[%hostname%]&p=[%  port  %]&m=[% mac %]&i=[% ifindex %]', displayname: 'Graphs <1>' },
+    { url: 'https://admin/[% fqdn %]/[% unknown %]', displayname: 'Admin' }
+  ],
+  link_vars: { device: '192.0.2.1', fqdn: 'sw1.example.com', sysname: 'sw%201', hostname: 'sw1' }
+};
+
+test('links__urls_of_the_ports_variables__are_drawn_with_the_values_the_server_would_have_escaped', () => {
+  const { ndPorts } = load();
+  const ctx = { urls: URLS, meta: Object.assign(clone(fixture.meta), clone(LINK_META)) };
+  const row = { port: "Gi1/0/1 (a)!*'", mac: 'aa:bb:cc:00:00:01', ifindex: 10101 };
+  const html = ndPorts.columnFor('c_links', ctx).html(row, ctx);
+  assert.ok(html.includes('href="https://g/d?dev=192.0.2.1&amp;host=sw1&amp;p=Gi1%2F0%2F1%20%28a%29%21%2A%27&amp;m=aa%3Abb%3Acc%3A00%3A00%3A01&amp;i=10101"'), html);
+  assert.ok(html.includes('href="https://admin/sw1.example.com/"'), 'a variable it has no value for is empty: ' + html);
+  assert.ok(html.includes('</i> Graphs &lt;1&gt;</span>'), 'the name is escaped: ' + html);
+  assert.ok(html.includes('target="_blank"') && html.includes('badge text-bg-secondary'));
+  assert.strictEqual(ndPorts.columnFor('c_links', ctx).value(row, ctx), 'Graphs &lt;1&gt; Admin', 'its text, as the other columns have it');
+});
+
+test('links__a_link_the_acl_hides_from_a_port__is_not_drawn_for_it', () => {
+  const { ndPorts } = load();
+  const ctx = { urls: URLS, meta: Object.assign(clone(fixture.meta), clone(LINK_META)) };
+  const html = ndPorts.columnFor('c_links', ctx).html({ port: 'Vlan10', links_off: [0] }, ctx);
+  assert.ok(!html.includes('Graphs') && html.includes('Admin'), html);
+});
+
+test('links__without_links_in_meta__the_server_drew_the_column_and_it_is_placed_as_it_is', () => {
+  const { ndPorts } = load();
+  const ctx = { urls: URLS, meta: clone(fixture.meta) };
+  assert.strictEqual(ndPorts.columnFor('c_links', ctx).html({ port: 'a', cells: { c_links: '<a>x</a>' } }, ctx), '<a>x</a>');
+});
+
+test('links__ttUri__escapes_what_the_uri_filter_does', () => {
+  const { ndPorts } = load();
+  assert.strictEqual(ndPorts.ttUri("a b!*'()~._-/é"), 'a%20b%21%2A%27%28%29~._-%2F%C3%A9');
+  assert.strictEqual(ndPorts.ttUri(undefined), '');
+});

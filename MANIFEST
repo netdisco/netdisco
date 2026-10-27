@@ -753,6 +753,7 @@ xt/174-discover-wireless-upsert.t
 xt/175-discover-neighbor-columns.t
 xt/176-discover-port-tags-clear.t
 xt/179-ports-json.t
+xt/180-ports-links.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t

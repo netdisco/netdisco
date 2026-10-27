@@ -11,6 +11,7 @@ use App::Netdisco::Web::Plugin;
 
 use List::MoreUtils 'singleton';
 use NetAddr::MAC ();
+use Template::Filters ();
 use DBIx::Class::ResultClass::HashRefInflator;
 use URI::Escape 'uri_escape';
 
@@ -979,6 +980,12 @@ sub _port_json {
     $j{cells}->{c_links} = $cells->{c_links}
       if $p->{c_links} and exists $cells->{c_links};
 
+    # the links this port is not shown, by their place in meta.links
+    if ($p->{c_links} and my $links = $opt->{links}) {
+        my @off = grep { not permitted_by_acl($row, $links->[$_]) } 0 .. $#$links;
+        $j{links_off} = \@off if scalar @off;
+    }
+
     foreach my $config (@{ $opt->{extra_cols} || [] }) {
         my $name = $config->{name};
         if (not permitted_by_acl($row, $config)) {
@@ -1013,6 +1020,48 @@ sub _vlan_names {
     return \%names;
 }
 
+# The device port external links the browser can draw itself: a link whose url
+# holds nothing but the variables below, which are all that
+# externallinks.tt's external_device_port_links has but the custom fields. A
+# link with any other template code needs Template Toolkit, so then none are
+# drawn here and the column keeps being drawn by the server, as before.
+my @LINK_VARS = qw/device fqdn sysname hostname port mac ifindex/;
+
+# Template Toolkit's uri filter, which the links' values went through. The
+# browser escapes with encodeURIComponent and also the characters !*'() that
+# it leaves, which is what the filter does as of Template Toolkit 3; any other
+# filter and the server keeps drawing the links.
+sub _uri_filter { return Template::Filters->new->fetch('uri') }
+sub _uri_filter_is_rfc3986 {
+    return (_uri_filter()->(q{!*'() ~/é}) eq '%21%2A%27%28%29%20~%2F%C3%A9');
+}
+
+sub _simple_links {
+    my ($links) = @_;
+    return undef unless scalar @{ $links || [] } and _uri_filter_is_rfc3986();
+    my $names = join '|', @LINK_VARS;
+    foreach my $link (@$links) {
+        my $rest = (defined $link->{url} ? $link->{url} : '');
+        $rest =~ s/\[%\s*(?:$names)\s*%\]//g;
+        return undef if $rest =~ m/\[%|%\]/;
+    }
+    return $links;
+}
+
+# What a link is given for the device, as externallinks.tt gave it: each
+# escaped with Template Toolkit's own uri filter.
+sub _device_link_vars {
+    my ($device, $domain_suffix) = @_;
+    my $uri = _uri_filter();
+    my $dns = (defined $device->dns ? $device->dns : '');
+    (my $hostname = $dns) =~ s/$domain_suffix//g if defined $domain_suffix and length $domain_suffix;
+    $hostname = $dns unless defined $hostname;
+    return { map {( $_->[0] => $uri->(defined $_->[1] ? $_->[1] : '') )} (
+      [device => $device->ip], [fqdn => $dns], [sysname => $device->name],
+      [hostname => $hostname],
+    ) };
+}
+
 # What every port shares, sent once beside the rows: the options, thresholds,
 # plugin column configs, the columns the sidebar offers, and node_params, the
 # querystring a collapsed port's nodes are fetched with.
@@ -1035,6 +1084,12 @@ sub _port_meta {
       } )} @{ $in->{extra_cols} || [] } },
       node_params => (defined $in->{node_params} ? $in->{node_params} : ''),
       choices => _port_choices($in->{port_columns}, $in->{has_ext_links}),
+      # the links drawn in the browser: each url with its variables in place,
+      # and the device's own values for the ones that are not the port's
+      ($in->{links} ? (
+        links => [ map {{ url => $_->{url}, displayname => $_->{displayname} }} @{ $in->{links} } ],
+        link_vars => $in->{link_vars},
+      ) : ()),
     };
 }
 
@@ -1093,12 +1148,14 @@ ajax '/ajax/data/device/ports' => require_login sub {
     $p{ $_->{name} } = 1 for @extra_cols;
 
     my $has_ext_links = scalar @{ setting('external_links')->{device_port} || [] };
+    # links the browser draws itself are not drawn here for every port
+    my $links = _simple_links(setting('external_links')->{device_port});
     my $cells = _template_cells($results, {
         device => $device,
         vlans => $data->{vlans},
         nodes => $data->{nodes_name},
         ips => $data->{ips_name},
-      }, ($p{c_links} and $has_ext_links), _template_columns(\@extra_cols));
+      }, ($p{c_links} and $has_ext_links and not $links), _template_columns(\@extra_cols));
 
     my $opt = {
       p => \%p,
@@ -1109,6 +1166,7 @@ ajax '/ajax/data/device/ports' => require_login sub {
       extra_cols => \@extra_cols,
       cells => $cells,
       device => $device,
+      links => $links,
     };
 
     my $port_state = params->{port_state};
@@ -1127,6 +1185,8 @@ ajax '/ajax/data/device/ports' => require_login sub {
       node_params => $data->{deferred_node_params},
       port_columns => setting('port_columns'),
       has_ext_links => $has_ext_links,
+      links => $links,
+      link_vars => ($links ? _device_link_vars($device, setting('domain_suffix')) : undef),
     });
 
     return to_json {
