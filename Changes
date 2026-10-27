@@ -4,6 +4,8 @@
 
   * #1776 add a shared upsert for discover tables, and delete only the
     given ports' rows
+  * #1780 write device IPs, modules, VLANs and PoE power in place during
+    discover
 
 2.116000 - 2026-10-23
 
