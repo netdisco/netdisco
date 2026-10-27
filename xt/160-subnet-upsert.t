@@ -15,44 +15,48 @@ use Test::More 0.88;
 use Path::Tiny;
 use App::Netdisco;
 use Dancer ':tests';
-use App::Netdisco::DB::ResultSet::Subnet;
+use App::Netdisco::DB;
 
 set logger => 'null';
+
+my $schema = do {
+  local $SIG{__WARN__} = sub { warn @_ unless $_[0] =~ /unversioned/ };
+  my $s = App::Netdisco::DB->clone;
+  $s->storage_type('::DBI::Pg');
+  $s->connection('dbi:Pg:dbname=netdisco_xt_offline;host=127.0.0.1;port=1');
+  $s;
+};
 
 my @ran;
 
 package FakeDbh;
-sub new { return bless {}, $_[0] }
-sub do  { my ($self, $sql, undef, @binds) = @_; push @ran, [$sql, @binds]; return 1 }
-
-package FakeStorage;
-sub new    { return bless { dbh => FakeDbh->new }, $_[0] }
-sub dbh_do { my ($self, $code) = @_; return $code->($self, $self->{dbh}) }
-
-package FakeSource;
-sub new     { return bless { storage => FakeStorage->new }, $_[0] }
-sub storage { return $_[0]{storage} }
-
-package FakeSubnetRS;
-our @ISA = ('App::Netdisco::DB::ResultSet::Subnet');
-sub new           { return bless { source => FakeSource->new }, $_[0] }
-sub result_source { return $_[0]{source} }
+sub do {
+  my ($self, $sql, undef, @binds) = @_;
+  push @ran, [$sql, @binds];
+  return 1;
+}
+sub quote_identifier { return '"' . ($_[1] =~ s/"/""/gr) . '"' }
 
 package main;
 
-subtest 'upsert_subnet__new_or_seen_net__one_insert_on_conflict_updating_last_discover' => sub {
+my $fake = bless {}, 'FakeDbh';
+no warnings qw(redefine once);
+local *DBIx::Class::Storage::DBI::dbh_do = sub { my ($s, $code) = @_; $code->($s, $fake) };
+
+subtest 'upsert_subnet__new_or_seen_net__shared_upsert_updating_last_discover' => sub {
   @ran = ();
-  FakeSubnetRS->new->upsert_subnet('192.0.2.0/24', 'to_timestamp(1)::timestamp');
+  $schema->resultset('Subnet')->upsert_subnet('192.0.2.0/24', 'to_timestamp(1)::timestamp');
   is(scalar @ran, 1, 'one statement');
   my ($sql, @binds) = @{ $ran[0] };
-  like($sql, qr/^INSERT INTO subnets \(net, last_discover\) VALUES \(\?, to_timestamp\(1\)::timestamp\)/);
-  like($sql, qr/ON CONFLICT \(net\) DO UPDATE SET last_discover = EXCLUDED\.last_discover$/);
+  is($sql, 'INSERT INTO "subnets" ("last_discover", "net") VALUES (to_timestamp(1)::timestamp, ?)'
+    . ' ON CONFLICT ("net") DO UPDATE SET "last_discover" = EXCLUDED."last_discover"'
+    . ' WHERE ("subnets"."last_discover") IS DISTINCT FROM (EXCLUDED."last_discover")', 'sql');
   is_deeply(\@binds, ['192.0.2.0/24'], 'the net is bound, not interpolated');
 };
 
 subtest 'upsert_subnet__no_net__writes_nothing' => sub {
   @ran = ();
-  FakeSubnetRS->new->upsert_subnet(undef, 'LOCALTIMESTAMP');
+  $schema->resultset('Subnet')->upsert_subnet(undef, 'LOCALTIMESTAMP');
   is(scalar @ran, 0);
 };
 

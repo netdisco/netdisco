@@ -23,6 +23,7 @@ sub node_set_of {
   my $captured;
   no warnings 'redefine';
   local *DBIx::Class::ResultSetColumn::all = sub { @switches };
+  local *DBIx::Class::ResultSet::count = sub { 0 };
   local *App::Netdisco::DB::ResultSet::Node::delete = sub { $captured = ${ $_[0]->as_query }; 0 };
   local *DBIx::Class::ResultSet::delete = sub { 0 };
   $ports_rs->delete;
