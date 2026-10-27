@@ -9,7 +9,8 @@ use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use App::Netdisco::Util::Device qw/get_device is_discoverable/;
 use App::Netdisco::Util::DNS 'hostname_from_ip';
-use App::Netdisco::Util::SNMP qw/snmp_comm_reindex snmp_vrf_reindex get_mibdirs_shortnames walk_mark incomplete_walks/;
+use App::Netdisco::Util::SNMP qw/snmp_comm_reindex snmp_vrf_reindex get_mibdirs_shortnames walk_mark incomplete_walks
+  incomplete_walks_for incomplete_walk_message/;
 use App::Netdisco::Util::Web 'sort_port';
 use App::Netdisco::Util::SNMPText qw/decode_snmp_text decode_text_with/;
 use App::Netdisco::DB::ExplicitLocking ':modes';
@@ -327,9 +328,14 @@ register_worker({ phase => 'early', driver => 'snmp',
 
   my $now = vars->{'timestamp'};
 
-  my @aliases = ();
-  push @aliases, _get_ipv4_aliases($device, $snmp);
-  push @aliases, _get_ipv6_aliases($device, $snmp);
+  my $walk_mark = walk_mark($snmp);
+  my @aliases = _dedupe_aliases(
+    _get_ipv4_aliases($device, $snmp), _get_ipv6_aliases($device, $snmp));
+
+  my @incomplete = incomplete_walks_for($device, $snmp, $walk_mark, qw/
+    ip_index ip_table ip_netmask ipv6_index ipv6_addr ipv6_type
+    ipv6_addr_prefixlength interfaces/);
+  return _keep_stored_device_ips($device, @incomplete) if scalar @incomplete;
 
   my @subnets = List::MoreUtils::uniq grep {defined} map {$_->{subnet}} @aliases;
 
@@ -339,17 +345,28 @@ register_worker({ phase => 'early', driver => 'snmp',
 
   # fake one aliases entry for devices not providing ip_index
   # or if we're discovering on an IP not listed in ip_index
-  push @$resolved_aliases, { alias => $device->ip, dns => $device->dns }
-    if 0 == scalar grep {$_->{alias} eq $device->ip} @aliases;
+  my $device_addr = _canonical_addr($device->ip);
+  push @$resolved_aliases, { alias => $device_addr, dns => $device->dns }
+    if 0 == scalar grep {$_->{alias} eq $device_addr} @aliases;
 
   # support for Hooks
   vars->{'hook_data'}->{'device_ips'} = $resolved_aliases;
 
+  my @rows = map {{
+    ip       => $device->ip,
+    alias    => $_->{alias},
+    subnet   => $_->{subnet},
+    port     => $_->{port},
+    dns      => $_->{dns},
+    creation => \'LOCALTIMESTAMP',
+  }} @$resolved_aliases;
+
   schema('netdisco')->txn_do(sub {
-    my $gone = $device->device_ips->delete;
-    debug sprintf ' [%s] device - removed %d aliases',
-      $device->ip, $gone;
-    $device->device_ips->populate($resolved_aliases);
+    my $rs = schema('netdisco')->resultset('DeviceIp');
+    $rs->upsert(\@rows);
+    my $gone = $rs->remove_unseen({ ip => $device->ip },
+      [ map {{ alias => $_->{alias} }} @rows ]);
+    debug sprintf ' [%s] device - removed %d aliases', $device->ip, $gone;
 
     schema('netdisco')->resultset('Subnet')->upsert_subnet($_, $now) for @subnets;
 
@@ -357,6 +374,27 @@ register_worker({ phase => 'early', driver => 'snmp',
       $device->ip, scalar @aliases, scalar @subnets);
   });
 });
+
+sub _canonical_addr {
+  my $ip = NetAddr::IP::Lite->new($_[0]);
+  return $ip ? $ip->addr : $_[0];
+}
+
+# the first entry for an address wins, so the sorted iteration of the callers
+# decides which port and subnet are kept
+sub _dedupe_aliases {
+  my %seen;
+  return grep { not $seen{ _canonical_addr($_->{alias}) }++ } @_;
+}
+
+# a walk that was cut short must not look like an emptied table, so the stored
+# rows stand and the hook payload shows them rather than the partial walk
+sub _keep_stored_device_ips {
+  my ($device, @incomplete) = @_;
+  vars->{'hook_data'}->{'device_ips'} = [ $device->device_ips(undef,
+    { result_class => 'DBIx::Class::ResultClass::HashRefInflator' })->all ];
+  return Status->info(incomplete_walk_message($device, 'device_ip', @incomplete));
+}
 
 
 # NOTE must come after the IP Aliases gathering for ignore ACLs to work
@@ -771,7 +809,7 @@ sub _get_ipv4_aliases {
   }
 
   # build device aliases suitable for DBIC
-  foreach my $entry (keys %$ip_index) {
+  foreach my $entry (sort keys %$ip_index) {
       my $ip = NetAddr::IP::Lite->new($ip_table->{$entry}) || NetAddr::IP::Lite->new($entry)
         or next;
       my $addr = $ip->addr;
@@ -823,7 +861,7 @@ sub _get_ipv6_aliases {
   }
 
   # build device aliases suitable for DBIC
-  foreach my $iid (keys %$ipv6_index) {
+  foreach my $iid (sort keys %$ipv6_index) {
       next unless $ipv6_type->{$iid} and $ipv6_type->{$iid} eq 'unicast';
       my $entry = $ipv6_addr->{$iid} or next;
       my $ip = NetAddr::IP::Lite->new($entry) or next;

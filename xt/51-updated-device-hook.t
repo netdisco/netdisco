@@ -151,7 +151,10 @@ sub run_discover_properties {
     = sub { return bless {}, 'FakeSchema' };
   local *App::Netdisco::DB::Result::Device::ports = sub { return $old_ports_rs };
   local *App::Netdisco::DB::Result::Device::device_ips = sub { return FakePortsRS->new };
-  no warnings 'once'; # these two globs are otherwise never referenced by name
+  no warnings 'once'; # these globs are otherwise never referenced by name
+  # the alias worker writes through these; there is no database to take them
+  local *App::Netdisco::DB::Upsert::upsert = sub { return 0 };
+  local *App::Netdisco::DB::Upsert::remove_unseen = sub { return 0 };
   local *App::Netdisco::DB::Result::Device::update = sub { return $_[0] };
   local *App::Netdisco::DB::Result::Device::update_or_insert = sub { return $_[0] };
 
