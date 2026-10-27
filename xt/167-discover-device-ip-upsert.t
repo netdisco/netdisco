@@ -56,6 +56,9 @@ sub AUTOLOAD {
     push @{ $self->{walk_failures} }, $failure;
     $self->{walk_status}{$method} = $failure;
   }
+  # a failure kept in walk_failures only, so walk_status stays clear
+  push @{ $self->{walk_failures} }, delete $self->{fail_log_only}{$method}
+    if $self->{fail_log_only}{$method};
   return $self->{$method};
 }
 
@@ -111,13 +114,13 @@ sub outcome {
            rows => 1, walk => 'bulkwalk', complete => 0 };
 }
 
-my (@upserts, @removals);
+my (@upserts, @removals, @warnings, @device_ip_searches);
 our $stored_rows = [];
 
 sub run_discover {
   my (%snmp) = @_;
   delete @{ vars() }{qw/device_changed new_device device_ports hook_data timestamp incomplete_walks/};
-  @upserts = @removals = ();
+  @upserts = @removals = @warnings = @device_ip_searches = ();
 
   my $device = App::Netdisco::DB->resultset('Device')->new_result({ %device_cols });
   $device->in_storage(1);
@@ -131,7 +134,9 @@ sub run_discover {
     = sub { return bless {}, 'FakeSchema' };
   local *App::Netdisco::DB::Result::Device::ports = sub { return FakeRows->new };
   local *App::Netdisco::DB::Result::Device::device_ips
-    = sub { return FakeRows->new(@$stored_rows) };
+    = sub { push @device_ip_searches, [@_[1 .. $#_]]; return FakeRows->new(@$stored_rows) };
+  local *App::Netdisco::Worker::Plugin::Discover::Properties::warning
+    = sub { push @warnings, @_ };
   local *App::Netdisco::DB::Result::Device::update = sub { return $_[0] };
   local *App::Netdisco::DB::Result::Device::update_or_insert = sub { return $_[0] };
   local *App::Netdisco::DB::Upsert::upsert = sub {
@@ -236,6 +241,8 @@ subtest 'device_ip__incomplete_ip_index__skips_and_logs_table_and_walk' => sub {
   like status_messages($job),
     qr/\[192\.0\.2\.1\] device_ip - kept existing rows, incomplete SNMP walk: ip_index/;
   ok !$job->is_cancelled, 'the guard skips and never cancels';
+  is scalar @warnings, 1, 'one warning';
+  like $warnings[0], qr/\[192\.0\.2\.1\] device_ip - kept existing rows, incomplete SNMP walk: ip_index/;
 };
 
 subtest 'device_ip__incomplete_interfaces_walk_earlier__skips' => sub {
@@ -245,10 +252,20 @@ subtest 'device_ip__incomplete_interfaces_walk_earlier__skips' => sub {
   like status_messages($job), qr/device_ip - kept existing rows, incomplete SNMP walk: interfaces/;
 };
 
+subtest 'device_ip__interfaces_failure_only_in_job_record__skips' => sub {
+  run_discover(fail_log_only => { interfaces => outcome('interfaces') });
+  is scalar(device_ip_upserts()), 0, 'no upsert';
+  is scalar(device_ip_removals()), 0, 'no removal';
+};
+
 subtest 'device_ip__skip__hook_data_device_ips_from_stored_rows' => sub {
   local $stored_rows = [ { ip => '192.0.2.1', alias => '203.0.113.9', dns => 'old.example' } ];
   run_discover(fail_on_read => { ip_index => outcome('ip_index') });
   is_deeply vars->{'hook_data'}{'device_ips'}, $stored_rows;
+  my $attrs = $device_ip_searches[0][1];
+  is_deeply $attrs->{columns}, [qw/alias subnet port dns/], 'stored columns';
+  is $attrs->{order_by}, 'alias', 'stored order';
+  is $attrs->{result_class}, 'DBIx::Class::ResultClass::HashRefInflator', 'plain hashes';
 };
 
 done_testing;

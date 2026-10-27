@@ -57,7 +57,8 @@ sub AUTOLOAD {
 package FakeRows;
 sub new { my ($class, @rows) = @_; return bless { rows => [@rows] }, $class; }
 sub all { return @{ $_[0]->{rows}} }
-sub search { return $_[0] }
+our @searches;
+sub search { my $self = shift; push @searches, [@_]; return $self }
 sub delete { return 0 }
 sub populate { return 1 }
 
@@ -100,7 +101,7 @@ our $earlier_interfaces;
 sub run_vlans {
   my (%snmp) = @_;
   delete @{ vars() }{qw/device_changed new_device device_ports hook_data timestamp incomplete_walks/};
-  @upserts = @removals = @warnings = @portvlan_writes = ();
+  @upserts = @removals = @warnings = @portvlan_writes = @FakeRows::searches = ();
   vars->{'incomplete_walks'}{'192.0.2.1'}{'interfaces'} = [ $earlier_interfaces ]
     if $earlier_interfaces;
 
@@ -220,6 +221,10 @@ subtest 'device_vlan__skip__hook_data_vlans_from_stored_rows' => sub {
   local $stored_rows = [ { vlan => 5, description => 'Old' } ];
   run_vlans(fail_on_read => { v_name => outcome('v_name') });
   is_deeply vars->{'hook_data'}{'vlans'}, $stored_rows;
+  my ($search) = grep { ref $_->[1] eq 'HASH' and $_->[1]{result_class} } @FakeRows::searches;
+  is_deeply $search->[1]{columns}, [qw/vlan description/], 'stored columns';
+  is $search->[1]{order_by}, 'vlan', 'stored order';
+  is $search->[1]{result_class}, 'DBIx::Class::ResultClass::HashRefInflator', 'plain hashes';
 };
 
 done_testing;

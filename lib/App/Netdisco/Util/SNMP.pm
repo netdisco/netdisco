@@ -323,7 +323,9 @@ C<interfaces> is among the C<@methods>. Each outcome is returned once.
 C<walk_status> is read because a table walked by an earlier worker is cached,
 and reading it again records nothing, so the failure lies before C<$mark>. It
 holds the latest outcome, so a method that failed and then succeeded on a
-re-walk is not returned.
+re-walk is not returned. An C<absent> reason counts as incomplete although
+L<SNMP::Info> marks it complete, because it means the poller could not
+translate the object locally, such as a broken MIB checkout.
 
 Returns an empty list when C<enable_incomplete_walk_protection> is false, or
 when the instance keeps no walk record.
@@ -339,7 +341,8 @@ sub incomplete_walks_for {
   if ($snmp->can('walk_status')) {
     foreach my $method (@methods) {
       my $latest = $snmp->walk_status($method);
-      push @outcomes, $latest if $latest and not $latest->{complete};
+      push @outcomes, $latest if $latest
+        and (not $latest->{complete} or ($latest->{reason} // '') eq 'absent');
     }
   }
   push @outcomes, @{ vars->{'incomplete_walks'}{ $device->ip }{'interfaces'} || [] }

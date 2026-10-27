@@ -202,6 +202,16 @@ subtest 'device_power__incomplete_walk_undef__keeps_rows' => sub {
   ok !$job->is_cancelled, 'the guard skips and never cancels';
 };
 
+subtest 'device_power__absent_peth_power_watts__keeps_rows' => sub {
+  my $job = run_power(peth_power_watts => undef, walk_status => { peth_power_watts =>
+    { method => 'peth_power_watts', leaf => 'MIB::peth_power_watts', reason => 'absent',
+      rows => 0, walk => 'bulkwalk', complete => 1 } });
+  is scalar(power_upserts()), 0, 'no upsert';
+  is scalar(power_removals()), 0, 'no removal';
+  is scalar @warnings, 1, 'one warning';
+  like status_messages($job), qr/device_power - kept existing rows, incomplete SNMP walk: peth_power_watts /;
+};
+
 subtest 'device_power__incomplete_walk__port_power_unchanged_from_today' => sub {
   my $job = run_power(fail_on_read => { peth_power_status => outcome('peth_power_status') });
   is scalar(power_upserts()), 0, 'no upsert';

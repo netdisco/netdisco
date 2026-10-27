@@ -158,7 +158,15 @@ subtest 'incomplete_walks_for__setting_off__returns_nothing' => sub {
 };
 
 subtest 'incomplete_walks_for__snmp_without_walk_record__returns_nothing' => sub {
+  vars->{'incomplete_walks'}{ $device->ip }{'interfaces'} = [ outcome('i_index') ];
   is_deeply [ incomplete_walks_for($device, PlainSNMP->new, 0, 'interfaces') ], [];
+  delete vars->{'incomplete_walks'};
+};
+
+subtest 'incomplete_walks_for__absent_reason_marked_complete__returned' => sub {
+  my $absent = outcome('ip_index', complete => 1, reason => 'absent');
+  my $snmp = RecordingSNMP->new(walk_status => { ip_index => $absent, ip_table => outcome('ip_table', complete => 1, reason => 'ok') });
+  is_deeply [ incomplete_walks_for($device, $snmp, 0, 'ip_index', 'ip_table') ], [ $absent ];
 };
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -188,6 +196,7 @@ sub run_discover {
   my (%snmp) = @_;
   delete @{ vars() }{qw/device_changed new_device device_ports hook_data timestamp incomplete_walks/};
 
+  no warnings 'once';
   my $discover_device = App::Netdisco::DB->resultset('Device')->new_result({ %device_cols });
   $discover_device->in_storage(1);
   $discover_device->{'_column_data'}{'since_last_discover'} = 0;

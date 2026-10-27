@@ -391,9 +391,13 @@ sub _dedupe_aliases {
 # rows stand and the hook payload shows them rather than the partial walk
 sub _keep_stored_device_ips {
   my ($device, @incomplete) = @_;
-  vars->{'hook_data'}->{'device_ips'} = [ $device->device_ips(undef,
-    { result_class => 'DBIx::Class::ResultClass::HashRefInflator' })->all ];
-  return Status->info(incomplete_walk_message($device, 'device_ip', @incomplete));
+  vars->{'hook_data'}->{'device_ips'} = [ $device->device_ips(undef, {
+    columns => [qw/alias subnet port dns/], order_by => 'alias',
+    result_class => 'DBIx::Class::ResultClass::HashRefInflator',
+  })->all ];
+  my $message = incomplete_walk_message($device, 'device_ip', @incomplete);
+  warning $message;
+  return Status->info($message);
 }
 
 
@@ -774,7 +778,9 @@ sub _get_vrf_list {
     my @ok_vrfs = ();
     my $vrf_name = $snmp->vrf_name || {};
 
-    while (my ($idx, $vrf) = each(%$vrf_name)) {
+    # sorted so an address in two VRFs keeps the same port and subnet each run
+    foreach my $idx (sort keys %$vrf_name) {
+        my $vrf = $vrf_name->{$idx};
         if ($vrf =~ /^\S+$/) {
             my $ctx_name = pack("C*",split(/\./,$idx));
             $ctx_name =~ s/.*[^[:print:]]+//;
