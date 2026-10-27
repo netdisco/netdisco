@@ -5,7 +5,8 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Transport::SNMP ();
-use App::Netdisco::Util::SNMP qw/walk_mark incomplete_walks_for incomplete_walk_message/;
+use App::Netdisco::Util::SNMP qw/walk_mark incomplete_walks_for incomplete_walk_message
+  incomplete_walk_level/;
 use Dancer::Plugin::DBIC 'schema';
 
 # an empty or absent module list on a complete walk means no PoE, so the stored
@@ -48,10 +49,11 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my @incomplete = incomplete_walks_for($device, $snmp, $walk_mark,
     qw/peth_power_watts peth_power_status/);
   my $skipped = '';
+  my $level = incomplete_walk_level(@incomplete);
   if (scalar @incomplete) {
       $skipped = incomplete_walk_message($device, 'device_power', @incomplete);
       warning $skipped;
-      return Status->info($skipped) if !defined $p_watts;
+      return Status->$level($skipped) if !defined $p_watts;
   }
   elsif (!defined $p_watts) {
       _store_device_power($device, undef, undef);
@@ -107,7 +109,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       $device->ip, $gone;
     $device->powered_ports->populate(\@portpower);
 
-    return Status->info(sprintf ' [%s] power - added %d new PoE capable ports%s',
+    return Status->$level(sprintf ' [%s] power - added %d new PoE capable ports%s',
       $device->ip, scalar @portpower, (length $skipped ? "; $skipped" : ''));
   });
 });

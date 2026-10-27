@@ -131,6 +131,7 @@ sub run_entities {
 }
 
 sub status_messages { return join "\n", map { $_->log } @{ $_[0]->_statuslist } }
+sub error_messages { return map { $_->log } grep { $_->status eq 'error' } @{ $_[0]->_statuslist } }
 
 sub module_upserts { return grep { $_->[0] eq 'DeviceModule' } @upserts }
 sub module_removals { return grep { $_->[0] eq 'DeviceModule' } @removals }
@@ -238,6 +239,20 @@ subtest 'device_module__store_modules_off__chassis_row_without_snmp' => sub {
   is_deeply $removed[0][2], [ { index => 1 } ];
   like status_messages($job), qr/store_modules is disabled/;
   is scalar @warnings, 0, 'no warning';
+};
+
+subtest 'device_module__untranslatable_walk__skips_and_errors_the_job' => sub {
+  my $job = run_entities(walk_status => {
+    e_index => { %{ outcome('e_index') }, reason => 'absent', complete => 1, rows => 0 } });
+  is scalar(module_upserts()), 0, 'no upsert';
+  my @errors = error_messages($job);
+  is scalar @errors, 1, 'one error status';
+  like $errors[0], qr/device_module - kept existing rows, incomplete SNMP walk: e_index .+ netdisco-mibs/;
+};
+
+subtest 'device_module__cut_short_walk__job_status_as_today' => sub {
+  my $job = run_entities(fail_on_read => { e_serial => outcome('e_serial') });
+  is scalar(error_messages($job)), 0, 'no error status';
 };
 
 done_testing;

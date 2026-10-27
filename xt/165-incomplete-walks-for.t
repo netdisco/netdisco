@@ -14,7 +14,8 @@ use App::Netdisco;
 use App::Netdisco::DB; # fake device/deviceport rows
 use App::Netdisco::Backend::Job;
 use App::Netdisco::Transport::SNMP ();
-use App::Netdisco::Util::SNMP qw/walk_mark incomplete_walks_for/;
+use App::Netdisco::Util::SNMP qw/walk_mark incomplete_walks_for
+  incomplete_walk_level incomplete_walk_message/;
 use App::Netdisco::Worker::Plugin::Discover::Properties ();
 
 use Try::Tiny;
@@ -167,6 +168,26 @@ subtest 'incomplete_walks_for__absent_reason_marked_complete__returned' => sub {
   my $absent = outcome('ip_index', complete => 1, reason => 'absent');
   my $snmp = RecordingSNMP->new(walk_status => { ip_index => $absent, ip_table => outcome('ip_table', complete => 1, reason => 'ok') });
   is_deeply [ incomplete_walks_for($device, $snmp, 0, 'ip_index', 'ip_table') ], [ $absent ];
+};
+
+subtest 'incomplete_walk_level__absent_among_outcomes__error' => sub {
+  is incomplete_walk_level(outcome('ip_table'),
+    outcome('ip_index', complete => 1, reason => 'absent')), 'error';
+};
+
+subtest 'incomplete_walk_level__cut_short_outcomes_only__info' => sub {
+  is incomplete_walk_level(outcome('ip_index'), outcome('ip_table', reason => 'loop')), 'info';
+};
+
+subtest 'incomplete_walk_message__absent_outcome__names_the_mibs_to_check' => sub {
+  my $message = incomplete_walk_message($device, 'device_ip',
+    outcome('ip_index', complete => 1, reason => 'absent', rows => 0));
+  like $message, qr/ip_index \(MIB::ip_index\) absent after 0 rows/;
+  like $message, qr/could not translate .+ netdisco-mibs .+ mibhome/;
+};
+
+subtest 'incomplete_walk_message__cut_short_outcome__no_mibs_hint' => sub {
+  unlike incomplete_walk_message($device, 'device_ip', outcome('ip_index')), qr/netdisco-mibs/;
 };
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

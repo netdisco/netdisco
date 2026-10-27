@@ -9,7 +9,8 @@ use App::Netdisco::Util::Permission 'acl_matches';
 use Dancer::Plugin::DBIC 'schema';
 use String::Util 'trim';
 use App::Netdisco::Util::SNMPText 'decode_snmp_text';
-use App::Netdisco::Util::SNMP qw/walk_mark incomplete_walks_for incomplete_walk_message/;
+use App::Netdisco::Util::SNMP qw/walk_mark incomplete_walks_for incomplete_walk_message
+  incomplete_walk_level/;
 
 my $clean = sub {
   my $device = shift;
@@ -45,7 +46,8 @@ my $keep_stored = sub {
   my ($device, @incomplete) = @_;
   my $message = incomplete_walk_message($device, 'device_module', @incomplete);
   warning $message;
-  return Status->info($message);
+  my $level = incomplete_walk_level(@incomplete);
+  return Status->$level($message);
 };
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {

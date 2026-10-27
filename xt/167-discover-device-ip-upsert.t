@@ -329,4 +329,25 @@ subtest 'device_ip__vrf_device__vrf_list_read_once' => sub {
   is $last_snmp->{reads}{vrf_name}, 1, 'one vrf_name read';
 };
 
+sub error_messages { return map { $_->log } grep { $_->status eq 'error' } @{ $_[0]->_statuslist } }
+
+subtest 'device_ip__untranslatable_walk__skips_and_errors_the_job' => sub {
+  my $job = run_discover(walk_status => {
+    ip_table => { %{ outcome('ip_table') }, reason => 'absent', complete => 1, rows => 0 } });
+  is scalar(device_ip_upserts()), 0, 'no upsert';
+  my @errors = error_messages($job);
+  is scalar @errors, 1, 'one error status';
+  like $errors[0], qr/device_ip - kept existing rows, incomplete SNMP walk: ip_table .+ netdisco-mibs/;
+};
+
+subtest 'device_ip__absent_walk_on_vrf_device__errors_the_job' => sub {
+  my $job = run_discover(%vrf_snmp, walk_status => { ip_index => absent_in('ip_index', 'red') });
+  is scalar(error_messages($job)), 1, 'one error status';
+};
+
+subtest 'device_ip__cut_short_walk__job_status_as_today' => sub {
+  my $job = run_discover(fail_on_read => { ip_index => outcome('ip_index') });
+  is scalar(error_messages($job)), 0, 'no error status';
+};
+
 done_testing;

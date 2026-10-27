@@ -10,7 +10,7 @@ use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use App::Netdisco::Util::Device qw/get_device is_discoverable/;
 use App::Netdisco::Util::DNS 'hostname_from_ip';
 use App::Netdisco::Util::SNMP qw/snmp_comm_reindex snmp_vrf_reindex get_mibdirs_shortnames walk_mark incomplete_walks
-  incomplete_walks_for incomplete_walk_message/;
+  incomplete_walks_for incomplete_walk_message incomplete_walk_level/;
 use App::Netdisco::Util::Web 'sort_port';
 use App::Netdisco::Util::SNMPText qw/decode_snmp_text decode_text_with/;
 use App::Netdisco::DB::ExplicitLocking ':modes';
@@ -413,7 +413,8 @@ sub _keep_stored_device_ips {
   })->all ];
   my $message = incomplete_walk_message($device, 'device_ip', @incomplete);
   warning $message;
-  return Status->info($message);
+  my $level = incomplete_walk_level(@incomplete);
+  return Status->$level($message);
 }
 
 

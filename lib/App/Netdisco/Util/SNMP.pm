@@ -23,6 +23,7 @@ our @EXPORT_OK = qw/
   walk_mark
   incomplete_walks
   incomplete_walk_message
+  incomplete_walk_level
   incomplete_walks_for
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
@@ -295,7 +296,8 @@ sub incomplete_walks {
 
 Returns a log message for C<$what> on C<$device> naming each incomplete
 walk outcome: its method, table, reason, rows read and walk method, with
-the repeaters and SNMP context when there are any.
+the repeaters and SNMP context when there are any. When an outcome is
+C<absent>, the message says to check the MIBs the poller loads.
 
 =cut
 
@@ -308,8 +310,26 @@ sub incomplete_walk_message {
     . ((defined $_->{context} and length $_->{context})
         ? " in context $_->{context}" : '')
   } @outcomes;
-  return sprintf '[%s] %s - kept existing rows, incomplete SNMP walk: %s',
-    $device->ip, $what, join '; ', @walks;
+  my $hint = (incomplete_walk_level(@outcomes) eq 'error')
+    ? '; the poller could not translate an SNMP object, so check the netdisco-mibs'
+      . ' install and the mibhome and mibdirs settings'
+    : '';
+  return sprintf '[%s] %s - kept existing rows, incomplete SNMP walk: %s%s',
+    $device->ip, $what, (join '; ', @walks), $hint;
+}
+
+=head2 incomplete_walk_level( @outcomes )
+
+Returns the L<App::Netdisco::Worker::Status> a worker returns after keeping
+its stored rows for C<@outcomes>: C<error> when any outcome is C<absent>,
+otherwise C<info>. An C<absent> walk means the poller's MIBs are broken,
+which must show on the job, while a cut-short walk leaves the job's status
+as it was before the guard.
+
+=cut
+
+sub incomplete_walk_level {
+  return (grep { ($_->{reason} // '') eq 'absent' } @_) ? 'error' : 'info';
 }
 
 =head2 incomplete_walks_for( $device, $snmp, $mark, @methods )

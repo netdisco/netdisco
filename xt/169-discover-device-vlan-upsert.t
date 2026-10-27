@@ -146,6 +146,7 @@ sub run_vlans {
 }
 
 sub status_messages { return join "\n", map { $_->log } @{ $_[0]->_statuslist } }
+sub error_messages { return map { $_->log } grep { $_->status eq 'error' } @{ $_[0]->_statuslist } }
 
 sub vlan_upserts { return grep { $_->[0] eq 'DeviceVlan' } @upserts }
 sub vlan_removals { return grep { $_->[0] eq 'DeviceVlan' } @removals }
@@ -225,6 +226,20 @@ subtest 'device_vlan__skip__hook_data_vlans_from_stored_rows' => sub {
   is_deeply $search->[1]{columns}, [qw/vlan description/], 'stored columns';
   is $search->[1]{order_by}, 'vlan', 'stored order';
   is $search->[1]{result_class}, 'DBIx::Class::ResultClass::HashRefInflator', 'plain hashes';
+};
+
+subtest 'device_vlan__untranslatable_walk__skips_and_errors_the_job' => sub {
+  my $job = run_vlans(walk_status => {
+    v_name => { %{ outcome('v_name') }, reason => 'absent', complete => 1, rows => 0 } });
+  is scalar(vlan_upserts()), 0, 'no upsert';
+  my @errors = error_messages($job);
+  is scalar @errors, 1, 'one error status';
+  like $errors[0], qr/device_vlan - kept existing rows, incomplete SNMP walk: v_name .+ netdisco-mibs/;
+};
+
+subtest 'device_vlan__cut_short_walk__job_status_as_today' => sub {
+  my $job = run_vlans(fail_on_read => { i_vlan_membership => outcome('i_vlan_membership') });
+  is scalar(error_messages($job)), 0, 'no error status';
 };
 
 done_testing;

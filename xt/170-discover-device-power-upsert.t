@@ -143,6 +143,7 @@ sub run_power {
 }
 
 sub status_messages { return join "\n", map { $_->log } @{ $_[0]->_statuslist } }
+sub error_messages { return map { $_->log } grep { $_->status eq 'error' } @{ $_[0]->_statuslist } }
 
 sub power_upserts { return grep { $_->[0] eq 'DevicePower' } @upserts }
 sub power_removals { return grep { $_->[0] eq 'DevicePower' } @removals }
@@ -232,6 +233,30 @@ subtest 'device_power__setting_off_with_incomplete_walk__writes_what_came_back' 
   is scalar(power_upserts()), 1, 'upsert';
   is scalar(power_removals()), 1, 'removal';
   is scalar @warnings, 0, 'no warning';
+};
+
+subtest 'device_power__untranslatable_watts_walk__skips_and_errors_the_job' => sub {
+  my $job = run_power(peth_power_watts => undef, walk_status => {
+    peth_power_watts => { %{ outcome('peth_power_watts') }, reason => 'absent', complete => 1, rows => 0 } });
+  is scalar(power_upserts()), 0, 'no upsert';
+  my @errors = error_messages($job);
+  is scalar @errors, 1, 'one error status';
+  like $errors[0], qr/device_power - kept existing rows, incomplete SNMP walk: peth_power_watts .+ netdisco-mibs/;
+};
+
+subtest 'device_power__untranslatable_status_walk__port_power_runs_and_errors_the_job' => sub {
+  my $job = run_power(walk_status => {
+    peth_power_status => { %{ outcome('peth_power_status') }, reason => 'absent', complete => 1, rows => 0 } });
+  is scalar(power_upserts()), 0, 'no upsert';
+  is scalar @portpower_writes, 1, 'port power still populated';
+  my @errors = error_messages($job);
+  is scalar @errors, 1, 'one error status';
+  like $errors[0], qr/added 2 new PoE capable ports; .+ peth_power_status .+ netdisco-mibs/;
+};
+
+subtest 'device_power__cut_short_walk__job_status_as_today' => sub {
+  my $job = run_power(fail_on_read => { peth_power_status => outcome('peth_power_status') });
+  is scalar(error_messages($job)), 0, 'no error status';
 };
 
 done_testing;

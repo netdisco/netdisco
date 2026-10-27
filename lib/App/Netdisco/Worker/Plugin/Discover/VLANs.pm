@@ -9,7 +9,8 @@ use App::Netdisco::Transport::SNMP ();
 use aliased 'App::Netdisco::Worker::Status';
 use List::MoreUtils 'uniq';
 use App::Netdisco::Util::SNMPText 'decode_snmp_text';
-use App::Netdisco::Util::SNMP qw/walk_mark incomplete_walks_for incomplete_walk_message/;
+use App::Netdisco::Util::SNMP qw/walk_mark incomplete_walks_for incomplete_walk_message
+  incomplete_walk_level/;
 
 # a walk that was cut short must not look like an emptied table, so the stored
 # rows stand and the hook payload shows them rather than the partial walk
@@ -170,6 +171,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   my @incomplete = incomplete_walks_for($device, $snmp, $walk_mark, qw/
     v_name v_index i_vlan_membership i_vlan_membership_untagged interfaces/);
+  my $level = incomplete_walk_level(@incomplete);
   my $status = sprintf ' [%s] vlans - discovered for ports and device',
     $device->ip;
 
@@ -181,7 +183,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       _store_device_vlans($device, $v_name, $v_index, \%p_seen);
   }
 
-  return Status->info($status);
+  return Status->$level($status);
 });
 
 true;
