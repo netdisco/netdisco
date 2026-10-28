@@ -84,6 +84,8 @@ sub _with_mac_objects {
     $r{stitched_nodes} = [ map {{
       %$_, net_mac => Test::Netdisco::PortsJSON::MAC->new($_->{net_mac}),
     }} @{ $row->{stitched_nodes} } ] if $row->{stitched_nodes};
+    $r{neighbor_net_mac} = Test::Netdisco::PortsJSON::MAC->new($row->{neighbor_net_mac})
+      if $row->{neighbor_net_mac};
     return \%r;
 }
 

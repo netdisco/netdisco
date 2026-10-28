@@ -1,7 +1,7 @@
 // Guards netdisco-ports.js, which draws the Ports tab's table from JSON.
 //
 // The cells must stay the ones ports.tt drew, which port control, netdisco.js
-// and the CSS rely on, so the first test draws the eight fixture ports
+// and the CSS rely on, so the first test draws the thirteen fixture ports
 // (xt/ports-fixture.json) and compares each cell with the template's output for
 // the same port, kept in xt/ports-reference-rows.html. That file is frozen:
 // change it only with a deliberate change of the markup.

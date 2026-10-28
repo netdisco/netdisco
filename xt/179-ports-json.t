@@ -8,7 +8,7 @@
 # hash, the shared meta block, and the plugin cells ports_cells.tt still
 # draws in Template Toolkit.
 #
-# The port hashes are built from the same eight rows the ports.tt snapshot
+# The port hashes are built from the same thirteen rows the ports.tt snapshot
 # used (xt/lib/Test/Netdisco/Snapshot.pm), one per icon state, and are
 # committed as xt/ports-fixture.json for xt/js/ports-table.test.js to draw.
 
@@ -103,7 +103,7 @@ subtest '_port_choices' => sub {
 my %row = map {( $_->{port} => $_ )} @{ $payload->{rows} };
 
 subtest '_port_json on the snapshot rows' => sub {
-    is scalar @{ $payload->{rows} }, 8, 'one hash per fixture row';
+    is scalar @{ $payload->{rows} }, 13, 'one hash per fixture row';
 
     is $row{'Gi1/2'}->{up_admin}, 'down', 'admin-down state';
     is $row{'Gi1/3'}->{stp}, 'blocking', 'STP blocking state';
@@ -123,6 +123,16 @@ subtest '_port_json on the snapshot rows' => sub {
     ok !exists $row{'Gi1/2'}->{acl_pvid}, 'and only the ones granted';
     is $row{'Gi1/4'}->{has_group}, 1, 'subinterface group parent';
     is $row{'Gi1/10'}->{only_dot_zero}, 1, 'dot-zero-only parent';
+    is $row{'Po1'}->{is_master}, 1, 'LAG master';
+
+    # a neighbor on a manual topology link, with its name, MAC and inventory
+    is_deeply [ @{ $row{'Gi1/11'} }{qw/neighbor_ip neighbor_dns neighbor_mac manual_topo remote_is_wap/} ],
+      [ '192.0.2.50', 'ap1.example.com', 'aa:bb:cc:00:11:01', 1, 1 ], 'a discovered neighbor';
+    is $row{'Gi1/11'}->{remote_inventory}, 'Acme AP 3000 rev B', 'with its inventory';
+    ok !exists $row{'Gi1/12'}->{neighbor_ip}, 'an undiscovered neighbor has no neighbor_ip';
+    is $row{'Gi1/12'}->{remote_is_discoverable}, 1, 'and says it could be discovered';
+    is $row{'Gi1/13'}->{remote_is_phone}, 1, 'a phone';
+    is $row{'Gi1/14'}->{is_uplink}, 1, 'a possible uplink';
 
     is $row{'Gi1/1'}->{search}, 'aa:bb:cc:00:01:01 192.0.2.10 host.example.com',
       'the search shadow goes out as search, the old data-search';

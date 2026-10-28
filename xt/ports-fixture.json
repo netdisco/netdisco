@@ -147,6 +147,8 @@
          "c_ssid" : 1,
          "c_tags" : 1,
          "c_vmember" : 1,
+         "n_detailed_inventory" : 1,
+         "n_inventory" : 1,
          "n_ip4" : 1,
          "n_ip6" : 1,
          "p_fold_dotzero" : 1
@@ -277,6 +279,70 @@
          "node_count" : 0,
          "only_dot_zero" : 1,
          "port" : "Gi1/10",
+         "up" : "up",
+         "up_admin" : "up"
+      },
+      {
+         "manual_topo" : 1,
+         "neighbor_dns" : "ap1.example.com",
+         "neighbor_ip" : "192.0.2.50",
+         "neighbor_mac" : "aa:bb:cc:00:11:01",
+         "node_count" : 1,
+         "nodes" : [
+            {
+               "ips" : [
+                  {
+                     "dns" : "ap1.example.com",
+                     "ip" : "192.0.2.50"
+                  }
+               ],
+               "mac" : "aa:bb:cc:00:11:01",
+               "neighbor" : 1
+            }
+         ],
+         "port" : "Gi1/11",
+         "remote_id" : "ap-1",
+         "remote_inventory" : "Acme AP 3000 rev B",
+         "remote_ip" : "192.0.2.50",
+         "remote_is_wap" : 1,
+         "remote_port" : "eth0",
+         "remote_type" : "AP 3000",
+         "search" : "aa:bb:cc:00:11:01 192.0.2.50 ap1.example.com",
+         "up" : "up",
+         "up_admin" : "up"
+      },
+      {
+         "node_count" : 0,
+         "port" : "Gi1/12",
+         "remote_dns" : "sw3.example.com",
+         "remote_ip" : "192.0.2.60",
+         "remote_is_discoverable" : 1,
+         "remote_port" : "Gi0/24",
+         "up" : "up",
+         "up_admin" : "up"
+      },
+      {
+         "node_count" : 0,
+         "port" : "Gi1/13",
+         "remote_id" : "SEP001122334455",
+         "remote_ip" : "192.0.2.70",
+         "remote_is_phone" : 1,
+         "remote_port" : "Port 1",
+         "remote_type" : "IP Phone 8800",
+         "up" : "up",
+         "up_admin" : "up"
+      },
+      {
+         "is_uplink" : 1,
+         "node_count" : 0,
+         "port" : "Gi1/14",
+         "up" : "up",
+         "up_admin" : "up"
+      },
+      {
+         "is_master" : 1,
+         "node_count" : 0,
+         "port" : "Po1",
          "up" : "up",
          "up_admin" : "up"
       }

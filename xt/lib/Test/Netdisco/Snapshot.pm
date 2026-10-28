@@ -58,7 +58,7 @@ sub all_templates {
 
 =head2 ports_fixture
 
-The Ports tab's eight fixture rows with the params, settings and VLANs they
+The Ports tab's thirteen fixture rows with the params, settings and VLANs they
 render under, as C<ajax/device/ports.tt>'s stash. Shared with
 F<xt/179-ports-json.t>, which builds the JSON rows of the same ports, so the
 two descriptions of the table cannot drift apart.
@@ -75,6 +75,7 @@ sub ports_fixture {
       c_admin => 1, c_port => 1, c_name => 1, c_pvid => 1, c_tags => 1,
       c_power => 1, c_vmember => 1, c_nodes => 1, c_neighbors => 1,
       c_ssid => 1, p_fold_dotzero => 1, n_ip4 => 1, n_ip6 => 1,
+      n_inventory => 1, n_detailed_inventory => 1,
     },
     settings => {
       portctl_topology => 1,
@@ -142,6 +143,37 @@ sub ports_fixture {
       # up port whose only subinterface is the dot-zero one
       { port => 'Gi1/10', up_admin => 'up', up => 'up',
         has_subinterface_group => 1, has_only_dot_zero_subinterface => 1 },
+      # discovered neighbor on a manual topology link and a WAP: the link and
+      # WAP icons, the neighbor's name, port and MAC, then the inventory and
+      # the detailed advertisement. get_column stands for the DBIx::Class
+      # method the template calls for the neighbor's +select columns.
+      { port => 'Gi1/11', up_admin => 'up', up => 'up',
+        manual_topo => 1, remote_is_wap => 1,
+        remote_ip => '192.0.2.50', remote_port => 'eth0', remote_id => 'ap-1',
+        remote_type => 'AP 3000', remote_inventory => 'Acme AP 3000 rev B',
+        neighbor_ip => '192.0.2.50', neighbor_dns => 'ap1.example.com',
+        get_column => sub { +{ neighbor_ip => '192.0.2.50',
+          neighbor_dns => 'ap1.example.com' }->{ $_[0] } },
+        neighbor_net_mac => { as_string => 'aa:bb:cc:00:11:01' },
+        node_count => 1,
+        stitched_nodes => [ { active => 1,
+          net_mac => { as_string => 'aa:bb:cc:00:11:01' },
+          stitched_ips => [ { ip => '192.0.2.50', active => 1,
+            dns => 'ap1.example.com' } ] } ],
+        nodes_search => 'aa:bb:cc:00:11:01 192.0.2.50 ap1.example.com' },
+      # neighbor seen with an IP but not discovered (yet)
+      { port => 'Gi1/12', up_admin => 'up', up => 'up',
+        remote_ip => '192.0.2.60', remote_dns => 'sw3.example.com',
+        remote_port => 'Gi0/24', remote_is_discoverable => 1 },
+      # a phone that is not discoverable: its type is shown, not its port
+      { port => 'Gi1/13', up_admin => 'up', up => 'up',
+        remote_ip => '192.0.2.70', remote_is_phone => 1,
+        remote_port => 'Port 1', remote_type => 'IP Phone 8800',
+        remote_id => 'SEP001122334455' },
+      # neighbor seen but no IP recorded
+      { port => 'Gi1/14', up_admin => 'up', up => 'up', is_uplink => 1 },
+      # the aggregate port of a LAG whose member is Gi1/1
+      { port => 'Po1', up_admin => 'up', up => 'up', is_master => 1 },
     ],
   };
 }
@@ -196,7 +228,7 @@ A frame: the rows are drawn in the browser by F<netdisco-ports.js> from JSON,
 so this snapshot is the loader's table and the port-log modal, and the only
 parts of the stash it reads are C<params.c_admin> and C<user_has_role>, stubbed
 true to reach the modal. The stash is still C<ports_fixture()>, because that
-is the one description of the Ports tab's eight fixture rows:
+is the one description of the Ports tab's thirteen fixture rows:
 F<xt/179-ports-json.t> builds their JSON, which is committed as
 F<xt/ports-fixture.json> for F<xt/js/ports-table.test.js> to draw, and
 F<xt/ports-reference-rows.html> holds the markup the template drew for them
