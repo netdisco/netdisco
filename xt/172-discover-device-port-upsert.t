@@ -60,6 +60,9 @@ sub AUTOLOAD {
     push @{ $self->{walk_failures} }, $failure;
     $self->{walk_status}{$method} = $failure;
   }
+  # SNMP::Info returns an empty list, not undef, for a method the device does
+  # not support, so a caller in list context sees no value at all
+  return unless exists $self->{$method};
   return $self->{$method};
 }
 

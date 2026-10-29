@@ -39,7 +39,13 @@ config->{'enable_incomplete_walk_protection'} = 1;
 
 package FakeSNMP;
 our $AUTOLOAD;
-sub new { my ($class, %vals) = @_; return bless { walk_failures => [], %vals }, $class; }
+sub new {
+  my ($class, %vals) = @_;
+  my $unsupported = delete $vals{unsupported} || [];
+  my $self = bless { walk_failures => [], %vals }, $class;
+  delete @{$self}{@$unsupported};
+  return $self;
+}
 sub walk_failures { $_[0]{walk_failures} }
 sub walk_status { $_[0]{walk_status}{$_[1]} }
 sub AUTOLOAD {
@@ -51,6 +57,9 @@ sub AUTOLOAD {
     push @{ $self->{walk_failures} }, $failure;
     $self->{walk_status}{$method} = $failure;
   }
+  # SNMP::Info returns an empty list, not undef, for a method the device does
+  # not support, so a caller in list context sees no value at all
+  return unless exists $self->{$method};
   return $self->{$method};
 }
 
@@ -266,6 +275,23 @@ subtest 'port_vlans__normal_run__upserts_with_touch_last_discover_and_removes_un
     { port => 'Gi1/1', vlan => 10, native => 't' },
     { port => 'Gi1/1', vlan => 30, native => 'f' },
     { port => 'Gi1/2', vlan => 10, native => 't' } ];
+};
+
+subtest 'port_vlans__device_without_i_vlan_type__writes_rows' => sub {
+  run_vlans(unsupported => ['i_vlan_type']);
+  my ($call) = pv_upserts();
+  is_deeply [ map { join ',', @{$_}{qw/port vlan native egress_tag/} } @{ $call->[1] || [] } ],
+    [ 'Gi1/1,10,t,f', 'Gi1/1,30,f,t', 'Gi1/2,10,t,f' ], 'rows written';
+  is $call->[1][0]{vlantype}, undef, 'no type';
+};
+
+subtest 'port_vlans__any_one_table_unsupported__membership_still_seen' => sub {
+  foreach my $method (qw/i_vlan i_vlan_type i_vlan_membership i_vlan_membership_untagged/) {
+    run_vlans(unsupported => [$method]);
+    my ($removal) = pv_removals();
+    ok $removal && scalar @{ $removal->[2] },
+      "$method unsupported: rows seen, so remove_unseen keeps the ports' VLANs";
+  }
 };
 
 subtest 'port_vlans__native_to_tagged__old_key_removed' => sub {

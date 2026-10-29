@@ -51,6 +51,9 @@ sub AUTOLOAD {
     push @{ $self->{walk_failures} }, $failure;
     $self->{walk_status}{$method} = $failure;
   }
+  # SNMP::Info returns an empty list, not undef, for a method the device does
+  # not support, so a caller in list context sees no value at all
+  return unless exists $self->{$method};
   return $self->{$method};
 }
 
@@ -192,6 +195,26 @@ subtest 'wireless__two_ifindexes_one_port__one_row_same_winner' => sub {
   is $runs[0][0][1]{channel}, 11, 'lowest ifIndex wins the channel';
   is scalar @{ $runs[0][1] }, 2, 'one SSID row per port and bssid';
   is $runs[0][1][1]{ssid}, 'first', 'lowest entry wins the SSID';
+};
+
+subtest 'wireless__controller_radio_keys__channels_by_oid_without_warnings' => sub {
+  # a controller such as Airespace keys its radios by AP MAC and slot
+  my %interfaces = ('0.11.133.1.2.3.0' => 'wlan0', '0.11.133.1.2.3.1' => 'wlan1',
+                    '0.11.133.1.2.10.0' => 'wlan1');
+  my @perl_warnings;
+  local $SIG{__WARN__} = sub { push @perl_warnings, @_ };
+  run_wireless(
+    interfaces => \%interfaces,
+    i_ssidlist => { '0.11.133.1.2.3.0.1' => 'guest' },
+    i_ssidbcast => { '0.11.133.1.2.3.0.1' => 'true' },
+    i_ssidmac => { '0.11.133.1.2.3.0.1' => 'aa:00:00:00:00:01' },
+    i_80211channel => { '0.11.133.1.2.10.0' => 36, '0.11.133.1.2.3.1' => 11,
+                        '0.11.133.1.2.3.0' => 6 },
+    dot11_cur_tx_pwr_mw => {},
+  );
+  is_deeply [ map {"$_->{port}:$_->{channel}"} @{ (chan_upserts())[0][1] || [] } ],
+    [ 'wlan0:6', 'wlan1:11' ], 'lowest radio key wins the channel';
+  is_deeply \@perl_warnings, [], 'no perl warnings';
 };
 
 subtest 'wireless__no_ssids_complete_walk__removes_both_tables_rows' => sub {

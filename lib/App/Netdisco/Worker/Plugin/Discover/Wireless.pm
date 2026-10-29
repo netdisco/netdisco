@@ -10,8 +10,9 @@ use App::Netdisco::Util::SNMPText 'decode_snmp_text';
 use App::Netdisco::Util::SNMP qw/walk_mark incomplete_walks_for incomplete_walk_message
   incomplete_walk_level/;
 
-# ifIndex and ifIndex.n keys in numeric order, so a duplicate resolves to the
-# same entry on every run whatever the hash order
+# ifIndex and ifIndex.n keys, or a controller's AP MAC and slot keys, in
+# numeric order, so a duplicate resolves to the same entry on every run
+# whatever the hash order
 sub _by_oid {
   my @left  = split m/\./, $a;
   my @right = split m/\./, $b;
@@ -73,7 +74,7 @@ sub _build_channels {
   my $power      = $snmp->dot11_cur_tx_pwr_mw || {};
 
   my (%seen, @channels);
-  foreach my $entry (sort { $a <=> $b } keys %$channel) {
+  foreach my $entry (sort _by_oid keys %$channel) {
       my $port = $interfaces->{$entry};
 
       if (not $port) {

@@ -154,8 +154,9 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $v_index = $snmp->v_index;
 
   # every port VLAN table is read before the guard, which looks at the walks
-  # read so far
-  my %walked = map {($_ => $snmp->$_)} qw/i_vlan i_vlan_type interfaces
+  # read so far. scalar, because SNMP::Info returns an empty list for a table
+  # the device lacks, which in list context shifts every later key and value
+  my %walked = map {($_ => scalar $snmp->$_)} qw/i_vlan i_vlan_type interfaces
     i_vlan_membership i_vlan_membership_untagged/;
 
   # cache the device ports to save hitting the database for many single rows
