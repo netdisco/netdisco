@@ -67,21 +67,14 @@ package FakeRows;
 sub new { my ($class, @rows) = @_; return bless { rows => [@rows] }, $class; }
 sub reset { return $_[0] }
 sub all { return @{ $_[0]->{rows}} }
-sub delete { return 0 }
-sub populate { return 1 }
 
-package FakeDevicePortRS;
+package FakeLockedRow;
 sub new { return bless {}, shift }
-sub result_source { return App::Netdisco::DB->resultset('DevicePort')->result_source }
-sub txn_do_locked { my ($self, $mode, $code) = @_; return $code->() }
+sub first { return $_[0] }
 
 package FakeSchema;
 sub txn_do { my ($self, $code) = @_; return $code->() }
-sub resultset {
-  my ($self, $name) = @_;
-  return FakeDevicePortRS->new if $name eq 'DevicePort';
-  return App::Netdisco::DB->resultset($name);
-}
+sub resultset { my ($self, $name) = @_; return App::Netdisco::DB->resultset($name) }
 
 package main;
 
@@ -130,6 +123,7 @@ sub run_discover {
 
   my $fake_snmp = FakeSNMP->new(%base_snmp, %snmp);
   $last_snmp = $fake_snmp;
+  my $search = DBIx::Class::ResultSet->can('search');
   no warnings 'once';
 
   local *App::Netdisco::Transport::SNMP::reader_for = sub { return $fake_snmp };
@@ -151,6 +145,11 @@ sub run_discover {
     my ($rs, $scope, $seen) = @_;
     push @removals, [ $rs->result_source->source_name, $scope, $seen ];
     return 0;
+  };
+  local *App::Netdisco::DB::ResultSet::DevicePort::retire_ports = sub { return 0 };
+  local *App::Netdisco::DB::ResultSet::Device::search = sub {
+    my ($rs, $cond, $attrs) = @_;
+    return ($attrs and $attrs->{for}) ? FakeLockedRow->new : $search->(@_);
   };
 
   my $job = App::Netdisco::Backend::Job->new({

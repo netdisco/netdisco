@@ -49,12 +49,15 @@ Dancer::Logger->init('console', $CONFIG);
 
 config->{'device_auth'} = [{driver => 'snmp'}];
 config->{'enable_field_protection'} = 0; # unrelated feature, keep it out of the way
+config->{'enable_incomplete_walk_protection'} = 1;
 config->{'ignore_deviceports'} = [];     # ditto - avoid its device_ips() DB lookup
 config->{'dns'}->{'no'} = ['0.0.0.0/0']; # skip real DNS resolution of the alias worker
 
 package FakeSNMP;
 our $AUTOLOAD;
-sub new { my ($class, %vals) = @_; return bless {%vals}, $class; }
+sub new { my ($class, %vals) = @_; return bless { walk_failures => [], %vals }, $class; }
+sub walk_failures { $_[0]{walk_failures} }
+sub walk_status { $_[0]{walk_status}{$_[1]} }
 sub AUTOLOAD {
   my $self = shift;
   (my $method = $AUTOLOAD) =~ s/.*:://;
@@ -66,21 +69,14 @@ package FakePortsRS; # stands in for a DBIC ResultSet of DevicePort rows
 sub new { my ($class, @rows) = @_; return bless { rows => [@rows] }, $class; }
 sub reset { return $_[0] }
 sub all { return @{ $_[0]->{rows} } }
-sub delete { return 0 }
-sub populate { return 1 }
 
-package FakeDevicePortRS; # only result_source (metadata) and locking are used
+package FakeLockedRow; # the device row the ports write locks
 sub new { return bless {}, shift }
-sub result_source { return App::Netdisco::DB->resultset('DevicePort')->result_source }
-sub txn_do_locked { my ($self, $mode, $code) = @_; return $code->() }
+sub first { return $_[0] }
 
 package FakeSchema;
 sub txn_do { my ($self, $code) = @_; return $code->() }
-sub resultset {
-  my ($self, $name) = @_;
-  return FakeDevicePortRS->new if $name eq 'DevicePort';
-  return App::Netdisco::DB->resultset($name);
-}
+sub resultset { my ($self, $name) = @_; return App::Netdisco::DB->resultset($name) }
 
 package main;
 
@@ -145,16 +141,28 @@ sub run_discover_properties {
   my $old_ports_rs = FakePortsRS->new(
     App::Netdisco::DB->resultset('DevicePort')->new_result({ %old_port }),
   );
+  my $search = DBIx::Class::ResultSet->can('search');
 
   local *App::Netdisco::Transport::SNMP::reader_for = sub { return $fake_snmp };
   local *App::Netdisco::Worker::Plugin::Discover::Properties::schema
     = sub { return bless {}, 'FakeSchema' };
-  local *App::Netdisco::DB::Result::Device::ports = sub { return $old_ports_rs };
+  # a skipped ports write reads the stored rows back as plain hashes
+  local *App::Netdisco::DB::Result::Device::ports = sub {
+    my ($self, $cond, $attrs) = @_;
+    return FakePortsRS->new({ %old_port })
+      if $attrs and ($attrs->{result_class} || '') =~ m/HashRefInflator/;
+    return $old_ports_rs;
+  };
   local *App::Netdisco::DB::Result::Device::device_ips = sub { return FakePortsRS->new };
   no warnings 'once'; # these globs are otherwise never referenced by name
-  # the alias worker writes through these; there is no database to take them
+  # the alias and port workers write through these; there is no database to take them
   local *App::Netdisco::DB::Upsert::upsert = sub { return 0 };
   local *App::Netdisco::DB::Upsert::remove_unseen = sub { return 0 };
+  local *App::Netdisco::DB::ResultSet::DevicePort::retire_ports = sub { return 0 };
+  local *App::Netdisco::DB::ResultSet::Device::search = sub {
+    my ($rs, $cond, $attrs) = @_;
+    return ($attrs and $attrs->{for}) ? FakeLockedRow->new : $search->(@_);
+  };
   local *App::Netdisco::DB::Result::Device::update = sub { return $_[0] };
   local *App::Netdisco::DB::Result::Device::update_or_insert = sub { return $_[0] };
 
@@ -230,6 +238,21 @@ sub run_discover_properties {
   is($job->status, 'done', 'discover completes');
   is($changed, 0, 'default config ignores device_port up/up_admin changes');
 }
+
+# a cut-short interfaces walk keeps the stored ports, which must not read as
+# every port removed or changed
+subtest 'updated_device_hook__ports_skipped__ports_count_as_unchanged' => sub {
+  my $failure = { method => 'interfaces', leaf => 'IF-MIB::ifIndex', reason => 'timeout',
+                  rows => 1, walk => 'bulkwalk', complete => 0 };
+  my ($job, $changed) = run_discover_properties(
+    old_port => { descr => 'old description' },
+    snmp => { walk_failures => [ $failure ], walk_status => { interfaces => $failure } },
+  );
+  is($job->status, 'done', 'discover completes');
+  is($changed, 0, 'skipped ports do not set device_changed');
+  is_deeply([ map { $_->{descr} } @{ vars->{'hook_data'}{'ports'} } ], [ 'old description' ],
+    'hook payload ports are the stored rows');
+};
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Discover::Hooks: does the updated_device event actually get queued when

@@ -71,21 +71,14 @@ package FakePortsRS;
 sub new { my ($class, @rows) = @_; return bless { rows => [@rows] }, $class; }
 sub reset { return $_[0] }
 sub all { return @{ $_[0]->{rows} } }
-sub delete { return 0 }
-sub populate { return 1 }
 
-package FakeDevicePortRS;
+package FakeLockedRow;
 sub new { return bless {}, shift }
-sub result_source { return App::Netdisco::DB->resultset('DevicePort')->result_source }
-sub txn_do_locked { my ($self, $mode, $code) = @_; return $code->() }
+sub first { return $_[0] }
 
 package FakeSchema;
 sub txn_do { my ($self, $code) = @_; return $code->() }
-sub resultset {
-  my ($self, $name) = @_;
-  return FakeDevicePortRS->new if $name eq 'DevicePort';
-  return App::Netdisco::DB->resultset($name);
-}
+sub resultset { my ($self, $name) = @_; return App::Netdisco::DB->resultset($name) }
 
 package main;
 
@@ -224,6 +217,7 @@ sub run_discover {
 
   my $fake_snmp = FakeSNMP->new(%base_snmp, %snmp);
   my $ports_rs = FakePortsRS->new;
+  my $search = DBIx::Class::ResultSet->can('search');
 
   local *App::Netdisco::Transport::SNMP::reader_for = sub { return $fake_snmp };
   local *App::Netdisco::Worker::Plugin::Discover::Properties::schema
@@ -232,6 +226,13 @@ sub run_discover {
   local *App::Netdisco::DB::Result::Device::device_ips = sub { return FakePortsRS->new };
   local *App::Netdisco::DB::Result::Device::update = sub { return $_[0] };
   local *App::Netdisco::DB::Result::Device::update_or_insert = sub { return $_[0] };
+  local *App::Netdisco::DB::Upsert::upsert = sub { return 0 };
+  local *App::Netdisco::DB::Upsert::remove_unseen = sub { return 0 };
+  local *App::Netdisco::DB::ResultSet::DevicePort::retire_ports = sub { return 0 };
+  local *App::Netdisco::DB::ResultSet::Device::search = sub {
+    my ($rs, $cond, $attrs) = @_;
+    return ($attrs and $attrs->{for}) ? FakeLockedRow->new : $search->(@_);
+  };
 
   my $job = App::Netdisco::Backend::Job->new({
     job => 0, device => $discover_device, action => 'discover::properties',
@@ -252,10 +253,12 @@ subtest 'interfaces_worker__incomplete_interfaces_walk__records_it_for_the_job' 
   is_deeply vars->{'incomplete_walks'}{'192.0.2.1'}{'interfaces'}, [ $failure ],
     'only the failure from the interfaces read is recorded';
   ok !$job->is_cancelled, 'discover behavior unchanged';
+  is $job->status, 'done', 'the incomplete run completes';
 
-  run_discover();
+  $job = run_discover();
   is_deeply vars->{'incomplete_walks'}{'192.0.2.1'}{'interfaces'}, [],
     'a complete walk records an empty list';
+  is $job->status, 'done', 'the complete run completes';
 };
 
 done_testing;
