@@ -20,7 +20,7 @@ sub _keep_stored_device_vlans {
     columns => [qw/vlan description/], order_by => 'vlan',
     result_class => 'DBIx::Class::ResultClass::HashRefInflator',
   })->all ];
-  my $message = incomplete_walk_message($device, 'device_vlan', @incomplete);
+  my $message = incomplete_walk_message($device, 'device_port_vlan and device_vlan', @incomplete);
   warning $message;
   return $message;
 }
@@ -75,6 +75,72 @@ sub _store_device_vlans {
   return;
 }
 
+sub _port_vlan_rows {
+  my ($device, $walked, $device_ports) = @_;
+  my ($i_vlan, $i_vlan_type, $interfaces, $i_vlan_membership,
+      $i_vlan_membership_untagged) = @{$walked}{qw/i_vlan i_vlan_type
+        interfaces i_vlan_membership i_vlan_membership_untagged/};
+
+  my (%p_seen, %row_seen, @portvlans);
+  my @active_ports = uniq (keys %$i_vlan_membership_untagged, keys %$i_vlan_membership);
+
+  # sorted, and the first entry for a port/vlan/native key wins: two interface
+  # entries can carry one port name, and an upsert refuses a duplicate key
+  foreach my $entry (sort @active_ports) {
+      my $port = $interfaces->{$entry} or next;
+
+      if (!defined $device_ports->{$port}) {
+          debug sprintf ' [%s] vlans - local port %s already skipped, ignoring',
+            $device->ip, $port;
+          next;
+      }
+
+      my %this_port_vlans = ();
+      my $type = $i_vlan_type->{$entry};
+
+      foreach my $set ([ $i_vlan_membership_untagged->{$entry}, 0 ],
+                       [ $i_vlan_membership->{$entry}, 1 ]) {
+          foreach my $vlan (@{ $set->[0] || [] }) {
+              next unless $vlan;
+              next if $this_port_vlans{$vlan};
+              my $native = ((defined $i_vlan->{$entry})
+                              and ($vlan eq $i_vlan->{$entry})) ? 't' : 'f';
+              ++$this_port_vlans{$vlan};
+              ++$p_seen{$vlan};
+              next if $row_seen{join "\0", $port, $vlan, $native}++;
+
+              push @portvlans, {
+                  ip => $device->ip,
+                  port => $port,
+                  vlan => $vlan,
+                  native => $native,
+                  egress_tag => ($set->[1] && $native eq 'f' ? 't' : 'f'),
+                  vlantype => $type,
+                  last_discover => \'LOCALTIMESTAMP',
+              };
+          }
+      }
+  }
+  return (\@portvlans, \%p_seen);
+}
+
+sub _store_port_vlans {
+  my ($device, $portvlans) = @_;
+
+  schema('netdisco')->txn_do(sub {
+    my $rs = schema('netdisco')->resultset('DevicePortVlan');
+    $rs->upsert($portvlans, { touch => ['last_discover'] });
+    my $gone = $rs->remove_unseen({ ip => $device->ip },
+      [ map {{ port => $_->{port}, vlan => $_->{vlan}, native => $_->{native} }} @$portvlans ]);
+    debug sprintf ' [%s] vlans - removed %d port VLANs',
+      $device->ip, $gone;
+
+    debug sprintf ' [%s] vlans - wrote %d port VLANs',
+      $device->ip, scalar @$portvlans;
+  });
+  return;
+}
+
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
 
@@ -87,100 +153,28 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $v_name  = $snmp->v_name;
   my $v_index = $snmp->v_index;
 
+  # every table is read before the guard, which looks at the walks read so far
+  my %walked = map {($_ => $snmp->$_)} qw/i_vlan i_vlan_type interfaces
+    i_vlan_membership i_vlan_membership_untagged/;
+
   # cache the device ports to save hitting the database for many single rows
   my $device_ports = vars->{'device_ports'}
     || { map {($_->port => $_)} $device->ports->all };
 
-  my $i_vlan      = $snmp->i_vlan;
-  my $i_vlan_type = $snmp->i_vlan_type;
-  my $interfaces  = $snmp->interfaces;
-  my $i_vlan_membership          = $snmp->i_vlan_membership;
-  my $i_vlan_membership_untagged = $snmp->i_vlan_membership_untagged;
-
-  my %p_seen = ();
-  my @portvlans = ();
-  my @active_ports = uniq (keys %$i_vlan_membership_untagged, keys %$i_vlan_membership);
-
-  # build port vlans suitable for DBIC
-  foreach my $entry (@active_ports) {
-      my $port = $interfaces->{$entry} or next;
-
-      if (!defined $device_ports->{$port}) {
-          debug sprintf ' [%s] vlans - local port %s already skipped, ignoring',
-            $device->ip, $port;
-          next;
-      }
-
-      my %this_port_vlans = ();
-      my $type = $i_vlan_type->{$entry};
-
-      foreach my $vlan (@{ $i_vlan_membership_untagged->{$entry} || [] }) {
-          next unless $vlan;
-          next if $this_port_vlans{$vlan};
-          my $native = ((defined $i_vlan->{$entry})
-                          and ($vlan eq $i_vlan->{$entry})) ? 't' : 'f';
-
-          push @portvlans, {
-              port => $port,
-              vlan => $vlan,
-              native => $native,
-              egress_tag => 'f',
-              vlantype => $type,
-              last_discover => \'LOCALTIMESTAMP',
-          };
-
-          ++$this_port_vlans{$vlan};
-          ++$p_seen{$vlan};
-      }
-
-      foreach my $vlan (@{ $i_vlan_membership->{$entry} || [] }) {
-          next unless $vlan;
-          next if $this_port_vlans{$vlan};
-          my $native = ((defined $i_vlan->{$entry})
-                          and ($vlan eq $i_vlan->{$entry})) ? 't' : 'f';
-
-          push @portvlans, {
-              port => $port,
-              vlan => $vlan,
-              native => $native,
-              egress_tag => ($native eq 't' ? 'f' : 't'),
-              vlantype => $type,
-              last_discover => \'LOCALTIMESTAMP',
-          };
-
-          ++$this_port_vlans{$vlan};
-          ++$p_seen{$vlan};
-      }
-  }
-
-  # # set is_uplink on the ports with non-native vlans
-  # foreach my $pv (@portvlans) {
-  #     next unless $pv->{native} and $pv->{native} eq 'f';
-  #     $device_ports->{$pv->{port}}->update({is_uplink => \'true'});
-  # }
-
-  schema('netdisco')->txn_do(sub {
-    my $gone = $device->port_vlans->delete;
-    debug sprintf ' [%s] vlans - removed %d port VLANs',
-      $device->ip, $gone;
-    $device->port_vlans->populate(\@portvlans);
-
-    debug sprintf ' [%s] vlans - added %d new port VLANs',
-      $device->ip, scalar @portvlans;
-  });
-
   my @incomplete = incomplete_walks_for($device, $snmp, $walk_mark, qw/
-    v_name v_index i_vlan_membership i_vlan_membership_untagged interfaces/);
+    v_name v_index i_vlan i_vlan_type i_vlan_membership
+    i_vlan_membership_untagged interfaces/);
   my $level = incomplete_walk_level(@incomplete);
   my $status = sprintf ' [%s] vlans - discovered for ports and device',
     $device->ip;
 
   if (scalar @incomplete) {
-      $status = sprintf ' [%s] vlans - discovered for ports; %s', $device->ip,
-        _keep_stored_device_vlans($device, @incomplete);
+      $status = _keep_stored_device_vlans($device, @incomplete);
   }
   else {
-      _store_device_vlans($device, $v_name, $v_index, \%p_seen);
+      my ($portvlans, $p_seen) = _port_vlan_rows($device, \%walked, $device_ports);
+      _store_port_vlans($device, $portvlans);
+      _store_device_vlans($device, $v_name, $v_index, $p_seen);
   }
 
   return Status->$level($status);

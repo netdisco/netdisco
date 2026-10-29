@@ -60,7 +60,11 @@ sub all { return @{ $_[0]->{rows}} }
 our @searches;
 sub search { my $self = shift; push @searches, [@_]; return $self }
 sub delete { return 0 }
-sub populate { return 1 }
+
+package RecordingPortVlans;
+sub delete { push @main::legacy_port_vlan_writes, 'delete'; return 0 }
+sub populate { push @main::legacy_port_vlan_writes, 'populate'; return 1 }
+sub search { return $_[0] }
 
 package FakePort;
 sub port { return $_[0]{port} }
@@ -94,14 +98,15 @@ sub outcome {
            rows => 1, walk => 'bulkwalk', complete => 0 };
 }
 
-my (@upserts, @removals, @warnings, @portvlan_writes);
+my (@upserts, @removals, @warnings);
+our @legacy_port_vlan_writes;
 our $stored_rows = [];
 our $earlier_interfaces;
 
 sub run_vlans {
   my (%snmp) = @_;
   delete @{ vars() }{qw/device_changed new_device device_ports hook_data timestamp incomplete_walks/};
-  @upserts = @removals = @warnings = @portvlan_writes = @FakeRows::searches = ();
+  @upserts = @removals = @warnings = @legacy_port_vlan_writes = @FakeRows::searches = ();
   vars->{'incomplete_walks'}{'192.0.2.1'}{'interfaces'} = [ $earlier_interfaces ]
     if $earlier_interfaces;
 
@@ -121,9 +126,9 @@ sub run_vlans {
     = sub { return FakeRows->new(map { bless { port => $_ }, 'FakePort' } 'Gi1/1', 'Gi1/2') };
   local *App::Netdisco::DB::Result::Device::vlans
     = sub { return FakeRows->new(@$stored_rows) };
-  local *FakeRows::populate = sub { push @portvlan_writes, $_[1]; return 1 };
-  local *App::Netdisco::DB::Result::Device::port_vlans
-    = sub { return FakeRows->new };
+  local *App::Netdisco::DB::Result::Device::port_vlans = sub {
+    return bless {}, 'RecordingPortVlans';
+  };
   local *App::Netdisco::DB::Upsert::upsert = sub {
     my ($rs, $rows, $options) = @_;
     push @upserts, [ $rs->result_source->source_name, $rows, $options ];
@@ -150,6 +155,8 @@ sub error_messages { return map { $_->log } grep { $_->status eq 'error' } @{ $_
 
 sub vlan_upserts { return grep { $_->[0] eq 'DeviceVlan' } @upserts }
 sub vlan_removals { return grep { $_->[0] eq 'DeviceVlan' } @removals }
+sub pv_upserts { return grep { $_->[0] eq 'DevicePortVlan' } @upserts }
+sub pv_removals { return grep { $_->[0] eq 'DevicePortVlan' } @removals }
 
 subtest 'device_vlan__complete_walks__upserts_named_and_unnamed_and_removes_unseen' => sub {
   my $job = run_vlans();
@@ -188,16 +195,14 @@ subtest 'device_vlan__two_names_for_one_vlan__one_row_same_name_every_run' => su
   is_deeply [ keys %{{ map { $_ => 1 } @names }} ], ['Ex'], 'first sorted entry wins every run';
 };
 
-subtest 'device_vlan__incomplete_membership_walk__skips_device_vlan_keeps_port_vlans_as_today' => sub {
+subtest 'device_vlan__incomplete_membership_walk__skips_device_vlan' => sub {
   my $job = run_vlans(fail_on_read => { i_vlan_membership => outcome('i_vlan_membership') });
   is scalar(vlan_upserts()), 0, 'no upsert';
   is scalar(vlan_removals()), 0, 'no removal';
-  is scalar @portvlan_writes, 1, 'port VLANs are still written';
-  ok scalar @{ $portvlan_writes[0] }, 'with rows';
   like status_messages($job),
-    qr/\[192\.0\.2\.1\] device_vlan - kept existing rows, incomplete SNMP walk: i_vlan_membership /;
+    qr/\[192\.0\.2\.1\] device_port_vlan and device_vlan - kept existing rows, incomplete SNMP walk: i_vlan_membership /;
   is scalar @warnings, 1, 'one warning';
-  like $warnings[0], qr/device_vlan - kept existing rows, incomplete SNMP walk: i_vlan_membership /;
+  like $warnings[0], qr/\A\[192\.0\.2\.1\] device_port_vlan and device_vlan - kept existing rows, incomplete SNMP walk: i_vlan_membership /;
   ok !$job->is_cancelled, 'the guard skips and never cancels';
 };
 
@@ -240,6 +245,78 @@ subtest 'device_vlan__untranslatable_walk__skips_and_errors_the_job' => sub {
 subtest 'device_vlan__cut_short_walk__job_status_as_today' => sub {
   my $job = run_vlans(fail_on_read => { i_vlan_membership => outcome('i_vlan_membership') });
   is scalar(error_messages($job)), 0, 'no error status';
+};
+
+subtest 'port_vlans__normal_run__upserts_with_touch_last_discover_and_removes_unseen' => sub {
+  run_vlans();
+  my @calls = pv_upserts();
+  is scalar @calls, 1, 'one upsert' or return;
+  my @rows = @{ $calls[0][1] };
+  is_deeply [ map { join ',', @{$_}{qw/port vlan native egress_tag/} } @rows ],
+    [ 'Gi1/1,10,t,f', 'Gi1/1,30,f,t', 'Gi1/2,10,t,f' ], 'rows in sorted entry order';
+  is_deeply [ sort keys %{ $rows[0] } ],
+    [ qw/egress_tag ip last_discover native port vlan vlantype/ ], 'creation is left out';
+  is $rows[0]{ip}, '192.0.2.1';
+  is $rows[0]{vlantype}, 'static';
+  is_deeply $calls[0][2], { touch => ['last_discover'] };
+  my @removed = pv_removals();
+  is scalar @removed, 1, 'one removal';
+  is_deeply $removed[0][1], { ip => '192.0.2.1' };
+  is_deeply $removed[0][2], [
+    { port => 'Gi1/1', vlan => 10, native => 't' },
+    { port => 'Gi1/1', vlan => 30, native => 'f' },
+    { port => 'Gi1/2', vlan => 10, native => 't' } ];
+};
+
+subtest 'port_vlans__native_to_tagged__old_key_removed' => sub {
+  run_vlans(i_vlan => { 1 => 20, 2 => 10 });
+  my ($call) = pv_upserts();
+  my @gi1 = grep { $_->{port} eq 'Gi1/1' and $_->{vlan} == 10 } @{ $call->[1] };
+  is_deeply [ map { $_->{native} } @gi1 ], ['f'], 'now tagged';
+  my ($removal) = pv_removals();
+  ok !(grep { $_->{port} eq 'Gi1/1' and $_->{vlan} == 10 and $_->{native} eq 't' } @{ $removal->[2] }),
+    'old native key is not in the seen list, so remove_unseen deletes it';
+};
+
+subtest 'port_vlans__two_entries_one_port__first_sorted_entry_wins' => sub {
+  run_vlans(
+    interfaces => { 1 => 'Gi1/1', 2 => 'Gi1/1' },
+    i_vlan_membership => { 1 => [10], 2 => [10] },
+    i_vlan_membership_untagged => { 1 => [], 2 => [] },
+    i_vlan_type => { 1 => 'first', 2 => 'second' },
+  );
+  my ($call) = pv_upserts();
+  is scalar @{ $call->[1] }, 1, 'one row for the key';
+  is $call->[1][0]{vlantype}, 'first';
+};
+
+subtest 'port_vlans__incomplete_i_vlan_membership__keeps_port_and_device_vlans' => sub {
+  run_vlans(fail_on_read => { i_vlan_membership => outcome('i_vlan_membership') });
+  is scalar(pv_upserts()), 0, 'no port VLAN upsert';
+  is scalar(pv_removals()), 0, 'no port VLAN removal';
+  is scalar(vlan_upserts()), 0, 'no device VLAN upsert';
+  is_deeply \@legacy_port_vlan_writes, [], 'no relationship delete or populate';
+};
+
+subtest 'port_vlans__incomplete_i_vlan__keeps_port_vlans' => sub {
+  run_vlans(fail_on_read => { i_vlan => outcome('i_vlan') });
+  is scalar(pv_upserts()), 0, 'no port VLAN upsert';
+  is scalar(pv_removals()), 0, 'no port VLAN removal';
+  is_deeply \@legacy_port_vlan_writes, [], 'no relationship delete or populate';
+};
+
+subtest 'port_vlans__empty_complete_walk__removes_all' => sub {
+  run_vlans(i_vlan_membership => {}, i_vlan_membership_untagged => {});
+  is scalar(pv_upserts()), 1, 'upsert called (empty)';
+  my ($removal) = pv_removals();
+  is_deeply $removal->[2], [], 'nothing seen';
+};
+
+subtest 'port_vlans__setting_off_with_incomplete_walk__writes_what_came_back' => sub {
+  local config->{'enable_incomplete_walk_protection'} = 0;
+  run_vlans(fail_on_read => { i_vlan_membership => outcome('i_vlan_membership') });
+  is scalar(pv_upserts()), 1, 'upsert';
+  is scalar(pv_removals()), 1, 'removal';
 };
 
 done_testing;
