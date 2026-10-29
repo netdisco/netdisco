@@ -38,18 +38,23 @@ register_worker({ phase => 'main', title => 'device port tags' }, sub {
   my $device = $job->device;
   return unless $device->in_storage;
 
-  return unless setting('tags')
-    and ref {} eq ref setting('tags')
-    and exists setting('tags')->{'device_port'}
-    and ref {} eq ref setting('tags')->{'device_port'};
+  # no ports list means the ports worker did not finish (no uptime, no SNMP),
+  # so which ports match is unknown and stored tags must stand
+  my $ports = vars->{'hook_data'}->{'ports'};
+  return unless ref [] eq ref $ports;
 
-  my $tags = setting('tags')->{'device_port'};
+  # a missing or malformed setting matches nothing, which clears stale tags
+  my $tags = (setting('tags')
+    and ref {} eq ref setting('tags')
+    and ref {} eq ref setting('tags')->{'device_port'})
+    ? setting('tags')->{'device_port'} : {};
+
   my %tags_to_set = ();
   my $port_map = {};
 
   # hook data appears after the Properties workers which are in early phase
   map { push @{ $port_map->{ $_->{port} } }, $_ }
-    @{ vars->{'hook_data'}->{'ports'} || [] },
+    @$ports,
     grep { defined $_->{port} } @{ vars->{'hook_data'}->{'device_ips'} || [] };
 
   foreach my $tag (sort keys %$tags) {
@@ -81,6 +86,16 @@ register_worker({ phase => 'main', title => 'device port tags' }, sub {
         $device->ip, scalar @{ $tags_to_set{$port} },
         (scalar @{ $tags_to_set{$port} } > 1), $port;
   }
+
+  # discover no longer recreates the port rows, so stale tags are cleared here
+  my $cleared = schema('netdisco')->resultset('DevicePort')->search({
+    ip => $device->ip,
+    port => { -not_in => [ sort keys %tags_to_set ] },
+    tags => { '!=' => '{}' },
+  })->update({ tags => '{}' });
+
+  debug sprintf ' [%s] properties - cleared tags on %d port%s',
+    $device->ip, $cleared, ($cleared != 1) if $cleared and $cleared > 0;
 });
 
 true;

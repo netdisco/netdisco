@@ -17,6 +17,7 @@ use App::Netdisco::Transport::SNMP ();
 use App::Netdisco::Util::SNMP qw/walk_mark incomplete_walks_for
   incomplete_walk_level incomplete_walk_message/;
 use App::Netdisco::Worker::Plugin::Discover::Properties ();
+use App::Netdisco::Worker::Plugin::Discover::Properties::Tags ();
 
 use Try::Tiny;
 use Dancer qw/:moose :script !pass/;
@@ -43,6 +44,9 @@ config->{'ignore_deviceports'} = [];
 config->{'dns'}->{'no'} = ['0.0.0.0/0'];
 
 package RecordingSNMP; # keeps walk_failures and walk_status
+# the port tags worker runs inside discover::properties; its clear writes nothing here
+{ package NoopTagsSchema; sub resultset { return $_[0] } sub search { return $_[0] } sub update { return 0 } }
+
 sub new { my ($class, %vals) = @_; return bless { walk_failures => [], walk_status => {}, %vals }, $class; }
 sub walk_failures { $_[0]{walk_failures} }
 sub walk_status { $_[0]{walk_status}{$_[1]} }
@@ -220,6 +224,8 @@ sub run_discover {
   my $search = DBIx::Class::ResultSet->can('search');
 
   local *App::Netdisco::Transport::SNMP::reader_for = sub { return $fake_snmp };
+  local *App::Netdisco::Worker::Plugin::Discover::Properties::Tags::schema
+    = sub { return bless {}, 'NoopTagsSchema' };
   local *App::Netdisco::Worker::Plugin::Discover::Properties::schema
     = sub { return bless {}, 'FakeSchema' };
   local *App::Netdisco::DB::Result::Device::ports = sub { return $ports_rs };

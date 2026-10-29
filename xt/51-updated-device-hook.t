@@ -16,6 +16,7 @@ use App::Netdisco::Backend::Job;
 use App::Netdisco::Transport::SNMP ();
 use App::Netdisco::Worker::Plugin::Discover::Properties ();
 use App::Netdisco::Worker::Plugin::Discover::Hooks ();
+use App::Netdisco::Worker::Plugin::Discover::Properties::Tags ();
 use aliased 'App::Netdisco::Worker::Status';
 
 use Try::Tiny;
@@ -55,6 +56,9 @@ config->{'dns'}->{'no'} = ['0.0.0.0/0']; # skip real DNS resolution of the alias
 
 package FakeSNMP;
 our $AUTOLOAD;
+# the port tags worker runs inside discover::properties; its clear writes nothing here
+{ package NoopTagsSchema; sub resultset { return $_[0] } sub search { return $_[0] } sub update { return 0 } }
+
 sub new { my ($class, %vals) = @_; return bless { walk_failures => [], %vals }, $class; }
 sub walk_failures { $_[0]{walk_failures} }
 sub walk_status { $_[0]{walk_status}{$_[1]} }
@@ -144,6 +148,8 @@ sub run_discover_properties {
   my $search = DBIx::Class::ResultSet->can('search');
 
   local *App::Netdisco::Transport::SNMP::reader_for = sub { return $fake_snmp };
+  local *App::Netdisco::Worker::Plugin::Discover::Properties::Tags::schema
+    = sub { return bless {}, 'NoopTagsSchema' };
   local *App::Netdisco::Worker::Plugin::Discover::Properties::schema
     = sub { return bless {}, 'FakeSchema' };
   # a skipped ports write reads the stored rows back as plain hashes
