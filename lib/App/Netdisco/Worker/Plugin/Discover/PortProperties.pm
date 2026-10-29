@@ -16,15 +16,18 @@ use App::Netdisco::Util::SNMP qw/walk_mark incomplete_walks_for incomplete_walk_
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use App::Netdisco::Util::Device qw/is_discoverable match_to_setting/;
 
-# the upsert needs uniform rows, so a column no walk filled takes the value an
-# omitted column took when the rows were inserted afresh. The pae_* columns
-# are the exception: update_pae_attributes rewrites them straight afterwards.
+# the upsert needs uniform rows, so this reproduces the column rule of the
+# populate() insert it replaced, keeping stored values the same: a column some
+# port's walk filled is NULL on the ports without it, and a column no port
+# filled takes the schema default. The pae_* columns are always NULL because
+# update_pae_attributes rewrites them straight afterwards.
 sub _uniform_property_rows {
   my ($device, $properties) = @_;
   my $source = schema('netdisco')->resultset('DevicePortProperties')->result_source;
+  my %walked = map {$_ => 1} map {keys %$_} values %$properties;
   my %blank = map {
     my $default = $source->column_info($_)->{default_value};
-    ($_ => (m/^pae_/ ? undef : ref $default ? $$default : $default))
+    ($_ => (m/^pae_/ || $walked{$_} ? undef : ref $default ? $$default : $default))
   } grep { $_ ne 'ip' and $_ ne 'port' } $source->columns;
 
   return [ map {{ %blank, %{ $properties->{$_} }, ip => $device->ip, port => $_ }}

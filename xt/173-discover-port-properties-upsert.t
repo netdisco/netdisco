@@ -39,6 +39,9 @@ Dancer::Logger->init('console', $CONFIG);
 config->{'device_auth'} = [{driver => 'snmp'}];
 config->{'enable_incomplete_walk_protection'} = 1;
 
+package FakeDevice;
+sub ip { $_[0]{ip} }
+
 package FakeSNMP;
 our $AUTOLOAD;
 sub new { my ($class, %vals) = @_; return bless { walk_failures => [], %vals }, $class; }
@@ -157,7 +160,7 @@ subtest 'port_properties__normal_run__upserts_uniform_rows_and_removes_unseen' =
   is $rows[0]{raw_speed}, 1000000000;
   is $rows[0]{faststart}, 'true';
   is $rows[1]{error_disable_cause}, 'bpduguard';
-  is $rows[1]{faststart}, 'false', 'column default stands in for a missing value';
+  is $rows[1]{faststart}, undef, 'a column another port set is NULL here, as populate stored it';
   is $rows[1]{remote_is_discoverable}, 'true';
   my @removed = property_removals();
   is scalar @removed, 1, 'one removal';
@@ -221,6 +224,32 @@ subtest 'port_properties__ignored_port__dropped_from_port_cache' => sub {
   ok !exists vars->{'device_ports'}{'Gi0/2'}, 'ignored port is gone from the cache';
   ok exists vars->{'device_ports'}{'Gi0/1'}, 'other ports stay';
   ok exists vars->{'device_ports'}{'Gi0/5'}, 'ports without properties stay';
+};
+
+subtest '_uniform_property_rows__key_set_on_some_ports__others_get_undef' => sub {
+  my $device = bless { ip => '192.0.2.1' }, 'FakeDevice';
+  my $rows = App::Netdisco::Worker::Plugin::Discover::PortProperties::_uniform_property_rows(
+    $device, { 'Gi0/1' => { remote_is_wap => 'true' }, 'Gi0/2' => {} });
+  is $rows->[0]{remote_is_wap}, 'true';
+  is $rows->[1]{remote_is_wap}, undef, 'port without the key gets NULL as populate did';
+  is $rows->[1]{remote_is_discoverable}, 'true', 'a column no port set keeps the default';
+};
+
+subtest '_uniform_property_rows__key_set_on_no_port__gets_schema_default' => sub {
+  my $device = bless { ip => '192.0.2.1' }, 'FakeDevice';
+  my $rows = App::Netdisco::Worker::Plugin::Discover::PortProperties::_uniform_property_rows(
+    $device, { 'Gi0/1' => { remote_dns => 'x' }, 'Gi0/2' => {} });
+  is $rows->[1]{remote_is_discoverable}, 'true';
+  is $rows->[1]{remote_is_wap}, 'false';
+};
+
+subtest '_uniform_property_rows__pae_columns__always_undef' => sub {
+  my $device = bless { ip => '192.0.2.1' }, 'FakeDevice';
+  my $rows = App::Netdisco::Worker::Plugin::Discover::PortProperties::_uniform_property_rows(
+    $device, { 'Gi0/1' => { pae_control => 'x' }, 'Gi0/2' => {} });
+  is $rows->[1]{pae_control}, undef;
+  my @pae = grep { m/^pae_/ } keys %{ $rows->[1] };
+  is_deeply [ grep { defined $rows->[1]{$_} } @pae ], [], 'no pae_* value defined';
 };
 
 done_testing;
