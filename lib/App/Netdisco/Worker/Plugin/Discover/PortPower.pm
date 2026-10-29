@@ -136,6 +136,8 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   }
   elsif (!defined $p_watts) {
       _store_device_power($device, undef, undef);
+      # no peth_port_* method is read on this path, so only a cut-short
+      # interfaces walk, recorded earlier in the job, can trip this
       my ($port_skipped, $port_level) = _port_power_skip($device, $snmp, $walk_mark);
       return Status->$port_level($port_skipped) if defined $port_skipped;
       _remove_all_port_power($device);

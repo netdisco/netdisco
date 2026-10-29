@@ -406,7 +406,7 @@ sub clear_neighbor_columns {
     ],
   );
 
-  return schema('netdisco')->resultset('DevicePort')->search(\%where)->update({
+  my $cleared = schema('netdisco')->resultset('DevicePort')->search(\%where)->update({
     remote_ip   => undef,
     remote_port => undef,
     remote_type => undef,
@@ -414,6 +414,17 @@ sub clear_neighbor_columns {
     is_uplink   => undef,
     ($opt{include_manual} ? (manual_topo => \'false') : ()),
   });
+
+  # later workers read remote_ip from the cached rows; store_column leaves
+  # them clean, so no later update writes these columns again
+  my %keep = map {($_ => 1)} @$keep_ports;
+  foreach my $row (values %{ vars->{'device_ports'} || {} }) {
+      next if $keep{ $row->port } or ($row->manual_topo and not $opt{include_manual});
+      $row->store_column($_ => undef) for qw/remote_ip remote_port remote_type remote_id is_uplink/;
+      $row->store_column(manual_topo => 0) if $opt{include_manual};
+  }
+
+  return $cleared;
 }
 
 # take data from the topology table and update remote_ip and remote_port
@@ -422,73 +433,73 @@ sub set_manual_topology {
   my $device = shift;
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device) or return;
 
-  schema('netdisco')->txn_do(sub {
-    # clear outdated manual topology links
-    my $old_links = schema('netdisco')->resultset('Topology')->search({
-      -or => [
-        { dev1 => $device->ip,
-          port1 => { '-not_in' => $device->ports->get_column('port')->as_query } },
-        { dev2 => $device->ip,
-          port2 => { '-not_in' => $device->ports->get_column('port')->as_query } },
-      ],
-    })->delete;
-    debug sprintf ' [%s] neigh - removed %d outdated manual topology links',
-      $device->ip, $old_links;
+  # clear outdated manual topology links
+  my $old_links = schema('netdisco')->resultset('Topology')->search({
+    -or => [
+      { dev1 => $device->ip,
+        port1 => { '-not_in' => $device->ports->get_column('port')->as_query } },
+      { dev2 => $device->ip,
+        port2 => { '-not_in' => $device->ports->get_column('port')->as_query } },
+    ],
+  })->delete;
+  debug sprintf ' [%s] neigh - removed %d outdated manual topology links',
+    $device->ip, $old_links;
 
-    my $topo_links = schema('netdisco')->resultset('Topology')
-      ->search({-or => [dev1 => $device->ip, dev2 => $device->ip]});
-    debug sprintf ' [%s] neigh - setting manual topology links', $device->ip;
+  my $topo_links = schema('netdisco')->resultset('Topology')
+    ->search({-or => [dev1 => $device->ip, dev2 => $device->ip]});
+  debug sprintf ' [%s] neigh - setting manual topology links', $device->ip;
 
-    my %manual = ();
-    while (my $link = $topo_links->next) {
-        # could fail for broken topo, but we ignore to try the rest
-        try {
-            # recorded only once the link's transaction commits, since a
-            # failed right side rolls the left side back to its savepoint
-            my @own_ports = ();
-            schema('netdisco')->txn_do(sub {
-              # only work on root_ips
-              my $left  = get_device($link->dev1);
-              my $right = get_device($link->dev2);
+  my %manual = ();
+  # each link commits on its own: holding one link's port rows while
+  # locking the next could deadlock with that peer's own discover
+  while (my $link = $topo_links->next) {
+      # could fail for broken topo, but we ignore to try the rest
+      try {
+          # recorded only once the link's transaction commits, since a
+          # failed right side rolls the left side back
+          my @own_ports = ();
+          schema('netdisco')->txn_do(sub {
+            # only work on root_ips
+            my $left  = get_device($link->dev1);
+            my $right = get_device($link->dev2);
 
-              # skip bad entries
-              return unless ($left->in_storage and $right->in_storage);
+            # skip bad entries
+            return unless ($left->in_storage and $right->in_storage);
 
-              $left->ports
-                ->single({port => $link->port1})
-                ->update({
-                  remote_ip => $right->ip,
-                  remote_port => $link->port2,
-                  remote_type => undef,
-                  remote_id   => undef,
-                  is_uplink   => \"true",
-                  manual_topo => \"true",
-                });
-              push @own_ports, $link->port1 if $left->ip eq $device->ip;
+            $left->ports
+              ->single({port => $link->port1})
+              ->update({
+                remote_ip => $right->ip,
+                remote_port => $link->port2,
+                remote_type => undef,
+                remote_id   => undef,
+                is_uplink   => \"true",
+                manual_topo => \"true",
+              });
+            push @own_ports, $link->port1 if $left->ip eq $device->ip;
 
-              $right->ports
-                ->single({port => $link->port2})
-                ->update({
-                  remote_ip => $left->ip,
-                  remote_port => $link->port1,
-                  remote_type => undef,
-                  remote_id   => undef,
-                  is_uplink   => \"true",
-                  manual_topo => \"true",
-                });
-              push @own_ports, $link->port2 if $right->ip eq $device->ip;
-            });
-            $manual{$_} = 1 for @own_ports;
-        };
-    }
+            $right->ports
+              ->single({port => $link->port2})
+              ->update({
+                remote_ip => $left->ip,
+                remote_port => $link->port1,
+                remote_type => undef,
+                remote_id   => undef,
+                is_uplink   => \"true",
+                manual_topo => \"true",
+              });
+            push @own_ports, $link->port2 if $right->ip eq $device->ip;
+          });
+          $manual{$_} = 1 for @own_ports;
+      };
+  }
 
-    # clear manual topology flags left from links that are gone
-    schema('netdisco')->resultset('DevicePort')->search({
-      ip => $device->ip,
-      -bool => 'manual_topo',
-      (scalar keys %manual ? (port => { -not_in => [sort keys %manual] }) : ()),
-    })->update({manual_topo => \'false'});
-  });
+  # clear manual topology flags left from links that are gone
+  schema('netdisco')->resultset('DevicePort')->search({
+    ip => $device->ip,
+    -bool => 'manual_topo',
+    (scalar keys %manual ? (port => { -not_in => [sort keys %manual] }) : ()),
+  })->update({manual_topo => \'false'});
 
   # bust the cache after updating manual topology.
   vars->{'device_ports'} = { map {($_->port => $_)}

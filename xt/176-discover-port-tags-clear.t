@@ -96,6 +96,9 @@ subtest 'port_tags__port_stops_matching__tags_written_empty' => sub {
   my $clear = $RecordingRows::clears[0];
   is_deeply $clear->{set}, { tags => '{}' }, 'tags set to the empty array';
   like $clear->{sql}, qr/\bNOT IN\b/i, 'outside the matched set';
+  like $clear->{sql}, qr/WHERE .*\bip = \?/, 'scoped to the device';
+  is_deeply [ map { $_->[1] } grep { $_->[0]{dbic_colname} eq 'ip' } @{ $clear->{bind} } ],
+    [$ADDRESS], 'the device ip is bound';
   ok scalar(grep { $_ eq 'Gi0/1' } map { $_->[1] } @{ $clear->{bind} }), 'matched port is in the exclusion list'
     or diag explain $clear;
   is scalar @RecordingRows::writes, 1, 'the matching port is still tagged';
@@ -105,7 +108,13 @@ subtest 'port_tags__map_emptied__all_tagged_ports_cleared' => sub {
   run_tags({ device_port => {} }, [ @ports ]);
   is scalar @RecordingRows::writes, 0, 'nothing tagged';
   is scalar @RecordingRows::clears, 1, 'one clear';
-  is_deeply $RecordingRows::clears[0]{set}, { tags => '{}' };
+  my $clear = $RecordingRows::clears[0];
+  is_deeply $clear->{set}, { tags => '{}' };
+  like $clear->{sql}, qr/WHERE .*\bip = \?/, 'scoped to the device';
+  like $clear->{sql}, qr/\b1=1\b/, 'no port is kept';
+  unlike $clear->{sql}, qr/\bNOT IN\b/i, 'no port exclusion list';
+  is_deeply [ map { $_->[1] } grep { $_->[0]{dbic_colname} eq 'ip' } @{ $clear->{bind} } ],
+    [$ADDRESS], 'the device ip is bound';
 };
 
 subtest 'port_tags__config_not_a_hash__all_tagged_ports_cleared' => sub {

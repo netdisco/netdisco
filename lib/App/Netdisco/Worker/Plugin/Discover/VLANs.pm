@@ -153,7 +153,8 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $v_name  = $snmp->v_name;
   my $v_index = $snmp->v_index;
 
-  # every table is read before the guard, which looks at the walks read so far
+  # every port VLAN table is read before the guard, which looks at the walks
+  # read so far
   my %walked = map {($_ => $snmp->$_)} qw/i_vlan i_vlan_type interfaces
     i_vlan_membership i_vlan_membership_untagged/;
 

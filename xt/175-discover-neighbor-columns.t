@@ -65,11 +65,16 @@ sub manual_topo { $_[0]{manual_topo} }
 sub slave_of { $_[0]{slave_of} }
 sub is_master { $_[0]{is_master} }
 sub remote_port { $_[0]{remote_port} }
+sub remote_ip { $_[0]{remote_ip} }
+sub is_uplink { $_[0]{is_uplink} }
 sub discard_changes { $_[0] }
+sub store_column { my ($self, $col, $value) = @_; $self->{$col} = $value }
 sub update {
   my ($self, $values) = @_;
   push @main::row_updates,
     [ $self->{owner}, $self->{port}, $values, $self, { map {($_ => $self->{$_})} keys %$values } ];
+  push @main::update_depths, [ $self->{port}, $main::txn_depth ]
+    if ref $values->{manual_topo} and ${ $values->{manual_topo} } eq 'true';
   foreach my $col (keys %$values) {
     my $value = $values->{$col};
     $self->{$col} = ref $value ? (${$value} eq 'true' ? 1 : 0) : $value;
@@ -94,13 +99,13 @@ sub single {
 sub update {
   my ($self, $set) = @_;
   my ($sql, @bind) = DBIx::Class::SQLMaker->new->update('device_port', $set, $self->{where});
-  push @main::port_updates, { sql => $sql, bind => [@bind], set => $set };
+  push @main::port_updates, { sql => $sql, bind => [@bind], set => $set, depth => $main::txn_depth };
   return 0;
 }
 
 package FakeTopologyRS;
 sub search { $_[0] }
-sub delete { 0 }
+sub delete { push @main::topology_delete_depths, $main::txn_depth; 0 }
 sub next { shift @{ $_[0]{links} } }
 
 package FakeLink;
@@ -114,9 +119,11 @@ sub ports { $_[0]{ports} }
 
 package FakeSchema;
 # rolls back the row updates made inside a block that dies, as Netdisco's
-# auto_savepoint makes a nested txn_do do
+# auto_savepoint makes a nested txn_do do, and counts the nesting so a test
+# can tell a top-level transaction from a savepoint
 sub txn_do {
   my ($self, $code, @args) = @_;
+  local $main::txn_depth = $main::txn_depth + 1;
   my $mark = scalar @main::row_updates;
   my @result = eval { $code->(@args) };
   if (my $error = $@) {
@@ -138,7 +145,9 @@ sub resultset {
 
 package main;
 
-our (@row_updates, @port_updates, @links, @warnings, @port_rows);
+our (@row_updates, @port_updates, @links, @warnings, @port_rows,
+  @update_depths, @topology_delete_depths);
+our $txn_depth = 0;
 
 my %device_cols = (
   ip => '192.0.2.1', name => 'switch1', snmp_class => 'SNMP::Info::Layer2',
@@ -165,7 +174,7 @@ sub outcome {
 sub run_neighbors {
   my (%args) = @_;
   delete @{ vars() }{qw/device_ports incomplete_walks queued/};
-  @row_updates = @port_updates = @warnings = ();
+  @row_updates = @port_updates = @warnings = @update_depths = @topology_delete_depths = ();
   @links = @{ $args{links} || [] };
 
   my $device = App::Netdisco::DB->resultset('Device')->new_result({ %device_cols });
@@ -374,6 +383,43 @@ subtest 'neighbors__aggregate_master__kept_and_stale_ids_cleared' => sub {
   like $clears[0]{sql}, qr/port NOT IN \( \?, \? \)/;
   is_deeply [ grep { defined } @{ $clears[0]{bind} } ], ['192.0.2.1', 'Gi1/1', 'Po1'],
     'the member and the master are kept';
+};
+
+subtest 'neighbors__two_manual_links__each_its_own_transaction' => sub {
+  my $second_link = { dev1 => '192.0.2.1', port1 => 'Gi1/2', dev2 => '192.0.2.20', port2 => 'Gi0/8' };
+  run_neighbors(links => [$manual_link, $second_link], peer_ports => ['Gi0/9', 'Gi0/8']);
+  is_deeply [ sort map { $_->[0] } @update_depths ], ['Gi0/8', 'Gi0/9', 'Gi1/2', 'Gi1/3'],
+    'both manual links are applied, both sides each';
+  is_deeply [ grep { $_->[1] != 1 } @update_depths ], [],
+    'no link is written inside another transaction';
+  is_deeply \@topology_delete_depths, [0], 'the outdated link delete runs on its own';
+  my @resets = manual_resets();
+  is scalar @resets, 1, 'one reset statement';
+  is $resets[0]{depth}, 0, 'the reset runs on its own';
+  is_deeply $resets[0]{bind}, ['192.0.2.1', 'Gi1/2', 'Gi1/3'], 'both own ports are excluded';
+};
+
+subtest 'neighbors__neighbor_left__cached_row_cleared_too' => sub {
+  run_neighbors(port_cols => { 'Gi1/2' => { remote_ip => '192.0.2.99', remote_port => 'Gi0/2',
+    is_uplink => 1 } });
+  my $row = vars->{'device_ports'}{'Gi1/2'};
+  ok $row, 'the port is cached';
+  is $row->remote_ip, undef, 'remote_ip cleared in the cache';
+  is $row->remote_port, undef, 'remote_port cleared in the cache';
+  is $row->is_uplink, undef, 'is_uplink cleared in the cache';
+  is vars->{'device_ports'}{'Gi1/1'}->remote_ip, '192.0.2.10', 'the written port keeps its neighbor';
+};
+
+subtest 'neighbors__manual_port__cached_row_kept' => sub {
+  run_neighbors(links => [$manual_link]);
+  is vars->{'device_ports'}{'Gi1/3'}->remote_ip, '192.0.2.20', 'the manual link stays in the cache';
+};
+
+subtest 'neighbors__disabled__cached_manual_row_cleared' => sub {
+  my $cached = FakePortRow->new(port => 'Gi1/3', remote_ip => '192.0.2.20', manual_topo => 1);
+  run_neighbors(disabled => 1, cached_ports => { 'Gi1/3' => $cached });
+  is $cached->remote_ip, undef, 'remote_ip cleared in the cache';
+  ok !$cached->manual_topo, 'manual_topo cleared in the cache';
 };
 
 done_testing;
