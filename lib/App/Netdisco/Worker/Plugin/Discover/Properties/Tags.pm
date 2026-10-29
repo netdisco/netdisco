@@ -79,7 +79,12 @@ register_worker({ phase => 'main', title => 'device port tags' }, sub {
 
   foreach my $port (sort keys %tags_to_set) {
       schema('netdisco')->resultset('DevicePort')
-        ->search({ip => $device->ip, port => $port}, {for => 'update'})
+        ->search({
+          ip => $device->ip, port => $port,
+          # a bare arrayref would be read as a list of alternatives
+          tags => { '!=' => \[ '?', [
+            { dbic_colname => 'tags', sqlt_datatype => 'text[]' } => $tags_to_set{$port} ] ] },
+        }, {for => 'update'})
         ->update({ tags => ( $tags_to_set{$port} || [] ) });
 
       debug sprintf ' [%s] properties - set %s tag%s on port %s',

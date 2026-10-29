@@ -144,4 +144,27 @@ subtest 'port_tags__device_has_no_ports__clears_all_tagged_ports' => sub {
   is scalar @RecordingRows::clears, 1, 'one clear';
 };
 
+subtest 'port_tags__stored_tags_equal__update_filtered_by_difference' => sub {
+  my $matches_two = { device_port => {
+    a => { 'ip:192.0.2.1' => 'port:Gi0/1' },
+    b => { 'ip:192.0.2.1' => 'port:Gi0/1' },
+  } };
+  foreach my $case ([ $matches_gi1, undef ], [ $matches_two, [ 'a', 'b' ] ]) {
+    my ($setting, $expected_list) = @$case;
+    run_tags($setting, [ @ports ]);
+    is scalar @RecordingRows::writes, 1, 'one per-port update';
+    my $write = $RecordingRows::writes[0];
+    like $write->{sql}, qr/\bip = \?.*\bport = \?.*\btags != \?/s,
+      'ip, port and tags comparison';
+    is_deeply [ map { $_->[1] } grep { $_->[0]{dbic_colname} eq 'ip' } @{ $write->{bind} } ],
+      [$ADDRESS], 'the device ip is bound';
+    is_deeply [ map { $_->[1] } grep { ($_->[0]{dbic_colname} // '') eq 'port' } @{ $write->{bind} } ],
+      ['Gi0/1'], 'the port is bound';
+    my @tag_binds = map { $_->[1] } grep { ($_->[0]{dbic_colname} // '') eq 'tags' } @{ $write->{bind} };
+    is scalar @tag_binds, 1, 'the tag list is one bind';
+    is_deeply $tag_binds[0], $expected_list || ['access'], 'the whole list is bound as one array'
+      or diag explain $write;
+  }
+};
+
 done_testing;
