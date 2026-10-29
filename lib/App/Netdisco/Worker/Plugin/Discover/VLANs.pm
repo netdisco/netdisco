@@ -9,6 +9,71 @@ use App::Netdisco::Transport::SNMP ();
 use aliased 'App::Netdisco::Worker::Status';
 use List::MoreUtils 'uniq';
 use App::Netdisco::Util::SNMPText 'decode_snmp_text';
+use App::Netdisco::Util::SNMP qw/walk_mark incomplete_walks_for incomplete_walk_message
+  incomplete_walk_level/;
+
+# a walk that was cut short must not look like an emptied table, so the stored
+# rows stand and the hook payload shows them rather than the partial walk
+sub _keep_stored_device_vlans {
+  my ($device, @incomplete) = @_;
+  vars->{'hook_data'}->{'vlans'} = [ $device->vlans->search(undef, {
+    columns => [qw/vlan description/], order_by => 'vlan',
+    result_class => 'DBIx::Class::ResultClass::HashRefInflator',
+  })->all ];
+  my $message = incomplete_walk_message($device, 'device_vlan', @incomplete);
+  warning $message;
+  return $message;
+}
+
+sub _store_device_vlans {
+  my ($device, $v_name, $v_index, $p_seen) = @_;
+  my (%d_seen, @devicevlans);
+
+  # sorted, and the first name for a VLAN number wins, so every run agrees
+  foreach my $entry (sort keys %$v_name) {
+      my $vlan = $v_index->{$entry};
+      next unless $vlan;
+      next if $d_seen{$vlan}++;
+
+      push @devicevlans, {
+          ip => $device->ip,
+          vlan => $vlan,
+          description => decode_snmp_text($v_name->{$entry}, $device, "vlan $vlan name"),
+          last_discover => \'LOCALTIMESTAMP',
+      };
+  }
+
+  # also add unnamed vlans to the device
+  foreach my $vlan (sort { $a <=> $b } keys %$p_seen) {
+      next unless $vlan;
+      next if $d_seen{$vlan};
+      push @devicevlans, {
+          ip => $device->ip,
+          vlan => $vlan,
+          description => (sprintf "VLAN %d", $vlan),
+          last_discover => \'LOCALTIMESTAMP',
+      };
+  }
+
+  # support for Hooks
+  vars->{'hook_data'}->{'vlans'} = [ map {{
+    vlan => $_->{vlan}, description => $_->{description},
+    last_discover => $_->{last_discover},
+  }} @devicevlans ];
+
+  schema('netdisco')->txn_do(sub {
+    my $rs = schema('netdisco')->resultset('DeviceVlan');
+    $rs->upsert(\@devicevlans, { touch => ['last_discover'] });
+    my $gone = $rs->remove_unseen({ ip => $device->ip },
+      [ map {{ vlan => $_->{vlan} }} @devicevlans ]);
+    debug sprintf ' [%s] vlans - removed %d device VLANs',
+      $device->ip, $gone;
+
+    debug sprintf ' [%s] vlans - wrote %d device VLANs',
+      $device->ip, scalar @devicevlans;
+  });
+  return;
+}
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
@@ -18,6 +83,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("discover failed: could not SNMP connect to $device");
 
+  my $walk_mark = walk_mark($snmp);
   my $v_name  = $snmp->v_name;
   my $v_index = $snmp->v_index;
 
@@ -103,49 +169,21 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
       $device->ip, scalar @portvlans;
   });
 
-  my %d_seen = ();
-  my @devicevlans = ();
+  my @incomplete = incomplete_walks_for($device, $snmp, $walk_mark, qw/
+    v_name v_index i_vlan_membership i_vlan_membership_untagged interfaces/);
+  my $level = incomplete_walk_level(@incomplete);
+  my $status = sprintf ' [%s] vlans - discovered for ports and device',
+    $device->ip;
 
-  # add named vlans to the device
-  foreach my $entry (keys %$v_name) {
-      my $vlan = $v_index->{$entry};
-      next unless $vlan;
-      next unless defined $vlan and $vlan;
-      ++$d_seen{$vlan};
-
-      push @devicevlans, {
-          vlan => $vlan,
-          description => decode_snmp_text($v_name->{$entry}, $device, "vlan $vlan name"),
-          last_discover => \'LOCALTIMESTAMP',
-      };
+  if (scalar @incomplete) {
+      $status = sprintf ' [%s] vlans - discovered for ports; %s', $device->ip,
+        _keep_stored_device_vlans($device, @incomplete);
+  }
+  else {
+      _store_device_vlans($device, $v_name, $v_index, \%p_seen);
   }
 
-  # also add unnamed vlans to the device
-  foreach my $vlan (keys %p_seen) {
-      next unless $vlan;
-      next if $d_seen{$vlan};
-      push @devicevlans, {
-          vlan => $vlan,
-          description => (sprintf "VLAN %d", $vlan),
-          last_discover => \'LOCALTIMESTAMP',
-      };
-  }
-
-  # support for Hooks
-  vars->{'hook_data'}->{'vlans'} = \@devicevlans;
-
-  schema('netdisco')->txn_do(sub {
-    my $gone = $device->vlans->delete;
-    debug sprintf ' [%s] vlans - removed %d device VLANs',
-      $device->ip, $gone;
-    $device->vlans->populate(\@devicevlans);
-
-    debug sprintf ' [%s] vlans - added %d new device VLANs',
-      $device->ip, scalar @devicevlans;
-  });
-
-  return Status->info(sprintf ' [%s] vlans - discovered for ports and device',
-    $device->ip);
+  return Status->$level($status);
 });
 
 true;

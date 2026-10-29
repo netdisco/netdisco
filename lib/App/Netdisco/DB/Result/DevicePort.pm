@@ -23,6 +23,13 @@ __PACKAGE__->add_columns(
     is_nullable   => 1,
     original      => { default_value => \"LOCALTIMESTAMP" },
   },
+  "first_seen",
+  {
+    data_type     => "timestamp",
+    default_value => \"LOCALTIMESTAMP",
+    is_nullable   => 1,
+    original      => { default_value => \"LOCALTIMESTAMP" },
+  },
   "descr",
   { data_type => "text", is_nullable => 1 },
   "up",

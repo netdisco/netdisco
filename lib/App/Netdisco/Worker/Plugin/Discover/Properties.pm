@@ -9,7 +9,8 @@ use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use App::Netdisco::Util::Device qw/get_device is_discoverable/;
 use App::Netdisco::Util::DNS 'hostname_from_ip';
-use App::Netdisco::Util::SNMP qw/snmp_comm_reindex snmp_vrf_reindex get_mibdirs_shortnames/;
+use App::Netdisco::Util::SNMP qw/snmp_comm_reindex snmp_vrf_reindex get_mibdirs_shortnames walk_mark incomplete_walks
+  incomplete_walks_for incomplete_walk_message incomplete_walk_level/;
 use App::Netdisco::Util::Web 'sort_port';
 use App::Netdisco::Util::SNMPText qw/decode_snmp_text decode_text_with/;
 use App::Netdisco::DB::ExplicitLocking ':modes';
@@ -294,7 +295,10 @@ register_worker({ phase => 'early', driver => 'snmp',
   # cache the device ports to save hitting the database for many single rows
   vars->{'device_ports'} = { map {($_->port => $_)}
                                  $device->ports(undef, {prefetch => 'properties'})->reset->all };
+  my $walk_mark = walk_mark($snmp);
   my $interfaces = $snmp->interfaces;
+  vars->{'incomplete_walks'}{ $device->ip }{'interfaces'}
+    = [ incomplete_walks($snmp, $walk_mark) ];
 
   # OK if no interfaces
   return $pass if 0 == scalar keys %$interfaces;
@@ -324,9 +328,17 @@ register_worker({ phase => 'early', driver => 'snmp',
 
   my $now = vars->{'timestamp'};
 
-  my @aliases = ();
-  push @aliases, _get_ipv4_aliases($device, $snmp);
-  push @aliases, _get_ipv6_aliases($device, $snmp);
+  my $walk_mark = walk_mark($snmp);
+  # one read of the VRF list, so the guard exempts the contexts that were walked
+  my @vrf_list = _get_vrf_list($device, $snmp);
+  my @aliases = _dedupe_aliases(_get_ipv4_aliases($device, $snmp, \@vrf_list),
+    _get_ipv6_aliases($device, $snmp, \@vrf_list));
+
+  my @incomplete = _outside_vrf_contexts(\@vrf_list,
+    incomplete_walks_for($device, $snmp, $walk_mark, qw/
+      vrf_name ip_index ip_table ip_netmask ipv6_index ipv6_addr ipv6_type
+      ipv6_addr_prefixlength interfaces/));
+  return _keep_stored_device_ips($device, @incomplete) if scalar @incomplete;
 
   my @subnets = List::MoreUtils::uniq grep {defined} map {$_->{subnet}} @aliases;
 
@@ -336,17 +348,28 @@ register_worker({ phase => 'early', driver => 'snmp',
 
   # fake one aliases entry for devices not providing ip_index
   # or if we're discovering on an IP not listed in ip_index
-  push @$resolved_aliases, { alias => $device->ip, dns => $device->dns }
-    if 0 == scalar grep {$_->{alias} eq $device->ip} @aliases;
+  my $device_addr = _canonical_addr($device->ip);
+  push @$resolved_aliases, { alias => $device_addr, dns => $device->dns }
+    if 0 == scalar grep {$_->{alias} eq $device_addr} @aliases;
 
   # support for Hooks
   vars->{'hook_data'}->{'device_ips'} = $resolved_aliases;
 
+  my @rows = map {{
+    ip       => $device->ip,
+    alias    => $_->{alias},
+    subnet   => $_->{subnet},
+    port     => $_->{port},
+    dns      => $_->{dns},
+    creation => \'LOCALTIMESTAMP',
+  }} @$resolved_aliases;
+
   schema('netdisco')->txn_do(sub {
-    my $gone = $device->device_ips->delete;
-    debug sprintf ' [%s] device - removed %d aliases',
-      $device->ip, $gone;
-    $device->device_ips->populate($resolved_aliases);
+    my $rs = schema('netdisco')->resultset('DeviceIp');
+    $rs->upsert(\@rows);
+    my $gone = $rs->remove_unseen({ ip => $device->ip },
+      [ map {{ alias => $_->{alias} }} @rows ]);
+    debug sprintf ' [%s] device - removed %d aliases', $device->ip, $gone;
 
     schema('netdisco')->resultset('Subnet')->upsert_subnet($_, $now) for @subnets;
 
@@ -354,6 +377,45 @@ register_worker({ phase => 'early', driver => 'snmp',
       $device->ip, scalar @aliases, scalar @subnets);
   });
 });
+
+sub _canonical_addr {
+  my $ip = NetAddr::IP::Lite->new($_[0]);
+  return $ip ? $ip->addr : $_[0];
+}
+
+# the first entry for an address wins, so the sorted iteration of the callers
+# decides which port and subnet are kept
+sub _dedupe_aliases {
+  my %seen;
+  return grep { not $seen{ _canonical_addr($_->{alias}) }++ } @_;
+}
+
+# VRF collection is not reliable yet, so a failed VRF walk drops that VRF's
+# addresses for one discover, as before, rather than freezing the device's rows.
+# An absent walk means the poller's MIBs are broken wherever it ran, and
+# walk_status holds only the last VRF's outcome, so absent always counts.
+sub _outside_vrf_contexts {
+  my ($vrf_list, @outcomes) = @_;
+  # a VRF name that decodes to no context was walked in the base context
+  my %vrf_context = map {($_ => 1)} grep {length} @$vrf_list;
+  return grep { ($_->{reason} // '') eq 'absent'
+                or (($_->{method} // '') ne 'vrf_name'
+                    and not $vrf_context{ $_->{context} // '' }) } @outcomes;
+}
+
+# a walk that was cut short must not look like an emptied table, so the stored
+# rows stand and the hook payload shows them rather than the partial walk
+sub _keep_stored_device_ips {
+  my ($device, @incomplete) = @_;
+  vars->{'hook_data'}->{'device_ips'} = [ $device->device_ips(undef, {
+    columns => [qw/alias subnet port dns/], order_by => 'alias',
+    result_class => 'DBIx::Class::ResultClass::HashRefInflator',
+  })->all ];
+  my $message = incomplete_walk_message($device, 'device_ip', @incomplete);
+  warning $message;
+  my $level = incomplete_walk_level(@incomplete);
+  return Status->$level($message);
+}
 
 
 # NOTE must come after the IP Aliases gathering for ignore ACLs to work
@@ -733,7 +795,9 @@ sub _get_vrf_list {
     my @ok_vrfs = ();
     my $vrf_name = $snmp->vrf_name || {};
 
-    while (my ($idx, $vrf) = each(%$vrf_name)) {
+    # sorted so an address in two VRFs keeps the same port and subnet each run
+    foreach my $idx (sort keys %$vrf_name) {
+        my $vrf = $vrf_name->{$idx};
         if ($vrf =~ /^\S+$/) {
             my $ctx_name = pack("C*",split(/\./,$idx));
             $ctx_name =~ s/.*[^[:print:]]+//;
@@ -746,7 +810,7 @@ sub _get_vrf_list {
 }
 
 sub _get_ipv4_aliases {
-  my ($device, $snmp) = @_;
+  my ($device, $snmp, $vrf_list) = @_;
   my @aliases;
 
   my $ip_index   = $snmp->ip_index   || {};
@@ -755,7 +819,7 @@ sub _get_ipv4_aliases {
   my $ip_netmask = $snmp->ip_netmask || {};
 
   # Get IP Table per VRF if supported
-  my @vrf_list = _get_vrf_list($device, $snmp);
+  my @vrf_list = @{ $vrf_list || [ _get_vrf_list($device, $snmp) ] };
   if (scalar @vrf_list) {
     my $guard = guard { snmp_comm_reindex($snmp, $device, 0) };
     foreach my $vrf (@vrf_list) {
@@ -768,7 +832,7 @@ sub _get_ipv4_aliases {
   }
 
   # build device aliases suitable for DBIC
-  foreach my $entry (keys %$ip_index) {
+  foreach my $entry (sort keys %$ip_index) {
       my $ip = NetAddr::IP::Lite->new($ip_table->{$entry}) || NetAddr::IP::Lite->new($entry)
         or next;
       my $addr = $ip->addr;
@@ -796,7 +860,7 @@ sub _get_ipv4_aliases {
 }
 
 sub _get_ipv6_aliases {
-  my ($device, $snmp) = @_;
+  my ($device, $snmp, $vrf_list) = @_;
   my @aliases;
 
   my $ipv6_index  = $snmp->ipv6_index || {};
@@ -806,7 +870,7 @@ sub _get_ipv6_aliases {
   my $interfaces  = $snmp->interfaces || {};
 
   # Get IP Table per VRF if supported
-  my @vrf_list = _get_vrf_list($device, $snmp);
+  my @vrf_list = @{ $vrf_list || [ _get_vrf_list($device, $snmp) ] };
   if (scalar @vrf_list) {
     my $guard = guard { snmp_comm_reindex($snmp, $device, 0) };
     foreach my $vrf (@vrf_list) {
@@ -820,7 +884,7 @@ sub _get_ipv6_aliases {
   }
 
   # build device aliases suitable for DBIC
-  foreach my $iid (keys %$ipv6_index) {
+  foreach my $iid (sort keys %$ipv6_index) {
       next unless $ipv6_type->{$iid} and $ipv6_type->{$iid} eq 'unicast';
       my $entry = $ipv6_addr->{$iid} or next;
       my $ip = NetAddr::IP::Lite->new($entry) or next;
