@@ -23,12 +23,45 @@ set logger => 'null';
 
 my $NODES = 'App::Netdisco::Worker::Plugin::Macsuck::Nodes';
 my (@searched, @port_updates, $port_macs);
+our (@node_updates, @wireless_searches, @wireless_updates);
 
 package FakeNodes;
 sub new       { return bless {}, $_[0] }
-sub resultset { return $_[0] }
+sub resultset {
+  return FakeWireless->new if $_[1] eq 'NodeWireless';
+  return FakeManufacturer->new if $_[1] eq 'Manufacturer';
+  return $_[0];
+}
 sub search    { push @searched, $_[1]; return $_[0] }
 sub update    { return 3 }
+sub txn_do    { $_[1]->() }
+sub update_or_new {
+  push @main::node_updates, $_[1];
+  return FakeNodeRow->new;
+}
+
+package FakeManufacturer;
+sub new    { return bless {}, $_[0] }
+sub search { return $_[0] }
+sub first  { return undef }
+
+package FakeWireless;
+sub new { return bless {}, $_[0] }
+sub search {
+  push @main::wireless_searches, $_[1];
+  return $_[0];
+}
+sub delete { return 0 }
+sub update_or_create {
+  push @main::wireless_updates, $_[1];
+  return $_[0];
+}
+
+package FakeNodeRow;
+sub new        { return bless {}, $_[0] }
+sub in_storage { return 1 }
+sub set_column { return $_[0] }
+sub insert     { return $_[0] }
 
 package FakePort;
 sub new { my ($class, %col) = @_; return bless {%col}, $class }
@@ -66,6 +99,35 @@ sub run_sanity {
   $NODES->can('sanity_macs')->($device, $cache, \%ports);
   return scalar @port_updates;
 }
+
+subtest 'store_node__supported_wireless_data__stores_current_ssid' => sub {
+  @node_updates = ();
+  @wireless_searches = ();
+  @wireless_updates = ();
+
+  $NODES->can('store_node')->(
+    '192.0.2.10', 0, 'radio1', $mac_a, 'LOCALTIMESTAMP', 'R_WLAN_IPP', 1);
+
+  is(scalar @node_updates, 1, 'the node row is still stored');
+  is($node_updates[0]{mac}, $mac_a, 'the node row identifies the client');
+  is_deeply($wireless_searches[0],
+    { mac => $mac_a, ssid => { '!=' => 'R_WLAN_IPP' } },
+    'old SSID associations for the client are removed');
+  is_deeply($wireless_updates[0],
+    { mac => $mac_a, ssid => 'R_WLAN_IPP', time_last => \'LOCALTIMESTAMP' },
+    'the current SSID and timestamp are upserted');
+};
+
+subtest 'store_node__wireless_data_unsupported__does_not_touch_node_wireless' => sub {
+  @wireless_searches = ();
+  @wireless_updates = ();
+
+  $NODES->can('store_node')->(
+    '192.0.2.10', 0, 'radio1', $mac_b, 'LOCALTIMESTAMP', undef, 0);
+
+  is(scalar @wireless_searches, 0, 'no wireless row search');
+  is(scalar @wireless_updates, 0, 'no wireless row write');
+};
 
 subtest 'archive_stale_nodes__search__filters_active' => sub {
   set node_freshness => 60;

@@ -1,3 +1,10 @@
+2.117000 - tbd
+
+  [ENHANCEMENTS]
+
+  * store Ruckus wireless client SSIDs and show AP names, interfaces, SSIDs,
+    and per-SSID client counts in the Access Point Clients report
+
 2.116001 - 2026-10-24
 
   [ENHANCEMENTS]
