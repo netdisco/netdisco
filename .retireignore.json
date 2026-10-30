@@ -1,0 +1,7 @@
+[
+  {
+    "component": "DOMPurify",
+    "version": "3.4.16",
+    "justification": "Bundled in the vendored Swagger UI (share/public/swagger-ui). Swagger UI's only DOMPurify call returns a string and sets none of IN_PLACE, PARSER_MEDIA_TYPE, SAFE_FOR_TEMPLATES or RETURN_DOM, and its only hook adds rel attributes, so the reported issues do not apply. Remove when Swagger UI bundles DOMPurify 3.4.17 or later."
+  }
+]
