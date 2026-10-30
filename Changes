@@ -6,6 +6,8 @@
     given ports' rows
   * #1780 write device IPs, modules, VLANs and PoE power in place during
     discover
+  * #1784 write device ports and their properties, PoE, wireless, VLANs and
+    tags in place during discover
 
 2.116000 - 2026-10-23
 

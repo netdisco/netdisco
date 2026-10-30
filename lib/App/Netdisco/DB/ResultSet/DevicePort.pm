@@ -347,6 +347,81 @@ sub delete {
   return $self->next::method();
 }
 
+=head2 retire_ports( $device_ip, \@port_names, $mode )
+
+Removes the named ports of one device and returns the number of C<device_port>
+rows removed. An empty list returns 0 and sends no SQL. Both modes delete the
+rows of the five per-port tables, then the C<device_port> rows, in one
+transaction and with plain statements, bypassing the C<delete> override above.
+Nodes and C<device_port_log> are always kept. C<$mode> is one of:
+
+=over 4
+
+=item vanished
+
+The ports are no longer reported by the device.
+
+=item ignored
+
+The ports are excluded by configuration.
+
+=back
+
+=cut
+
+my @PER_PORT_SETS = qw/
+  DevicePortPower
+  DevicePortProperties
+  DevicePortSsid
+  DevicePortVlan
+  DevicePortWireless
+/;
+
+sub retire_ports {
+  my ($self, $device_ip, $port_names, $mode) = @_;
+
+  die sprintf("retire_ports: mode must be 'vanished' or 'ignored', got '%s'\n",
+    (defined $mode ? $mode : 'undef'))
+    unless defined $mode and $mode =~ m/^(?:vanished|ignored)$/;
+  return 0 unless $port_names and scalar @$port_names;
+
+  return $mode eq 'vanished'
+    ? $self->_retire_vanished_ports($device_ip, $port_names)
+    : $self->_retire_ignored_ports($device_ip, $port_names);
+}
+
+sub _retire_vanished_ports {
+  my ($self, $device_ip, $port_names) = @_;
+  return $self->_delete_ports_and_properties($device_ip, $port_names);
+}
+
+sub _retire_ignored_ports {
+  my ($self, $device_ip, $port_names) = @_;
+  return $self->_delete_ports_and_properties($device_ip, $port_names);
+}
+
+sub _delete_ports_and_properties {
+  my ($self, $device_ip, $port_names) = @_;
+
+  my $schema = $self->result_source->schema;
+  my @tables = ((map { $schema->source($_)->name } @PER_PORT_SETS),
+                $self->result_source->name);
+  my $removed = 0;
+
+  $schema->txn_do(sub {
+    foreach my $table (@tables) {
+      my $gone = $schema->storage->dbh_do(sub {
+        my ($storage, $dbh) = @_;
+        $dbh->do("DELETE FROM $table WHERE ip = ? AND port = ANY(?)",
+          undef, $device_ip, $port_names);
+      });
+      $removed = $gone + 0 if $table eq $tables[-1];
+    }
+  });
+
+  return $removed;
+}
+
 =head2 order_by_port_name( \@also )
 
 Orders the result set the way the device Ports tab shows ports, using the

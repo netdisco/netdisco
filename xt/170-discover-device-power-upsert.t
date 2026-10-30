@@ -51,6 +51,9 @@ sub AUTOLOAD {
     push @{ $self->{walk_failures} }, $failure;
     $self->{walk_status}{$method} = $failure;
   }
+  # SNMP::Info returns an empty list, not undef, for a method the device does
+  # not support, so a caller in list context sees no value at all
+  return unless exists $self->{$method};
   return $self->{$method};
 }
 
@@ -58,8 +61,6 @@ package FakeRows;
 sub new { my ($class, @rows) = @_; return bless { rows => [@rows] }, $class; }
 sub all { return @{ $_[0]->{rows}} }
 sub search { return $_[0] }
-sub delete { return 0 }
-sub populate { return 1 }
 
 package FakePort;
 sub port { return $_[0]{port} }
@@ -94,12 +95,12 @@ sub outcome {
            rows => 1, walk => 'bulkwalk', complete => 0 };
 }
 
-my (@upserts, @removals, @warnings, @portpower_deletes, @portpower_writes, @module_reads);
+my (@upserts, @removals, @warnings, @module_reads);
 
 sub run_power {
   my (%snmp) = @_;
   delete @{ vars() }{qw/device_changed new_device device_ports hook_data timestamp incomplete_walks/};
-  @upserts = @removals = @warnings = @portpower_deletes = @portpower_writes = @module_reads = ();
+  @upserts = @removals = @warnings = @module_reads = ();
 
   my $device = App::Netdisco::DB->resultset('Device')->new_result({ %device_cols });
   $device->in_storage(1);
@@ -117,10 +118,6 @@ sub run_power {
     = sub { return FakeRows->new(map { bless { port => $_ }, 'FakePort' } 'Gi1/1', 'Gi1/2') };
   local *App::Netdisco::DB::Result::Device::power_modules
     = sub { push @module_reads, 1; return FakeRows->new };
-  local *App::Netdisco::DB::Result::Device::powered_ports
-    = sub { return FakeRows->new };
-  local *FakeRows::delete = sub { push @portpower_deletes, 1; return 0 };
-  local *FakeRows::populate = sub { push @portpower_writes, $_[1]; return 1 };
   local *App::Netdisco::DB::Upsert::upsert = sub {
     my ($rs, $rows, $options) = @_;
     push @upserts, [ $rs->result_source->source_name, $rows, $options ];
@@ -147,6 +144,8 @@ sub error_messages { return map { $_->log } grep { $_->status eq 'error' } @{ $_
 
 sub power_upserts { return grep { $_->[0] eq 'DevicePower' } @upserts }
 sub power_removals { return grep { $_->[0] eq 'DevicePower' } @removals }
+sub port_upserts { return grep { $_->[0] eq 'DevicePortPower' } @upserts }
+sub port_removals { return grep { $_->[0] eq 'DevicePortPower' } @removals }
 
 subtest 'device_power__complete_walk__upserts_and_removes_unseen' => sub {
   my $job = run_power();
@@ -161,9 +160,73 @@ subtest 'device_power__complete_walk__upserts_and_removes_unseen' => sub {
   is_deeply $removed[0][1], { ip => '192.0.2.1' };
   is_deeply $removed[0][2], [ { module => 1 }, { module => 2 } ];
   is scalar @module_reads, 0, 'no delete and populate of device_power';
-  is scalar @portpower_writes, 1, 'port power written';
+  is scalar(port_upserts()), 1, 'port power upserted';
   is scalar @warnings, 0, 'no warning';
   like status_messages($job), qr/added 2 new PoE capable ports/;
+};
+
+subtest 'port_power__normal_run__upserts_and_removes_unseen' => sub {
+  run_power();
+  my @calls = port_upserts();
+  is scalar @calls, 1, 'one upsert';
+  is_deeply $calls[0][1], [
+    { ip => '192.0.2.1', port => 'Gi1/1', module => 1, admin => 'true',
+      status => 'delivering', class => 'class3', power => 6000 },
+    { ip => '192.0.2.1', port => 'Gi1/2', module => 1, admin => 'true',
+      status => 'searching', class => 'class0', power => 0 },
+  ], 'uniform rows, no timestamp columns';
+  ok !defined $calls[0][2], 'no options';
+  my @removed = port_removals();
+  is scalar @removed, 1, 'one removal';
+  is_deeply $removed[0][1], { ip => '192.0.2.1' };
+  is_deeply $removed[0][2], [ { port => 'Gi1/1' }, { port => 'Gi1/2' } ];
+};
+
+subtest 'port_power__duplicate_port_entries__first_entry_wins' => sub {
+  run_power(peth_port_ifindex => { '1.1' => 1, '2.1' => 1 });
+  my @calls = port_upserts();
+  is scalar @{ $calls[0][1] }, 1, 'one row for the port';
+  is $calls[0][1][0]{module}, 1;
+};
+
+subtest 'port_power__poe_gone_complete_walk__removes_port_power_rows' => sub {
+  my $job = run_power(peth_power_watts => undef);
+  is scalar(port_upserts()), 0, 'no upsert';
+  my @removed = port_removals();
+  is scalar @removed, 1, 'one removal';
+  is_deeply $removed[0][1], { ip => '192.0.2.1' };
+  is_deeply $removed[0][2], [], 'every row goes';
+  is scalar @warnings, 0, 'no warning';
+};
+
+subtest 'port_power__poe_gone_incomplete_port_walk__keeps_rows' => sub {
+  my $job = run_power(peth_power_watts => undef,
+    walk_status => { peth_port_power => outcome('peth_port_power') });
+  is scalar(port_removals()), 0, 'no removal';
+  is scalar(power_removals()), 1, 'device_power still emptied';
+  like status_messages($job), qr/device_port_power - kept existing rows, incomplete SNMP walk: peth_port_power /;
+};
+
+for my $method (qw/interfaces peth_port_ifindex peth_port_admin peth_port_status peth_port_class peth_port_power/) {
+  subtest "port_power__incomplete_${method}__keeps_rows" => sub {
+    my $job = run_power(fail_on_read => { $method => outcome($method) });
+    is scalar(port_upserts()), 0, 'no port upsert';
+    is scalar(port_removals()), 0, 'no port removal';
+    is scalar(power_upserts()), 1, 'device_power still written';
+    is scalar @warnings, 1, 'one warning';
+    like $warnings[0], qr/device_port_power - kept existing rows, incomplete SNMP walk: \Q$method\E /;
+    ok !$job->is_cancelled, 'the guard skips and never cancels';
+  };
+}
+
+subtest 'port_power__absent_port_walk__keeps_rows_and_errors_the_job' => sub {
+  my $job = run_power(walk_status => { peth_port_class =>
+    { %{ outcome('peth_port_class') }, reason => 'absent', complete => 1, rows => 0 } });
+  is scalar(port_upserts()), 0, 'no port upsert';
+  is scalar(port_removals()), 0, 'no port removal';
+  my @errors = error_messages($job);
+  is scalar @errors, 1, 'one error status';
+  like $errors[0], qr/device_port_power .+ netdisco-mibs/;
 };
 
 subtest 'device_power__complete_walk_no_poe__removes_all_rows' => sub {
@@ -174,7 +237,7 @@ subtest 'device_power__complete_walk_no_poe__removes_all_rows' => sub {
   is_deeply $removed[0][1], { ip => '192.0.2.1' };
   is_deeply $removed[0][2], [], 'nothing seen, so every row goes';
   like status_messages($job), qr/\[192\.0\.2\.1\] power - 0 power modules/;
-  is scalar @portpower_writes, 0, 'returns before port power, as today';
+  is scalar(port_upserts()), 0, 'no port upsert';
   is scalar @warnings, 0, 'no warning';
 };
 
@@ -184,8 +247,7 @@ subtest 'device_power__complete_walk_empty_hash__removes_rows_and_port_power_run
   my @removed = power_removals();
   is scalar @removed, 1, 'one removal';
   is_deeply $removed[0][2], [], 'every row goes';
-  is scalar @portpower_deletes, 1, 'port power deleted';
-  is scalar @portpower_writes, 1, 'port power populated';
+  is scalar(port_upserts()), 1, 'port power upserted';
   like status_messages($job), qr/added 2 new PoE capable ports/;
   is scalar @warnings, 0, 'no warning';
 };
@@ -199,7 +261,8 @@ subtest 'device_power__incomplete_walk_undef__keeps_rows' => sub {
     qr/\[192\.0\.2\.1\] device_power - kept existing rows, incomplete SNMP walk: peth_power_watts /;
   is scalar @warnings, 1, 'one warning';
   like $warnings[0], qr/device_power - kept existing rows, incomplete SNMP walk: peth_power_watts /;
-  is scalar @portpower_writes, 0, 'returns early, as today';
+  is scalar(port_upserts()), 0, 'no port upsert';
+  is scalar(port_removals()), 0, 'port rows kept';
   ok !$job->is_cancelled, 'the guard skips and never cancels';
 };
 
@@ -213,14 +276,14 @@ subtest 'device_power__absent_peth_power_watts__keeps_rows' => sub {
   like status_messages($job), qr/device_power - kept existing rows, incomplete SNMP walk: peth_power_watts /;
 };
 
-subtest 'device_power__incomplete_walk__port_power_unchanged_from_today' => sub {
+subtest 'device_power__incomplete_walk__port_power_still_written' => sub {
   my $job = run_power(fail_on_read => { peth_power_status => outcome('peth_power_status') });
   is scalar(power_upserts()), 0, 'no upsert';
   is scalar(power_removals()), 0, 'no removal';
   is scalar @module_reads, 0, 'device_power rows untouched';
-  is scalar @portpower_deletes, 1, 'port power still deleted';
-  is scalar @portpower_writes, 1, 'port power still populated';
-  is scalar @{ $portpower_writes[0] }, 2, 'with both ports';
+  my @calls = port_upserts();
+  is scalar @calls, 1, 'port power still upserted';
+  is scalar @{ $calls[0][1] }, 2, 'with both ports';
   my $status = status_messages($job);
   like $status, qr/added 2 new PoE capable ports/;
   like $status, qr/device_power - kept existing rows, incomplete SNMP walk: peth_power_status /;
@@ -232,6 +295,7 @@ subtest 'device_power__setting_off_with_incomplete_walk__writes_what_came_back' 
   run_power(fail_on_read => { peth_power_watts => outcome('peth_power_watts') });
   is scalar(power_upserts()), 1, 'upsert';
   is scalar(power_removals()), 1, 'removal';
+  is scalar(port_removals()), 1, 'port removal';
   is scalar @warnings, 0, 'no warning';
 };
 
@@ -248,7 +312,7 @@ subtest 'device_power__untranslatable_status_walk__port_power_runs_and_errors_th
   my $job = run_power(walk_status => {
     peth_power_status => { %{ outcome('peth_power_status') }, reason => 'absent', complete => 1, rows => 0 } });
   is scalar(power_upserts()), 0, 'no upsert';
-  is scalar @portpower_writes, 1, 'port power still populated';
+  is scalar(port_upserts()), 1, 'port power still upserted';
   my @errors = error_messages($job);
   is scalar @errors, 1, 'one error status';
   like $errors[0], qr/added 2 new PoE capable ports; .+ peth_power_status .+ netdisco-mibs/;
