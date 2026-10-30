@@ -188,6 +188,13 @@ subtest 'device_ip__complete_walks__upserts_rows_and_removes_unseen_with_ip_scop
   is_deeply $removed[0][2], [ { alias => '192.0.2.1', vrf => '' }, { alias => '198.51.100.7', vrf => '' } ];
 };
 
+subtest 'device_ip__rows__carry_empty_vrf' => sub {
+  run_discover();
+  my @rows = @{ (device_ip_upserts())[0][1] };
+  ok scalar @rows, 'rows were upserted';
+  is_deeply [ map { $_->{vrf} } @rows ], [ ('') x @rows ], 'every row has vrf empty';
+};
+
 subtest 'device_ip__second_identical_run__same_rows_in_same_order' => sub {
   my %ipv6 = (
     ipv6_index => { 'a' => 1, 'b' => 2, 'c' => 1 },
