@@ -24,7 +24,7 @@ C<LOCALTIMESTAMP> or C<to_timestamp(1)::timestamp>.
 sub upsert_subnet {
   my ($rs, $net, $now) = @_;
   return unless $net;
-  return $rs->upsert([{ net => $net, last_discover => \$now }]);
+  return $rs->upsert([{ net => $net, vrf => '', last_discover => \$now }]);
 }
 
 1;

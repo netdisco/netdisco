@@ -176,7 +176,7 @@ subtest 'device_ip__complete_walks__upserts_rows_and_removes_unseen_with_ip_scop
   is scalar @calls, 1, 'one upsert';
   my @rows = @{ $calls[0][1] };
   is_deeply [ map { $_->{alias} } @rows ], [ '192.0.2.1', '198.51.100.7' ];
-  is_deeply [ sort keys %{ $rows[0] } ], [qw/alias creation dns ip port subnet/],
+  is_deeply [ sort keys %{ $rows[0] } ], [qw/alias creation dns ip port subnet vrf/],
     'rows carry the same keys and leave out first_seen';
   is $rows[0]{ip}, '192.0.2.1';
   is $rows[0]{port}, 'Gi1/1';
@@ -185,7 +185,7 @@ subtest 'device_ip__complete_walks__upserts_rows_and_removes_unseen_with_ip_scop
   my @removed = device_ip_removals();
   is scalar @removed, 1, 'one removal';
   is_deeply $removed[0][1], { ip => '192.0.2.1' };
-  is_deeply $removed[0][2], [ { alias => '192.0.2.1' }, { alias => '198.51.100.7' } ];
+  is_deeply $removed[0][2], [ { alias => '192.0.2.1', vrf => '' }, { alias => '198.51.100.7', vrf => '' } ];
 };
 
 subtest 'device_ip__second_identical_run__same_rows_in_same_order' => sub {
@@ -228,7 +228,7 @@ subtest 'device_ip__device_ip_not_in_ip_index__fake_row_added_once' => sub {
   is_deeply [ map { $_->{alias} } @{ $calls[0][1] } ], [ '198.51.100.7', '192.0.2.1' ];
   my ($fake) = grep { $_->{alias} eq '192.0.2.1' } @{ $calls[0][1] };
   ok !defined $fake->{port} && !defined $fake->{subnet}, 'fake row has no port or subnet';
-  is_deeply [ sort keys %$fake ], [qw/alias creation dns ip port subnet/];
+  is_deeply [ sort keys %$fake ], [qw/alias creation dns ip port subnet vrf/];
 
   run_discover(ip_index => {}, ip_table => {}, ip_netmask => {});
   @calls = device_ip_upserts();

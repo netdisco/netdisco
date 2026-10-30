@@ -51,7 +51,7 @@ subtest 'result_classes__first_seen__declared_on_device_ip_and_device_port' => s
 };
 
 subtest 'schema_version__is_104' => sub {
-  is($App::Netdisco::DB::VERSION, 104);
+  cmp_ok($App::Netdisco::DB::VERSION, '>=', 104);
 };
 
 done_testing;

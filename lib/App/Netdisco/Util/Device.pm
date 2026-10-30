@@ -75,7 +75,7 @@ sub get_device {
   # in case the management IP of one device is in use on another device,
   # we first try to get an exact match for the IP as mgmt interface.
   my $alias =
-    schema(vars->{'tenant'})->resultset('DeviceIp')->find($ip, $ip)
+    schema(vars->{'tenant'})->resultset('DeviceIp')->search({ ip => $ip, alias => $ip })->first
     ||
     schema(vars->{'tenant'})->resultset('DeviceIp')->search({alias => $ip})->first;
   $ip = $alias->ip if defined $alias;

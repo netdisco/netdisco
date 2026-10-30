@@ -447,7 +447,7 @@ sub renumber {
   $device->update({
     ip  => $new_ip,
     dns => (hostname_from_ip($new_ip)
-      || eval { $schema->resultset('DeviceIp')->find($new_ip,$new_ip)->dns } || undef),
+      || eval { $schema->resultset('DeviceIp')->search({ ip => $new_ip, alias => $new_ip })->first->dns } || undef),
   });
 
   return $device;
