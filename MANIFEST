@@ -743,6 +743,12 @@ xt/167-discover-device-ip-upsert.t
 xt/168-discover-device-module-upsert.t
 xt/169-discover-device-vlan-upsert.t
 xt/170-discover-device-power-upsert.t
+xt/171-retire-ports.t
+xt/172-discover-device-port-upsert.t
+xt/173-discover-port-properties-upsert.t
+xt/174-discover-wireless-upsert.t
+xt/175-discover-neighbor-columns.t
+xt/176-discover-port-tags-clear.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t
