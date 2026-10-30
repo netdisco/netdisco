@@ -1,4 +1,8 @@
-2.116001 - 2026-10-24
+2.117000 - tbd
+
+  [NEW FEATURES]
+
+  * #1763 add optional port context to node search and device nodes
 
   [ENHANCEMENTS]
 
@@ -8,6 +12,11 @@
     discover
   * #1784 write device ports and their properties, PoE, wireless, VLANs and
     tags in place during discover
+
+  [BUG FIXES]
+
+  * #1770 keep job port names that are json numbers as written (1.10 was
+    becoming 1.1)
 
 2.116000 - 2026-10-23
 
