@@ -11,7 +11,8 @@
 
   [BUG FIXES]
 
-  * retire ARP entries only within their own VRF
+  * show one neighbor per port when another device also lists the
+    neighbor's address
 
 2.116000 - 2026-10-23
 

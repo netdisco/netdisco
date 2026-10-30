@@ -103,7 +103,7 @@ subtest 'neighbor_alias_and_graph__read_device_ip_resolved' => sub {
     qr/resultset\('DeviceIpResolved'\)/, 'graph aliases';
 };
 
-subtest 'neighbor_alias__generated_sql__pins_foreign_row_to_resolved_device' => sub {
+subtest 'neighbor_alias__address_listed_on_two_devices__joins_only_the_owner_row' => sub {
   my $offline = App::Netdisco::DB->connect('dbi:Pg:dbname=none', 'u', 'p');
   my $rs = $offline->resultset('DevicePort')->search({},
     { join => 'neighbor_alias', columns => ['neighbor_alias.ip'] });

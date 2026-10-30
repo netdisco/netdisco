@@ -6,7 +6,7 @@ use warnings;
 # store_arp wrote each ARP entry three times: the retire step hit the target
 # row too, then update_or_new and the router maps each wrote a new version,
 # none HOT while GIN indexes covered the maps. It now locks the IP, retires
-# every other active binding of that IP, and upserts once.
+# every other active binding of that IP within the same VRF, and upserts once.
 #
 # Excluding the target row from the retire is what lets two pollers that
 # report one IP under different MACs deadlock, so the lock must come first

@@ -25,24 +25,14 @@ subtest 'step_104_105__parses__one_transaction' => sub {
   is($step->{no_transaction}, 0, 'runs in a transaction');
 };
 
-# On 9.6 a default in ADD COLUMN rewrites the table under an exclusive lock,
-# so the column is added bare, then defaulted, backfilled and made NOT NULL.
-subtest 'step_104_105__add_column__bare_then_default_backfill_not_null' => sub {
+subtest 'step_104_105__add_column__not_null_default_empty_in_one_statement' => sub {
   foreach my $table (qw(device_ip subnets)) {
     my @add = grep { /^ALTER TABLE $table ADD COLUMN/ } @statements;
     is(scalar @add, 1, "$table: one ADD COLUMN");
-    is($add[0], "ALTER TABLE $table ADD COLUMN IF NOT EXISTS vrf text", "$table: bare column");
-    unlike($add[0], qr/DEFAULT/i, "$table: no default in ADD COLUMN");
-
-    my @order = map { position_of($_) } (
-      "ALTER TABLE $table ADD COLUMN IF NOT EXISTS vrf text",
-      "ALTER TABLE $table ALTER COLUMN vrf SET DEFAULT ''",
-      "UPDATE $table SET vrf = '' WHERE vrf IS NULL",
-      "ALTER TABLE $table ALTER COLUMN vrf SET NOT NULL",
-    );
-    ok((!grep { !defined } @order), "$table: all four statements present");
-    is_deeply([ sort { $a <=> $b } grep { defined } @order ], [ grep { defined } @order ],
-      "$table: in the required order");
+    is($add[0], "ALTER TABLE $table ADD COLUMN IF NOT EXISTS vrf text NOT NULL DEFAULT ''",
+      "$table: column, default and NOT NULL in one statement");
+    is(scalar(grep { /^(UPDATE $table |ALTER TABLE $table ALTER COLUMN vrf)/ } @statements), 0,
+      "$table: no separate default, backfill or NOT NULL statement");
   }
 };
 

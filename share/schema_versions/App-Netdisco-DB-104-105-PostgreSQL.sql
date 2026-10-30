@@ -3,19 +3,12 @@ BEGIN;
 SET LOCAL client_min_messages = warning;
 
 -- Adds a vrf key to device_ip and subnets. The default table is vrf = ''
--- and never NULL, so that upserts can name the key. The column is added bare
--- because on 9.6 a default in ADD COLUMN rewrites the table.
-ALTER TABLE device_ip ADD COLUMN IF NOT EXISTS vrf text;
-ALTER TABLE device_ip ALTER COLUMN vrf SET DEFAULT '';
-UPDATE device_ip SET vrf = '' WHERE vrf IS NULL;
-ALTER TABLE device_ip ALTER COLUMN vrf SET NOT NULL;
+-- and never NULL, so that upserts can name the key.
+ALTER TABLE device_ip ADD COLUMN IF NOT EXISTS vrf text NOT NULL DEFAULT '';
 ALTER TABLE device_ip DROP CONSTRAINT IF EXISTS device_ip_pkey;
 ALTER TABLE device_ip ADD CONSTRAINT device_ip_pkey PRIMARY KEY (ip, alias, vrf);
 
-ALTER TABLE subnets ADD COLUMN IF NOT EXISTS vrf text;
-ALTER TABLE subnets ALTER COLUMN vrf SET DEFAULT '';
-UPDATE subnets SET vrf = '' WHERE vrf IS NULL;
-ALTER TABLE subnets ALTER COLUMN vrf SET NOT NULL;
+ALTER TABLE subnets ADD COLUMN IF NOT EXISTS vrf text NOT NULL DEFAULT '';
 ALTER TABLE subnets DROP CONSTRAINT IF EXISTS subnets_pkey;
 ALTER TABLE subnets ADD CONSTRAINT subnets_pkey PRIMARY KEY (net, vrf);
 
