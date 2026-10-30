@@ -47,13 +47,35 @@ subtest 'step_104_105__primary_keys__dropped_if_exists_and_widened' => sub {
   }
 };
 
-subtest 'step_104_105__view__create_or_replace_device_ip_resolved' => sub {
+subtest 'step_104_105__vrf_function__one_parallel_safe_statement_costed_as_cheap' => sub {
+  my @functions = grep { /^CREATE OR REPLACE FUNCTION device_ip_vrf_row_resolves\(/ } @statements;
+  is(scalar @functions, 1, 'one function statement');
+  unlike($functions[0], qr/;/, 'no semicolon inside the statement');
+  like($functions[0], qr/\bLANGUAGE sql STABLE PARALLEL SAFE COST 1 AS\b/,
+    'STABLE, PARALLEL SAFE and COST 1, so the planner keeps device_ip plans');
+  like($functions[0], qr/SELECT NOT EXISTS \(SELECT 1 FROM device_ip x/, 'one probe of device_ip');
+};
+
+subtest 'step_104_105__view__one_scan_of_device_ip_with_no_set_operation' => sub {
   my @views = grep { /^CREATE OR REPLACE VIEW device_ip_resolved AS/ } @statements;
   is(scalar @views, 1, 'one view statement');
-  unlike($views[0], qr/;/, 'no semicolon inside the statement');
-  unlike($views[0], qr/min\(/i, 'no min() on inet');
-  like($views[0], qr/d\.alias = d\.ip\s+AND NOT EXISTS \(SELECT 1 FROM device_ip x WHERE x\.alias = d\.alias AND x\.vrf = '' AND x\.ip <> d\.ip\)/,
-    'own-address branch yields to another device\'s default row');
+  like($views[0], qr/^CREATE OR REPLACE VIEW device_ip_resolved AS\s+SELECT d\.ip, d\.alias FROM device_ip d\s+WHERE d\.vrf = '' OR device_ip_vrf_row_resolves\(d\.ip, d\.alias, d\.vrf\)$/,
+    'default rows as recorded, named-VRF rows through the function');
+  unlike($views[0], qr/\b(?:UNION|GROUP BY|DISTINCT|HAVING|EXISTS)\b|\b(?:min|max|count|array_agg)\(/i,
+    'no set operation, grouping, aggregate or inline subquery');
+  my $function = position_of((grep { /^CREATE OR REPLACE FUNCTION device_ip_vrf_row_resolves\(/ } @statements)[0]);
+  my $view = position_of($views[0]);
+  ok(defined $function && $function < $view, 'function created before the view');
+};
+
+subtest 'step_104_105__alias_index__covering_index_created_if_not_exists' => sub {
+  ok(defined position_of('CREATE INDEX IF NOT EXISTS idx_device_ip_alias_vrf_ip ON device_ip (alias, vrf, ip)'),
+    'covering index created if not exists');
+};
+
+subtest 'step_104_105__existing_alias_index__left_in_place' => sub {
+  ok(!grep({ /DROP INDEX[^;]*\bidx_device_ip_alias\b(?!_)/ } @statements),
+    'step 105 does not drop idx_device_ip_alias');
 };
 
 subtest 'result_classes__vrf__declared_and_in_primary_key' => sub {

@@ -108,11 +108,11 @@ subtest 'neighbor_alias__address_listed_on_two_devices__joins_only_the_owner_row
   my $rs = $offline->resultset('DevicePort')->search({},
     { join => 'neighbor_alias', columns => ['neighbor_alias.ip'] });
   my ($sql) = @{ ${ $rs->as_query } };
-  like $sql, qr/neighbor_alias\.alias\s*=\s*\(\s*SELECT/, 'alias from resolved subquery';
-  like $sql, qr/neighbor_alias\.ip\s*=\s*\(\s*SELECT/, 'ip pinned, not alias-only';
+  like $sql, qr/neighbor_alias\.alias\s*=\s*\(\s*SELECT/, 'alias is the resolved owner';
+  like $sql, qr/neighbor_alias\.ip\s*=\s*neighbor_alias\.alias\b/, 'the owner\'s own-address row';
   like $sql, qr/neighbor_alias\.vrf\s*=\s*\(SELECT min\(devipvrf\.vrf\)/, 'one VRF row';
   like $sql, qr/device_ip_resolved/, 'subquery reads the view';
-  is scalar(() = $sql =~ /ORDER BY ip LIMIT/g), 2, 'both subqueries ordered, so they agree';
+  is scalar(() = $sql =~ /ORDER BY ip LIMIT/g), 1, 'one owner subquery, ordered so it is deterministic';
 };
 
 done_testing;
