@@ -110,7 +110,7 @@
             "Regexp::Common" : "2017060201",
             "Regexp::Common::net::CIDR" : "0",
             "Role::Tiny" : "1.002005",
-            "SNMP::Info" : "3.981000",
+            "SNMP::Info" : "3.984000",
             "SQL::Abstract" : "1.85",
             "SQL::Translator" : "0.11024",
             "Scope::Guard" : "0",
@@ -155,7 +155,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.116000"
+         "version" : "2.117000"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -183,7 +183,7 @@
       },
       "App::Netdisco::DB" : {
          "file" : "lib/App/Netdisco/DB.pm",
-         "version" : "103"
+         "version" : "104"
       },
       "App::Netdisco::DB::Deploy" : {
          "file" : "lib/App/Netdisco/DB/Deploy.pm"
@@ -472,6 +472,9 @@
       },
       "App::Netdisco::DB::UpgradeMessage" : {
          "file" : "lib/App/Netdisco/DB/UpgradeMessage.pm"
+      },
+      "App::Netdisco::DB::Upsert" : {
+         "file" : "lib/App/Netdisco/DB/Upsert.pm"
       },
       "App::Netdisco::Environment" : {
          "file" : "lib/App/Netdisco/Environment.pm"
@@ -1116,6 +1119,6 @@
       "x_IRC" : "irc://irc.libera.chat/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.116000",
+   "version" : "2.117000",
    "x_serialization_backend" : "JSON::PP version 4.16"
 }
