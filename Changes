@@ -9,6 +9,10 @@
   * add a VRF key to device_ip and subnets, and a view that resolves addresses
     to devices
 
+  [BUG FIXES]
+
+  * retire ARP entries only within their own VRF
+
 2.116000 - 2026-10-23
 
   [NEW FEATURES]
