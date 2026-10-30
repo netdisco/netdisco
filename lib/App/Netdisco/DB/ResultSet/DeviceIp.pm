@@ -14,6 +14,25 @@ my $VENDOR = q{COALESCE(me.vendor, CASE WHEN me.node THEN (SELECT m.company FROM
 
 =head1 ADDITIONAL METHODS
 
+=head2 resolve_alias( $ip )
+
+Returns the IP of the device that owns the address C<$ip>, or C<undef>. A
+device's own address wins in any VRF; otherwise the C<device_ip_resolved> view
+decides. An address held in two VRFs by different devices resolves to no device
+when no default-table row and no own-address row claims it.
+
+=cut
+
+sub resolve_alias {
+  my ($rs, $ip) = @_;
+  my $own = $rs->search({ ip => $ip, alias => $ip }, { rows => 1 })->first;
+  return $own->ip if defined $own;
+
+  my $row = $rs->result_source->schema->resultset('DeviceIpResolved')
+    ->search({ alias => $ip }, { rows => 1 })->first;
+  return defined $row ? $row->ip : undef;
+}
+
 =head2 ip_inventory( $subnet, \%opts )
 
 Returns the IP Inventory report rows for C<$subnet> (a L<NetAddr::IP::Lite>):

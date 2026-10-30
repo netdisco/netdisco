@@ -34,7 +34,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   if (scalar @{ setting('device_identity') }) {
     my @idmaps = @{ setting('device_identity') };
-    my @devips = $device->device_ips->order_by('alias')->all;
+    my @devips = $device->device_ips->search({ vrf => '' })->order_by('alias')->all;
 
     # using ALIASMAP break so that we stop after first successful renumber
 

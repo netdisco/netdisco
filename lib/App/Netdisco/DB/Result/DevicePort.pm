@@ -266,11 +266,17 @@ database.
 __PACKAGE__->belongs_to( neighbor_alias => 'App::Netdisco::DB::Result::DeviceIp',
   sub {
       my $args = shift;
+      my $owner = sub {
+          $args->{self_resultsource}->schema->resultset('DeviceIpResolved')
+            ->search({alias => { -ident => "$args->{self_alias}.remote_ip"}},
+                     {rows => 1, columns => 'ip', alias => 'devipsub', order_by => 'ip'})->as_query };
+      # both subqueries must pick the same device when an address is duplicated,
+      # hence the order_by; pinned to the resolved device and its lowest VRF, so another device
+      # holding the same address in a named VRF cannot add a second row
       return {
-          "$args->{foreign_alias}.alias" => { '=' =>
-            $args->{self_resultsource}->schema->resultset('DeviceIp')
-              ->search({alias => { -ident => "$args->{self_alias}.remote_ip"}},
-                       {rows => 1, columns => 'ip', alias => 'devipsub'})->as_query }
+          "$args->{foreign_alias}.alias" => { '=' => $owner->() },
+          "$args->{foreign_alias}.ip"    => { '=' => $owner->() },
+          "$args->{foreign_alias}.vrf"   => { '=' => \"(SELECT min(devipvrf.vrf) FROM device_ip devipvrf WHERE devipvrf.ip = $args->{foreign_alias}.ip AND devipvrf.alias = $args->{foreign_alias}.alias)" },
       };
   },
   { join_type => 'LEFT' },

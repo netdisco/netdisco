@@ -21,13 +21,17 @@ ALTER TABLE subnets ADD CONSTRAINT subnets_pkey PRIMARY KEY (net, vrf);
 
 -- device_ip_resolved maps each alias address to the one device that owns it.
 -- An address in the default table (vrf = '') always resolves as recorded.
--- An address in a named VRF resolves when it is the device's own address,
--- or when no default-table device holds it and exactly one device does.
+-- An address in a named VRF resolves when no default-table device holds it
+-- and exactly one device does, or when it is the device's own address and no
+-- other device holds it in the default table. The default table wins every
+-- lookup except a device finding its own address, which resolve_alias's first
+-- step handles.
 -- With every vrf = '' the view returns device_ip's (ip, alias) pairs exactly.
 CREATE OR REPLACE VIEW device_ip_resolved AS
   SELECT ip, alias FROM device_ip WHERE vrf = ''
   UNION
-  SELECT ip, alias FROM device_ip WHERE vrf <> '' AND alias = ip
+  SELECT ip, alias FROM device_ip d WHERE d.vrf <> '' AND d.alias = d.ip
+    AND NOT EXISTS (SELECT 1 FROM device_ip x WHERE x.alias = d.alias AND x.vrf = '' AND x.ip <> d.ip)
   UNION
   SELECT (array_agg(d.ip))[1] AS ip, d.alias FROM device_ip d
     WHERE d.vrf <> ''

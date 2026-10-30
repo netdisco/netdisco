@@ -42,6 +42,9 @@ subroutines.
 Given an IP address, returns a L<DBIx::Class::Row> object for the Device in
 the Netdisco database. The IP can be for any interface on the device.
 
+The address is resolved by C<DeviceIp-E<gt>resolve_alias>: a device's own address
+in any VRF wins, else the one device the C<device_ip_resolved> view maps it to.
+
 If for any reason C<$ip> is already a C<DBIx::Class> Device object, then it is
 simply returned. If C<$ip> can C<addr> or C<ip> then those methods are called
 to get an IP address to locate in the database.
@@ -74,11 +77,8 @@ sub get_device {
 
   # in case the management IP of one device is in use on another device,
   # we first try to get an exact match for the IP as mgmt interface.
-  my $alias =
-    schema(vars->{'tenant'})->resultset('DeviceIp')->search({ ip => $ip, alias => $ip })->first
-    ||
-    schema(vars->{'tenant'})->resultset('DeviceIp')->search({alias => $ip})->first;
-  $ip = $alias->ip if defined $alias;
+  my $owner = schema(vars->{'tenant'})->resultset('DeviceIp')->resolve_alias($ip);
+  $ip = $owner if defined $owner;
 
   return schema(vars->{'tenant'})->resultset('Device')->with_times
     ->find_or_new({ip => $ip});

@@ -28,7 +28,7 @@ WHERE d.ip = p.ip
        AND q.port = p.remote_port)
   AND NOT EXISTS
     (SELECT 1
-     FROM device_ip a,
+     FROM device_ip_resolved a,
           device_port q
      WHERE a.alias = p.remote_ip
        AND q.ip = a.ip

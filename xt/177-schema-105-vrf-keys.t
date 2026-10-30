@@ -62,6 +62,8 @@ subtest 'step_104_105__view__create_or_replace_device_ip_resolved' => sub {
   is(scalar @views, 1, 'one view statement');
   unlike($views[0], qr/;/, 'no semicolon inside the statement');
   unlike($views[0], qr/min\(/i, 'no min() on inet');
+  like($views[0], qr/d\.alias = d\.ip\s+AND NOT EXISTS \(SELECT 1 FROM device_ip x WHERE x\.alias = d\.alias AND x\.vrf = '' AND x\.ip <> d\.ip\)/,
+    'own-address branch yields to another device\'s default row');
 };
 
 subtest 'result_classes__vrf__declared_and_in_primary_key' => sub {
