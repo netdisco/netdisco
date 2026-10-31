@@ -61,11 +61,15 @@ sub refresh_managed_acl {
 
 =head1 effective_setting( $name )
 
-Returns setting C<$name> as Netdisco will use it: the YAML configuration with
-ACLs from the ACL Manager laid over it. For now that changes
+Returns setting C<$name> as Netdisco will use it: the setting as configured,
+with ACLs from the ACL Manager laid over it. For now that changes
 C<portctl_by_role>, which gains the C<host_port> ACLs, and C<host_groups>,
 which gains the C<synthesized_group_*> groups those roles name. Any other
 setting comes back unchanged.
+
+As configured, C<portctl_by_role> is the YAML alone, because nothing writes
+to it. C<host_groups> is not: C<refresh_managed_acl> adds the API token ACLs'
+groups to it, and they stay for the life of the process.
 
 The overlay is built on first use and kept in C<vars>, so the database is read
 at most once per web request (Dancer clears C<vars> for each one) or backend

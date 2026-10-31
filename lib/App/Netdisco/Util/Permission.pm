@@ -428,14 +428,16 @@ sub check_acl {
   return ($all ? true : false);
 }
 
-# YAML groups first, so a page or job that names only those never reads the
-# database. a name YAML lacks may be a group the ACL Manager synthesized (see
-# effective_setting), and an unknown one matches nothing, as it always has,
-# even when the database can't be reached.
+# groups in config first, so a page or job that names only those never reads
+# the database. that is not the YAML alone: refresh_managed_acl writes the API
+# token ACLs' groups there too, and they stay for the life of the process. a
+# name config lacks may be a group the ACL Manager synthesized for a port
+# control role (see effective_setting), and an unknown one matches nothing,
+# as it always has, even when the database can't be reached.
 sub _group_rules {
   my $group = shift;
-  my $yaml = setting('host_groups') || {};
-  return $yaml->{$group} if exists $yaml->{$group};
+  my $config = setting('host_groups') || {};
+  return $config->{$group} if exists $config->{$group};
 
   require App::Netdisco::Util::Configuration;
   my $effective = try {
