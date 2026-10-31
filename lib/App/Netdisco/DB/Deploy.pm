@@ -183,7 +183,7 @@ sub _step_file_exists {
     $schema->storage->sqlt_type, $from + 1, $schema->upgrade_directory, $from);
 }
 
-# Returns the step's result, or undef after printing why the run must stop.
+# Returns the step's result, or undef and the reason the run must stop.
 sub _apply_step {
   my ($schema, $options, $from) = @_;
   # checked here because upgrade_single_step only carps and returns undef
@@ -191,15 +191,32 @@ sub _apply_step {
     ? $schema->upgrade_single_step($from, $from + 1,
         App::Netdisco::DB::SchemaVersioned::step_mode($from, $options))
     : undef;
-  if (not $step_result) {
-    print STDERR _missing_step_message($schema, $from), "\n";
-    return undef;
-  }
-  if (not $step_result->{ok}) {
-    print STDERR _strict_failure_text($schema, $options, $from, $step_result), "\n";
-    return undef;
-  }
-  return $step_result;
+  return (undef, _missing_step_message($schema, $from)) if not $step_result;
+  return (undef, _strict_failure_text($schema, $options, $from, $step_result))
+    if not $step_result->{ok};
+  return ($step_result);
+}
+
+sub _announce_run {
+  my ($options, $db_version, $target_version) = @_;
+  return _say($options, "Database schema is up to date at version $target_version.")
+    if $db_version >= $target_version;
+  return _say($options, "Replaying every upgrade step from version $db_version"
+    . " to $target_version...") if $options->{redeploy_all};
+  # _bootstrap_version leaves version 1 only when there is no device table
+  return _say($options, "Installing database schema version $target_version...")
+    if $db_version == 1;
+  _say($options, "Versions out of sync. This is $target_version, your database"
+    . " contains version $db_version, running updates...");
+}
+
+sub _step_outcome {
+  my ($options, $from, $step_result) = @_;
+  return 'FORCED' if _is_forced_step($options, $from)
+    and scalar @{ $step_result->{skipped} || [] };
+  my $unexpected = scalar @{ $step_result->{unexpected} };
+  return 'OK' if not $unexpected or _is_forced_step($options, $from);
+  return sprintf 'applied with %d unexpected error%s', $unexpected, ($unexpected == 1 ? '' : 's');
 }
 
 sub _is_forced_step {
@@ -212,8 +229,14 @@ sub _run_steps {
   my %tally = (expected => 0, steps => 0, unexpected => 0);
 
   for (my $from = $db_version; $from < $target_version; $from++) {
-    my $step_result = _apply_step($schema, $options, $from);
-    return (1, \%tally) unless $step_result;
+    print 'Updating version ', $from, ' to ', $from + 1, '... ' unless $options->{quiet};
+    my ($step_result, $failure) = _apply_step($schema, $options, $from);
+    if (not $step_result) {
+      _say($options, 'FAILED');
+      print STDERR $failure, "\n";
+      return (1, \%tally);
+    }
+    _say($options, _step_outcome($options, $from, $step_result));
 
     if (_is_forced_step($options, $from)) {
       _report_forced($options, $from, $step_result);
@@ -253,6 +276,11 @@ sub run_deploy {
 
   my $refusal = _check_force_step($schema, $options, $db_version, $target_version);
   return $refusal if defined $refusal;
+
+  # a step's progress line is finished only after the step runs, and its
+  # errors go to STDERR, so STDOUT must not hold the start of the line back
+  local $| = 1;
+  _announce_run($options, $db_version, $target_version);
 
   my ($exit_code, $tally) = _run_steps($schema, $options, $db_version, $target_version);
   _report_tolerant_summary($options, $tally) if $exit_code == 0;

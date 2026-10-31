@@ -77,9 +77,14 @@ subtest 'validate_force_step__future_step__refused' => sub {
   sub dbh { { pg_db => 'fakedb' } }
   sub txn_scope_guard { undef }
 
+  # a database whose device table exists, as --redeploy-all needs
+  package FakeStorageWithTables;
+  our @ISA = ('FakeStorage');
+  sub dbh_do { 1 }
+
   package FakeSchema;
   sub new { my ($class, %arg) = @_; bless { calls => [], missing => {}, %arg }, $class }
-  sub storage { FakeStorage->new }
+  sub storage { $_[0]{storage} || FakeStorage->new }
   sub get_db_version { $_[0]{version} }
   sub schema_version { $_[0]{target} }
   sub upgrade_directory { '/fake/schema_versions' }
@@ -136,7 +141,7 @@ subtest 'run_deploy__strict_step_fails__exit_1_with_strict_message' => sub {
   like($err, qr/--force-step 50/);
   like($err, qr/pg_dump -Fc fakedb/);
   is_deeply($schema->{calls}, [[50, 'strict']]);
-  is($out, '');
+  like($out, qr/Updating version 50 to 51\.\.\. FAILED\n\z/);
 };
 subtest 'run_deploy__force_step_past_latest__exit_2' => sub {
   my $schema = FakeSchema->new(version => 101, target => 101);
@@ -163,8 +168,8 @@ subtest 'run_deploy__tolerant_expected_errors__one_summary_line' => sub {
     results => { 10 => ok_step(expected => 2), 11 => ok_step(expected => 1) });
   my ($exit, $out) = run_captured($schema, {});
   is($exit, 0);
-  like($out, qr/^Expected errors on 3 statements across 2 older steps/);
-  is(scalar(() = $out =~ m/\n/g), 1);
+  like($out, qr/^Expected errors on 3 statements across 2 older steps/m);
+  is(scalar(() = $out =~ m/^Expected errors/mg), 1);
 };
 subtest 'run_deploy__tolerant_unexpected_only__error_then_check_pointer' => sub {
   my $error = { statement => 'SELECT 1/0', state => '22012', error => 'division by zero' };
@@ -174,7 +179,7 @@ subtest 'run_deploy__tolerant_unexpected_only__error_then_check_pointer' => sub 
   is($exit, 0);
   like($err, qr/SQLSTATE 22012/);
   like($err, qr/An error in an older step is shown above; run netdisco-db-deploy --check/);
-  is($out, '');
+  like($out, qr/Updating version 10 to 11\.\.\. applied with 1 unexpected error\n/);
 };
 subtest 'run_deploy__quiet__suppresses_the_summary' => sub {
   my $schema = FakeSchema->new(version => 10, target => 11,
@@ -200,6 +205,51 @@ subtest 'run_deploy__forced_step__reported_as_forced_not_older' => sub {
   is_deeply($schema->{calls}, [[57, 'forced']]);
   like($err, qr/Step 57 was forced: 2 failing statements/);
   unlike($out . $err, qr/older/);
+};
+
+# Requested on #1788: say what the deploy found, then each step as it runs.
+subtest 'run_deploy__database_behind__says_versions_then_each_step' => sub {
+  my $schema = FakeSchema->new(version => 99, target => 101,
+    results => { 99 => ok_step(), 100 => ok_step() });
+  my ($exit, $out) = run_captured($schema, {});
+  is($exit, 0);
+  is($out, "Versions out of sync. This is 101, your database contains version 99, running updates...\n"
+    . "Updating version 99 to 100... OK\n"
+    . "Updating version 100 to 101... OK\n");
+};
+subtest 'run_deploy__database_current__says_up_to_date_and_runs_no_step' => sub {
+  my $schema = FakeSchema->new(version => 104, target => 104);
+  my ($exit, $out, $err) = run_captured($schema, {});
+  is($exit, 0);
+  is($out, "Database schema is up to date at version 104.\n");
+  is($err, '');
+  is_deeply($schema->{calls}, []);
+};
+subtest 'run_deploy__empty_database__says_it_installs' => sub {
+  my $schema = FakeSchema->new(version => 1, target => 3,
+    results => { 1 => ok_step(), 2 => ok_step() });
+  my ($exit, $out) = run_captured($schema, {});
+  is($exit, 0);
+  like($out, qr/\AInstalling database schema version 3\.\.\.\nUpdating version 1 to 2\.\.\. OK\n/);
+};
+subtest 'run_deploy__redeploy_all__says_it_replays' => sub {
+  my $schema = FakeSchema->new(version => 2, target => 4, storage => FakeStorageWithTables->new,
+    results => { 2 => ok_step(), 3 => ok_step() });
+  my ($exit, $out) = run_captured($schema, { redeploy_all => 1 });
+  is($exit, 0);
+  like($out, qr/\AReplaying every upgrade step from version 2 to 4\.\.\.\n/);
+};
+subtest 'run_deploy__missing_step_file__marks_the_step_failed' => sub {
+  my $schema = FakeSchema->new(version => 50, target => 52, missing => { 50 => 1 });
+  my ($exit, $out) = run_captured($schema, {});
+  like($out, qr/Updating version 50 to 51\.\.\. FAILED\n\z/);
+};
+subtest 'run_deploy__forced_step_with_skips__marks_the_step_forced' => sub {
+  my $skipped = [ { statement => 'SELECT 1/0', state => '22012', error => 'division by zero' } ];
+  my $schema = FakeSchema->new(version => 57, target => 58,
+    results => { 57 => ok_step(skipped => $skipped) });
+  my ($exit, $out) = run_captured($schema, { force_step => 57 });
+  like($out, qr/Updating version 57 to 58\.\.\. FORCED\n/);
 };
 
 done_testing;

@@ -2,7 +2,8 @@
 
   [BUG FIXES]
 
-  * #1788 hide DBIC's schema version warning during netdisco-db-deploy
+  * #1788 show each schema upgrade step in netdisco-db-deploy, not DBIC's
+    version warning
   * #1789 restore device-first matching in search, so a device's DNS name
     opens its details page again (reverts #1429's port-first order); a
     search for a MAC address held by one device port now opens that device's

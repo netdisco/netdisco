@@ -104,7 +104,7 @@ the row:
 
   DELETE FROM sessions WHERE id = 'dancer_session_cookie_key';
 
-then run this script again and answer yes to the database deployment, and
+then run this script again and answer yes to the database schema update, and
 restart the Netdisco web service. Every logged-in user is signed out and must
 log in again.
 
@@ -151,7 +151,7 @@ exit(0) unless $bool;
 
 say '';
 $bool = $term->ask_yn(
-  prompt => 'Would you like to deploy the database schema?', default => 'n',
+  prompt => 'Would you like to update the database schema?', default => 'n',
 );
 deploy_db() if $bool;
 
