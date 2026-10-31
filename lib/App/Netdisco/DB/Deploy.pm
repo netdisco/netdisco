@@ -3,6 +3,8 @@ package App::Netdisco::DB::Deploy;
 use strict;
 use warnings;
 
+use Dancer ':syntax';
+use DBICx::Sugar ();
 use Try::Tiny;
 
 use App::Netdisco::DB::SchemaVersioned;
@@ -13,7 +15,7 @@ use App::Netdisco::DB::UpgradeMessage qw(
 );
 
 use base 'Exporter';
-our @EXPORT_OK = qw(parse_args validate_force_step run_deploy);
+our @EXPORT_OK = qw(parse_args validate_force_step run_deploy deploy_schema);
 
 our $USAGE = "Usage: netdisco-db-deploy [--redeploy-all | --force-step N | --check]\n";
 
@@ -54,6 +56,21 @@ sub parse_args {
 
   _refuse_combinations(\%options);
   return \%options;
+}
+
+# the deploy opens a database it is about to upgrade, where DBIC's connect-time
+# version check could only tell the user to do what the deploy is doing (#1788)
+sub deploy_schema {
+  my $label = shift || 'netdisco';
+  my $dbic = setting('plugins')->{DBIC};
+  my $options = $dbic->{$label} || {};
+  $options = $dbic->{ $options->{alias} } if $options->{alias};
+  # a copy, because every later schema() call shares this hash: only the
+  # deploy skips the check, which still warns the web and backend of a missed upgrade
+  my %deploy = (%$options,
+    options => { %{ $options->{options} || {} }, ignore_version => 1 });
+  DBICx::Sugar::config($dbic);
+  return DBICx::Sugar::schema($label, \%deploy);
 }
 
 sub validate_force_step {
