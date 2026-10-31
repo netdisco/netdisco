@@ -71,9 +71,34 @@ As configured, C<portctl_by_role> is the YAML alone, because nothing writes
 to it. C<host_groups> is not: C<refresh_managed_acl> adds the API token ACLs'
 groups to it, and they stay for the life of the process.
 
-The overlay is built on first use and kept in C<vars>, so the database is read
-at most once per web request (Dancer clears C<vars> for each one) or backend
-job (C<Worker::Runner> calls C<forget_effective_config>).
+The overlay is built on first use and kept in C<vars>, one per tenant. How
+long it lasts is decided in three places, and nowhere else:
+
+=over 4
+
+=item *
+
+Dancer clears C<vars> at the start of each web request, so a request reads
+the database at most once.
+
+=item *
+
+C<Worker::Runner::run> calls C<forget_effective_config> after applying the
+job's config overrides, because one process (a backend poller, or
+C<netdisco-do>) runs many jobs, and each must see the ACLs as they are when
+it starts.
+
+=item *
+
+C</t/E<lt>tenantE<gt>/> sets the tenant and forwards without clearing
+C<vars>, so the overlay is keyed by tenant, and a tenant's request never
+reuses the default tenant's.
+
+=back
+
+Code that checks port control in a long-lived process, outside a web request
+or C<Worker::Runner::run>, keeps the first overlay it builds until it calls
+C<forget_effective_config> itself.
 
 =cut
 
