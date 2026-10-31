@@ -48,10 +48,10 @@ subtest 'upsert_subnet__new_or_seen_net__shared_upsert_updating_last_discover' =
   $schema->resultset('Subnet')->upsert_subnet('192.0.2.0/24', 'to_timestamp(1)::timestamp');
   is(scalar @ran, 1, 'one statement');
   my ($sql, @binds) = @{ $ran[0] };
-  is($sql, 'INSERT INTO "subnets" ("last_discover", "net") VALUES (to_timestamp(1)::timestamp, ?)'
-    . ' ON CONFLICT ("net") DO UPDATE SET "last_discover" = EXCLUDED."last_discover"'
+  is($sql, 'INSERT INTO "subnets" ("last_discover", "net", "vrf") VALUES (to_timestamp(1)::timestamp, ?, ?)'
+    . ' ON CONFLICT ("net", "vrf") DO UPDATE SET "last_discover" = EXCLUDED."last_discover"'
     . ' WHERE ("subnets"."last_discover") IS DISTINCT FROM (EXCLUDED."last_discover")', 'sql');
-  is_deeply(\@binds, ['192.0.2.0/24'], 'the net is bound, not interpolated');
+  is_deeply(\@binds, ['192.0.2.0/24', ''], 'the net and vrf are bound, not interpolated');
 };
 
 subtest 'upsert_subnet__no_net__writes_nothing' => sub {

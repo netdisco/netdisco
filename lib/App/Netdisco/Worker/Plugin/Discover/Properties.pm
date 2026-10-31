@@ -357,6 +357,7 @@ register_worker({ phase => 'early', driver => 'snmp',
   my @rows = map {{
     ip       => $device->ip,
     alias    => $_->{alias},
+    vrf      => '',
     subnet   => $_->{subnet},
     port     => $_->{port},
     dns      => $_->{dns},
@@ -367,7 +368,7 @@ register_worker({ phase => 'early', driver => 'snmp',
     my $rs = schema('netdisco')->resultset('DeviceIp');
     $rs->upsert(\@rows);
     my $gone = $rs->remove_unseen({ ip => $device->ip },
-      [ map {{ alias => $_->{alias} }} @rows ]);
+      [ map {{ alias => $_->{alias}, vrf => '' }} @rows ]);
     debug sprintf ' [%s] device - removed %d aliases', $device->ip, $gone;
 
     schema('netdisco')->resultset('Subnet')->upsert_subnet($_, $now) for @subnets;

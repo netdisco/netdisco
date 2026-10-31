@@ -98,7 +98,7 @@ subtest 'remove_unseen__scope_outside_key__dies' => sub {
 };
 
 subtest 'remove_unseen__scope_covers_whole_key__dies' => sub {
-  remove_dies_like('Subnet', { net => '192.0.2.0/24' }, [],
+  remove_dies_like('Device', { ip => '192.0.2.1' }, [],
     qr/remove_unseen: scope covers the whole key/, 'single-column key');
   remove_dies_like('DeviceVlan', { ip => '192.0.2.1', vlan => 10 }, [],
     qr/remove_unseen: scope covers the whole key/, 'multi-column key');

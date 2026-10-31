@@ -19,7 +19,7 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
             AND device_port.up NOT ILIKE '%down%'
           GROUP BY device_port.ip, device_port.remote_ip, device_port.port, device_port.duplex, device_port.remote_port
           ORDER BY device_port.ip) dp
-   LEFT JOIN device_ip di ON dp.remote_ip = di.alias
+   LEFT JOIN device_ip_resolved di ON dp.remote_ip = di.alias
    LEFT JOIN device d1 ON dp.ip = d1.ip
    LEFT JOIN device d2 ON di.ip = d2.ip
    LEFT JOIN device_port dp2 ON (di.ip = dp2.ip AND dp.remote_port = dp2.port)

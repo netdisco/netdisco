@@ -266,11 +266,17 @@ database.
 __PACKAGE__->belongs_to( neighbor_alias => 'App::Netdisco::DB::Result::DeviceIp',
   sub {
       my $args = shift;
+      my $foreign = $args->{foreign_alias};
+      my $owner = $args->{self_resultsource}->schema->resultset('DeviceIpResolved')
+        ->search({alias => { -ident => "$args->{self_alias}.remote_ip"}},
+                 {rows => 1, columns => 'ip', alias => 'devipsub', order_by => 'ip'})->as_query;
+      # Joins the owner's own-address row, in its lowest VRF, so a duplicated
+      # address still gives one deterministic row per port. The owner is
+      # matched on alias, not ip, so the planner probes the alias index.
       return {
-          "$args->{foreign_alias}.alias" => { '=' =>
-            $args->{self_resultsource}->schema->resultset('DeviceIp')
-              ->search({alias => { -ident => "$args->{self_alias}.remote_ip"}},
-                       {rows => 1, columns => 'ip', alias => 'devipsub'})->as_query }
+          "$foreign.alias" => { '=' => $owner },
+          "$foreign.ip"    => { -ident => "$foreign.alias" },
+          "$foreign.vrf"   => { '=' => \"(SELECT min(devipvrf.vrf) FROM device_ip devipvrf WHERE devipvrf.ip = $foreign.ip AND devipvrf.alias = $foreign.alias)" },
       };
   },
   { join_type => 'LEFT' },

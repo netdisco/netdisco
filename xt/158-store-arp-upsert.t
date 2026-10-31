@@ -6,7 +6,7 @@ use warnings;
 # store_arp wrote each ARP entry three times: the retire step hit the target
 # row too, then update_or_new and the router maps each wrote a new version,
 # none HOT while GIN indexes covered the maps. It now locks the IP, retires
-# every other active binding of that IP, and upserts once.
+# every other active binding of that IP within the same VRF, and upserts once.
 #
 # Excluding the target row from the retire is what lets two pollers that
 # report one IP under different MACs deadlock, so the lock must come first
@@ -19,7 +19,7 @@ BEGIN { $ENV{DANCER_ENVDIR} = '/dev/null'; }
 use Test::More 0.88;
 use App::Netdisco;
 use Dancer ':tests';
-use App::Netdisco::Util::Node 'store_arp';
+use App::Netdisco::Util::Node qw/store_arp memoize_arp/;
 
 set logger => 'null';
 
@@ -65,8 +65,8 @@ subtest 'store_arp__lock__hashes_inet_normalized_ip' => sub {
 
 subtest 'store_arp__retire__excludes_only_the_target' => sub {
   my (undef, $retire) = run_store({%host}, $now, '198.51.100.1');
-  like($retire->[0], qr/WHERE ip = \? AND active AND NOT \(mac = \? AND vrf = \?\)/);
-  is_deeply([@$retire[1 .. $#$retire]], ['192.0.2.1', '00:11:22:33:44:55', '']);
+  like($retire->[0], qr/WHERE ip = \? AND vrf = \? AND active AND mac <> \?/);
+  is_deeply([@$retire[1 .. $#$retire]], ['192.0.2.1', '', '00:11:22:33:44:55']);
 };
 
 subtest 'store_arp__upsert__conflict_key_and_columns' => sub {
@@ -102,13 +102,33 @@ subtest 'store_arp__without_device_ip__leaves_router_maps_alone' => sub {
 
 subtest 'store_arp__with_vrf__binds_vrf_in_key_and_exclusion' => sub {
   my (undef, $retire, $upsert) = run_store({%host, vrf => 'blue'}, $now, '198.51.100.1');
-  is($retire->[-1], 'blue', 'retire exclusion');
+  is($retire->[2], 'blue', 'retire scope');
   ok(scalar(grep { defined and $_ eq 'blue' } @$upsert[1 .. $#$upsert]), 'upsert key');
 };
 
 subtest 'store_arp__bad_mac__writes_nothing' => sub {
   my @stmts = run_store({%host, node => 'zz'}, $now, '198.51.100.1');
   is(scalar @stmts, 0);
+};
+
+subtest 'store_arp__retire__scoped_to_the_entry_vrf' => sub {
+  my (undef, $retire) = run_store({%host, vrf => 'red'}, $now, '198.51.100.1');
+  like($retire->[0], qr/vrf = \?/);
+  is_deeply([@$retire[1 .. $#$retire]], ['192.0.2.1', 'red', '00:11:22:33:44:55']);
+};
+
+subtest 'store_arp__retire__default_vrf_binds_empty_string' => sub {
+  my (undef, $retire) = run_store({%host}, $now, '198.51.100.1');
+  is($retire->[2], '');
+};
+
+subtest 'memoize_arp__same_ip_mac_two_vrfs__two_keys' => sub {
+  isnt(memoize_arp({%host, vrf => 'red'}), memoize_arp({%host, vrf => 'blue'}));
+};
+
+subtest 'memoize_arp__no_vrf__equals_empty_vrf' => sub {
+  is(memoize_arp({%host}), memoize_arp({%host, vrf => ''}));
+  is(memoize_arp({%host}), join(chr(28), $host{node}, $host{ip}, ''));
 };
 
 done_testing;

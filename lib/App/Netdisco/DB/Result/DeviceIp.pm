@@ -33,8 +33,10 @@ __PACKAGE__->add_columns(
     is_nullable   => 1,
     original      => { default_value => \"LOCALTIMESTAMP" },
   },
+  "vrf",
+  { data_type => "text", is_nullable => 0, default_value => "" },
 );
-__PACKAGE__->set_primary_key("ip", "alias");
+__PACKAGE__->set_primary_key("ip", "alias", "vrf");
 
 
 

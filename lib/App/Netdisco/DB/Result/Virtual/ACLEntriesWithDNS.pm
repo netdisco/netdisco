@@ -20,7 +20,8 @@ SELECT id,
           WHEN d3.ip IS NOT NULL
             THEN host(d3.ip)
           ELSE
-            COALESCE(device_ip.dns,d1.dns,d1.name)
+            COALESCE((SELECT dip.dns FROM device_ip dip WHERE dip.ip = device_ip.ip
+                       AND dip.alias = device_ip.alias ORDER BY dip.vrf LIMIT 1),d1.dns,d1.name)
           END
       ]) AS ruleset
   FROM (SELECT id,
@@ -28,7 +29,7 @@ SELECT id,
               generate_subscripts(rules, 1) AS idx
           FROM access_control_list
           ORDER BY id, idx ASC) acl
-  LEFT JOIN device_ip
+  LEFT JOIN device_ip_resolved device_ip
     ON acl.rule = host(device_ip.alias)
   LEFT JOIN device d1
     ON device_ip.ip = d1.ip

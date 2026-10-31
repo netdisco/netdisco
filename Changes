@@ -1,3 +1,11 @@
+2.118000 - tbd
+
+  [ENHANCEMENTS]
+
+  * #1785 record the VRF of device addresses and subnets, and resolve
+    addresses to devices through one rule (database schema 105: run
+    netdisco-deploy)
+
 2.117001 - tbd
 
   [BUG FIXES]

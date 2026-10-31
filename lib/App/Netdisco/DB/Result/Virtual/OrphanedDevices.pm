@@ -25,7 +25,7 @@ WHERE ip NOT IN
         GROUP BY device_port.ip,
                  device_port.remote_ip
         ORDER BY device_port.ip) dp
-     LEFT JOIN device_ip di ON dp.remote_ip = di.alias
+     LEFT JOIN device_ip_resolved di ON dp.remote_ip = di.alias
      WHERE di.ip IS NOT NULL)
 ENDSQL
 

@@ -153,8 +153,8 @@ sub is_nbtstatable {
 
 =head2 memoize_arp ( \%host )
 
-Returns a unique string to memoize the arp entry, using node or mac keys
-and the ip key.
+Returns a unique string to memoize the arp entry, using node or mac keys,
+the ip key and the VRF (an absent VRF reads as the empty string).
 
 =cut
 
@@ -162,7 +162,7 @@ sub memoize_arp {
   my $host = shift or return;
   no warnings 'uninitialized';
   return join chr(28), map {$host->{$_}}
-    (($host->{node} ? 'node' : 'mac'), 'ip');
+    (($host->{node} ? 'node' : 'mac'), 'ip', 'vrf');
 }
 
 =head2 store_arp( \%host, $now?, $device_ip )
@@ -177,7 +177,7 @@ and DNS host name. Host details are provided in a Hash ref:
  }
 
 The C<dns> entry is optional. The update will mark other active entries for
-this IP, in any VRF, as no longer C<active>.
+this IP in the same VRF as no longer C<active>.
 
 Optionally a literal string can be passed in the second argument for the
 C<time_last> timestamp, otherwise the current timestamp (C<LOCALTIMESTAMP>) is used.
@@ -210,7 +210,7 @@ sub store_arp {
       $dbh->do('SELECT pg_advisory_xact_lock(?, hashtext(host(?::inet)))',
         undef, $ARP_LOCK_CLASS, $ip);
       $dbh->do('UPDATE node_ip SET active = false'
-        .' WHERE ip = ? AND active AND NOT (mac = ? AND vrf = ?)', undef, $ip, @key[0, 2]);
+        .' WHERE ip = ? AND vrf = ? AND active AND mac <> ?', undef, $ip, $vrf, $key[0]);
       $dbh->do($upsert, undef, @key, $name, @upsert_binds);
     });
   });
