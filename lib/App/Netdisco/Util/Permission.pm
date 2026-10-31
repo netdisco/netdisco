@@ -7,7 +7,6 @@ use Dancer qw/:syntax :script/;
 use Scalar::Util qw/blessed reftype/;
 use NetAddr::IP::Lite ':lower';
 use Algorithm::Cron;
-use Try::Tiny;
 
 use App::Netdisco::Util::DNS 'hostname_from_ip';
 
@@ -435,8 +434,7 @@ sub check_acl {
 # port control role (see effective_setting), and they are all synthesized_group_*,
 # so any other name is unknown without asking the database: check_acl serves
 # every ACL in Netdisco, and a typo in one would otherwise cost a read in
-# every job. an unknown group matches nothing, as it always has, even when
-# the database can't be reached.
+# every job. an unknown group matches nothing, as it always has.
 sub _group_rules {
   my $group = shift;
   my $config = setting('host_groups') || {};
@@ -444,14 +442,8 @@ sub _group_rules {
   return [] unless $group =~ m/^synthesized_group_/;
 
   require App::Netdisco::Util::Configuration;
-  my $effective = try {
-    App::Netdisco::Util::Configuration::effective_setting('host_groups')
-  }
-  catch {
-    debug "group:$group not found, and ACL Manager groups are unavailable: $_";
-    undef;
-  };
-  return (($effective || {})->{$group} || []);
+  return (App::Netdisco::Util::Configuration::effective_setting('host_groups')
+    ->{$group} || []);
 }
 
 true;

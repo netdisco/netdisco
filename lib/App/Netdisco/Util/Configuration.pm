@@ -134,16 +134,6 @@ sub forget_effective_config { delete vars->{'effective_config'}; return }
 
 # the one database read behind effective_setting, and the edge tests replace
 sub _load_managed_acls {
-    {
-        # with no deployed schema (tests, a fresh install) there is nothing to load
-        local $SIG{__WARN__} = sub {
-            my $warning = shift;
-            return if $warning =~ /Your DB is currently unversioned/;
-            warn $warning;
-        };
-        return () unless schema(vars->{'tenant'})->get_db_version;
-    }
-
     return schema(vars->{'tenant'})->resultset('AccessControlListName')->search(
       { 'me.acl_type' => 'host_port' },
       { prefetch => { mappings => [qw/left_acl right_acl/] },

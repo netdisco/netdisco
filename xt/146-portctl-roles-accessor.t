@@ -193,14 +193,9 @@ subtest 'checkAcl__an_unknown_group__matches_nothing_and_is_not_written_into_con
   # check_acl serves discovery, macsuck and the rest, so a typo in any YAML
   # ACL would otherwise cost a database read in every job
   is $$calls, 0, 'and a name the ACL Manager never synthesizes never reads the database';
-};
 
-subtest 'checkAcl__the_database_unreachable__leaves_an_unknown_group_matching_nothing' => sub {
-  stub_managed_acls(undef, dies => "could not connect to server\n");
-  my $matched = eval { check_acl($IN, ['group:synthesized_group_netdisco_1']) };
-  is $@, '', 'check_acl does not die';
-  ok !$matched, 'the group matches nothing';
-  ok check_acl($IN, ['!group:synthesized_group_netdisco_1']), 'and its negation matches, as today';
+  ok !check_acl($IN, ['group:synthesized_group_netdisco_1']),
+    'a synthesized name the ACL Manager does not hold matches nothing either';
 };
 
 subtest 'roleChecks__database_roles__decide_as_sync_portctl_roles_did' => sub {
