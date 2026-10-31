@@ -148,6 +148,29 @@ subtest 'effectiveSetting__many_reads__load_the_database_once' => sub {
   is $$calls, 2, 'forget_effective_config makes the next read load again';
 };
 
+subtest 'effectiveSetting__config_changed_after_the_overlay_is_built__still_shows' => sub {
+  # refresh_managed_acl writes an API token ACL's groups into host_groups when
+  # the token is checked, which may be after a check in the same request has
+  # built the overlay. the overlay must not hide them behind an older copy.
+  setting('portctl_by_role' => {});
+  my $calls = stub_managed_acls({ dbrole => [ [[$IN]] ] });
+  ok exists effective_setting('host_groups')->{synthesized_group_netdisco_1},
+    'the overlay is built';
+
+  setting('host_groups')->{synthesized_group_7} = [$OUT];
+  setting('portctl_by_role')->{yamlrole} = [$IN];
+  is_deeply effective_setting('host_groups')->{synthesized_group_7}, [$OUT],
+    'a group added to config afterwards is seen';
+  ok exists effective_setting('host_groups')->{synthesized_group_netdisco_1},
+    'alongside the synthesized group';
+  is_deeply effective_setting('portctl_by_role')->{yamlrole}, [$IN],
+    'and so is a role added afterwards';
+  is $$calls, 1, 'without reading the database again';
+
+  delete setting('host_groups')->{synthesized_group_7};
+  setting('portctl_by_role' => {});
+};
+
 subtest 'checkAcl__a_group_yaml_defines__is_found_without_the_database' => sub {
   my $calls = stub_managed_acls({});
   setting('host_groups')->{yamlgroup} = [$IN];

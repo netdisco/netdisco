@@ -84,14 +84,24 @@ sub effective_setting {
     # the default tenant's overlay
     my $overlay = vars->{'effective_config'}->{ vars->{'tenant'} || 'netdisco' }
       ||= _build_overlay( _load_managed_acls() );
-    return (exists $overlay->{$name} ? $overlay->{$name} : setting($name));
+    return setting($name) unless exists $overlay->{$name};
+
+    # merged on each read, not when the overlay is built, so a change to the
+    # setting since then (refresh_managed_acl adding a token ACL's groups to
+    # host_groups, say) is never hidden behind an older copy
+    my $config = setting($name) || {};
+    # a YAML role with no value refuses everything, as sync_portctl_roles had it
+    $config = { map {( $_ => ($config->{$_} || '!group:__ANY__') )} keys %$config }
+      if $name eq 'portctl_by_role';
+    return { %$config, %{ $overlay->{$name} } };
 }
 
 =head1 forget_effective_config
 
 Drops the cached overlay, so the next C<effective_setting> reads the database
-again. Call it after changing ACLs or C<portctl_by_role> within one request
-or job.
+again. Call it after changing ACLs in the ACL Manager within one request or
+job. A change to C<portctl_by_role> or C<host_groups> themselves is seen at
+once.
 
 =cut
 
@@ -116,16 +126,16 @@ sub _load_managed_acls {
     )->all;
 }
 
-# the shape sync_portctl_roles gave a database role, without writing to config:
-# a hash of each row's device side, as a synthesized group, to its port rules
+# only what the database adds; effective_setting merges it with config. each
+# role has the shape sync_portctl_roles gave it, without writing to config: a
+# hash of each row's device side, as a synthesized group, to its port rules
 # as stored. the tenant is in the group name because the token ACL code
 # synthesizes groups by ACL id alone, from the default tenant's database.
 sub _build_overlay {
     my @names  = @_;
     my $tenant = vars->{'tenant'} || 'netdisco';
-    my $yaml   = setting('portctl_by_role') || {};
 
-    my %roles  = map {( $_ => ($yaml->{$_} || '!group:__ANY__') )} keys %$yaml;
+    my %roles  = ();
     my %groups = ();
 
     foreach my $name (@names) {
@@ -139,11 +149,7 @@ sub _build_overlay {
         $roles{ $name->acl_name } = \%role;
     }
 
-    return {
-      portctl_by_role => \%roles,
-      ((scalar keys %groups)
-        ? (host_groups => { %{ setting('host_groups') || {} }, %groups }) : ()),
-    };
+    return { portctl_by_role => \%roles, host_groups => \%groups };
 }
 
 =head1 CONFIGURATION OVERRIDE
