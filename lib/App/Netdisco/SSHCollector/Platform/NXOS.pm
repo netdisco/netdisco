@@ -44,7 +44,7 @@ addresses, in the format
 C<< { VLAN => { PORT => { MACADDR => COUNT } } } >>.
 Example:
 C<< { 10 => { 'Ethernet1/1' => { '00:11:22:33:44:55' => 1 } },
-      20 => { 'Port-channel12' => { 'aa:bb:cc:dd:ee:ff' => 2 } } } >>.
+      20 => { 'port-channel12' => { 'aa:bb:cc:dd:ee:ff' => 2 } } } >>.
 
 =item B<subnets($host, $ssh)>
 
@@ -64,7 +64,7 @@ my $if_name_map = {
   Vl => "Vlan",
   Lo => "Loopback",
   Eth => "Ethernet",
-  Po => "Port-channel",
+  Po => "port-channel",
 };
 
 sub arpnip {
