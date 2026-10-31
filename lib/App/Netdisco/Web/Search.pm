@@ -45,7 +45,20 @@ get '/search' => require_login sub {
               and (($mac->as_ieee eq '00:00:00:00:00:00')
                 or ($mac->as_ieee !~ m/^$RE{net}{MAC}$/i)));
 
-            if ($s->resultset('DevicePort')
+            if ($nd and $nd->count) {
+                if ($nd->count == 1) {
+                    # redirect to device details for the one device
+                    return redirect uri_for('/device', {
+                      tab => 'details',
+                      q => $nd->first->ip,
+                      f => '',
+                    })->path_query;
+                }
+
+                # multiple devices
+                params->{'tab'} = 'device';
+            }
+            elsif ($s->resultset('DevicePort')
                      ->with_properties
                      ->search({
                        -or => [
@@ -58,19 +71,6 @@ get '/search' => require_login sub {
                      })->count) {
 
                 params->{'tab'} = 'port';
-            }
-            elsif ($nd and $nd->count) {
-                if ($nd->count == 1) {
-                    # redirect to device details for the one device
-                    return redirect uri_for('/device', {
-                      tab => 'details',
-                      q => $nd->first->ip,
-                      f => '',
-                    })->path_query;
-                }
-
-                # multiple devices
-                params->{'tab'} = 'device';
             }
         }
 
