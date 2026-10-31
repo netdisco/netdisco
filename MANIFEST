@@ -723,6 +723,7 @@ xt/145-topology-del-only-matched.t
 xt/146-snmp-incomplete-walk-arg.t
 xt/148-decode-snmp-text.t
 xt/149-snmp-charset-setting.t
+xt/150-job-port-json-number.t
 xt/150-schema-step-file.t
 xt/151-schema-upgrade-message.t
 xt/152-schema-step-mode.t

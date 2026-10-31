@@ -1,4 +1,23 @@
-2.117000 - tbd
+2.118000 - tbd
+
+  [ENHANCEMENTS]
+
+  * #1785 record the VRF of device addresses and subnets, and resolve
+    addresses to devices through one rule (database schema 105: run
+    netdisco-deploy)
+
+2.117001 - tbd
+
+  [BUG FIXES]
+
+  * #1789 restore device-first matching in search, so a device's DNS name
+    opens its details page again (reverts #1429's port-first order); a
+    search for a MAC address held by one device port now opens that device's
+    Ports tab filtered to the port, with the Port MAC column shown (several
+    ports on one device open its details; several devices show Port search,
+    with uplinks and non-Ethernet ports included as needed)
+
+2.117000 - 2026-10-30
 
   [NEW FEATURES]
 
@@ -9,18 +28,15 @@
   * #1776 add a shared upsert for discover tables, and delete only the
     given ports' rows
   * #1780 write device IPs, modules, VLANs and PoE power in place during
-    discover
+    discover (database schema 104: run netdisco-deploy)
   * #1784 write device ports and their properties, PoE, wireless, VLANs and
     tags in place during discover
-  * add a VRF key to device_ip and subnets, and a view that resolves addresses
-    to devices
+  * upgrade SNMP::Info dependency to 3.984000
 
   [BUG FIXES]
 
   * #1770 keep job port names that are json numbers as written (1.10 was
     becoming 1.1)
-  * show one neighbor per port when another device also lists the
-    neighbor's address
 
 2.116000 - 2026-10-23
 
