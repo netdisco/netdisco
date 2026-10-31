@@ -1,3 +1,14 @@
+2.117001 - tbd
+
+  [BUG FIXES]
+
+  * #1789 restore device-first matching in search, so a device's DNS name
+    opens its details page again (reverts #1429's port-first order); a
+    search for a MAC address held by one device port now opens that device's
+    Ports tab filtered to the port, with the Port MAC column shown (several
+    ports on one device open its details; several devices show Port search,
+    with uplinks and non-Ethernet ports included as needed)
+
 2.117000 - 2026-10-30
 
   [NEW FEATURES]
