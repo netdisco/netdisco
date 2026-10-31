@@ -186,10 +186,13 @@ subtest 'checkAcl__a_synthesized_group__is_found_through_the_overlay' => sub {
 };
 
 subtest 'checkAcl__an_unknown_group__matches_nothing_and_is_not_written_into_config' => sub {
-  stub_managed_acls({});
+  my $calls = stub_managed_acls({});
   ok !check_acl($IN, ['group:nosuchgroup']),  'nothing matches it';
   ok  check_acl($IN, ['!group:nosuchgroup']), 'so its negation matches';
   ok !exists setting('host_groups')->{nosuchgroup}, 'and host_groups gains no key';
+  # check_acl serves discovery, macsuck and the rest, so a typo in any YAML
+  # ACL would otherwise cost a database read in every job
+  is $$calls, 0, 'and a name the ACL Manager never synthesizes never reads the database';
 };
 
 subtest 'checkAcl__the_database_unreachable__leaves_an_unknown_group_matching_nothing' => sub {

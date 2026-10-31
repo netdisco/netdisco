@@ -430,14 +430,18 @@ sub check_acl {
 
 # groups in config first, so a page or job that names only those never reads
 # the database. that is not the YAML alone: refresh_managed_acl writes the API
-# token ACLs' groups there too, and they stay for the life of the process. a
-# name config lacks may be a group the ACL Manager synthesized for a port
-# control role (see effective_setting), and an unknown one matches nothing,
-# as it always has, even when the database can't be reached.
+# token ACLs' groups there too, and they stay for the life of the process.
+# the only groups outside config are those the ACL Manager synthesizes for a
+# port control role (see effective_setting), and they are all synthesized_group_*,
+# so any other name is unknown without asking the database: check_acl serves
+# every ACL in Netdisco, and a typo in one would otherwise cost a read in
+# every job. an unknown group matches nothing, as it always has, even when
+# the database can't be reached.
 sub _group_rules {
   my $group = shift;
   my $config = setting('host_groups') || {};
   return $config->{$group} if exists $config->{$group};
+  return [] unless $group =~ m/^synthesized_group_/;
 
   require App::Netdisco::Util::Configuration;
   my $effective = try {
