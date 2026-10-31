@@ -12,6 +12,11 @@ use lib 'xt/lib';
 use App::Netdisco;
 use App::Netdisco::DB; # fake device row
 use App::Netdisco::Backend::Job;
+use Test::Netdisco::ManagedACL 'stub_managed_acls';
+
+# a whole-config dump includes the ACL Manager's roles, and there is no
+# database here
+stub_managed_acls({});
 
 use Try::Tiny;
 use Dancer qw/:moose :script !pass/;

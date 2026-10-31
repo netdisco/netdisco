@@ -56,7 +56,6 @@ sub stub_managed_acls {
     no warnings 'redefine';
     *App::Netdisco::Util::Configuration::_load_managed_acls = sub {
       $calls++;
-      die $opts{dies} if $opts{dies};
       return @names;
     };
   }

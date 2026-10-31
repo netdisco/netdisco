@@ -294,25 +294,6 @@ subtest 'dumpconfig__portctl_by_role_and_host_groups__print_the_effective_values
   setting('portctl_by_role' => {});
 };
 
-subtest 'dumpconfig__the_database_unreachable__prints_the_yaml_with_one_warning' => sub {
-  my @warned;
-  no warnings 'redefine';
-  local *App::Netdisco::Worker::Plugin::DumpConfig::warning = sub { push @warned, join '', @_ };
-  setting('portctl_by_role' => { yamlrole => [$IN] });
-  stub_managed_acls(undef, dies => "could not connect to server\n");
-
-  is_deeply dumpconfig_json('portctl_by_role'), { yamlrole => [$IN] },
-    '-e portctl_by_role falls back to the YAML';
-
-  @warned = ();
-  my $all = dumpconfig_json('');
-  is_deeply $all->{portctl_by_role}, { yamlrole => [$IN] }, 'a full dump falls back too';
-  is scalar @warned, 1, 'with one warning, not one per key';
-  like $warned[0], qr/database ACLs not included/, 'saying why';
-
-  setting('portctl_by_role' => {});
-};
-
 subtest 'cleanup__the_yaml_backup_and_the_unused_loader__are_gone' => sub {
   ok !exists config->{'portctl_by_role_shadow'},
     'no backup of portctl_by_role is kept, because nothing rewrites it';

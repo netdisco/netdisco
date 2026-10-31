@@ -6,7 +6,6 @@ use aliased 'App::Netdisco::Worker::Status';
 
 use Data::Printer;
 use Scalar::Util 'blessed';
-use Try::Tiny;
 use App::Netdisco::Util::Configuration 'effective_setting';
 
 # settings the ACL Manager adds to, printed as Netdisco will use them
@@ -43,17 +42,10 @@ register_worker({ phase => 'main' }, sub {
     ? $key : undef);
 
   # dumpconfig shows the configuration Netdisco will use, ACL Manager roles
-  # included. it is also how a broken install is diagnosed, so without the
-  # database it shows the YAML, and says so once.
+  # included
   my %effective = ();
   if (not defined $wanted or scalar grep { $_ eq $wanted } @effective) {
-      try {
-          $effective{$_} = effective_setting($_) for @effective;
-      }
-      catch {
-          warning "dumpconfig: database ACLs not included: $_";
-          %effective = ();
-      };
+      $effective{$_} = effective_setting($_) for @effective;
   }
 
   my $dump = (defined $wanted
