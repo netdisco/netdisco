@@ -66,24 +66,98 @@ sub _stitch_nodes {
 # $only_ports argument to _stitch_nodes. Kept free of param() so xt can pin
 # the decision without a session.
 #
-# The neighbors-only branch is the shipped default, c_neighbors being checked
-# in config.yml and c_nodes not. It reads node data only to name the MAC
-# behind a port's remote_ip, so it fetches nothing when no port carries one,
-# and only those ports when some do.
+# The neighbors-only branch is for a site's own older ports.tt ($legacy), which
+# finds the neighbor's MAC among the nodes; the shipped one uses _neighbor_macs.
 #
 # Returns undef to fetch nothing, or an arrayref for $only_ports: empty means
 # the whole device, non-empty scopes the fetch to those ports. The c_nodes
 # branch's empty arrayref only reaches the CSV export as written: the HTML
 # path narrows it again via _threshold_scope before any fetch runs.
 sub _node_fetch_scope {
-    my ($want_nodes, $want_neighbors, $rows) = @_;
+    my ($want_nodes, $want_neighbors, $rows, $legacy) = @_;
 
     return [] if $want_nodes;
-    return undef if not $want_neighbors;
+    return undef if not ($want_neighbors and $legacy);
 
     my @neighbor_ports = map { $_->port } grep { $_->remote_ip } @$rows;
     return undef if not scalar @neighbor_ports;
     return \@neighbor_ports;
+}
+
+# The MAC behind each port's remote_ip, in one query, so c_neighbors alone no
+# longer stitches nodes. Picks what the stitch picked: the first node in
+# _node_display_options' order carrying the IP.
+sub _neighbor_macs {
+    my ($schema, $device_ip, $nodes_name, $ips_name) = @_;
+
+    my $family = ($ips_name eq 'ip4s') ? 'AND family(i.ip) = 4'
+               : ($ips_name eq 'ip6s') ? 'AND family(i.ip) = 6'
+               : '';
+
+    my $sql = sprintf(q{
+        SELECT DISTINCT ON (n.port) n.port, n.mac::text
+          FROM device_port p
+          JOIN node n ON n.switch = p.ip AND n.port = p.port
+          JOIN node_ip i ON i.mac = n.mac AND i.active = n.active
+                        AND i.ip = p.remote_ip
+         WHERE p.ip = ? AND p.remote_ip IS NOT NULL %s %s
+         ORDER BY n.port,
+                  regexp_replace(COALESCE(n.vlan, '0'), '[^0-9]*' ,'0') :: integer,
+                  n.mac
+    }, _shadow_active_fragment($nodes_name), $family);
+
+    my $macs = $schema->storage->dbh_do(sub {
+      my (undef, $dbh) = @_;
+      $dbh->selectall_arrayref($sql, undef, $device_ip);
+    });
+
+    return { map {; $_->[0] => $_->[1] } @$macs };
+}
+
+# PoE, SSIDs and the last comment, one query each keyed by port: prefetched,
+# power and ssid slowed the port query, and last_comment ran a query per port.
+# Kept under keys of their own so templates do not call the relation methods.
+sub _port_power {
+    my ($schema, $device_ip) = @_;
+    my $rows = $schema->storage->dbh_do(sub {
+      my (undef, $dbh) = @_;
+      $dbh->selectall_arrayref(q{
+          SELECT port, admin, status, class, power
+            FROM device_port_power WHERE ip = ?
+      }, { Slice => {} }, $device_ip);
+    });
+    return { map {; (delete $_->{port}) => $_ } @$rows };
+}
+
+# sorted; the prefetch gave no order
+sub _port_ssids {
+    my ($schema, $device_ip) = @_;
+    my $rows = $schema->storage->dbh_do(sub {
+      my (undef, $dbh) = @_;
+      $dbh->selectall_arrayref(q{
+          SELECT port, ssid FROM device_port_ssid
+           WHERE ip = ? AND ssid IS NOT NULL
+           ORDER BY port, ssid
+      }, undef, $device_ip);
+    });
+    my %ssids = ();
+    push @{ $ssids{ $_->[0] } }, $_->[1] for @$rows;
+    return \%ssids;
+}
+
+# DevicePort's last_comment, for every port at once
+sub _last_comments {
+    my ($schema, $device_ip) = @_;
+    my $rows = $schema->storage->dbh_do(sub {
+      my (undef, $dbh) = @_;
+      $dbh->selectall_arrayref(q{
+          SELECT DISTINCT ON (port) port, log
+            FROM device_port_log
+           WHERE ip = ?
+           ORDER BY port, creation DESC
+      }, undef, $device_ip);
+    });
+    return { map {; $_->[0] => $_->[1] } @$rows };
 }
 
 # n_archived swaps $nodes_name to nodes, which is the whole table rather than
@@ -298,14 +372,14 @@ sub _deferred_node_params {
     return $qs;
 }
 
-# Ports at or under the threshold get their own row fetched; a port over it
-# still gets one when it might carry a neighbor's own MAC, since the
-# Neighbors column reads stitched_nodes for that regardless of the node
-# list's own threshold, but only under c_neighbors: that carve-out is what
-# makes neighbor_mac renderable at all, and stitching every node of an
-# over-threshold trunk port just to throw the render away is expensive on
-# exactly the ports a core switch has the most of. Kept free of param() and
-# setting() so xt can pin the decision without a session.
+# Ports at or under the threshold get their own row fetched. For a site's own
+# ports.tt ($want_neighbors is then c_neighbors), a port over it still gets
+# one when it might carry a neighbor's own MAC, since that template reads
+# stitched_nodes for it regardless of the node list's own threshold. The
+# shipped templates read _neighbor_macs instead and pass false, so an
+# over-threshold trunk port is never stitched just to throw the render away.
+# Kept free of param() and setting() so xt can pin the decision without a
+# session.
 sub _threshold_scope {
     my ($threshold, $want_neighbors, $count_by_port, $rows) = @_;
     return [ map { $_->port }
@@ -313,8 +387,17 @@ sub _threshold_scope {
              or ($want_neighbors and $_->remote_ip) } @$rows ];
 }
 
-# device ports with a description (er, name) matching
-get '/ajax/content/device/ports' => require_login sub {
+# Everything the Ports tab knows about each port, decorated, filtered and
+# grouped, for whichever output the caller renders: the HTML table, the CSV
+# export, or the JSON the browser draws from. Reads param() and setting(), so
+# it runs inside a route only. Returns undef when the view has no rows, the
+# caller's "no matching records".
+#
+# $opt->{legacy} is set for a site's own copy of an older ports.tt, which
+# finds the neighbor's MAC by searching stitched_nodes.
+sub _port_rows {
+    my ($opt) = @_;
+    $opt ||= {};
     my $q = param('q');
     my $prefer = param('prefer');
     $prefer = ''
@@ -463,14 +546,6 @@ get '/ajax/content/device/ports' => require_login sub {
     my ($nodes_name, $ips_name, $node_order, $extra_prefetch)
       = _node_display_options();
 
-    # retrieve SSID, if asked for
-    $set = $set->search({}, { prefetch => 'ssid' })
-      if param('c_ssid');
-
-    # retrieve PoE info, if asked for
-    $set = $set->search({}, { prefetch => 'power' })
-      if param('c_power');
-
     # retrieve neighbor devices, if asked for
     #$set = $set->search({}, { prefetch => [{neighbor_alias => 'device'}] })
     #  if param('c_neighbors');
@@ -494,9 +569,31 @@ get '/ajax/content/device/ports' => require_login sub {
     # run query
     my @results = $set->all;
 
+    # see _port_power for why these are not prefetched
+    if (param('c_power')) {
+        my $power = _port_power(schema(vars->{'tenant'}), $device->ip);
+        $_->{port_power} = $power->{ $_->port } for @results;
+    }
+    if (param('c_ssid')) {
+        my $ssids = _port_ssids(schema(vars->{'tenant'}), $device->ip);
+        $_->{port_ssids} = ($ssids->{ $_->port } || []) for @results;
+    }
+    if (param('c_comment')) {
+        my $comments = _last_comments(schema(vars->{'tenant'}), $device->ip);
+        $_->{port_comment} = $comments->{ $_->port } for @results;
+    }
+
+    if (param('c_neighbors')) {
+        my $macs = _neighbor_macs(schema(vars->{'tenant'}), $device->ip,
+          $nodes_name, $ips_name);
+        $_->{neighbor_net_mac} = NetAddr::MAC->new(mac => $macs->{ $_->port })
+          for grep { exists $macs->{ $_->port } } @results;
+    }
+
     # fetch and attach nodes by port name, rather than prefetching them
     my $node_fetch_scope = _node_fetch_scope(
-      scalar param('c_nodes'), scalar param('c_neighbors'), \@results);
+      scalar param('c_nodes'), scalar param('c_neighbors'), \@results,
+      $opt->{legacy});
 
     my $deferred_node_params = '';
 
@@ -516,7 +613,8 @@ get '/ajax/content/device/ports' => require_login sub {
             # that netdisco.css hides on arrival.
             $only_ports = _threshold_scope(
               setting('devport_nodes_collapse_threshold'),
-              scalar param('c_neighbors'), $count_by_port, \@results);
+              (param('c_neighbors') and $opt->{legacy}),
+              $count_by_port, \@results);
             $skip_stitch = 1 unless scalar @$only_ports;
 
             $deferred_node_params = _deferred_node_params(
@@ -657,28 +755,42 @@ get '/ajax/content/device/ports' => require_login sub {
     use App::Netdisco::Util::Port 'to_speed';
     map { $_->{speed_running} = to_speed( $_->speed ) } @results;
 
+    return {
+      results => \@results,
+      vlans   => $vlans,
+      device  => $device,
+      nodes_name => $nodes_name,
+      ips_name   => $ips_name,
+      deferred_node_params => $deferred_node_params,
+    };
+}
+
+# device ports with a description (er, name) matching
+get '/ajax/content/device/ports' => require_login sub {
+    my $data = _port_rows() or return;
+
     if (request->is_ajax) {
         template 'ajax/device/ports.tt', {
-          results => \@results,
+          results => $data->{results},
           # kept for site-local template overrides that may still read
           # row.$nodes or row.$ips: site-local template compatibility is
           # a project commitment, even though the shipped template no
           # longer reads them itself
-          nodes => $nodes_name,
-          ips   => $ips_name,
-          device => $device,
-          vlans  => $vlans,
-          deferred_node_params => $deferred_node_params,
+          nodes => $data->{nodes_name},
+          ips   => $data->{ips_name},
+          device => $data->{device},
+          vlans  => $data->{vlans},
+          deferred_node_params => $data->{deferred_node_params},
         }, { layout => 'noop' };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
         template 'ajax/device/ports_csv.tt', {
-          results => \@results,
-          nodes => $nodes_name,
-          ips   => $ips_name,
-          device => $device,
-          vlans  => $vlans,
+          results => $data->{results},
+          nodes => $data->{nodes_name},
+          ips   => $data->{ips_name},
+          device => $data->{device},
+          vlans  => $data->{vlans},
         }, { layout => 'noop' };
     }
 };

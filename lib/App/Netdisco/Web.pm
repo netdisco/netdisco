@@ -34,7 +34,7 @@ use App::Netdisco::Util::Web qw/
   request_is_api_report
   request_is_api_search
 /;
-use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
+use App::Netdisco::Util::Permission 'permitted_by_acl';
 use App::Netdisco::Util::Port 'device_acl_by_role_check';
 use App::Netdisco::Util::PostgresFloor 'warn_postgres_floor_all_tenants';
 use App::Netdisco::Util::SiteLocal qw/scan_shadowed_files site_local_paths/;
@@ -399,14 +399,7 @@ hook 'before_template' => sub {
     $tokens->{my_query} = $queryuri->query();
 
     # hide custom fields according to only/no settings
-    $tokens->{permitted_by_acl} = sub {
-        my ($thing, $config) = @_;
-        return false unless $thing and $config;
-
-        return if acl_matches($thing, ($config->{no} || []));
-        return unless acl_matches_only($thing, ($config->{only} || []));
-        return true;
-    };
+    $tokens->{permitted_by_acl} = sub { permitted_by_acl(@_) };
 
     # access to logged in user's roles (modulo RBAC)
     # role will be "admin" "port_control" "radius" or "ldap"

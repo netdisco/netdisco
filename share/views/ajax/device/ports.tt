@@ -149,7 +149,7 @@
       [% END %]
 
       [% IF params.c_comment %]
-      <td nowrap>[% row.last_comment | html_entity %]</td>
+      <td nowrap>[% row.port_comment | html_entity %]</td>
       [% END %]
 
       [% IF params.c_type %]
@@ -305,8 +305,8 @@
       [% END %]
 
       [% IF params.c_power %]
-        [% IF row.power %]
-          [% IF row.power.admin == 'true' %]
+        [% IF row.port_power %]
+          [% IF row.port_power.admin == 'true' %]
             [% IF params.c_admin AND row.port_acl_service %]
               <td nowrap data-action="false"
                 data-field="c_power" data-for-device="[% device.ip | html_entity %]"
@@ -320,10 +320,10 @@
                 <i class="fas fa-power-off nd_power-on"></i>
             [% END %]
                 <span>
-                [% IF row.power.power AND row.power.power > 0 %]
-                  [% row.power.power | html_entity %]&nbsp;mW
+                [% IF row.port_power.power AND row.port_power.power > 0 %]
+                  [% row.port_power.power | html_entity %]&nbsp;mW
                 [% ELSE %]
-                  ([% row.power.status | html_entity %])
+                  ([% row.port_power.status | html_entity %])
                 [% END %]
                 </span>
           [% ELSE %]
@@ -347,7 +347,7 @@
       [% END %]
 
       [% IF params.c_ssid %]
-      <td>[% FOREACH s IN row.ssid %][% s.ssid | html_entity %][% ', ' UNLESS loop.last %][% END %]</td>
+      <td>[% FOREACH s IN row.port_ssids %][% s | html_entity %][% ', ' UNLESS loop.last %][% END %]</td>
       [% END %]
 
       [% IF params.c_nac_summary %]
@@ -397,14 +397,7 @@
           and either every row is ignored, or, if the first row does carry it,
           the rows without it filter on nothing. %]
       <td[% IF params.c_nodes %] data-search="[% row.nodes_search | html_entity %]"[% END %]>
-        [% SET neighbor_mac = '' %]
-        [% IF row.remote_ip %]
-          [% FOREACH _n IN row.stitched_nodes %]
-            [% FOREACH _nip IN _n.stitched_ips %]
-              [% IF _nip.ip == row.remote_ip AND NOT neighbor_mac; neighbor_mac = _n.net_mac.$mac_format_call; END %]
-            [% END %]
-          [% END %]
-        [% END %]
+        [% SET neighbor_mac = (row.neighbor_net_mac ? row.neighbor_net_mac.$mac_format_call : '') %]
         [% IF params.c_neighbors AND (row.remote_ip OR row.is_uplink) %]
           [% IF row.get_column('neighbor_ip') %]
             <i class="fas fa-link[% ' text-warning' IF row.manual_topo %]" title="[% row.manual_topo ? 'Manually configured topology link' : 'Discovered neighbor' %]"></i>
