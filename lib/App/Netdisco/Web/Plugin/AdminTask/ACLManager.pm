@@ -6,7 +6,7 @@ use Dancer::Plugin::Auth::Extensible;
 use Dancer::Plugin::Ajax;
 
 use App::Netdisco::Web::Plugin;
-use App::Netdisco::Util::ManagedConfig 'acl_txn_do';
+use App::Netdisco::Util::ManagedConfig qw/acl_txn_do yaml_setting/;
 
 register_admin_task({
     tag => "aclmanager",
@@ -60,7 +60,7 @@ ajax '/ajax/control/admin/aclmanager/delete' => require_role setting('defanged_a
     schema('netdisco')->resultset('User')
       ->search({portctl_role => $acl})
       ->update({
-        ((exists config->{'portctl_by_role_shadow'}->{$acl})
+        ((exists +(yaml_setting('portctl_by_role') || {})->{$acl})
           ? () : (portctl_role => undef, port_control => \'false')),
       });
 

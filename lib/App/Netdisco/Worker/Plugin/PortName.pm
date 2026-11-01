@@ -29,7 +29,6 @@ register_worker({ phase => 'check' }, sub {
   # which can refuse a name change: portctl_no and portctl_only always allow
   # it, and portctl_nameonly and the uplink, phone and WAP guards are about
   # changing what a port does, not its name
-  sync_portctl_roles();
   return Status->error("Permission denied to change port name")
     unless port_acl_name(vars->{'port'}, $device, $job->username);
 

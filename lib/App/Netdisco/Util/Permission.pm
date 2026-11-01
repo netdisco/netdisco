@@ -220,9 +220,10 @@ sub check_acl {
 
       if ($rule =~ m/^group:(.+)$/) {
           my $group = $1;
-          setting('host_groups')->{$group} ||= [];
+          # an unknown group matches nothing; reading must not write into config
+          my $rules = (setting('host_groups') || {})->{$group} || [];
 
-          if ($neg xor check_acl($things, setting('host_groups')->{$group})) {
+          if ($neg xor check_acl($things, $rules)) {
             return true if not $all;
           }
           else {

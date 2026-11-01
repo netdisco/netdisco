@@ -64,7 +64,7 @@ subtest 'loader__nothing_loaded_and_reads_fail__leaves_config_alone' => sub {
   is(refaddr(setting('host_groups')), refaddr($groups), 'groups not replaced');
 };
 
-subtest 'loader__roles_merge_as_sync_portctl_roles_did' => sub {
+subtest 'loader__roles_merge_over_yaml_roles_of_the_same_name' => sub {
   yaml(roles => { yamlrole => 'group:yg', clash => [$OUT], empty => '' });
   stub_managed_config(version => 1, rows => { netdisco => {
     clash  => { type => 'host_port', maps => [ [[$IN]] ] },

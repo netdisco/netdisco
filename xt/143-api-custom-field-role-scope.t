@@ -47,7 +47,6 @@ no warnings 'redefine';
 *Dancer::Plugin::Auth::Extensible::logged_in_user = sub { return $user };
 *App::Netdisco::Web::API::Queue::logged_in_user   = sub { return $user };
 *Dancer::Plugin::Auth::Extensible::user_roles     = sub { return wantarray ? @roles : [@roles] };
-*App::Netdisco::Web::API::Queue::sync_portctl_roles = sub { return };
 *App::Netdisco::Web::API::Queue::jq_insert = sub { push @queued, @{$_[0]}; return 1 };
 
 setting('portctl_by_role' => { leafonly => ['192.0.2.1'] });
