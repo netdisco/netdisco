@@ -9,6 +9,7 @@ use Template::AutoFilter;
 
 use base 'Exporter';
 our @EXPORT_OK = qw/render_template all_templates snapshot_path stash_for
+                    ports_fixture
                     VIEW_ROOT SNAPSHOT_ROOT/;
 
 use constant VIEW_ROOT     => 'share/views';
@@ -53,6 +54,96 @@ sub all_templates {
     push @found, $rel;
   } }, VIEW_ROOT);
   return sort @found;
+}
+
+=head2 ports_fixture
+
+The Ports tab's eight fixture rows with the params, settings and VLANs they
+render under, as C<ajax/device/ports.tt>'s stash. Shared with
+F<xt/179-ports-json.t>, which builds the JSON rows of the same ports, so the
+two descriptions of the table cannot drift apart.
+
+=cut
+
+sub ports_fixture {
+  return {
+    # stubbed true to reach the port-log modal, which is otherwise the
+    # only gate in this template that depends on a Perl function rather
+    # than a data structure
+    user_has_role => sub { 1 },
+    params => {
+      c_admin => 1, c_port => 1, c_name => 1, c_pvid => 1, c_tags => 1,
+      c_power => 1, c_vmember => 1, c_nodes => 1, c_neighbors => 1,
+      c_ssid => 1, p_fold_dotzero => 1, n_ip4 => 1, n_ip6 => 1,
+    },
+    settings => {
+      portctl_topology => 1,
+      devport_vlan_limit => 10,
+      devport_vlans_collapse_threshold => 2,
+      # explicit rather than undef: an undef threshold compares true against
+      # every node count, so both fixtures would render the collapse wrapper
+      devport_nodes_collapse_threshold => 1,
+      # same reasoning as devport_nodes_collapse_threshold above, applied to
+      # the per-node IP list
+      devport_ips_collapse_threshold => 1,
+    },
+    # production passes the row accessor names here, not the data itself
+    nodes => 'client_nodes',
+    ips => 'client_ips',
+    mac_format_call => 'as_string',
+    vlans => {
+      'Gi1/1' => { vlan_count => 1 },
+      'Gi1/3' => { vlan_count => 1 },
+      'Gi1/6' => { vlan_count => 99 },
+      'Gi1/9' => { vlan_count => 3, vlan_set => [ 10, 20 ] },
+    },
+    results => [
+      # several SSIDs, so the comma separated list renders rather than a
+      # single value, and two stitched_nodes to put this row over the
+      # collapse threshold
+      { port => 'Gi1/1', up_admin => 'up', up => 'up', stp => 'forwarding',
+        slave_of => 1, port_acl_service => 1, port_acl_name => 1,
+        port_acl_pvid => 1, filtered_tags => ['core'], node_count => 2,
+        stitched_nodes => [ { active => 0,
+            net_mac => { as_string => 'aa:bb:cc:00:01:01' },
+            stitched_ips => [ { ip => '192.0.2.11', active => 1,
+              dns => 'host11.example.com' } ] },
+          { active => 1,
+            net_mac => { as_string => 'aa:bb:cc:00:01:02' },
+            stitched_ips => [ { ip => '192.0.2.12', active => 1,
+                dns => 'host12.example.com' },
+              { ip => '192.0.2.13', active => 1,
+                dns => 'host13.example.com' } ] } ],
+        nodes_search => 'aa:bb:cc:00:01:01 192.0.2.10 host.example.com',
+        port_ssids => [ 'CORP', 'GUEST' ] },
+      # administratively disabled port
+      { port => 'Gi1/2', up_admin => 'down', port_acl_service => 1 },
+      # one stitched_node keeps this at, not over, the threshold, so its
+      # node markup renders uncollapsed
+      { port => 'Gi1/3', up_admin => 'up', up => 'up', stp => 'blocking',
+        node_count => 1,
+        stitched_nodes => [ { active => 1,
+          net_mac => { as_string => 'aa:bb:cc:00:03:01' },
+          stitched_ips => [ { ip => '192.0.2.30', active => 1,
+            dns => 'host3.example.com' } ] } ],
+        nodes_search => 'aa:bb:cc:00:03:01 192.0.2.30 host3.example.com' },
+      # error-disabled port, also on the non-dot-zero subinterface fold
+      { port => 'Gi1/4', up_admin => 'up', up => 'down',
+        error_disable_cause => 'err-disable', has_subinterface_group => 1,
+        has_only_dot_zero_subinterface => 0 },
+      # link-down port marked free by has_column_loaded/is_free
+      { port => 'Gi1/5', up_admin => 'up', up => 'down',
+        has_column_loaded => sub { 1 }, is_free => 1 },
+      # link-down port with too many VLANs to list individually
+      { port => 'Gi1/6', up_admin => 'up', up => 'down' },
+      # up port with PoE and enough VLANs to need the "show more" toggle
+      { port => 'Gi1/9', up_admin => 'up', up => 'up',
+        port_power => { admin => 'true', power => 5 } },
+      # up port whose only subinterface is the dot-zero one
+      { port => 'Gi1/10', up_admin => 'up', up => 'up',
+        has_subinterface_group => 1, has_only_dot_zero_subinterface => 1 },
+    ],
+  };
 }
 
 =head2 stash_for( $relative_path )
@@ -239,86 +330,7 @@ sub stash_for {
   return { orphans => [ {} ] }
     if $view eq 'ajax/admintask/orphaned.tt';
 
-  if ($view eq 'ajax/device/ports.tt') {
-    return {
-      # stubbed true to reach the port-log modal, which is otherwise the
-      # only gate in this template that depends on a Perl function rather
-      # than a data structure
-      user_has_role => sub { 1 },
-      params => {
-        c_admin => 1, c_port => 1, c_name => 1, c_pvid => 1, c_tags => 1,
-        c_power => 1, c_vmember => 1, c_nodes => 1, c_neighbors => 1,
-        c_ssid => 1, p_fold_dotzero => 1, n_ip4 => 1, n_ip6 => 1,
-      },
-      settings => {
-        portctl_topology => 1,
-        devport_vlan_limit => 10,
-        devport_vlans_collapse_threshold => 2,
-        # explicit rather than undef: an undef threshold compares true against
-        # every node count, so both fixtures would render the collapse wrapper
-        devport_nodes_collapse_threshold => 1,
-        # same reasoning as devport_nodes_collapse_threshold above, applied to
-        # the per-node IP list
-        devport_ips_collapse_threshold => 1,
-      },
-      # production passes the row accessor names here, not the data itself
-      nodes => 'client_nodes',
-      ips => 'client_ips',
-      mac_format_call => 'as_string',
-      vlans => {
-        'Gi1/1' => { vlan_count => 1 },
-        'Gi1/3' => { vlan_count => 1 },
-        'Gi1/6' => { vlan_count => 99 },
-        'Gi1/9' => { vlan_count => 3, vlan_set => [ 10, 20 ] },
-      },
-      results => [
-        # several SSIDs, so the comma separated list renders rather than a
-        # single value, and two stitched_nodes to put this row over the
-        # collapse threshold
-        { port => 'Gi1/1', up_admin => 'up', up => 'up', stp => 'forwarding',
-          slave_of => 1, port_acl_service => 1, port_acl_name => 1,
-          port_acl_pvid => 1, filtered_tags => ['core'], node_count => 2,
-          stitched_nodes => [ { active => 0,
-              net_mac => { as_string => 'aa:bb:cc:00:01:01' },
-              stitched_ips => [ { ip => '192.0.2.11', active => 1,
-                dns => 'host11.example.com' } ] },
-            { active => 1,
-              net_mac => { as_string => 'aa:bb:cc:00:01:02' },
-              stitched_ips => [ { ip => '192.0.2.12', active => 1,
-                  dns => 'host12.example.com' },
-                { ip => '192.0.2.13', active => 1,
-                  dns => 'host13.example.com' } ] } ],
-          nodes_search => 'aa:bb:cc:00:01:01 192.0.2.10 host.example.com',
-          port_ssids => [ 'CORP', 'GUEST' ] },
-        # administratively disabled port
-        { port => 'Gi1/2', up_admin => 'down', port_acl_service => 1 },
-        # one stitched_node keeps this at, not over, the threshold, so its
-        # node markup renders uncollapsed
-        { port => 'Gi1/3', up_admin => 'up', up => 'up', stp => 'blocking',
-          node_count => 1,
-          stitched_nodes => [ { active => 1,
-            net_mac => { as_string => 'aa:bb:cc:00:03:01' },
-            stitched_ips => [ { ip => '192.0.2.30', active => 1,
-              dns => 'host3.example.com' } ] } ],
-          nodes_search => 'aa:bb:cc:00:03:01 192.0.2.30 host3.example.com' },
-        # error-disabled port, also on the non-dot-zero subinterface fold
-        { port => 'Gi1/4', up_admin => 'up', up => 'down',
-          error_disable_cause => 'err-disable', has_subinterface_group => 1,
-          has_only_dot_zero_subinterface => 0 },
-        # link-down port marked free by has_column_loaded/is_free
-        { port => 'Gi1/5', up_admin => 'up', up => 'down',
-          has_column_loaded => sub { 1 }, is_free => 1 },
-        # link-down port with too many VLANs to list individually
-        { port => 'Gi1/6', up_admin => 'up', up => 'down' },
-        # up port with PoE and enough VLANs to need the "show more" toggle
-        { port => 'Gi1/9', up_admin => 'up', up => 'up',
-          port_power => { admin => 'true', power => 5 } },
-        # up port whose only subinterface is the dot-zero one
-        { port => 'Gi1/10', up_admin => 'up', up => 'up',
-          has_subinterface_group => 1, has_only_dot_zero_subinterface => 1 },
-      ],
-    };
-  }
+  return ports_fixture() if $view eq 'ajax/device/ports.tt';
 
   if ($view eq 'ajax/device/port_nodes.tt') {
     return {
