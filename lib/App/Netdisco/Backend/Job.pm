@@ -5,6 +5,7 @@ use aliased 'App::Netdisco::Worker::Status';
 
 use App::Netdisco::Util::Configuration
   qw/parse_params_to_config split_params_to_config/;
+use App::Netdisco::Util::ManagedConfig 'load_managed_config';
 use Hash::Util::FieldHash 'fieldhash';
 
 use Moo;
@@ -83,6 +84,11 @@ sub apply_config_overrides {
 
   # a residual value can itself parse as an override
   return if $overrides_applied{$job}++;
+
+  # The Poller calls this before Runner::run, to keep overrides out of the
+  # process title, and Runner::run's own call is then a no-op. Loading
+  # anywhere later than here would overwrite the overrides applied below.
+  load_managed_config();
 
   foreach my $field (_override_fields($job->action)) {
       $job->$field( parse_params_to_config($job->$field) )
