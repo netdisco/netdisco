@@ -11,11 +11,13 @@ use warnings;
 BEGIN { $ENV{DANCER_ENVDIR} = '/dev/null'; }
 
 use Test::More 0.88;
+use Test::File::ShareDir::Dist { 'App-Netdisco' => 'share/' };
 
+# first, so that the environment and config are set up before Dancer loads
+use App::Netdisco::Util::ManagedConfig qw(acl_txn_do tenant_key _read_config_version);
 use Dancer qw/:syntax :script !pass/;
 use App::Netdisco::DB::StepFile qw(parse_step_file);
 use App::Netdisco::DB;
-use App::Netdisco::Util::ManagedConfig qw(acl_txn_do tenant_key _read_config_version);
 
 my $step = parse_step_file('share/schema_versions/App-Netdisco-DB-105-106-PostgreSQL.sql');
 
