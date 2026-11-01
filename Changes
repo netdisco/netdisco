@@ -52,6 +52,14 @@
   * #1820 require current releases of DBI and other indirect dependencies
     with advisories
 
+  [ENHANCEMENTS]
+
+  * #1796 port control roles and named ACLs from the ACL Manager are loaded
+    into config at the start of every job, and on a web request when they
+    have changed, so every check sees them without a sync step;
+    sync_portctl_roles() is removed, so site plugins must stop calling it
+    (database schema 105: run netdisco-deploy)
+
   [BUG FIXES]
 
   * #1808 apply the Ports tab's row-group filter to the Ports table only
