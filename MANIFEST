@@ -570,6 +570,7 @@ share/views/ajax/device/modules.tt
 share/views/ajax/device/netmap.tt
 share/views/ajax/device/port_nodes.tt
 share/views/ajax/device/ports.tt
+share/views/ajax/device/ports_cells.tt
 share/views/ajax/device/ports_csv.tt
 share/views/ajax/device/snmp.tt
 share/views/ajax/device/snmplabel.tt

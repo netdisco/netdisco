@@ -1,10 +1,11 @@
 package App::Netdisco::Web::Plugin::Device::Ports;
 
 use Dancer ':syntax';
+use Dancer::Plugin::Ajax;
 use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
-use App::Netdisco::Util::Permission 'acl_matches';
+use App::Netdisco::Util::Permission qw/acl_matches permitted_by_acl/;
 use App::Netdisco::Util::Port qw/port_acl_service port_acl_pvid port_acl_name/;
 use App::Netdisco::Web::Plugin;
 
@@ -387,14 +388,9 @@ sub _threshold_scope {
              or ($want_neighbors and $_->remote_ip) } @$rows ];
 }
 
-# Everything the Ports tab knows about each port, decorated, filtered and
-# grouped, for whichever output the caller renders: the HTML table, the CSV
-# export, or the JSON the browser draws from. Reads param() and setting(), so
-# it runs inside a route only. Returns undef when the view has no rows, the
-# caller's "no matching records".
-#
-# $opt->{legacy} is set for a site's own copy of an older ports.tt, which
-# finds the neighbor's MAC by searching stitched_nodes.
+# The decorated, filtered and grouped ports for the HTML, CSV and JSON outputs.
+# Runs inside a route only; returns undef when there are no rows.
+# $opt->{legacy} is for a site's own older ports.tt.
 sub _port_rows {
     my ($opt) = @_;
     $opt ||= {};
@@ -792,6 +788,387 @@ sub _legacy_ports_template {
     }
     return $known->{legacy};
 }
+
+
+# The table's columns, as ports.tt's <thead> loop chose them: c_admin is a mode,
+# c_links needs links configured, c_nodes and c_neighbors share one column, and
+# a hidden plugin column is left out. The browser adds the status column.
+sub _port_columns {
+    my ($p, $port_columns, $has_ext_links) = @_;
+
+    my @cols = ();
+    foreach my $item (@{ $port_columns || [] }) {
+        my $name = $item->{name};
+        next if $name eq 'c_admin';
+        next if $name eq 'c_links' and not $has_ext_links;
+        next if $name eq 'c_nodes' and $p->{c_nodes} and $p->{c_neighbors};
+        next unless $p->{$name};
+        next if $item->{hidden};
+
+        my $label = $item->{label};
+        $label = ($p->{c_nodes} ? 'Connected Nodes & Devices' : 'Connected Devices')
+          if $name eq 'c_neighbors';
+
+        push @cols, {
+          name => $name,
+          label => (defined $label ? $label : ''),
+        };
+    }
+    return \@cols;
+}
+
+# A MAC through the NetAddr::MAC method $call names, undef when it is not a MAC
+# (a NAC user name falls through to its text).
+sub _format_mac {
+    my ($mac, $call) = @_;
+    return undef unless defined $mac and length $mac;
+    my $net_mac = (ref $mac ? $mac
+      : eval { NetAddr::MAC->new(mac => $mac) }) or return undef;
+    return $net_mac->${\($call || 'as_ieee')};
+}
+
+# The NetAddr::MAC method for mac_format, as Web.pm's mac_format_call.
+sub _mac_format_call {
+    my ($format) = @_;
+    my $call = 'as_'. lc($format || 'ieee');
+    return (NetAddr::MAC->can($call) ? $call : 'as_ieee');
+}
+
+# One node of a port's connected nodes. The node behind the neighbor's own
+# address is marked, not left out: port_nodes.tt skipped it but still counted
+# it as first or last. $opt: p (the n_* options), mac_format_call.
+sub _node_json {
+    my ($node, $remote_ip, $opt) = @_;
+    my $p = $opt->{p} || {};
+
+    my %n = (mac => _format_mac($node->{net_mac}, $opt->{mac_format_call}));
+    $n{vlan} = $node->{vlan} if defined $node->{vlan} and length $node->{vlan};
+    $n{archived} = 1 if not $node->{active};
+    $n{age} = $node->{time_last_age}
+      if $p->{n_age} and defined $node->{time_last_age};
+
+    my @ips = @{ $node->{stitched_ips} || [] };
+    $n{neighbor} = 1
+      if $remote_ip and grep { $_->{ip} eq $remote_ip } @ips;
+
+    $n{ips} = [ map {{
+      ip => $_->{ip},
+      ((defined $_->{dns} and length $_->{dns}) ? (dns => $_->{dns}) : ()),
+      ($_->{active} ? () : (archived => 1)),
+    }} @ips ] if ($p->{n_ip4} or $p->{n_ip6}) and scalar @ips;
+
+    my @ssids = map { $_->{ssid} } @{ $node->{wireless} || [] };
+    $n{ssids} = \@ssids if $p->{n_ssid} and scalar @ssids;
+
+    my ($vendor) = map { $_->{abbrev} } @{ $node->{manufacturer} || [] };
+    $n{vendor} = $vendor if $p->{n_vendor} and defined $vendor;
+
+    $n{netbios} = [ map {{
+      domain => $_->{domain}, nbname => $_->{nbname},
+      nbuser => $_->{nbuser}, ip => $_->{ip},
+    }} @{ $node->{netbios} } ] if $p->{n_netbios} and $node->{netbios};
+
+    return \%n;
+}
+
+# The port's own columns, sent when not empty. Plugin and custom field values
+# go out only through fields, once their only/no ACL has passed.
+my @PORT_FIELDS = qw/descr type name mtu mac speed_admin duplex duplex_admin
+  up up_admin stp vlan slave_of error_disable_cause ifindex lastchange_stamp
+  native_vlan_name agg_master_up_admin agg_master_up/;
+
+my @NEIGHBOR_FIELDS = qw/remote_ip remote_port remote_type remote_id
+  remote_dns neighbor_ip/;
+
+# One port as netdisco-ports.js draws it, empty values left out. Free of
+# param() and setting() so xt can drive it; $opt carries p (the request's c_*,
+# n_* and p_* options as 0 or 1), mac_format_call, domain_suffix, vlans,
+# vlan_limit, extra_cols, cells (port => { name => markup } from ports_cells.tt)
+# and device.
+sub _port_json {
+    my ($row, $opt) = @_;
+    my $p = $opt->{p} || {};
+    my %c = $row->get_columns;
+    my $port = $row->port;
+    my %j = (port => $port);
+
+    foreach my $key (@PORT_FIELDS) {
+        $j{$key} = $c{$key} if defined $c{$key} and length $c{$key};
+    }
+    foreach my $key (qw/is_master has_subinterfaces/) {
+        $j{$key} = 1 if $c{$key};
+    }
+    $j{is_free} = 1 if $row->has_column_loaded('is_free') and $c{is_free};
+    $j{speed} = $row->{speed_running}
+      if defined $row->{speed_running} and length $row->{speed_running};
+    $j{tags} = [ sort @{ $row->{filtered_tags} } ]
+      if $p->{c_tags} and scalar @{ $row->{filtered_tags} || [] };
+
+    # the browser folds subinterfaces from the p_fold options
+    $j{group} = $row->{subinterface_group}
+      if defined $row->{subinterface_group};
+    $j{has_group} = 1 if $row->{has_subinterface_group};
+    $j{only_dot_zero} = 1 if $row->{has_only_dot_zero_subinterface};
+    $j{is_dot_zero} = 1 if $row->{is_dot_zero_subinterface};
+
+    # vlan_count also feeds the status icon; the names are sent once, in meta
+    if (my $v = ($opt->{vlans} || {})->{$port}) {
+        $j{vlan_count} = $v->{vlan_count} + 0 if $v->{vlan_count};
+        $j{vlans} = [ map { defined $_ ? $_ : '' } @{ $v->{vlan_set} || [] } ]
+          if $p->{c_vmember} and $v->{vlan_count}
+             and $v->{vlan_count} <= ($opt->{vlan_limit} || 0);
+    }
+
+    $j{comment} = $row->{port_comment}
+      if $p->{c_comment} and length ($row->{port_comment} || '');
+    $j{ssids} = $row->{port_ssids}
+      if $p->{c_ssid} and scalar @{ $row->{port_ssids} || [] };
+    if ($p->{c_power} and my $power = $row->{port_power}) {
+        $j{power} = { map {( $_ => $power->{$_} )}
+          grep { defined $power->{$_} } qw/admin power status/ };
+    }
+
+    if ($p->{c_nac_summary}
+        and ($c{pae_authconfig_port_status} or $c{pae_authconfig_state})) {
+        my %nac = ();
+        $nac{port_status} = $c{pae_authconfig_port_status}
+          if $c{pae_authconfig_port_status};
+        $nac{state} = $c{pae_authconfig_state} if $c{pae_authconfig_state};
+        $nac{mab} = 1 if $c{pae_authsess_mab};
+        my $user = _format_mac($c{pae_authsess_user}, $opt->{mac_format_call});
+        if (not defined $user) {
+            $user = $c{pae_authsess_user};
+            $user =~ s/$opt->{domain_suffix}//g
+              if defined $user and defined $opt->{domain_suffix};
+        }
+        $nac{user} = $user if defined $user and length $user;
+        $j{nac} = \%nac;
+    }
+
+    if ($p->{c_neighbors}) {
+        foreach my $key (@NEIGHBOR_FIELDS) {
+            $j{$key} = $c{$key} if defined $c{$key} and length $c{$key};
+        }
+        foreach my $key (qw/is_uplink manual_topo remote_is_wap remote_is_phone
+                            remote_is_discoverable/) {
+            $j{$key} = 1 if $c{$key};
+        }
+        if (defined $c{neighbor_dns} and length $c{neighbor_dns}) {
+            ($j{neighbor_dns} = $c{neighbor_dns}) =~ s/$opt->{domain_suffix}//g;
+            delete $j{neighbor_dns} unless length $j{neighbor_dns};
+        }
+        $j{neighbor_mac} = _format_mac($row->{neighbor_net_mac},
+          $opt->{mac_format_call}) if $row->{neighbor_net_mac};
+        if ($p->{n_inventory}) {
+            my $inventory = $row->remote_inventory;
+            $j{remote_inventory} = $inventory
+              if defined $inventory and length $inventory;
+        }
+    }
+    elsif ($p->{c_nodes}) {
+        # the nodes cell still starts under the neighbor
+        $j{remote_ip} = $c{remote_ip} if $c{remote_ip};
+        $j{is_uplink} = 1 if $c{is_uplink};
+    }
+
+    if ($p->{c_nodes}) {
+        $j{node_count} = ($row->{node_count} || 0) + 0;
+        $j{search} = $row->{nodes_search}
+          if length ($row->{nodes_search} || '');
+        # a port over the threshold has no stitched_nodes, and fetches its own
+        $j{nodes} = [ map { _node_json($_, $c{remote_ip}, $opt) }
+          @{ $row->{stitched_nodes} } ] if $row->{stitched_nodes};
+    }
+
+    if ($p->{c_admin}) {
+        $j{acl_service} = 1 if $row->{port_acl_service};
+        $j{acl_pvid} = 1 if $row->{port_acl_pvid};
+        $j{acl_name} = 1 if $row->{port_acl_name};
+    }
+
+    # Plugin and custom field columns: an ACL-hidden cell goes out without its
+    # value; one whose template failed is absent from cells, and its field is drawn.
+    my $cells = ($opt->{cells} || {})->{$port} || {};
+    $j{cells}->{c_links} = $cells->{c_links}
+      if $p->{c_links} and exists $cells->{c_links};
+
+    foreach my $config (@{ $opt->{extra_cols} || [] }) {
+        my $name = $config->{name};
+        if (not permitted_by_acl($row, $config)) {
+            $j{hidden_cells}->{$name} = 1;
+            next;
+        }
+        if (exists $cells->{$name}) {
+            $j{cells}->{$name} = $cells->{$name};
+            next;
+        }
+        my $field = $config->{field};
+        $j{fields}->{$field} = $c{$field}
+          if $field and defined $c{$field} and length $c{$field};
+        $j{data}->{$name} = $config->{json}->($row, $opt->{device})
+          if $config->{renderer} and ref $config->{json} eq 'CODE';
+    }
+
+    return \%j;
+}
+
+# VLAN number to name, once for the device
+sub _vlan_names {
+    my ($vlans) = @_;
+    my %names = ();
+    foreach my $v (values %{ $vlans || {} }) {
+        my @set = @{ $v->{vlan_set} || [] };
+        my @names = @{ $v->{vlan_name_set} || [] };
+        foreach my $i (grep { defined $set[$_] } 0 .. $#set) {
+            $names{ $set[$i] } = (defined $names[$i] ? $names[$i] : '');
+        }
+    }
+    return \%names;
+}
+
+# What every port shares, sent once beside the rows: the options, thresholds,
+# plugin column configs and node_params, the querystring a collapsed port's
+# nodes are fetched with.
+sub _port_meta {
+    my ($in) = @_;
+    my $p = $in->{p} || {};
+    return {
+      device => $in->{device},
+      # port links carry the device as asked for
+      q => $in->{q},
+      params => $p,
+      only_free => ($in->{only_free} ? 1 : 0),
+      settings => $in->{settings} || {},
+      vlan_names => (($p->{p_vlan_names} and $in->{vlans})
+        ? _vlan_names($in->{vlans}) : {}),
+      extra => { map {( $_->{name} => {
+        (defined $_->{field} ? (field => $_->{field}) : ()),
+        editable => ($_->{editable} ? 1 : 0),
+        ($_->{renderer} ? (renderer => $_->{renderer}) : ()),
+      } )} @{ $in->{extra_cols} || [] } },
+      node_params => (defined $in->{node_params} ? $in->{node_params} : ''),
+    };
+}
+
+# The plugin columns with a device_port_column.tt and no renderer of their own
+sub _template_columns {
+    my ($cols) = @_;
+    my $engine = engine('template');
+    return [ grep {
+      not $_->{renderer}
+        and $engine->view("plugin/$_->{name}/device_port_column")
+    } @$cols ];
+}
+
+# The cells still drawn by Template Toolkit: external links and plugin column
+# templates, in one render, handed back by port and column through collect().
+# A failed cell is left out, and the browser draws the column's field instead.
+sub _template_cells {
+    my ($results, $stash, $want_links, $cols) = @_;
+    return {} unless $want_links or scalar @$cols;
+
+    my %out = ();
+    my $collect = sub {
+        my ($port, $name, $html) = @_;
+        $html = '' unless defined $html;
+        $html =~ s/^\s+|\s+$//g;
+        $out{$port}->{$name} = $html;
+        return '';
+    };
+
+    template 'ajax/device/ports_cells.tt', {
+      %$stash,
+      results => $results,
+      want_links => ($want_links ? 1 : 0),
+      cell_cols => $cols,
+      collect => $collect,
+    }, { layout => 'noop' };
+
+    return \%out;
+}
+
+# The table as the browser draws it: columns, one hash per port, and meta
+ajax '/ajax/data/device/ports' => require_login sub {
+    content_type 'application/json';
+    my $data = _port_rows()
+      or return to_json { columns => [], rows => [], meta => {} };
+
+    my %p = map {( $_ => (param($_) ? 1 : 0) )}
+            grep { m/^[cnp]_/ } keys %{ params() };
+    my $results = $data->{results};
+    my $device = $data->{device};
+    my $vlans = ((ref {} eq ref $data->{vlans}) ? $data->{vlans} : undef);
+
+    # named by the plugin or custom field, so not always c_ like the rest
+    my @extra_cols = grep { not $_->{hidden} and param($_->{name}) }
+      @{ setting('_extra_device_port_cols') || [] };
+    $p{ $_->{name} } = 1 for @extra_cols;
+
+    my $has_ext_links = scalar @{ setting('external_links')->{device_port} || [] };
+    my $cells = _template_cells($results, {
+        device => $device,
+        vlans => $data->{vlans},
+        nodes => $data->{nodes_name},
+        ips => $data->{ips_name},
+      }, ($p{c_links} and $has_ext_links), _template_columns(\@extra_cols));
+
+    my $opt = {
+      p => \%p,
+      mac_format_call => _mac_format_call(scalar param('mac_format')),
+      domain_suffix => setting('domain_suffix'),
+      vlans => $vlans,
+      vlan_limit => setting('devport_vlan_limit'),
+      extra_cols => \@extra_cols,
+      cells => $cells,
+      device => $device,
+    };
+
+    my $port_state = params->{port_state};
+    my $meta = _port_meta({
+      device => $device->ip,
+      q => scalar param('q'),
+      p => \%p,
+      only_free => ((defined $port_state and not ref $port_state
+                     and $port_state eq 'free') ? 1 : 0),
+      settings => { map {( $_ => setting($_) )} qw/
+        devport_vlan_limit devport_vlans_collapse_threshold
+        devport_nodes_collapse_threshold devport_ips_collapse_threshold
+        portctl_topology / },
+      vlans => $vlans,
+      extra_cols => \@extra_cols,
+      node_params => $data->{deferred_node_params},
+    });
+
+    return to_json {
+      columns => _port_columns(\%p, setting('port_columns'), $has_ext_links),
+      rows => [ map { _port_json($_, $opt) } @$results ],
+      meta => $meta,
+    };
+};
+
+# one collapsed port's node list, as JSON, fetched when the browser opens it
+ajax '/ajax/data/device/port/nodes' => require_login sub {
+    content_type 'application/json';
+    my $device = schema(vars->{'tenant'})->resultset('Device')
+      ->search_for_device(param('q')) or send_error('Bad device', 400);
+    my $port = param('port') or send_error('Bad port', 400);
+    my $row = $device->ports->find({ port => $port })
+      or send_error('Bad port', 400);
+
+    my ($nodes_name, $ips_name, $node_order, $extra_prefetch)
+      = _node_display_options();
+
+    _stitch_nodes(schema(vars->{'tenant'}), $device->ip, [$row],
+      $nodes_name, $ips_name, $node_order, $extra_prefetch, [$port]);
+
+    my $opt = {
+      p => { map {( $_ => (param($_) ? 1 : 0) )}
+             qw/n_ip4 n_ip6 n_age n_ssid n_vendor n_netbios/ },
+      mac_format_call => _mac_format_call(scalar param('mac_format')),
+    };
+    return to_json { nodes => [ map { _node_json($_, $row->remote_ip, $opt) }
+      @{ $row->{stitched_nodes} } ] };
+};
 
 # device ports with a description (er, name) matching
 get '/ajax/content/device/ports' => require_login sub {
