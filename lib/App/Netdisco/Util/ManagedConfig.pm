@@ -3,7 +3,7 @@ package App::Netdisco::Util::ManagedConfig;
 use strict;
 use warnings;
 
-# config processing must be finished before the YAML copy is taken below
+# config processing must be finished before the YAML copy is taken
 use App::Netdisco::Configuration ();
 
 use Dancer qw/:syntax :script/;
@@ -29,9 +29,10 @@ our @EXPORT_OK = qw/
 
 # kept here and not in CONFIG, so that dumpconfig and setting() only ever see
 # what the code actually uses. declared with our so that tests can reset them.
-our %YAML;    # setting name => clean copy of its YAML value
-our %CACHE;   # tenant key => { version => Int, overlay => HashRef }
-our $LOADED;  # true once any overlay has been built in this process
+our %YAML;      # setting name => clean copy of its YAML value
+our $CAPTURED;  # true once %YAML has been taken in this process
+our %CACHE;     # tenant key => { version => Int, overlay => HashRef }
+our $LOADED;    # true once any overlay has been built in this process
 
 =head1 NAME
 
@@ -46,6 +47,13 @@ whether its copy is stale with one cheap read.
 The counter is bumped in Perl by L</acl_txn_do>, not by a database trigger.
 That keeps the bump visible at the place where the ACL is written, and a
 reader of the writing code can see which writes are counted.
+
+Because only those writes are counted, two kinds of change go unnoticed: an
+ACL table edited by hand, for example in C<psql>, and a restored database dump
+whose counter equals the one a process last saw. After either, restart
+C<netdisco-web> and C<netdisco-backend>, or bump the counter by hand:
+
+  UPDATE config_version SET version = version + 1 WHERE scope = 'acl';
 
 =head1 EXPORT_OK
 
@@ -102,11 +110,18 @@ sub _bump_config_version {
 
 Brings the current tenant's ACL Manager roles and named groups into
 C<portctl_by_role> and C<host_groups>, reading the ACL tables only if the
-counter moved since the last load. Never dies.
+counter moved since the last load. The first call in a process takes the clean
+YAML copy (see L</capture_yaml_settings>).
+
+A failed database read never makes it die. It can die only while taking the
+YAML copy, if one of the two settings is a hash holding something
+L<Storable> can't copy, such as a code reference, which YAML can't express.
+A value of either setting that isn't a hash at all counts as empty.
 
 =cut
 
 sub load_managed_config {
+  capture_yaml_settings() unless $CAPTURED;
   my $tenant_key = tenant_key();
   refresh_managed_config($tenant_key);
   apply_managed_config($tenant_key);
@@ -190,24 +205,61 @@ sub apply_managed_config {
 
 =head2 capture_yaml_settings
 
-Takes the clean copy of the YAML values that the ACL Manager adds to. Runs once
-when this module loads.
+Takes the clean copy of the YAML values that the ACL Manager adds to, replacing
+any copy taken before. A value that isn't a hash is taken as an empty hash.
+
+L</load_managed_config> and L</yaml_setting> call this themselves the first
+time either runs in a process, so nothing else needs to. Tests call it again
+after setting new YAML values.
+
+The copy is taken then, and not as this module loads, for three reasons:
+
+=over 4
+
+=item *
+
+In production the first request or job always runs before anything changes
+these settings, so the copy is the same either way.
+
+=item *
+
+C<Web.pm> loads site web plugins after C<App::Netdisco::Web::ManagedConfig>,
+which loads this module. A plugin that adds to C<host_groups> as it loads is
+still in the copy.
+
+=item *
+
+A value a test sets before its first request or job counts as YAML. A copy
+taken as the module loaded missed it, and once a database answered, even with
+an empty ACL Manager, the next load rebuilt the setting from that copy and the
+test's value was gone.
+
+=back
 
 =cut
 
 sub capture_yaml_settings {
-  $YAML{$_} = dclone(setting($_) || {}) for qw/portctl_by_role host_groups/;
+  foreach my $name (qw/portctl_by_role host_groups/) {
+    my $value = setting($name);
+    # every request and job applies this copy, so a mistyped value such as
+    # portctl_by_role: [] must not make all of them die, discovery included
+    $YAML{$name} = ((ref $value eq 'HASH') ? dclone($value) : {});
+  }
+  $CAPTURED = 1;
   return;
 }
 
 =head2 yaml_setting( $name )
 
 Returns the clean YAML copy of C<portctl_by_role> or C<host_groups>, without
-anything from the ACL Manager.
+anything from the ACL Manager. Takes the copy first if this process hasn't yet.
 
 =cut
 
-sub yaml_setting { return $YAML{ $_[0] } }
+sub yaml_setting {
+  capture_yaml_settings() unless $CAPTURED;
+  return $YAML{ $_[0] };
+}
 
 # host_host ACLs are not read: nothing uses them as config
 sub _read_acl_rows {
@@ -250,7 +302,5 @@ sub _build_overlay {
 
   return { portctl_by_role => \%roles, host_groups => \%groups };
 }
-
-capture_yaml_settings();
 
 1;

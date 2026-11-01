@@ -35,7 +35,8 @@ my $OUT = '192.0.2.99';
 
 my $SHIPPED_GROUPS = dclone(setting('host_groups') || {});
 
-# sets the YAML values and takes the clean copy again, as at startup
+# sets the YAML values and takes the clean copy again, as a process's first
+# load does
 sub yaml {
   my %args = @_;
   config->{'portctl_by_role'} = $args{roles} || {};
@@ -238,6 +239,40 @@ subtest 'loader__yaml_setting__returns_the_clean_copy' => sub {
   ok(exists setting('portctl_by_role')->{dbrole}, 'dbrole loaded');
 
   is_deeply(yaml_setting('portctl_by_role'), { y => [$OUT] }, 'no dbrole in the clean copy');
+};
+
+subtest 'loader__a_value_set_before_the_first_load__counts_as_yaml' => sub {
+  # xt/143 sets a role after this module has loaded and then makes a request.
+  # when the copy was taken as the module loaded, a database that answered,
+  # even with an empty ACL Manager, rebuilt the roles from that older copy and
+  # the test's role vanished. a site web plugin that adds host_groups as it
+  # loads would lose its groups the same way.
+  undef $App::Netdisco::Util::ManagedConfig::CAPTURED;
+  %App::Netdisco::Util::ManagedConfig::YAML = ();
+  setting('portctl_by_role' => { leafonly => [$IN] });
+  config->{'host_groups'} = { %{ dclone($SHIPPED_GROUPS) }, plugin => [$IN] };
+
+  stub_managed_config(version => 1, rows => { netdisco => {} });
+  load_managed_config();
+
+  is_deeply(setting('portctl_by_role'), { leafonly => [$IN] }, 'role survives');
+  is_deeply(setting('host_groups')->{plugin}, [$IN], 'group survives');
+  is_deeply(yaml_setting('portctl_by_role'), { leafonly => [$IN] }, 'role is in the clean copy');
+};
+
+subtest 'loader__a_yaml_value_that_is_not_a_hash__counts_as_empty' => sub {
+  # every request and job runs the apply, so a mistyped portctl_by_role: []
+  # must not fail them all, discovery included
+  config->{'portctl_by_role'} = [];
+  config->{'host_groups'} = 'oops';
+  capture_yaml_settings();
+  stub_managed_config(version => 1, rows => { netdisco => {
+    dbrole => { type => 'host_port', maps => [ [[$IN]] ] },
+  }});
+
+  eval { load_managed_config(); 1 } or fail("load died: $@");
+  is_deeply([ keys %{ setting('portctl_by_role') } ], ['dbrole'], 'only the database role');
+  is_deeply(synth_keys(), ['synthesized_group_netdisco_1'], 'only the synthesized group');
 };
 
 done_testing;
