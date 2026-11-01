@@ -1,0 +1,20 @@
+#!/usr/bin/env perl
+
+# Rewrites xt/ports-fixture.json, the Ports tab's JSON for the snapshot rows,
+# which xt/js/ports-table.test.js draws and xt/179-ports-json.t checks is
+# current. Run this after changing _port_json, _port_columns, _port_meta or
+# the rows in xt/lib/Test/Netdisco/Snapshot.pm, then review the diff.
+
+use strict;
+use warnings;
+
+use FindBin;
+use lib "$FindBin::Bin/../lib", "$FindBin::Bin/../../lib";
+chdir "$FindBin::Bin/../..";
+
+use Test::Netdisco::PortsJSON qw/fixture_json FIXTURE_FILE/;
+
+open my $fh, '>:raw', FIXTURE_FILE or die FIXTURE_FILE . ": $!";
+print {$fh} fixture_json();
+close $fh;
+print "wrote ", FIXTURE_FILE, "\n";

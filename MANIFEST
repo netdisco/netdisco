@@ -751,6 +751,7 @@ xt/173-discover-port-properties-upsert.t
 xt/174-discover-wireless-upsert.t
 xt/175-discover-neighbor-columns.t
 xt/176-discover-port-tags-clear.t
+xt/179-ports-json.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t
@@ -824,6 +825,7 @@ xt/96-worker-action-is-literal.t
 xt/97-api-auth-failure-status.t
 xt/98-api-delete-count.t
 xt/99-api-json-errors.t
+xt/bin/regenerate-ports-fixture
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/admin-button-dispatch.test.js
@@ -873,5 +875,7 @@ xt/lib/App/NetdiscoX/Worker/Plugin/TestThree.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestTwo.pm
 xt/lib/Test/Netdisco/CssRules.pm
 xt/lib/Test/Netdisco/MungerProbe.pm
+xt/lib/Test/Netdisco/PortsJSON.pm
 xt/lib/Test/Netdisco/Snapshot.pm
+xt/ports-fixture.json
 xt/portsort-corpus.json
