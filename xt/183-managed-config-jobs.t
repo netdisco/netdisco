@@ -109,6 +109,13 @@ subtest 'jobs__dumpconfig_shows_database_roles_and_named_groups' => sub {
     return JSON::PP->new->allow_nonref->decode($job->log);
   };
 
+  my $full = JSON::PP->new->allow_nonref->decode(do {
+    my $job = new_job(action => 'dumpconfig');
+    MyWorker->new->run($job);
+    $job->log;
+  });
+  ok(!exists $full->{portctl_by_role_shadow}, 'a full dump has no portctl_by_role_shadow key');
+
   my $roles = $dump->('portctl_by_role');
   ok(exists $roles->{r}, 'the database role is in the dump');
 

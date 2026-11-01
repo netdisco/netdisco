@@ -7,7 +7,7 @@ use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
 use App::Netdisco::Util::Device 'get_device';
-use App::Netdisco::Util::Port qw/port_acl_check port_acl_by_role_check sync_portctl_roles/;
+use App::Netdisco::Util::Port qw/port_acl_check port_acl_by_role_check/;
 
 use Try::Tiny;
 use NetAddr::IP::Lite ':lower';
@@ -52,10 +52,6 @@ sub _sanity_ok {
 sub _scope_ok {
     my ($ip, $portname) = @_;
     return 1 if user_has_role('admin');
-
-    # the database half of portctl_by_role is only in scope once this has run,
-    # which is why every port control worker calls it before its own check
-    sync_portctl_roles();
 
     my $device = get_device($ip);
     return 0 unless $device and $device->in_storage;

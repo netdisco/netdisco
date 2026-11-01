@@ -50,7 +50,6 @@ my $PORT;
 BEGIN {
   no warnings 'redefine';
   *App::Netdisco::Util::Port::get_port = sub { $PORT };
-  *App::Netdisco::Util::Port::sync_portctl_roles = sub { };
 }
 
 use App::Netdisco::Worker::Plugin::PortName;

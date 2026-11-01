@@ -1,11 +1,9 @@
 package App::Netdisco::Util::Configuration;
 
 use Dancer qw/:syntax :script/;
-use Dancer::Plugin::DBIC 'schema';
 
 use Hash::Merge::Simple;
 use MIME::Base64 'decode_base64';
-use Storable 'dclone';
 use Try::Tiny;
 
 use base 'Exporter';
