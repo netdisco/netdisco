@@ -447,6 +447,7 @@ share/schema_versions/App-Netdisco-DB-10-11-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-100-101-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-101-102-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-102-103-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-103-104-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-11-12-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-12-13-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-13-14-PostgreSQL.sql
@@ -722,6 +723,7 @@ xt/145-topology-del-only-matched.t
 xt/146-snmp-incomplete-walk-arg.t
 xt/148-decode-snmp-text.t
 xt/149-snmp-charset-setting.t
+xt/150-job-port-json-number.t
 xt/150-schema-step-file.t
 xt/151-schema-upgrade-message.t
 xt/152-schema-step-mode.t
@@ -736,6 +738,18 @@ xt/161-worker-error-object-text.t
 xt/162-db-upsert.t
 xt/163-db-remove-unseen.t
 xt/164-device-port-subset-delete.t
+xt/165-incomplete-walks-for.t
+xt/166-schema-104-first-seen.t
+xt/167-discover-device-ip-upsert.t
+xt/168-discover-device-module-upsert.t
+xt/169-discover-device-vlan-upsert.t
+xt/170-discover-device-power-upsert.t
+xt/171-retire-ports.t
+xt/172-discover-device-port-upsert.t
+xt/173-discover-port-properties-upsert.t
+xt/174-discover-wireless-upsert.t
+xt/175-discover-neighbor-columns.t
+xt/176-discover-port-tags-clear.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t

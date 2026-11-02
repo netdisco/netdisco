@@ -13,7 +13,11 @@ use List::Util 'pairs';
 use NetAddr::IP::Lite ();
 use NetAddr::MAC;
 use App::Netdisco::Util::SNMPText 'decode_snmp_text';
+use App::Netdisco::Util::SNMP qw/walk_mark incomplete_walks_for incomplete_walk_message
+  incomplete_walk_level/;
 use Try::Tiny;
+
+my @neighbor_walks = qw/has_topo c_if c_port c_id c_ip c_platform c_cap lldp_ipv6 interfaces/;
 
 =head2 discover_new_neighbors( )
 
@@ -38,6 +42,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   return unless $device->in_storage;
 
   if (acl_matches($device, 'skip_neighbors') or not setting('discover_neighbors')) {
+      clear_neighbor_columns($device, [], include_manual => 1);
       return Status->info(
         sprintf ' [%s] neigh - neighbor discovery is disabled on this device',
         $device->ip);
@@ -56,7 +61,8 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   # store_neighbors() will update neighbors on ports, in the database
   # might return empty set if config or other reasons deny neighbor discovery
-  my @to_discover = store_neighbors($device);
+  my @incomplete = ();
+  my @to_discover = store_neighbors($device, \@incomplete);
   my (%seen_id, %seen_ip) = ((), ());
 
   # only enqueue if device is not already discovered,
@@ -94,11 +100,20 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
         $device, $ip, ($remote_id || '');
   }
 
-  return Status->info(sprintf ' [%s] neigh - processed %s neighbors',
-       $device->ip, scalar @to_discover);
+  my $processed = sprintf ' [%s] neigh - processed %s neighbors',
+    $device->ip, scalar @to_discover;
+
+  if (scalar @incomplete) {
+      my $message = incomplete_walk_message($device, 'neigh', @incomplete);
+      my $level = incomplete_walk_level(@incomplete);
+      warning $message;
+      return Status->$level("$processed; $message");
+  }
+
+  return Status->info($processed);
 });
 
-=head2 store_neighbors( $device )
+=head2 store_neighbors( $device, \@incomplete? )
 
 returns: C<@to_discover>
 
@@ -113,11 +128,17 @@ not yet stored to the database.
 
 A list of discovered neighbors will be returned as [C<$ip>, C<$type>] tuples.
 
+Neighbor columns are cleared on the device's other ports, unless a neighbor
+walk was incomplete. Those walk outcomes are pushed onto C<@incomplete> when
+it is given.
+
 =cut
 
 sub store_neighbors {
-  my $device = shift;
+  my ($device, $incomplete) = @_;
+  $incomplete ||= [];
   my @to_discover = ();
+  my %written = ();
 
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return (); # already checked!
@@ -125,9 +146,12 @@ sub store_neighbors {
   # first allow any manually configured topology to be set;
   # this will also bust the cache in vars->{'device_ports'}
   set_manual_topology($device);
+  my $walk_mark = walk_mark($snmp);
 
   if (!defined $snmp->has_topo) {
       debug sprintf ' [%s] neigh - neighbor protocols are not enabled', $device->ip;
+      push @$incomplete, incomplete_walks_for($device, $snmp, $walk_mark, 'has_topo');
+      clear_neighbor_columns($device, []) if not scalar @$incomplete;
       return @to_discover;
   }
 
@@ -149,6 +173,10 @@ sub store_neighbors {
 
   # remove keys with undef values, as c_ip does
   delete @c_ipv6{ grep { not defined $c_ipv6{$_} } keys %c_ipv6 };
+
+  # neighbors found by a cut-short walk are still written, but a port missing
+  # from it may only have been missed, so nothing is cleared
+  push @$incomplete, incomplete_walks_for($device, $snmp, $walk_mark, @neighbor_walks);
 
   # allow fallback from v6 to try v4
   my %success_with_index = ();
@@ -316,6 +344,7 @@ sub store_neighbors {
           is_uplink   => \"true",
           manual_topo => \"false",
       })->discard_changes();
+      $written{$port} = 1;
 
       # update master of our aggregate to be a neighbor of
       # the master on our peer device (a lot of iffs to get there...).
@@ -339,15 +368,63 @@ sub store_neighbors {
               $master->update({
                   remote_ip => ($peer_device->ip || $remote_ip),
                   remote_port => ($peer_port ? $peer_port->slave_of : undef ),
+                  remote_type => undef,
+                  remote_id   => undef,
                   is_uplink => \"true",
                   is_master => \"true",
                   manual_topo => \"false",
               });
+              $written{ $master->port } = 1;
           }
       }
   }
 
+  clear_neighbor_columns($device, [keys %written]) if not scalar @$incomplete;
   return @to_discover;
+}
+
+=head2 clear_neighbor_columns( $device, \@keep_ports, %opt )
+
+Clears C<remote_*> and C<is_uplink> on the device's ports not named in
+C<@keep_ports>, in one statement that writes only rows not already clear.
+Ports with C<manual_topo> are left alone, unless C<include_manual> is set,
+when they are cleared too and C<manual_topo> is set false.
+
+=cut
+
+sub clear_neighbor_columns {
+  my ($device, $keep_ports, %opt) = @_;
+
+  my %where = (
+    ip => $device->ip,
+    (scalar @$keep_ports ? (port => { -not_in => [sort @$keep_ports] }) : ()),
+    ($opt{include_manual} ? () : (-not_bool => 'manual_topo')),
+    -or => [
+      (map {{ $_ => { '!=' => undef } }} qw/remote_ip remote_port remote_type remote_id/),
+      { is_uplink => \'IS TRUE' },
+      ($opt{include_manual} ? { -bool => 'manual_topo' } : ()),
+    ],
+  );
+
+  my $cleared = schema('netdisco')->resultset('DevicePort')->search(\%where)->update({
+    remote_ip   => undef,
+    remote_port => undef,
+    remote_type => undef,
+    remote_id   => undef,
+    is_uplink   => undef,
+    ($opt{include_manual} ? (manual_topo => \'false') : ()),
+  });
+
+  # later workers read remote_ip from the cached rows; store_column leaves
+  # them clean, so no later update writes these columns again
+  my %keep = map {($_ => 1)} @$keep_ports;
+  foreach my $row (values %{ vars->{'device_ports'} || {} }) {
+      next if $keep{ $row->port } or ($row->manual_topo and not $opt{include_manual});
+      $row->store_column($_ => undef) for qw/remote_ip remote_port remote_type remote_id is_uplink/;
+      $row->store_column(manual_topo => 0) if $opt{include_manual};
+  }
+
+  return $cleared;
 }
 
 # take data from the topology table and update remote_ip and remote_port
@@ -356,63 +433,73 @@ sub set_manual_topology {
   my $device = shift;
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device) or return;
 
-  schema('netdisco')->txn_do(sub {
-    # clear manual topology flags
-    schema('netdisco')->resultset('DevicePort')
-      ->search({ip => $device->ip})->update({manual_topo => \'false'});
+  # clear outdated manual topology links
+  my $old_links = schema('netdisco')->resultset('Topology')->search({
+    -or => [
+      { dev1 => $device->ip,
+        port1 => { '-not_in' => $device->ports->get_column('port')->as_query } },
+      { dev2 => $device->ip,
+        port2 => { '-not_in' => $device->ports->get_column('port')->as_query } },
+    ],
+  })->delete;
+  debug sprintf ' [%s] neigh - removed %d outdated manual topology links',
+    $device->ip, $old_links;
 
-    # clear outdated manual topology links
-    my $old_links = schema('netdisco')->resultset('Topology')->search({
-      -or => [
-        { dev1 => $device->ip,
-          port1 => { '-not_in' => $device->ports->get_column('port')->as_query } },
-        { dev2 => $device->ip,
-          port2 => { '-not_in' => $device->ports->get_column('port')->as_query } },
-      ],
-    })->delete;
-    debug sprintf ' [%s] neigh - removed %d outdated manual topology links',
-      $device->ip, $old_links;
+  my $topo_links = schema('netdisco')->resultset('Topology')
+    ->search({-or => [dev1 => $device->ip, dev2 => $device->ip]});
+  debug sprintf ' [%s] neigh - setting manual topology links', $device->ip;
 
-    my $topo_links = schema('netdisco')->resultset('Topology')
-      ->search({-or => [dev1 => $device->ip, dev2 => $device->ip]});
-    debug sprintf ' [%s] neigh - setting manual topology links', $device->ip;
+  my %manual = ();
+  # each link commits on its own: holding one link's port rows while
+  # locking the next could deadlock with that peer's own discover
+  while (my $link = $topo_links->next) {
+      # could fail for broken topo, but we ignore to try the rest
+      try {
+          # recorded only once the link's transaction commits, since a
+          # failed right side rolls the left side back
+          my @own_ports = ();
+          schema('netdisco')->txn_do(sub {
+            # only work on root_ips
+            my $left  = get_device($link->dev1);
+            my $right = get_device($link->dev2);
 
-    while (my $link = $topo_links->next) {
-        # could fail for broken topo, but we ignore to try the rest
-        try {
-            schema('netdisco')->txn_do(sub {
-              # only work on root_ips
-              my $left  = get_device($link->dev1);
-              my $right = get_device($link->dev2);
+            # skip bad entries
+            return unless ($left->in_storage and $right->in_storage);
 
-              # skip bad entries
-              return unless ($left->in_storage and $right->in_storage);
+            $left->ports
+              ->single({port => $link->port1})
+              ->update({
+                remote_ip => $right->ip,
+                remote_port => $link->port2,
+                remote_type => undef,
+                remote_id   => undef,
+                is_uplink   => \"true",
+                manual_topo => \"true",
+              });
+            push @own_ports, $link->port1 if $left->ip eq $device->ip;
 
-              $left->ports
-                ->single({port => $link->port1})
-                ->update({
-                  remote_ip => $right->ip,
-                  remote_port => $link->port2,
-                  remote_type => undef,
-                  remote_id   => undef,
-                  is_uplink   => \"true",
-                  manual_topo => \"true",
-                });
+            $right->ports
+              ->single({port => $link->port2})
+              ->update({
+                remote_ip => $left->ip,
+                remote_port => $link->port1,
+                remote_type => undef,
+                remote_id   => undef,
+                is_uplink   => \"true",
+                manual_topo => \"true",
+              });
+            push @own_ports, $link->port2 if $right->ip eq $device->ip;
+          });
+          $manual{$_} = 1 for @own_ports;
+      };
+  }
 
-              $right->ports
-                ->single({port => $link->port2})
-                ->update({
-                  remote_ip => $left->ip,
-                  remote_port => $link->port1,
-                  remote_type => undef,
-                  remote_id   => undef,
-                  is_uplink   => \"true",
-                  manual_topo => \"true",
-                });
-            });
-        };
-    }
-  });
+  # clear manual topology flags left from links that are gone
+  schema('netdisco')->resultset('DevicePort')->search({
+    ip => $device->ip,
+    -bool => 'manual_topo',
+    (scalar keys %manual ? (port => { -not_in => [sort keys %manual] }) : ()),
+  })->update({manual_topo => \'false'});
 
   # bust the cache after updating manual topology.
   vars->{'device_ports'} = { map {($_->port => $_)}

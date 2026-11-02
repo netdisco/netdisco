@@ -9,10 +9,10 @@ use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use App::Netdisco::Util::Device qw/get_device is_discoverable/;
 use App::Netdisco::Util::DNS 'hostname_from_ip';
-use App::Netdisco::Util::SNMP qw/snmp_comm_reindex snmp_vrf_reindex get_mibdirs_shortnames/;
+use App::Netdisco::Util::SNMP qw/snmp_comm_reindex snmp_vrf_reindex get_mibdirs_shortnames walk_mark incomplete_walks
+  incomplete_walks_for incomplete_walk_message incomplete_walk_level/;
 use App::Netdisco::Util::Web 'sort_port';
 use App::Netdisco::Util::SNMPText qw/decode_snmp_text decode_text_with/;
-use App::Netdisco::DB::ExplicitLocking ':modes';
 
 use Dancer::Plugin::DBIC 'schema';
 use Scope::Guard 'guard';
@@ -294,7 +294,10 @@ register_worker({ phase => 'early', driver => 'snmp',
   # cache the device ports to save hitting the database for many single rows
   vars->{'device_ports'} = { map {($_->port => $_)}
                                  $device->ports(undef, {prefetch => 'properties'})->reset->all };
+  my $walk_mark = walk_mark($snmp);
   my $interfaces = $snmp->interfaces;
+  vars->{'incomplete_walks'}{ $device->ip }{'interfaces'}
+    = [ incomplete_walks($snmp, $walk_mark) ];
 
   # OK if no interfaces
   return $pass if 0 == scalar keys %$interfaces;
@@ -324,9 +327,17 @@ register_worker({ phase => 'early', driver => 'snmp',
 
   my $now = vars->{'timestamp'};
 
-  my @aliases = ();
-  push @aliases, _get_ipv4_aliases($device, $snmp);
-  push @aliases, _get_ipv6_aliases($device, $snmp);
+  my $walk_mark = walk_mark($snmp);
+  # one read of the VRF list, so the guard exempts the contexts that were walked
+  my @vrf_list = _get_vrf_list($device, $snmp);
+  my @aliases = _dedupe_aliases(_get_ipv4_aliases($device, $snmp, \@vrf_list),
+    _get_ipv6_aliases($device, $snmp, \@vrf_list));
+
+  my @incomplete = _outside_vrf_contexts(\@vrf_list,
+    incomplete_walks_for($device, $snmp, $walk_mark, qw/
+      vrf_name ip_index ip_table ip_netmask ipv6_index ipv6_addr ipv6_type
+      ipv6_addr_prefixlength interfaces/));
+  return _keep_stored_device_ips($device, @incomplete) if scalar @incomplete;
 
   my @subnets = List::MoreUtils::uniq grep {defined} map {$_->{subnet}} @aliases;
 
@@ -336,17 +347,28 @@ register_worker({ phase => 'early', driver => 'snmp',
 
   # fake one aliases entry for devices not providing ip_index
   # or if we're discovering on an IP not listed in ip_index
-  push @$resolved_aliases, { alias => $device->ip, dns => $device->dns }
-    if 0 == scalar grep {$_->{alias} eq $device->ip} @aliases;
+  my $device_addr = _canonical_addr($device->ip);
+  push @$resolved_aliases, { alias => $device_addr, dns => $device->dns }
+    if 0 == scalar grep {$_->{alias} eq $device_addr} @aliases;
 
   # support for Hooks
   vars->{'hook_data'}->{'device_ips'} = $resolved_aliases;
 
+  my @rows = map {{
+    ip       => $device->ip,
+    alias    => $_->{alias},
+    subnet   => $_->{subnet},
+    port     => $_->{port},
+    dns      => $_->{dns},
+    creation => \'LOCALTIMESTAMP',
+  }} @$resolved_aliases;
+
   schema('netdisco')->txn_do(sub {
-    my $gone = $device->device_ips->delete;
-    debug sprintf ' [%s] device - removed %d aliases',
-      $device->ip, $gone;
-    $device->device_ips->populate($resolved_aliases);
+    my $rs = schema('netdisco')->resultset('DeviceIp');
+    $rs->upsert(\@rows);
+    my $gone = $rs->remove_unseen({ ip => $device->ip },
+      [ map {{ alias => $_->{alias} }} @rows ]);
+    debug sprintf ' [%s] device - removed %d aliases', $device->ip, $gone;
 
     schema('netdisco')->resultset('Subnet')->upsert_subnet($_, $now) for @subnets;
 
@@ -355,6 +377,57 @@ register_worker({ phase => 'early', driver => 'snmp',
   });
 });
 
+sub _canonical_addr {
+  my $ip = NetAddr::IP::Lite->new($_[0]);
+  return $ip ? $ip->addr : $_[0];
+}
+
+# the first entry for an address wins, so the sorted iteration of the callers
+# decides which port and subnet are kept
+sub _dedupe_aliases {
+  my %seen;
+  return grep { not $seen{ _canonical_addr($_->{alias}) }++ } @_;
+}
+
+# VRF collection is not reliable yet, so a failed VRF walk drops that VRF's
+# addresses for one discover, as before, rather than freezing the device's rows.
+# An absent walk means the poller's MIBs are broken wherever it ran, and
+# walk_status holds only the last VRF's outcome, so absent always counts.
+sub _outside_vrf_contexts {
+  my ($vrf_list, @outcomes) = @_;
+  # a VRF name that decodes to no context was walked in the base context
+  my %vrf_context = map {($_ => 1)} grep {length} @$vrf_list;
+  return grep { ($_->{reason} // '') eq 'absent'
+                or (($_->{method} // '') ne 'vrf_name'
+                    and not $vrf_context{ $_->{context} // '' }) } @outcomes;
+}
+
+# a walk that was cut short must not look like an emptied table, so the stored
+# rows stand and the hook payload shows them rather than the partial walk
+sub _keep_stored_device_ips {
+  my ($device, @incomplete) = @_;
+  vars->{'hook_data'}->{'device_ips'} = [ $device->device_ips(undef, {
+    columns => [qw/alias subnet port dns/], order_by => 'alias',
+    result_class => 'DBIx::Class::ResultClass::HashRefInflator',
+  })->all ];
+  my $message = incomplete_walk_message($device, 'device_ip', @incomplete);
+  warning $message;
+  my $level = incomplete_walk_level(@incomplete);
+  return Status->$level($message);
+}
+
+
+# the walks that build device_port rows, plus the job-wide interfaces record
+my @PORT_WALKS = qw/
+  interfaces i_type i_ignore i_description i_mtu i_speed i_speed_admin i_mac
+  i_up i_up_admin i_name i_duplex i_duplex_admin i_stp_state i_vlan
+  i_lastchange agg_ports i_subinterfaces
+/;
+
+my @PORT_COLUMNS = qw/
+  port descr up up_admin mac speed speed_admin mtu name duplex duplex_admin
+  stp type vlan pvid has_subinterfaces is_master slave_of lastchange
+/;
 
 # NOTE must come after the IP Aliases gathering for ignore ACLs to work
 register_worker({ phase => 'early', driver => 'snmp',
@@ -366,6 +439,7 @@ register_worker({ phase => 'early', driver => 'snmp',
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("discover failed: could not SNMP connect to $device");
 
+  my $walk_mark = walk_mark($snmp);
   my $interfaces     = $snmp->interfaces;
   my $i_type         = $snmp->i_type;
   my $i_ignore       = $snmp->i_ignore;
@@ -602,6 +676,9 @@ register_worker({ phase => 'early', driver => 'snmp',
       }
   }
 
+  my @incomplete = incomplete_walks_for($device, $snmp, $walk_mark, @PORT_WALKS);
+  return _keep_stored_device_ports($device, @incomplete) if scalar @incomplete;
+
   # update num_ports
   $device->num_ports( scalar values %deviceports );
 
@@ -648,48 +725,96 @@ register_worker({ phase => 'early', driver => 'snmp',
     }
   }
 
-  # support for Hooks
+  # support for Hooks, after the port comparison, which never saw custom_fields
+  foreach my $port (keys %deviceports) {
+      next unless exists vars->{'device_ports'}->{$port};
+      $deviceports{$port}->{custom_fields}
+        = _configured_custom_fields(vars->{'device_ports'}->{$port}->custom_fields);
+  }
   vars->{'hook_data'}->{'ports'} = [values %deviceports];
 
-  schema('netdisco')->resultset('DevicePort')->txn_do_locked(ACCESS_EXCLUSIVE, sub {
-    my $coder = JSON::PP->new->utf8(0)->allow_nonref(1)->allow_unknown(1);
+  my @rows = map { _device_port_row($device, $deviceports{$_}) } sort keys %deviceports;
+  my @vanished = sort grep { not exists $deviceports{$_} } keys %{ vars->{'device_ports'} };
 
-    # backup the custom_fields
-    my %fields = map  {($_->port => $coder->decode(Encode::encode('UTF-8',$_->custom_fields || '{}')))}
-                 grep {exists $deviceports{$_->port}}
-                      values %{ vars->{'device_ports'} };
+  my $status = schema('netdisco')->txn_do(sub {
+    # serializes port writes for one device, in place of a table lock
+    $device->result_source->resultset
+      ->search({ ip => $device->ip }, { for => 'update' })->first;
 
-    my %ok_fields = map {$_ => 1}
-                    grep {defined}
-                    map {$_->{name}}
-                    @{ setting('custom_fields')->{device_port} || [] };
-
-    # filter custom_fields for current valid fields
-    foreach my $port (keys %fields) {
-        my %new_fields = ();
-
-        foreach my $field (keys %ok_fields) {
-            $new_fields{$field} = exists $fields{$port}->{$field}
-              ? decode_text_with($fields{$port}->{$field}, []) : undef;
-        }
-
-        # set new custom_fields
-        $deviceports{$port}->{custom_fields} = $coder->encode(\%new_fields);
-    }
-
-    my $gone = $device->ports->delete({keep_nodes => 1});
+    my $rs = schema('netdisco')->resultset('DevicePort');
+    $rs->upsert(\@rows);
+    my $gone = $rs->retire_ports($device->ip, \@vanished, 'vanished');
     debug sprintf ' [%s] interfaces - removed %d interfaces',
       $device->ip, $gone;
 
     # uptime and num_ports changed
     $device->update();
 
-    $device->ports->populate([values %deviceports]);
-
     return Status->info(sprintf ' [%s] interfaces - added %d new interfaces',
       $device->ip, scalar values %deviceports);
   });
+
+  # per-port writers later in this job only write ports found in the cache
+  vars->{'device_ports'} = { map {($_->port => $_)}
+                                 $device->ports(undef, {prefetch => 'properties'})->reset->all };
+
+  return $status;
 });
+
+# custom_fields, tags, remote_*, is_uplink and manual_topo are left out, so the
+# upsert keeps their stored values and an insert takes the column defaults
+sub _device_port_row {
+  my ($device, $port) = @_;
+  my %row = map {($_ => $port->{$_})} @PORT_COLUMNS;
+  $row{$_} = ((defined $row{$_} and $row{$_} eq 'true') ? 1 : 0)
+    for qw/has_subinterfaces is_master/;
+  return { %row, ip => $device->ip, creation => \'LOCALTIMESTAMP' };
+}
+
+# the stored custom_fields JSON reduced to the configured device_port fields,
+# as the hook payload has always carried them; the upsert never writes it
+sub _configured_custom_fields {
+  my $stored = shift;
+  my $coder = JSON::PP->new->utf8(0)->allow_nonref(1)->allow_unknown(1);
+  my $fields = $coder->decode(Encode::encode('UTF-8', $stored || '{}'));
+
+  my %configured = ();
+  foreach my $field (grep {defined} map {$_->{name}}
+                     @{ setting('custom_fields')->{device_port} || [] }) {
+      $configured{$field} = exists $fields->{$field}
+        ? decode_text_with($fields->{$field}, []) : undef;
+  }
+  return $coder->encode(\%configured);
+}
+
+# a walk that was cut short must not look like vanished ports, so the stored
+# rows stand, the hook payload shows them, and the port comparison is skipped
+sub _keep_stored_device_ports {
+  my ($device, @incomplete) = @_;
+  my @ports = $device->ports(undef, {
+    columns => [@PORT_COLUMNS, 'custom_fields'], order_by => 'port',
+    result_class => 'DBIx::Class::ResultClass::HashRefInflator',
+  })->all;
+
+  # the same shape the walk gives: 'true'/'false' and configured fields only
+  foreach my $port (@ports) {
+      foreach my $column (qw/has_subinterfaces is_master/) {
+          my $value = $port->{$column};
+          $port->{$column} = (defined $value and grep {$value eq $_} qw/1 t true/)
+            ? 'true' : 'false';
+      }
+      $port->{custom_fields} = _configured_custom_fields($port->{custom_fields});
+  }
+  vars->{'hook_data'}->{'ports'} = \@ports;
+
+  # uptime may have been corrected above
+  $device->update();
+
+  my $message = incomplete_walk_message($device, 'device_port', @incomplete);
+  warning $message;
+  my $level = incomplete_walk_level(@incomplete);
+  return Status->$level($message);
+}
 
 # description and name are set raw too, for the snmp_charset ACLs on a new
 # device; they are decoded afterwards with the other text properties
@@ -733,7 +858,9 @@ sub _get_vrf_list {
     my @ok_vrfs = ();
     my $vrf_name = $snmp->vrf_name || {};
 
-    while (my ($idx, $vrf) = each(%$vrf_name)) {
+    # sorted so an address in two VRFs keeps the same port and subnet each run
+    foreach my $idx (sort keys %$vrf_name) {
+        my $vrf = $vrf_name->{$idx};
         if ($vrf =~ /^\S+$/) {
             my $ctx_name = pack("C*",split(/\./,$idx));
             $ctx_name =~ s/.*[^[:print:]]+//;
@@ -746,7 +873,7 @@ sub _get_vrf_list {
 }
 
 sub _get_ipv4_aliases {
-  my ($device, $snmp) = @_;
+  my ($device, $snmp, $vrf_list) = @_;
   my @aliases;
 
   my $ip_index   = $snmp->ip_index   || {};
@@ -755,7 +882,7 @@ sub _get_ipv4_aliases {
   my $ip_netmask = $snmp->ip_netmask || {};
 
   # Get IP Table per VRF if supported
-  my @vrf_list = _get_vrf_list($device, $snmp);
+  my @vrf_list = @{ $vrf_list || [ _get_vrf_list($device, $snmp) ] };
   if (scalar @vrf_list) {
     my $guard = guard { snmp_comm_reindex($snmp, $device, 0) };
     foreach my $vrf (@vrf_list) {
@@ -768,7 +895,7 @@ sub _get_ipv4_aliases {
   }
 
   # build device aliases suitable for DBIC
-  foreach my $entry (keys %$ip_index) {
+  foreach my $entry (sort keys %$ip_index) {
       my $ip = NetAddr::IP::Lite->new($ip_table->{$entry}) || NetAddr::IP::Lite->new($entry)
         or next;
       my $addr = $ip->addr;
@@ -796,7 +923,7 @@ sub _get_ipv4_aliases {
 }
 
 sub _get_ipv6_aliases {
-  my ($device, $snmp) = @_;
+  my ($device, $snmp, $vrf_list) = @_;
   my @aliases;
 
   my $ipv6_index  = $snmp->ipv6_index || {};
@@ -806,7 +933,7 @@ sub _get_ipv6_aliases {
   my $interfaces  = $snmp->interfaces || {};
 
   # Get IP Table per VRF if supported
-  my @vrf_list = _get_vrf_list($device, $snmp);
+  my @vrf_list = @{ $vrf_list || [ _get_vrf_list($device, $snmp) ] };
   if (scalar @vrf_list) {
     my $guard = guard { snmp_comm_reindex($snmp, $device, 0) };
     foreach my $vrf (@vrf_list) {
@@ -820,7 +947,7 @@ sub _get_ipv6_aliases {
   }
 
   # build device aliases suitable for DBIC
-  foreach my $iid (keys %$ipv6_index) {
+  foreach my $iid (sort keys %$ipv6_index) {
       next unless $ipv6_type->{$iid} and $ipv6_type->{$iid} eq 'unicast';
       my $entry = $ipv6_addr->{$iid} or next;
       my $ip = NetAddr::IP::Lite->new($entry) or next;

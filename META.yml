@@ -30,7 +30,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.116000'
+    version: '2.117000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -49,7 +49,7 @@ provides:
     file: lib/App/Netdisco/Configuration.pm
   App::Netdisco::DB:
     file: lib/App/Netdisco/DB.pm
-    version: '103'
+    version: '104'
   App::Netdisco::DB::Deploy:
     file: lib/App/Netdisco/DB/Deploy.pm
   App::Netdisco::DB::ExplicitLocking:
@@ -242,6 +242,8 @@ provides:
     file: lib/App/Netdisco/DB/StepFile.pm
   App::Netdisco::DB::UpgradeMessage:
     file: lib/App/Netdisco/DB/UpgradeMessage.pm
+  App::Netdisco::DB::Upsert:
+    file: lib/App/Netdisco/DB/Upsert.pm
   App::Netdisco::Environment:
     file: lib/App/Netdisco/Environment.pm
   App::Netdisco::GenericDB:
@@ -733,7 +735,7 @@ requires:
   Regexp::Common: '2017060201'
   Regexp::Common::net::CIDR: '0'
   Role::Tiny: '1.002005'
-  SNMP::Info: '3.981000'
+  SNMP::Info: '3.984000'
   SQL::Abstract: '1.85'
   SQL::Translator: '0.11024'
   Scope::Guard: '0'
@@ -772,5 +774,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.116000'
+version: '2.117000'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.020'

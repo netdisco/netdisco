@@ -11,8 +11,28 @@ use App::Netdisco::Util::SNMPText 'decode_snmp_text';
 use App::Netdisco::Util::Web 'sort_port';
 use App::Netdisco::Util::Permission 'acl_matches';
 use App::Netdisco::Util::PortAccessEntity 'update_pae_attributes';
+use App::Netdisco::Util::SNMP qw/walk_mark incomplete_walks_for incomplete_walk_message
+  incomplete_walk_level/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use App::Netdisco::Util::Device qw/is_discoverable match_to_setting/;
+
+# the upsert needs uniform rows, so this reproduces the column rule of the
+# populate() insert it replaced, keeping stored values the same: a column some
+# port's walk filled is NULL on the ports without it, and a column no port
+# filled takes the schema default. The pae_* columns are always NULL because
+# update_pae_attributes rewrites them straight afterwards.
+sub _uniform_property_rows {
+  my ($device, $properties) = @_;
+  my $source = schema('netdisco')->resultset('DevicePortProperties')->result_source;
+  my %walked = map {$_ => 1} map {keys %$_} values %$properties;
+  my %blank = map {
+    my $default = $source->column_info($_)->{default_value};
+    ($_ => (m/^pae_/ || $walked{$_} ? undef : ref $default ? $$default : $default))
+  } grep { $_ ne 'ip' and $_ ne 'port' } $source->columns;
+
+  return [ map {{ %blank, %{ $properties->{$_} }, ip => $device->ip, port => $_ }}
+               sort keys %$properties ];
+}
 
 register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my ($job, $workerconf) = @_;
@@ -22,6 +42,7 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("discover failed: could not SNMP connect to $device");
 
+  my $walk_mark = walk_mark($snmp);
   my $interfaces = $snmp->interfaces || {};
   my %properties = ();
 
@@ -141,6 +162,20 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     $properties{ $port }->{remote_serial} = $rem_serial->{ $idx };
   }
 
+  # a walk that was cut short must not look like a device with no port
+  # properties, so the stored rows stand
+  my @incomplete = incomplete_walks_for($device, $snmp, $walk_mark,
+    qw/interfaces i_speed_raw i_err_disable_cause i_faststart_enabled c_if c_cap
+       c_platform lldp_media_cap lldp_rem_vendor lldp_rem_model lldp_rem_sw_rev
+       lldp_rem_serial/);
+  if (scalar @incomplete) {
+      my $skipped = incomplete_walk_message($device, 'port properties', @incomplete);
+      my $level = incomplete_walk_level(@incomplete);
+      warning $skipped;
+      return Status->$level($skipped);
+  }
+
+  my %ignored = ();
   if (scalar @{ setting('ignore_deviceports') }) {
     foreach my $map (@{ setting('ignore_deviceports')}) {
         next unless ref {} eq ref $map;
@@ -156,11 +191,18 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
                 debug sprintf ' [%s] properties - removing %s (config:ignore_deviceports)',
                   $device->ip, $port;
-                $device_ports->{$port}->delete; # like, for real, in the DB
+                $ignored{$port} = 1;
                 delete $properties{$port};
             }
         }
     }
+  }
+
+  if (scalar keys %ignored) {
+    schema('netdisco')->resultset('DevicePort')
+      ->retire_ports($device->ip, [sort keys %ignored], 'ignored');
+    # later main-phase writers test this cache to skip ports
+    delete $device_ports->{$_} for keys %ignored;
   }
 
   foreach my $idx (keys %$interfaces) {
@@ -182,23 +224,22 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     $properties{ $port }->{ifindex} = $idx;
   }
 
-  return Status->info(" [$device] no port properties to record")
-    unless scalar keys %properties;
+  my $rows = _uniform_property_rows($device, \%properties);
 
   schema('netdisco')->txn_do(sub {
-    my $gone = $device->properties_ports->delete;
+    my $rs = schema('netdisco')->resultset('DevicePortProperties');
+    $rs->upsert($rows) if scalar @$rows;
+    my $gone = $rs->remove_unseen({ ip => $device->ip },
+      [ map {{ port => $_->{port} }} @$rows ]);
 
     debug sprintf ' [%s] properties - removed %d port properties',
       $device->ip, $gone;
-
-    $device->properties_ports->populate(
-      [map {{ port => $_, %{ $properties{$_} } }} keys %properties] );
 
     debug sprintf ' [%s] properties - updating Port Access Entity', $device->ip;
     update_pae_attributes($device);
 
     return Status->info(sprintf ' [%s] properties - added %d new port properties',
-      $device->ip, scalar keys %properties);
+      $device->ip, scalar @$rows);
   });
 
 });

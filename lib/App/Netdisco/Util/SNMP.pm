@@ -8,6 +8,7 @@ use File::Spec::Functions qw/splitdir catdir catfile/;
 use MIME::Base64 'decode_base64';
 use SNMP::Info;
 use JSON::PP ();
+use Scalar::Util 'refaddr';
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -22,6 +23,8 @@ our @EXPORT_OK = qw/
   walk_mark
   incomplete_walks
   incomplete_walk_message
+  incomplete_walk_level
+  incomplete_walks_for
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -293,7 +296,8 @@ sub incomplete_walks {
 
 Returns a log message for C<$what> on C<$device> naming each incomplete
 walk outcome: its method, table, reason, rows read and walk method, with
-the repeaters and SNMP context when there are any.
+the repeaters and SNMP context when there are any. When an outcome is
+C<absent>, the message says to check the MIBs the poller loads.
 
 =cut
 
@@ -306,8 +310,73 @@ sub incomplete_walk_message {
     . ((defined $_->{context} and length $_->{context})
         ? " in context $_->{context}" : '')
   } @outcomes;
-  return sprintf '[%s] %s - kept existing rows, incomplete SNMP walk: %s',
-    $device->ip, $what, join '; ', @walks;
+  my $hint = (incomplete_walk_level(@outcomes) eq 'error')
+    ? '; the poller could not translate an SNMP object, so check the netdisco-mibs'
+      . ' install and the mibhome and mibdirs settings'
+    : '';
+  return sprintf '[%s] %s - kept existing rows, incomplete SNMP walk: %s%s',
+    $device->ip, $what, (join '; ', @walks), $hint;
+}
+
+=head2 incomplete_walk_level( @outcomes )
+
+Returns the L<App::Netdisco::Worker::Status> a worker returns after keeping
+its stored rows for C<@outcomes>: C<error> when any outcome is C<absent>,
+otherwise C<info>. An C<absent> walk means the poller's MIBs are broken,
+which must show on the job, while a cut-short walk leaves the job's status
+as it was before the guard. An C<error> job queues no discover hooks, so a
+device first discovered while the MIBs are broken never sends its
+C<new_device> hook.
+
+This is not full broken-MIB detection. It sees only the walks a guarded
+worker names, and only while C<enable_incomplete_walk_protection> is on.
+Leaves read behind a composite method, such as C<i_vlan_membership>, go
+unseen, and there a broken install behaves as it did before the guard.
+
+=cut
+
+sub incomplete_walk_level {
+  return (grep { ($_->{reason} // '') eq 'absent' } @_) ? 'error' : 'info';
+}
+
+=head2 incomplete_walks_for( $device, $snmp, $mark, @methods )
+
+Returns the incomplete walk outcomes that could have cut short a table a
+worker is about to write: those recorded since C<walk_mark> returned C<$mark>,
+then the latest C<walk_status> of each named C<@methods> when it is not
+complete, then the job's record of the early C<interfaces> read when
+C<interfaces> is among the C<@methods>. Each outcome is returned once.
+
+C<walk_status> is read because a table walked by an earlier worker is cached,
+and reading it again records nothing, so the failure lies before C<$mark>. It
+holds the latest outcome, so a method that failed and then succeeded on a
+re-walk is not returned. An C<absent> reason counts as incomplete although
+L<SNMP::Info> marks it complete, because it means the poller could not
+translate the object locally, such as a broken MIB checkout.
+
+Returns an empty list when C<enable_incomplete_walk_protection> is false, or
+when the instance keeps no walk record.
+
+=cut
+
+sub incomplete_walks_for {
+  my ($device, $snmp, $mark, @methods) = @_;
+  return () unless setting('enable_incomplete_walk_protection')
+    and $snmp->can('walk_failures');
+
+  my @outcomes = incomplete_walks($snmp, $mark);
+  if ($snmp->can('walk_status')) {
+    foreach my $method (@methods) {
+      my $latest = $snmp->walk_status($method);
+      push @outcomes, $latest if $latest
+        and (not $latest->{complete} or ($latest->{reason} // '') eq 'absent');
+    }
+  }
+  push @outcomes, @{ vars->{'incomplete_walks'}{ $device->ip }{'interfaces'} || [] }
+    if grep { $_ eq 'interfaces' } @methods;
+
+  my %seen;
+  return grep { not $seen{ refaddr $_ }++ } @outcomes;
 }
 
 true;
