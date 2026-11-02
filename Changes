@@ -1,7 +1,13 @@
 2.117001 - tbd
 
+  [ENHANCEMENTS]
+
+  * #1797 upgrade the vendored Swagger UI from 5.33.3 to 5.34.1
+
   [BUG FIXES]
 
+  * #1788 show each schema upgrade step in netdisco-db-deploy, not DBIC's
+    version warning
   * #1789 restore device-first matching in search, so a device's DNS name
     opens its details page again (reverts #1429's port-first order); a
     search for a MAC address held by one device port now opens that device's
@@ -10,6 +16,9 @@
     with uplinks and non-Ethernet ports included as needed)
   * #1793 NXOS CLI macsuck: map Po to lowercase port-channel, and stop the
     "Configured from vty" log line
+  * #1799 the startup PostgreSQL version check no longer leaves each backend
+    poller a second database connection where DBICx::Sugar is older than
+    0.0200, on which 2.116000 discover could hang searches (also #1782)
 
 2.117000 - 2026-10-30
 
