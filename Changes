@@ -1,5 +1,9 @@
 2.117001 - tbd
 
+  [ENHANCEMENTS]
+
+  * #1797 upgrade the vendored Swagger UI from 5.33.3 to 5.34.1
+
   [BUG FIXES]
 
   * #1789 restore device-first matching in search, so a device's DNS name
