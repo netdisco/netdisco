@@ -765,9 +765,39 @@ sub _port_rows {
     };
 }
 
+# Whether this is a site's ajax/device/ports.tt from before the neighbor's
+# MAC came as neighbor_net_mac: one that reads stitched_nodes, where it used
+# to find it, and not neighbor_net_mac. TT comments are left out, so a note
+# naming either decides nothing. The site-local rule ports-neighbor-mac tells
+# the admin about such a copy.
+sub _ports_template_is_legacy {
+    my ($text) = @_;
+    return 0 if not defined $text;
+    (my $code = $text) =~ s/\[%#.*?%\]//gs;
+    return ($code =~ m/\bstitched_nodes\b/
+            and $code !~ m/\bneighbor_net_mac\b/) ? 1 : 0;
+}
+
+# The same for the template that resolves, cached by file and mtime.
+my %template_legacy = ();
+sub _legacy_ports_template {
+    my $file = engine('template')->view('ajax/device/ports') or return 0;
+    my $mtime = (stat $file)[9] || 0;
+    my $known = $template_legacy{$file};
+    if (not $known or $known->{mtime} != $mtime) {
+        open my $fh, '<:encoding(UTF-8)', $file or return 0;
+        my $text = do { local $/; <$fh> };
+        $known = $template_legacy{$file}
+          = { mtime => $mtime, legacy => _ports_template_is_legacy($text) };
+    }
+    return $known->{legacy};
+}
+
 # device ports with a description (er, name) matching
 get '/ajax/content/device/ports' => require_login sub {
-    my $data = _port_rows() or return;
+    # the CSV never reads the neighbor's MAC
+    my $data = _port_rows({
+      legacy => (request->is_ajax ? _legacy_ports_template() : 0) }) or return;
 
     if (request->is_ajax) {
         template 'ajax/device/ports.tt', {

@@ -176,6 +176,31 @@ is App::Netdisco::Web::Plugin::Device::Ports::_node_fetch_scope(
   0, 0, \@rows_some_neighbors, 1), undef,
   'c_nodes and c_neighbors both off fetches nothing';
 
+# The route sets legacy for a ports.tt that reads stitched_nodes and not
+# neighbor_net_mac: a site's copy from before it did. The shipped one must
+# stay recognisable.
+{
+    my $is = \&App::Netdisco::Web::Plugin::Device::Ports::_ports_template_is_legacy;
+    open my $fh, '<:encoding(UTF-8)', 'share/views/ajax/device/ports.tt' or die $!;
+    my $shipped = do { local $/; <$fh> };
+    is $is->($shipped), 0, 'the shipped ports.tt is not legacy'
+      or diag 'share/views/ajax/device/ports.tt no longer reads like the '
+            . 'current template, so the route would stitch nodes for '
+            . 'Neighbors again: update _ports_template_is_legacy to match';
+
+    my $loop = '[% FOREACH _n IN row.stitched_nodes %][% END %]';
+    my $mac  = '[% row.neighbor_net_mac %]';
+    is $is->($loop), 1,
+      'stitched_nodes without neighbor_net_mac is legacy';
+    is $is->("$loop$mac"), 0,
+      'stitched_nodes with neighbor_net_mac is not';
+    is $is->('<td>[% row.port %]</td>'), 0,
+      'a copy reading neither has nothing to feed';
+    is $is->("[%# was row.neighbor_net_mac %]$loop"), 1,
+      'neighbor_net_mac named only in a comment does not count';
+    is $is->(undef), 0, 'no text is not legacy';
+}
+
 my %count_by_port = ('Gi1/1' => 30, 'Gi1/2' => 30, 'Gi1/3' => 5);
 
 is_deeply App::Netdisco::Web::Plugin::Device::Ports::_threshold_scope(
