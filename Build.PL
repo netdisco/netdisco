@@ -45,6 +45,7 @@ App::Netdisco::Builder->new(
     'Data::Printer' => '0',
     'Data::Visitor::Tiny' => '0',
     'DBD::Pg' => '0',
+    'DBICx::Sugar' => '0.0200',
     'DBIx::Class' => '0.082844',
     'DBIx::Class::Helpers' => '2.037000',
     'Daemon::Control' => '0.001006',

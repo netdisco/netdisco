@@ -38,11 +38,10 @@ BEGIN {
 
 use App::Netdisco;
 use Dancer ':script';
-use Dancer::Plugin::DBIC 'schema';
 
 use Try::Tiny;
 
-use App::Netdisco::DB::Deploy qw(parse_args run_deploy);
+use App::Netdisco::DB::Deploy qw(parse_args run_deploy deploy_schema);
 use App::Netdisco::DB::SchemaCheck;
 use App::Netdisco::Util::PostgresFloor 'warn_postgres_floor_all_tenants';
 
@@ -150,7 +149,7 @@ Version 38 (2.023000) onwards applies each step completely or not at all
 
 my $options = try { parse_args(\@ARGV) } catch { print STDERR $_; exit 2 };
 
-my $schema = schema('netdisco');
+my $schema = deploy_schema('netdisco');
 my $pg_ver = $schema->storage->dbh->{pg_server_version};
 
 if ($pg_ver and $pg_ver < 90600) {
