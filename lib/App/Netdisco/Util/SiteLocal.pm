@@ -385,6 +385,19 @@ my @FILE_RULES = (
               . 'from the shipped device.tt.',
   },
   {
+    name     => 'ports-neighbor-mac',
+    release  => '2.117001',
+    paths    => ['ajax/device/ports.tt'],
+    requires => qr/\bneighbor_net_mac\b/,
+    advice   => 'this copy looks for the neighbor\'s MAC among the port\'s '
+              . 'nodes, so when Connected Devices is shown and Connected '
+              . 'Nodes is not, the nodes of every port with a neighbor are '
+              . 'still fetched for it. It keeps working. To skip that fetch, '
+              . 'take the MAC from row.neighbor_net_mac as the shipped '
+              . 'template does. A copy that does not show the neighbor\'s MAC '
+              . 'can ignore this.',
+  },
+  {
     name     => 'tab-sync-attribute',
     release  => '2.109000',
     paths    => [qw/ device.tt search.tt report.tt admintask.tt /],
