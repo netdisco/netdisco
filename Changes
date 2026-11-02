@@ -8,6 +8,8 @@
     Ports tab filtered to the port, with the Port MAC column shown (several
     ports on one device open its details; several devices show Port search,
     with uplinks and non-Ethernet ports included as needed)
+  * #1793 NXOS CLI macsuck: map Po to lowercase port-channel, and stop the
+    "Configured from vty" log line
 
 2.117000 - 2026-10-30
 

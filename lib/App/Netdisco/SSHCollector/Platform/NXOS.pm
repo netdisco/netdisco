@@ -154,10 +154,9 @@ sub macsuck {
     my ($self, $hostlabel, $ssh, $args) = @_;
 
     debug "$hostlabel $$ macsuck()";
-    my $cmds = <<EOF;
-show mac address-table | no-more
-EOF
-    my @data = $ssh->capture({stdin_data => $cmds}); chomp @data;
+    # sent as an exec request: on stdin, NX-OS logs the session as a
+    # configuration from vty (#1783)
+    my @data = $ssh->capture("show mac address-table | no-more"); chomp @data;
     if ($ssh->error) {
         info "$hostlabel $$ error in SSH command " . $ssh->error;
         return
