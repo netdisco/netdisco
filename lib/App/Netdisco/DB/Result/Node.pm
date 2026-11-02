@@ -145,8 +145,7 @@ at the time of discovery.
 =cut
 
 __PACKAGE__->has_many( wireless => 'App::Netdisco::DB::Result::NodeWireless',
-  { 'foreign.mac' => 'self.mac' },
-  { join_type => 'LEFT' } );
+  { 'foreign.mac' => 'self.mac' } );
 
 =head2 oui
 
