@@ -4,9 +4,9 @@ use strict;
 use warnings;
 
 use Dancer ':syntax';
-use DBICx::Sugar ();
 use Try::Tiny;
 
+use App::Netdisco::DB;
 use App::Netdisco::Util::Statistics 'postgres_version';
 
 use base 'Exporter';
@@ -66,21 +66,28 @@ sub _live_version {
   my $label = shift;
   # a tenant host that drops packets must not stall boot for the TCP timeout
   local $ENV{PGCONNECT_TIMEOUT} = $ENV{PGCONNECT_TIMEOUT} || 3;
-  # schema() would cache this one under $label; the processes forked from
-  # here would then make a second, for 'default', with its own connection
   my $dbic = setting('plugins')->{DBIC};
   my $options = $dbic->{$label} || {};
   $options = $dbic->{ $options->{alias} } if $options->{alias};
-  # a copy, because every later schema() call shares this hash: only the
-  # probe skips DBIC's version check, which would carp at every boot
-  my %probe = (%$options,
-    options => { %{ $options->{options} || {} }, ignore_version => 1 });
-  DBICx::Sugar::config($dbic);
-  my $storage = DBICx::Sugar::schema($label, \%probe)->storage;
+  # schema() would cache this in the master process, and every forked
+  # poller would then hold it as well as its own 'default' connection
+  my $storage = App::Netdisco::DB->connect(_probe_connect_info($options))->storage;
   my $version = $storage->dbh->{pg_server_version};
   # the web master forks workers, which must not inherit this connection
   $storage->disconnect;
   return $version;
+}
+
+# the DBIC plugin's connection settings, plus ignore_version: DBIC's
+# version check would carp at every boot
+sub _probe_connect_info {
+  my $options = shift;
+  my @info = $options->{connect_info}
+    ? @{ $options->{connect_info} }
+    : @$options{qw/dsn user password options/};
+  $info[2] = $options->{pass} if exists $options->{pass};
+  my $attributes = (ref $info[-1] eq 'HASH') ? pop @info : {};
+  return (@info, { %$attributes, ignore_version => 1 });
 }
 
 true;

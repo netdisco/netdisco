@@ -69,6 +69,18 @@ subtest 'warn_postgres_floor_all_tenants__live_lookup__leaves_one_schema_per_pro
   local $SIG{__WARN__} = sub { warn @_ unless $_[0] =~ /currently unversioned/ };
   is(refaddr(schema(undef)), refaddr(schema('netdisco')), "schema(undef) is schema('netdisco')");
 };
+# the check above passes only where DBICx::Sugar is 0.0200 or later: older
+# releases ignore schema()'s uncached form and cache the probe as 'netdisco'
+# in the backend's master process, so every poller had two connections and
+# 2.116000 discover hung on its own device_port lock (#1782, #1799)
+subtest 'warn_postgres_floor_all_tenants__live_lookup__never_calls_dbicx_sugar' => sub {
+  my $calls = 0;
+  my $original = \&DBICx::Sugar::schema;
+  no warnings 'redefine';
+  local *DBICx::Sugar::schema = sub { $calls++; goto &$original };
+  warn_postgres_floor_all_tenants(sub {});
+  is($calls, 0, 'the probe connects without the DBICx::Sugar schema cache');
+};
 # the probe's connection would otherwise run DBIC's own version check, which
 # carps "currently unversioned" for a database that is merely down, at every boot
 subtest 'warn_postgres_floor_all_tenants__live_lookup__emits_no_perl_warning' => sub {
