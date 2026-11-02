@@ -12,6 +12,9 @@
     Ports tab filtered to the port, with the Port MAC column shown (several
     ports on one device open its details; several devices show Port search,
     with uplinks and non-Ethernet ports included as needed)
+  * #1799 the startup PostgreSQL version check no longer leaves each backend
+    poller a second database connection where DBICx::Sugar is older than
+    0.0200, on which 2.116000 discover could hang searches (also #1782)
 
 2.117000 - 2026-10-30
 
