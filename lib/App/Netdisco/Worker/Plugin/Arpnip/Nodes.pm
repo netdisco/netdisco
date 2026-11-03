@@ -17,6 +17,7 @@ use NetAddr::IP::Lite ':lower';
 use Regexp::Common 'net';
 use NetAddr::MAC ();
 use Time::HiRes 'gettimeofday';
+use Try::Tiny;
 
 register_worker({ phase => 'early',
   title => 'prepare common data' }, sub {
@@ -69,7 +70,11 @@ register_worker({ phase => 'store', title => 'store ARP cache' }, sub {
 
   my $status = $job->best_status;
   if (Status->$status->level == Status->done->level) {
-      retire_unvouched_arps($device, $now, vars->{'vrf_read'}, vars->{'vrf_list_complete'});
+      # the entries are stored, so a failed retire leaves stale rows active
+      # until the next arpnip retries, rather than failing this job
+      try { retire_unvouched_arps($device, $now, vars->{'vrf_read'}, vars->{'vrf_list_complete'}) }
+      catch { warning sprintf ' [%s] arpnip - retiring unreported entries failed, the next arpnip retries: %s',
+        $device->ip, $_ };
       $device->update({last_arpnip => \$now});
   }
 

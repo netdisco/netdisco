@@ -108,12 +108,14 @@ Reads every instance of C<$instances> (as from L</vrf_instances_for>) with
 C<< $reader->($name, $instance, $switched) >>, which returns whatever the
 caller needs from that instance.
 
-C<default> is read first, then the attribution-mode instances (no context,
-or a first context of kind C<none>) sorted by name, all in place with no
-C<update()>. Then each context-mode instance, sorted by name, in its own
-context; the session is returned to the default context once, after the
-last of them. An instance whose context this session cannot enter is not
-read and is reported incomplete.
+C<default> is read first, then the attribution-mode instances (a first
+context of kind C<none>, or no C<contexts> at all) sorted by name, all in
+place with no C<update()>. Then each context-mode instance, sorted by name, in
+its own context; the session is returned to the default context once, after
+the last of them. An instance whose context this session cannot enter is not
+read and is reported incomplete. So is one whose C<contexts> is empty, which
+SNMP::Info gives for a context-mode VRF that no context serves; it costs no
+SNMP call.
 
 A read is complete only when C<< $snmp->vrf_read_complete($name) >> is 1 and
 no walk since the read began came back short (C<incomplete_walks_for>, with
@@ -127,23 +129,34 @@ Option C<log_as> names the worker in log lines (default C<device>).
 
 =cut
 
-# a record with no context, or context kind none, is read in place in the
-# default context like default itself, so attribution-mode classes never reconnect
+# a record with context kind none, or (defensively) no contexts at all, is read
+# in place in the default context like default itself, so attribution-mode
+# classes never reconnect
 sub _reads_in_default_context {
-  my $context = $_[0]->{contexts} && $_[0]->{contexts}[0];
-  return (not $context or ($context->{kind} || '') eq 'none');
+  my $contexts = $_[0]->{contexts};
+  return 1 if not $contexts;
+  return (scalar @$contexts and ($contexts->[0]{kind} || '') eq 'none');
 }
+
+sub _has_no_context { my $contexts = $_[0]->{contexts}; return ($contexts and not scalar @$contexts) }
 
 sub each_vrf_instance {
   my ($device, $snmp, $instances, $reader, %options) = @_;
   my @named = sort grep { $_ ne 'default' } keys %$instances;
   my @in_place = ('default', grep { _reads_in_default_context($instances->{$_}) } @named);
-  my @switched = grep { not _reads_in_default_context($instances->{$_}) } @named;
+  my @unserved = grep { _has_no_context($instances->{$_}) } @named;
+  my @switched = grep { not _reads_in_default_context($instances->{$_})
+                        and not _has_no_context($instances->{$_}) } @named;
   my $log_as = $options{log_as} || 'device';
 
   my %reads = map {
     (netdisco_vrf($_) => _read_instance($device, $snmp, $_, $instances->{$_}, $reader, 0, \%options))
   } @in_place;
+
+  foreach my $name (@unserved) {
+    debug sprintf ' [%s] %s - VRF %s has no context serving its rows', $device->ip, $log_as, $name;
+    $reads{ netdisco_vrf($name) } = { complete => 0, data => undef };
+  }
 
   my $guard;
   foreach my $name (@switched) {

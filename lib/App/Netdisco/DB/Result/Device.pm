@@ -6,6 +6,7 @@ use warnings;
 
 use NetAddr::IP::Lite ':lower';
 use App::Netdisco::Util::DNS 'hostname_from_ip';
+use App::Netdisco::Util::L3Domain 'with_l3_domain_lock';
 
 use overload '""' => sub { shift->ip }, fallback => 1;
 
@@ -387,26 +388,28 @@ sub renumber {
     ->search({ip => $old_ip, alias => $new_ip})->delete();
 
   # Community is not included as SNMP::test_connection will take care of it
-  foreach my $set (qw/
-    DeviceBrowser
-    DeviceIp
-    DeviceModule
-    DevicePower
-    DeviceVlan
-    DeviceVrf
-    L3DomainMember
-    DevicePort
-    DevicePortLog
-    DevicePortPower
-    DevicePortProperties
-    DevicePortSsid
-    DevicePortVlan
-    DevicePortWireless
-  /) {
-    $schema->resultset($set)
-      ->search({ip => $old_ip})
-      ->update({ip => $new_ip});
-  }
+  with_l3_domain_lock($schema, sub {
+    foreach my $set (qw/
+      DeviceBrowser
+      DeviceIp
+      DeviceModule
+      DevicePower
+      DeviceVlan
+      DeviceVrf
+      L3DomainMember
+      DevicePort
+      DevicePortLog
+      DevicePortPower
+      DevicePortProperties
+      DevicePortSsid
+      DevicePortVlan
+      DevicePortWireless
+    /) {
+      $schema->resultset($set)
+        ->search({ip => $old_ip})
+        ->update({ip => $new_ip});
+    }
+  });
 
   $schema->resultset('DeviceSkip')
     ->search({device => $new_ip})->delete;

@@ -217,6 +217,8 @@ our $AUTOLOAD;
 sub new { my ($class, %vals) = @_; return bless { %vals }, $class }
 sub walk_failures { [] }
 sub walk_status { undef }
+sub vrf_neighbors { $_[0]{vrf_neighbors_by_name}{ $_[1] } }
+sub vrf_read_complete { $_[0]{vrf_read_complete_by_name}{ $_[1] } }
 sub AUTOLOAD {
   my $self = shift;
   (my $method = $AUTOLOAD) =~ s/.*:://;
@@ -236,13 +238,16 @@ my %base_snmp = (
   at_netaddr => { '1.192.0.2.10' => '192.0.2.10' },
 );
 
+our @warnings;
+
 sub run_arpnip {
   my (%args) = @_;
   delete @{ vars() }{qw/arps timestamp hook_data/};
   my @order;
+  @warnings = ();
   my $device = device();
   $device->{'_column_data'}{'since_last_arpnip'} = 0;
-  my $fake_snmp = FakeSNMP->new(%base_snmp);
+  my $fake_snmp = FakeSNMP->new(%base_snmp, %{ $args{snmp} || {} });
   no warnings 'once';
 
   local *App::Netdisco::Transport::SNMP::reader_for = sub { return ($args{unreachable} ? undef : $fake_snmp) };
@@ -250,8 +255,11 @@ sub run_arpnip {
   local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::store_arp = sub { push @order, ['store'] };
   my $retire = \&App::Netdisco::Worker::Plugin::Arpnip::Nodes::retire_unvouched_arps;
   local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::retire_unvouched_arps = sub {
-    push @order, ['retire', @_]; return ($args{real_retire} ? $retire->(@_) : 0) };
-  local *App::Netdisco::DB::Result::Device::update = sub { return $_[0] };
+    push @order, ['retire', @_];
+    die "deadlock detected\n" if $args{retire_dies};
+    return ($args{real_retire} ? $retire->(@_) : 0) };
+  local *App::Netdisco::DB::Result::Device::update = sub { push @order, ['update', $_[1]]; return $_[0] };
+  local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::warning = sub { push @warnings, @_ };
   local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::hostnames_resolve_async = sub { push @order, ['resolve']; return $_[0] };
 
   my $job = App::Netdisco::Backend::Job->new({ job => 0, device => $device, action => 'arpnip::nodes' });
@@ -269,12 +277,49 @@ subtest 'retire__job_not_done__not_called' => sub {
 subtest 'retire__job_done__called_after_store_with_the_store_timestamp' => sub {
   my ($job, @order) = with_settings(sub { run_arpnip() }, store_vrfs => 0);
   is $job->status, 'done', 'arpnip done';
-  is_deeply [ map { $_->[0] } @order ], ['resolve', 'store', 'retire'], 'after the store_arp loop';
-  my (undef, $device, $ts, $vrf_read, $list_complete) = @{ $order[-1] };
+  is_deeply [ map { $_->[0] } @order ], ['resolve', 'store', 'retire', 'update'], 'after the store_arp loop';
+  my (undef, $device, $ts, $vrf_read, $list_complete) = @{ $order[-2] };
   is $device->ip, $router, 'this router';
   is $ts, vars->{'timestamp'}, 'the timestamp store_arp was given';
   ok !defined $vrf_read, 'switch off passes no VRF reads';
   ok !defined $list_complete, 'switch off passes no list completeness';
+};
+
+subtest 'retire__fails__warns_and_job_done_with_last_arpnip_updated' => sub {
+  my ($job, @order) = with_settings(sub { run_arpnip(retire_dies => 1) }, store_vrfs => 0);
+  is $job->status, 'done', 'arpnip done';
+  is_deeply [ map { $_->[0] } @order ], ['resolve', 'store', 'retire', 'update'], 'update still reached';
+  is_deeply $order[-1][1], { last_arpnip => \vars->{'timestamp'} }, 'last_arpnip set to the store timestamp';
+  is scalar(grep { m/retir.*failed.*deadlock detected/ } @warnings), 1, 'one warning naming the error';
+};
+
+# attribution mode, so no context switch: red is read in place, blue has no
+# context that serves its rows
+my %wired_snmp = (
+  vrf_instances_complete => 1,
+  vrf_instances => {
+    default => { name => 'default', kind => 'default', contexts => [{ kind => 'none' }] },
+    red     => { name => 'red', kind => 'vrf', contexts => [{ kind => 'none' }] },
+    blue    => { name => 'blue', kind => 'vrf', contexts => [] },
+  },
+  vrf_neighbors_by_name => {
+    default => { '1.192.0.2.10' => { ifindex => 1, ip => '192.0.2.10', mac => '00:11:22:33:44:01', family => 'ipv4' } },
+    red     => { '7.10.40.0.5' => { ifindex => 7, ip => '10.40.0.5', mac => '00:11:22:33:44:07', family => 'ipv4' } },
+  },
+  # blue would report itself whole if asked, so only not entering it reads 0
+  vrf_read_complete_by_name => { default => 1, red => 1, blue => 1 },
+);
+
+subtest 'retire__switch_on_vrf_reads__receives_vrf_read_and_list_completeness' => sub {
+  my ($job, @order) = with_settings(sub { run_arpnip(snmp => \%wired_snmp) }, store_vrfs => 1);
+  is $job->status, 'done', 'arpnip done';
+  my ($call) = grep { $_->[0] eq 'retire' } @order;
+  my (undef, $device, $ts, $vrf_read, $list_complete) = @$call;
+  is $device->ip, $router, 'this router';
+  is $ts, vars->{'timestamp'}, 'the timestamp store_arp was given';
+  is_deeply $vrf_read, { '' => 1, red => 1, blue => 0 }, 'each VRF and whether it was read whole';
+  is $list_complete, 1, 'the VRF list was whole';
+  is scalar(grep { $_->[0] eq 'store' } @order), 2, 'default and red entries stored';
 };
 
 subtest 'retire__switch_on_cli_only_job__retires_nothing' => sub {

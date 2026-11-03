@@ -110,4 +110,22 @@ subtest 'renumber__set_list__moves_device_vrf_and_l3_domain_member' => sub {
   like $list, qr/^\s*L3DomainMember\s*$/m;
 };
 
+# with_l3_domain_lock joins the caller's transaction, or opens one when there
+# is none, so the lock is held until the member rows are written
+sub lock_precedes_loop {
+  my $file = shift;
+  my $source = Path::Tiny::path($file)->slurp_utf8;
+  return $source =~ /with_l3_domain_lock\(\$schema, sub \{\s*foreach my \$set \(qw\/[^\/]*\bL3DomainMember\b/s;
+}
+
+subtest 'device_delete__l3_domain_member__written_under_the_l3_domain_lock' => sub {
+  ok lock_precedes_loop('lib/App/Netdisco/DB/ResultSet/Device.pm'),
+    'the set loop holding L3DomainMember runs inside with_l3_domain_lock';
+};
+
+subtest 'renumber__l3_domain_member__written_under_the_l3_domain_lock' => sub {
+  ok lock_precedes_loop('lib/App/Netdisco/DB/Result/Device.pm'),
+    'the set loop holding L3DomainMember runs inside with_l3_domain_lock';
+};
+
 done_testing;

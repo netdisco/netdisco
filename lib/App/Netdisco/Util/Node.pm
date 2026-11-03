@@ -20,7 +20,9 @@ our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 # excluding the target row from the retire in store_arp lets two pollers that
 # report one IP under different MACs deadlock, so each entry first takes this
-# lock on its IP; netdisco takes no other advisory locks
+# class keyed by its host IP; retire_unvouched_arps takes it keyed by the router
+# IP, and a key shared by a host and a router only serializes the two. Class
+# 1729 (key 0) guards L3 domain writes: see App::Netdisco::Util::L3Domain
 my $ARP_LOCK_CLASS = 1728;
 
 =head1 NAME

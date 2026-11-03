@@ -544,10 +544,27 @@ subtest 'discover__attribution_mode_vrfs__no_update_calls' => sub {
     [ '=1', 'blue=1', 'red=1' ], 'every instance complete';
 };
 
-subtest 'discover__empty_contexts__read_in_default_without_update' => sub {
+# SNMP::Info gives an empty contexts list for a context-mode VRF that no
+# context serves; attribution mode gives [{ kind => 'none' }]
+subtest 'discover__empty_contexts__read_incomplete_rows_kept_without_update' => sub {
   my %fixture = vrf_fixture();
+  local $stored_rows = [ { alias => '10.40.0.1', vrf => 'red' } ];
   run_with_vrfs(instances => attribution($fixture{instances}, []));
   is_deeply $last_snmp->{contexts_asked}, [], 'no update() at all';
+  ok !$last_snmp->{vrf_reads}{red}, 'red never read';
+  ok !$last_snmp->{vrf_reads}{blue}, 'blue never read';
+  ok !(grep { $_->{vrf} eq 'red' } upserted('DeviceIp')), 'no red rows written';
+  my @seen = @{ (removals_of('DeviceIp'))[0][2] };
+  is keyed(grep { $_->{vrf} eq 'red' } @seen), '10.40.0.1|red', 'stored red row kept';
+  is_deeply [ sort map { "$_->{vrf}=$_->{complete}" } upserted('DeviceVrf') ],
+    [ '=1', 'blue=0', 'red=0' ], 'both recorded as incomplete';
+};
+
+subtest 'discover__no_contexts_key__read_in_default_without_update' => sub {
+  my %fixture = vrf_fixture();
+  delete $fixture{instances}{red}{contexts};
+  run_with_vrfs(instances => $fixture{instances});
+  is_deeply $last_snmp->{contexts_asked}, [ 'blue', '' ], 'only blue switched to';
   ok scalar(grep { $_->{vrf} eq 'red' } upserted('DeviceIp')), 'red read in place';
 };
 

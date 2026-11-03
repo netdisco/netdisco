@@ -275,6 +275,17 @@ subtest 'arpnip__context_unreachable__recorded_incomplete_not_read' => sub {
   is vars->{'vrf_read'}{red}, 1, 'red read';
 };
 
+subtest 'arpnip__empty_contexts__recorded_incomplete_not_read' => sub {
+  my %fixture = vrf_fixture();
+  $fixture{instances}{blue}{contexts} = [];
+  run_with_vrfs(instances => $fixture{instances});
+  ok !$last_snmp->{vrf_reads}{blue}, 'blue never read';
+  ok !(grep { $_ eq 'blue' } @{ $last_snmp->{contexts_asked} }), 'never switched to blue';
+  is vars->{'vrf_read'}{blue}, 0, 'blue recorded as incomplete';
+  is scalar(in_vrf('blue')), 0, 'no blue entries';
+  is vars->{'vrf_read'}{red}, 1, 'red read';
+};
+
 subtest 'arpnip__skipped_vrf__no_entries' => sub {
   run_with_vrfs(settings => { vrf_no_name => ['blue'] });
   ok !$last_snmp->{vrf_reads}{blue}, 'blue never read';

@@ -7,6 +7,7 @@ use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
   recompute_l3_domains
+  with_l3_domain_lock
   results_span_domains
   label_rows_by_domain
   row_l3_domain
@@ -32,47 +33,57 @@ subroutines.
 
 =head2 recompute_l3_domains( $schema )
 
-Rebuilds the inferred members of C<l3_domain_member> from C<device_vrf>: every
-VRF name other than the default table joins the domain of that name, which is
-created if it does not exist. Domains are matched on C<inferred_name>, which is
-unique; C<name> is for display and may repeat. Manual members are never
-changed, and a VRF that has a manual member is not inferred. Domains other than
-0 left with no members are deleted. A domain keeps its id across recomputes
-while its name is in use.
+Brings the inferred members of C<l3_domain_member> into line with
+C<device_vrf>: every VRF name other than the default table joins the domain of
+that name, which is created if it does not exist. Domains are matched on
+C<inferred_name>, which is unique; C<name> is for display and may repeat.
+Manual members are never changed, and a VRF that has a manual member is not
+inferred. Domains other than 0 left with no members are deleted. A domain keeps
+its id across recomputes while its name is in use.
 
-Runs in one transaction under an advisory lock. Returns the number of inferred
-members written. Discover calls it once per device, after the transaction that
-refreshes C<device_vrf> commits.
+Only what changed is written: an inferred member is deleted when its VRF has
+left C<device_vrf> or its domain is no longer the one of that name, and
+inserted when its VRF has no member. An unchanged network writes nothing.
 
-Every writer of C<l3_domain> or C<l3_domain_member> must take
-C<pg_advisory_xact_lock(1729, 0)> in its transaction first, so that it does not
-interleave with a recompute.
+Runs in one transaction under L</with_l3_domain_lock>. Returns the number of
+member rows inserted plus deleted, so 0 means the members were already right.
+Discover calls it once per device, after the transaction that refreshes
+C<device_vrf> commits.
 
 =cut
+
+sub _rows { my $rows = shift; return ($rows eq '0E0' ? 0 : $rows) }
 
 sub recompute_l3_domains {
   my $schema = shift;
   my $written = 0;
 
-  $schema->txn_do(sub {
+  with_l3_domain_lock($schema, sub {
     $schema->storage->dbh_do(sub {
       my (undef, $dbh) = @_;
-      $dbh->do('SELECT pg_advisory_xact_lock(?, ?)', undef, $L3_DOMAIN_LOCK_CLASS, 0);
-
-      $dbh->do(q{DELETE FROM l3_domain_member WHERE source = 'inferred'});
 
       $dbh->do(q{INSERT INTO l3_domain (name, inferred_name)
         SELECT DISTINCT d.vrf, d.vrf FROM device_vrf d
         WHERE d.vrf <> ''
-          AND NOT EXISTS (SELECT 1 FROM l3_domain x WHERE x.inferred_name = d.vrf)});
+          AND NOT EXISTS (SELECT 1 FROM l3_domain x WHERE x.inferred_name = d.vrf)
+          AND NOT EXISTS (SELECT 1 FROM l3_domain_member m
+            WHERE m.ip = d.ip AND m.vrf = d.vrf AND m.source = 'manual')});
 
-      $written = $dbh->do(q{INSERT INTO l3_domain_member (ip, vrf, domain_id, reason, source)
+      # a manual member shares the (ip, vrf) key, so the source test is what
+      # keeps it
+      $written += _rows($dbh->do(q{DELETE FROM l3_domain_member m
+        WHERE m.source = 'inferred'
+          AND NOT EXISTS (SELECT 1 FROM device_vrf d
+            JOIN l3_domain l ON l.inferred_name = d.vrf
+            WHERE d.ip = m.ip AND d.vrf = m.vrf AND d.vrf <> '' AND l.id = m.domain_id)}));
+
+      $written += _rows($dbh->do(q{INSERT INTO l3_domain_member (ip, vrf, domain_id, reason, source)
         SELECT d.ip, d.vrf, l.id, 'same name ' || d.vrf, 'inferred'
         FROM device_vrf d
         JOIN l3_domain l ON l.inferred_name = d.vrf
         WHERE d.vrf <> ''
           AND NOT EXISTS (SELECT 1 FROM l3_domain_member m
-            WHERE m.ip = d.ip AND m.vrf = d.vrf AND m.source = 'manual')});
+            WHERE m.ip = d.ip AND m.vrf = d.vrf)}));
 
       $dbh->do(q{DELETE FROM l3_domain
         WHERE id <> 0
@@ -80,7 +91,27 @@ sub recompute_l3_domains {
     });
   });
 
-  return ($written eq '0E0' ? 0 : $written);
+  return $written;
+}
+
+=head2 with_l3_domain_lock( $schema, \&code )
+
+Runs C<$code> inside a transaction (joining the caller's, if one is open)
+after C<pg_advisory_xact_lock(1729, 0)>, and returns what it returns. Every
+writer of C<l3_domain> or C<l3_domain_member> goes through this, so that it
+does not interleave with a recompute.
+
+=cut
+
+sub with_l3_domain_lock {
+  my ($schema, $code) = @_;
+  return $schema->txn_do(sub {
+    $schema->storage->dbh_do(sub {
+      my (undef, $dbh) = @_;
+      $dbh->do('SELECT pg_advisory_xact_lock(?, ?)', undef, $L3_DOMAIN_LOCK_CLASS, 0);
+    });
+    return $code->();
+  });
 }
 
 =head2 results_span_domains( \@rows )
