@@ -761,6 +761,10 @@ discover_neighbors: true
 discover_routed_neighbors: true
 skip_modules: []
 store_modules: true
+store_vrfs: false
+skip_vrf_devices: []
+vrf_no_name: []
+vrf_no_devicevrf: []
 snmp_charset:
   'group:__ANY__': []
 ignore_deviceports:
