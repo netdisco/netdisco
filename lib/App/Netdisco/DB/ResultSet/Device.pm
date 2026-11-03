@@ -811,6 +811,8 @@ sub delete {
     DeviceModule
     DevicePower
     DeviceVlan
+    DeviceVrf
+    L3DomainMember
   /) {
       my $gone = $schema->resultset($set)->search(
         { ip => { '-in' => $devices->as_query } },

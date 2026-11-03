@@ -41,6 +41,19 @@ my @captured;
     $schema->resultset('Subnet')->upsert_subnet('192.0.2.0/24', 'LOCALTIMESTAMP', 'red');
     is $captured[0][0]{vrf}, 'red';
   };
+
+  subtest 'upsert_subnet__router_given__row_carries_router_last' => sub {
+    @captured = ();
+    $schema->resultset('Subnet')->upsert_subnet('192.0.2.0/24', 'LOCALTIMESTAMP', '', '198.51.100.1');
+    is $captured[0][0]{router_last}, '198.51.100.1';
+    is $captured[0][0]{vrf}, '';
+  };
+
+  subtest 'upsert_subnet__no_router__row_has_no_router_last_key' => sub {
+    @captured = ();
+    $schema->resultset('Subnet')->upsert_subnet('192.0.2.0/24', 'LOCALTIMESTAMP', 'red');
+    ok !exists $captured[0][0]{router_last}, 'key absent, so an old value is kept';
+  };
 }
 
 subtest 'pseudo_device__device_ip_row__has_empty_vrf' => sub {
@@ -61,6 +74,33 @@ subtest 'renumber__dns_lookup__does_not_call_find_with_two_keys' => sub {
     'Device.pm does not call DeviceIp->find with two positional keys';
   like $source, qr/resultset\('DeviceIp'\)->search\(\{ ip => \$new_ip, alias => \$new_ip \}\)/,
     'renumber looks the row up with search';
+};
+
+subtest 'arpnip_and_discover__pass_the_device_ip_to_upsert_subnet' => sub {
+  my %call = (
+    'lib/App/Netdisco/Worker/Plugin/Arpnip/Subnets.pm'      => qr/upsert_subnet\(\$_, \$now, '', \$device->ip\)/,
+    'lib/App/Netdisco/Worker/Plugin/Discover/Properties.pm' => qr/upsert_subnet\(\$_, \$now, '', \$device->ip\)/,
+  );
+  while (my ($file, $pattern) = each %call) {
+    like Path::Tiny::path($file)->slurp_utf8, $pattern, "$file passes the device IP";
+  }
+};
+
+subtest 'renumber__router_last__moved_on_node_ip_and_subnets' => sub {
+  my $source = Path::Tiny::path('lib/App/Netdisco/DB/Result/Device.pm')->slurp_utf8;
+  foreach my $table (qw(node_ip subnets)) {
+    like $source, qr/UPDATE $table SET router_last = \? WHERE router_last = \?/,
+      "$table router_last follows the new address";
+  }
+  like $source, qr/\$dbh->do\(\$_, undef, \$new_ip, \$old_ip\) for/,
+    'bound (new, old)';
+};
+
+subtest 'device_delete__set_list__includes_device_vrf_and_l3_domain_member' => sub {
+  my $source = Path::Tiny::path('lib/App/Netdisco/DB/ResultSet/Device.pm')->slurp_utf8;
+  my ($list) = $source =~ /foreach my \$set \(qw\/(.*?)\/\)/s;
+  like $list, qr/^\s*DeviceVrf\s*$/m;
+  like $list, qr/^\s*L3DomainMember\s*$/m;
 };
 
 done_testing;

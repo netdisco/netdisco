@@ -371,7 +371,7 @@ register_worker({ phase => 'early', driver => 'snmp',
       [ map {{ alias => $_->{alias}, vrf => '' }} @rows ]);
     debug sprintf ' [%s] device - removed %d aliases', $device->ip, $gone;
 
-    schema('netdisco')->resultset('Subnet')->upsert_subnet($_, $now) for @subnets;
+    schema('netdisco')->resultset('Subnet')->upsert_subnet($_, $now, '', $device->ip) for @subnets;
 
     return Status->info(sprintf ' [%s] aliases - added %d new aliases and %d subnets',
       $device->ip, scalar @aliases, scalar @subnets);

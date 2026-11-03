@@ -84,7 +84,7 @@ subtest 'store_arp__upsert__conflict_key_and_columns' => sub {
 subtest 'store_arp__with_device_ip__writes_both_router_maps' => sub {
   my (undef, undef, $upsert) = run_store({%host}, $now, '198.51.100.1');
   my ($sql, @binds) = @$upsert;
-  is(scalar(grep { $_ eq '198.51.100.1' } @binds), 3, 'router in both new maps and the first-seen test');
+  is(scalar(grep { $_ eq '198.51.100.1' } @binds), 4, 'router in both new maps, router_last and the first-seen test');
   is(scalar(grep { $_ eq '{198.51.100.1}' } @binds), 2, 'router path for both jsonb_set calls');
   my ($update) = $sql =~ /DO UPDATE(.*)\z/s;
   like($update, qr/seen_on_router_last = jsonb_set\(n\.seen_on_router_last/);
@@ -98,6 +98,22 @@ subtest 'store_arp__without_device_ip__leaves_router_maps_alone' => sub {
   is(scalar(() = $sql =~ /'\{\}'::jsonb/g), 2, 'empty maps on insert');
   my ($update) = $sql =~ /DO UPDATE(.*)\z/s;
   unlike($update, qr/seen_on_router/);
+};
+
+subtest 'store_arp__with_router__inserts_and_updates_router_last' => sub {
+  my (undef, undef, $upsert) = run_store({%host}, $now, '198.51.100.1');
+  my ($sql, @binds) = @$upsert;
+  my ($columns) = $sql =~ /INSERT INTO node_ip AS n\s*\((.*?)\)\s*VALUES/s;
+  like($columns, qr/\brouter_last\b/, 'insert column list');
+  my ($update) = $sql =~ /DO UPDATE(.*)\z/s;
+  like($update, qr/router_last = EXCLUDED\.router_last/, 'update takes the inserted value');
+  is(scalar(grep { $_ eq '198.51.100.1' } @binds), 4, 'insert binds the device IP for both maps and router_last');
+};
+
+subtest 'store_arp__without_router__router_last_untouched' => sub {
+  my @stmts = run_store({%host});
+  my ($sql) = @{ $stmts[2] };
+  unlike($sql, qr/\brouter_last\b/, 'not in the insert or the update');
 };
 
 subtest 'store_arp__with_vrf__binds_vrf_in_key_and_exclusion' => sub {

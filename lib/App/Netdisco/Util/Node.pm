@@ -216,25 +216,29 @@ sub store_arp {
   });
 }
 
-# without a router (the deprecated sshcollector call) both maps are left alone
+# without a router (the deprecated sshcollector call) the maps and router_last
+# are left alone
 sub _arp_upsert_sql {
   my ($now, $device_ip) = @_;
   my $new_map = ($device_ip ? "jsonb_build_object(?::text, $now)" : q{'{}'::jsonb});
+  my $router_column = ($device_ip ? ', router_last' : '');
+  my $router_value  = ($device_ip ? ', ?::inet' : '');
   my $sql = qq{INSERT INTO node_ip AS n
-      (mac, ip, vrf, dns, active, time_first, time_last, seen_on_router_first, seen_on_router_last)
-    VALUES (?, ?, ?, ?, true, $now, $now, $new_map, $new_map)
+      (mac, ip, vrf, dns, active, time_first, time_last, seen_on_router_first, seen_on_router_last$router_column)
+    VALUES (?, ?, ?, ?, true, $now, $now, $new_map, $new_map$router_value)
     ON CONFLICT (mac, ip, vrf) DO UPDATE
       SET active = true, dns = EXCLUDED.dns, time_last = EXCLUDED.time_last};
   return $sql unless $device_ip;
 
   $sql .= qq{,
+        router_last = EXCLUDED.router_last,
         seen_on_router_last = jsonb_set(n.seen_on_router_last, ?, to_jsonb($now)),
         seen_on_router_first = CASE WHEN (n.seen_on_router_first -> ?) IS NOT NULL
           THEN n.seen_on_router_first
           ELSE jsonb_set(n.seen_on_router_first, ?, to_jsonb($now))
         END};
   my $path = "{$device_ip}";
-  return ($sql, $device_ip, $device_ip, $path, $device_ip, $path);
+  return ($sql, $device_ip, $device_ip, $device_ip, $path, $device_ip, $path);
 }
 
 1;

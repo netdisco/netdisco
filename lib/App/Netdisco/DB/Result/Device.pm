@@ -440,6 +440,11 @@ sub renumber {
         WHERE seen_on_router_last \? ?::text
     };
     $dbh->do($router_last_sql, undef, $old_ip, $new_ip, $old_ip, $old_ip);
+
+    $dbh->do($_, undef, $new_ip, $old_ip) for (
+      'UPDATE node_ip SET router_last = ? WHERE router_last = ?',
+      'UPDATE subnets SET router_last = ? WHERE router_last = ?',
+    );
   });
 
   $schema->resultset('Topology')

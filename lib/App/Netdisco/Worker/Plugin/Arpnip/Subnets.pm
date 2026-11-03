@@ -70,7 +70,7 @@ register_worker({ phase => 'store', title => 'store subnets' }, sub {
     || ('to_timestamp('. (join '.', gettimeofday) .')::timestamp');
 
   # update subnets with new networks
-  schema('netdisco')->resultset('Subnet')->upsert_subnet($_, $now)
+  schema('netdisco')->resultset('Subnet')->upsert_subnet($_, $now, '', $device->ip)
     foreach keys %{ vars->{'subnets'} };
 
   debug sprintf ' [%s] arpnip - processed %s subnets',
