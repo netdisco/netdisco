@@ -103,4 +103,11 @@ subtest 'device_delete__set_list__includes_device_vrf_and_l3_domain_member' => s
   like $list, qr/^\s*L3DomainMember\s*$/m;
 };
 
+subtest 'renumber__set_list__moves_device_vrf_and_l3_domain_member' => sub {
+  my $source = Path::Tiny::path('lib/App/Netdisco/DB/Result/Device.pm')->slurp_utf8;
+  my ($list) = $source =~ /foreach my \$set \(qw\/(.*?)\/\)/s;
+  like $list, qr/^\s*DeviceVrf\s*$/m;
+  like $list, qr/^\s*L3DomainMember\s*$/m;
+};
+
 done_testing;

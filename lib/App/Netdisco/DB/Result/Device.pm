@@ -393,6 +393,8 @@ sub renumber {
     DeviceModule
     DevicePower
     DeviceVlan
+    DeviceVrf
+    L3DomainMember
     DevicePort
     DevicePortLog
     DevicePortPower
