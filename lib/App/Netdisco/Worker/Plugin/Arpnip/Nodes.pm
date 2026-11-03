@@ -10,6 +10,7 @@ use App::Netdisco::Transport::SSH ();
 use App::Netdisco::Transport::SNMP ();
 
 use App::Netdisco::Util::Node qw/check_mac memoize_arp store_arp/;
+use App::Netdisco::Util::VRF qw/vrf_instances_for each_vrf_instance/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 
 use NetAddr::IP::Lite ':lower';
@@ -23,15 +24,14 @@ register_worker({ phase => 'early',
   my ($job, $workerconf) = @_;
   my $device = $job->device;
 
-  # would be possible just to use LOCALTIMESTAMP on updated records, but by using this
-  # same value for them all, we can if we want add a job at the end to
-  # select and do something with the updated set (see set archive, below)
   vars->{'timestamp'} = ($job->is_offline and $job->entered)
     ? (schema('netdisco')->storage->dbh->quote($job->entered) .'::timestamp')
     : 'to_timestamp('. (join '.', gettimeofday) .')::timestamp';
 
   # initialise the cache
   vars->{'arps'} = {};
+  # netdisco-do runs every job in one process, so no job sees another's VRF reads
+  delete @{ vars() }{qw/vrf_read vrf_list_complete/};
 });
 
 register_worker({ phase => 'store', title => 'store ARP cache' }, sub {
@@ -82,6 +82,12 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
   my $snmp = App::Netdisco::Transport::SNMP->reader_for($device)
     or return Status->defer("arpnip failed: could not SNMP connect to $device");
 
+  my $instances = vrf_instances_for($device, $snmp);
+  if ($instances) {
+    gather_arps_per_vrf($device, $snmp, $instances);
+    return Status->done("Gathered arp caches from $device");
+  }
+
   # cache v4 arp table
   map { vars->{'arps'}->{ memoize_arp($_) } = $_ }
       get_arps_snmp($device, $snmp->at_paddr, $snmp->at_netaddr);
@@ -92,6 +98,27 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   return Status->done("Gathered arp caches from $device");
 });
+
+# store_vrfs path: each VRF's ARP and neighbor entries are read in its own
+# context, and vrf_read says which VRFs were read whole
+sub gather_arps_per_vrf {
+  my ($device, $snmp, $instances) = @_;
+  # read before any switch, as update() clears SNMP::Info's cache
+  vars->{'vrf_list_complete'} = ($snmp->vrf_instances_complete ? 1 : 0);
+
+  my $reads = each_vrf_instance($device, $snmp, $instances,
+    sub { return $snmp->vrf_neighbors($_[0]) }, log_as => 'arpnip');
+
+  foreach my $vrf (sort keys %$reads) {
+    vars->{'vrf_read'}->{$vrf} = $reads->{$vrf}->{complete};
+    my $neighbors = $reads->{$vrf}->{data} || {};
+    foreach my $key (sort keys %$neighbors) {
+      my $arp = { mac => $neighbors->{$key}->{mac}, ip => $neighbors->{$key}->{ip},
+                  dns => undef, vrf => $vrf };
+      vars->{'arps'}->{ memoize_arp($arp) } = $arp;
+    }
+  }
+}
 
 # get an arp table (v4 or v6)
 sub get_arps_snmp {

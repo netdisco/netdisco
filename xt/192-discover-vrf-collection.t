@@ -56,7 +56,8 @@ sub new {
   return bless { walk_failures => [], context => '', contexts_asked => [], %vals }, $class;
 }
 sub walk_failures { $_[0]{walk_failures} }
-sub walk_status { undef }
+# the latest outcome of a method, by the context it was walked in
+sub walk_status { my ($self, $method) = @_; return $self->{walk_status_in}{ $self->{context} }{$method} }
 sub snmp_ver { $_[0]{snmp_ver} || 2 }
 sub snmp_comm { 'public' }
 sub update {
@@ -568,6 +569,20 @@ subtest 'discover__short_interfaces_walk__vrf_read_kept' => sub {
   my @seen = @{ (removals_of('DeviceIp'))[0][2] };
   is keyed(grep { $_->{vrf} eq 'red' } @seen), '10.40.0.1|red', 'stored red row kept';
   is_deeply [ nets_in('red') ], [], 'no red subnets';
+  my %complete = map { ($_->{vrf} => $_->{complete}) } upserted('DeviceVrf');
+  is $complete{red}, 0, 'red recorded as incomplete';
+  is $complete{blue}, 1, 'blue unaffected';
+  is $complete{''}, 1, 'default unaffected';
+};
+
+subtest 'discover__interfaces_walk_recorded_incomplete__vrf_read_kept' => sub {
+  local $stored_rows = [ { alias => '10.40.0.1', vrf => 'red' } ];
+  # recorded by walk_status alone, not walk_failures, so only the interfaces
+  # method check sees it
+  run_with_vrfs(walk_status_in => { red => { interfaces => {
+    method => 'interfaces', leaf => 'IF-MIB::ifDescr', reason => 'timeout',
+    rows => 1, walk => 'bulkwalk', complete => 0, context => 'red' } } });
+  ok !(grep { $_->{vrf} eq 'red' } upserted('DeviceIp')), 'no red rows written';
   my %complete = map { ($_->{vrf} => $_->{complete}) } upserted('DeviceVrf');
   is $complete{red}, 0, 'red recorded as incomplete';
   is $complete{blue}, 1, 'blue unaffected';
