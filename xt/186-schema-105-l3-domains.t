@@ -41,6 +41,15 @@ subtest 'step_104_105__l3_domain__default_domain_zero_seeded_idempotently' => su
   like($seed[0], qr/ON CONFLICT \(id\) DO NOTHING$/, 'harmless when run twice');
 };
 
+subtest 'step_104_105__l3_domain__inferred_name_unique_index_created_if_not_exists' => sub {
+  my @create = statements_matching(qr/^CREATE TABLE IF NOT EXISTS l3_domain\b/);
+  like($create[0], qr/\binferred_name text\b(?! NOT NULL)/, 'nullable inferred_name column');
+  my @index = statements_matching(qr/^CREATE UNIQUE INDEX IF NOT EXISTS l3_domain_inferred_name_key ON l3_domain \(inferred_name\)$/);
+  is(scalar @index, 1, 'unique index on inferred_name, harmless twice');
+  my @seed = statements_matching(qr/^INSERT INTO l3_domain\b/);
+  unlike($seed[0], qr/inferred_name/, 'domain 0 leaves inferred_name NULL');
+};
+
 subtest 'step_104_105__l3_domain_member__source_limited_to_inferred_or_manual' => sub {
   my @create = statements_matching(qr/^CREATE TABLE IF NOT EXISTS l3_domain_member\b/);
   is(scalar @create, 1, 'one CREATE TABLE IF NOT EXISTS');
@@ -78,6 +87,9 @@ subtest 'result_classes__l3_domains__declared_as_the_step_creates_them' => sub {
   }
   is(App::Netdisco::DB::Result::DeviceVrf->column_info('rt_import')->{data_type}, 'text[]', 'rt_import is text[]');
   is(App::Netdisco::DB::Result::DeviceVrf->column_info('rt_export')->{data_type}, 'text[]', 'rt_export is text[]');
+  my $inferred = App::Netdisco::DB::Result::L3Domain->column_info('inferred_name');
+  is($inferred->{data_type}, 'text', 'inferred_name data_type');
+  is($inferred->{is_nullable}, 1, 'inferred_name nullable');
   is(App::Netdisco::DB::Result::L3DomainMember->column_info('source')->{data_type}, 'text', 'source');
   foreach my $class (qw(NodeIp Subnet)) {
     my $package = "App::Netdisco::DB::Result::$class";

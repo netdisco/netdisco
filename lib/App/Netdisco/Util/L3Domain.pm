@@ -31,7 +31,7 @@ subroutines.
 
 Rebuilds the inferred members of C<l3_domain_member> from C<device_vrf>: every
 VRF name other than the default table joins the domain of that name, which is
-created if it does not exist. Manual members are never changed, and a VRF that
+created if it does not exist. Domains are matched on C<inferred_name>, which is unique; C<name> is for display and may repeat. Manual members are never changed, and a VRF that
 has a manual member is not inferred. Domains other than 0 left with no members
 are deleted. A domain keeps its id across recomputes while its name is in use.
 
@@ -52,15 +52,15 @@ sub recompute_l3_domains {
 
       $dbh->do(q{DELETE FROM l3_domain_member WHERE source = 'inferred'});
 
-      $dbh->do(q{INSERT INTO l3_domain (name)
-        SELECT DISTINCT d.vrf FROM device_vrf d
+      $dbh->do(q{INSERT INTO l3_domain (name, inferred_name)
+        SELECT DISTINCT d.vrf, d.vrf FROM device_vrf d
         WHERE d.vrf <> ''
-          AND NOT EXISTS (SELECT 1 FROM l3_domain x WHERE x.name = d.vrf)});
+          AND NOT EXISTS (SELECT 1 FROM l3_domain x WHERE x.inferred_name = d.vrf)});
 
       $written = $dbh->do(q{INSERT INTO l3_domain_member (ip, vrf, domain_id, reason, source)
         SELECT d.ip, d.vrf, l.id, 'same name ' || d.vrf, 'inferred'
         FROM device_vrf d
-        JOIN l3_domain l ON l.name = d.vrf
+        JOIN l3_domain l ON l.inferred_name = d.vrf
         WHERE d.vrf <> ''
           AND NOT EXISTS (SELECT 1 FROM l3_domain_member m
             WHERE m.ip = d.ip AND m.vrf = d.vrf AND m.source = 'manual')});

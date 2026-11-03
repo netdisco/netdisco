@@ -62,7 +62,7 @@ subtest 'recompute__inferred_only__manual_members_never_deleted_or_replaced' => 
   like($members->[0], qr/NOT EXISTS \(SELECT 1 FROM l3_domain_member m\b[^)]*source = 'manual'/,
     'insert skips manual pairs');
   like($members->[0], qr/m\.ip = d\.ip AND m\.vrf = d\.vrf/, 'matched on the pair');
-  like($domains->[0], qr/NOT EXISTS \(SELECT 1 FROM l3_domain x WHERE x\.name = d\.vrf\)/,
+  like($domains->[0], qr/NOT EXISTS \(SELECT 1 FROM l3_domain x WHERE x\.inferred_name = d\.vrf\)/,
     'a name with a domain is reused');
 };
 
@@ -78,7 +78,13 @@ subtest 'recompute__reason__names_the_shared_name' => sub {
   my (undef, undef, undef, undef, $members) = run_recompute();
   like($members->[0], qr/'same name ' \|\| d\.vrf/);
   like($members->[0], qr/'inferred'/);
-  like($members->[0], qr/JOIN l3_domain \w+ ON \w+\.name = d\.vrf/, 'domain by name');
+  like($members->[0], qr/JOIN l3_domain \w+ ON \w+\.inferred_name = d\.vrf/, 'domain by inferred name');
+};
+
+subtest 'recompute__duplicate_display_names__join_on_unique_inferred_name' => sub {
+  my (undef, undef, undef, $domains, $members) = run_recompute();
+  like($domains->[0], qr/\(name, inferred_name\)\s+SELECT DISTINCT d\.vrf, d\.vrf\b/, 'both set from the VRF name');
+  unlike($members->[0], qr/\bl\.name\b/, 'display name never joined');
 };
 
 done_testing;

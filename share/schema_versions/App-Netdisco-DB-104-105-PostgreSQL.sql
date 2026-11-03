@@ -53,6 +53,7 @@ CREATE INDEX IF NOT EXISTS idx_device_ip_alias_vrf_ip ON device_ip (alias, vrf, 
 -- domain has members named vrf, that one; else NULL, so that a reader
 -- leaves an ambiguous row out of every domain total rather than guessing.
 -- A NULL router skips to the name step.
+-- Inference keys domains by inferred_name; name is for display.
 CREATE TABLE IF NOT EXISTS device_vrf (
   ip inet NOT NULL,
   vrf text NOT NULL,
@@ -69,8 +70,11 @@ CREATE TABLE IF NOT EXISTS device_vrf (
 
 CREATE TABLE IF NOT EXISTS l3_domain (
   id serial PRIMARY KEY,
-  name text NOT NULL
+  name text NOT NULL,
+  inferred_name text
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS l3_domain_inferred_name_key ON l3_domain (inferred_name);
 
 INSERT INTO l3_domain (id, name) VALUES (0, '') ON CONFLICT (id) DO NOTHING;
 
