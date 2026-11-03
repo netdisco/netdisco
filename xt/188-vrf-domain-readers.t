@@ -17,7 +17,8 @@ use Test::More 0.88;
 use NetAddr::IP::Lite;
 use YAML::XS ();
 use App::Netdisco::DB;
-use App::Netdisco::Util::L3Domain 'results_span_domains';
+use App::Netdisco::Util::L3Domain qw/results_span_domains label_rows_by_domain/;
+use JSON::PP ();
 use lib 'xt/lib';
 use Test::Netdisco::Snapshot qw/render_template snapshot_path/;
 
@@ -134,20 +135,29 @@ my %inventory_rows = (
            { ip => '10.0.0.1', vrf => 'RED', mac => '00:00:5e:00:53:02', vendor => 'IANA',
              dns => undef, nbname => undef, time_last => '2026-11-01 11:00:00' } ],
 );
-# the HTML view gets JSON the route handler has already labeled
-my %inventory_json = (
-  one => '[{"ip":"10.0.0.1","vrf":""}]',
-  two => '[{"ip":"10.0.0.1","vrf":"default"},{"ip":"10.0.0.1","vrf":"RED"}]',
-);
+# the HTML view of IP Inventory gets JSON, shaped as its route handler does
+sub to_json_text { JSON::PP->new->canonical->encode(shift) }
 
 sub stash {
   my ($view, $domains) = @_;
   my $multi = $domains eq 'two' ? 1 : 0;
   my $rows = $view =~ /subnets/ ? $subnet_rows{$domains} : $inventory_rows{$domains};
-  $rows = $inventory_json{$domains} if $view eq 'ajax/report/ipinventory.tt';
+  $rows = to_json_text(label_rows_by_domain($rows, $multi))
+    if $view eq 'ajax/report/ipinventory.tt';
   return { results => $rows, multi_domain => $multi,
            settings => { thousands_separator => ',' } };
 }
+
+subtest 'label_rows_by_domain__one_or_two_domains__shapes_rows_for_the_browser' => sub {
+  is_deeply(label_rows_by_domain([ { ip => '10.0.0.1', vrf => '' } ], 0),
+    [ { ip => '10.0.0.1' } ], 'one domain: no vrf key, as before domains');
+  is_deeply(label_rows_by_domain([ { ip => '10.0.0.1', vrf => '' }, { ip => '10.0.0.1', vrf => 'RED' } ], 1),
+    [ { ip => '10.0.0.1', vrf => 'default' }, { ip => '10.0.0.1', vrf => 'RED' } ],
+    'two domains: the default table is labeled default');
+  my $rows = [ { ip => '10.0.0.1', vrf => '' } ];
+  label_rows_by_domain($rows, 1);
+  is($rows->[0]{vrf}, '', 'the caller\'s rows are left unchanged');
+};
 
 my @views = map { "ajax/report/$_.tt" } qw/subnets subnets_csv ipinventory ipinventory_csv/;
 
@@ -159,8 +169,10 @@ subtest 'report_templates__one_domain__no_vrf_column' => sub {
 
     my $before = stash($view, 'one');
     delete $before->{multi_domain};
-    $before->{results} = [ map { my %r = %$_; delete $r{vrf}; \%r } @{ $before->{results} } ]
-      if ref $before->{results};
+    my $source = $view =~ /subnets/ ? $subnet_rows{one} : $inventory_rows{one};
+    my $today_rows = [ map { my %r = %$_; delete $r{vrf}; \%r } @$source ];
+    $before->{results} = $view eq 'ajax/report/ipinventory.tt'
+      ? to_json_text($today_rows) : $today_rows;
     my ($today) = render_template($view, $before);
     is($html, $today, "$view renders as it did before domains");
   }
@@ -174,15 +186,19 @@ subtest 'report_templates__two_domains__vrf_column_labels_default_and_name' => s
     like($html, qr/default/, "$view labels domain 0 as default");
     like($html, qr/RED/, "$view labels a named domain by its name");
 
-    my $path = snapshot_path($view) =~ s/\.html\z/.two-domains.html/r;
-    if ($ENV{ND_WRITE_DOMAIN_SNAPSHOTS}) {
-      open my $fh, '>:encoding(UTF-8)', $path or die "$path: $!";
-      print {$fh} $html;
-      close $fh;
+    SKIP: {
+      skip 'xt/snapshots is not shipped in the distribution', 1
+        unless -d 'xt/snapshots';
+      my $path = snapshot_path($view) =~ s/\.html\z/.two-domains.html/r;
+      if ($ENV{ND_WRITE_DOMAIN_SNAPSHOTS}) {
+        open my $fh, '>:encoding(UTF-8)', $path or die "$path: $!";
+        print {$fh} $html;
+        close $fh;
+      }
+      open my $fh, '<:encoding(UTF-8)', $path or do { fail("$path is missing"); next };
+      my $want = do { local $/; <$fh> };
+      is($html, $want, "$view matches $path");
     }
-    open my $fh, '<:encoding(UTF-8)', $path or do { fail("$path is missing"); next };
-    my $want = do { local $/; <$fh> };
-    is($html, $want, "$view matches $path");
   }
 
   my ($subnets) = render_template('ajax/report/subnets.tt', stash('ajax/report/subnets.tt', 'two'));

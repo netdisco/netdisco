@@ -5,7 +5,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
-use App::Netdisco::Util::L3Domain 'results_span_domains';
+use App::Netdisco::Util::L3Domain qw/results_span_domains label_rows_by_domain/;
 use NetAddr::IP::Lite ':lower';
 use POSIX qw/strftime/;
 
@@ -76,9 +76,7 @@ get '/ajax/content/report/ipinventory' => require_login sub {
     my $multi_domain = results_span_domains(\@results);
 
     if ( request->is_ajax ) {
-        # the table renders in the browser, so the default table's label is
-        # set here rather than in the template
-        my $json = to_json([ map { ($_->{vrf} // '') eq '' ? { %$_, vrf => 'default' } : $_ } @results ]);
+        my $json = to_json( label_rows_by_domain(\@results, $multi_domain) );
         template 'ajax/report/ipinventory.tt',
           { results => $json, multi_domain => $multi_domain }, { layout => 'noop' };
     }

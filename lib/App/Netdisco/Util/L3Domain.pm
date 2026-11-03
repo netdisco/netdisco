@@ -8,6 +8,7 @@ our @EXPORT = ();
 our @EXPORT_OK = qw/
   recompute_l3_domains
   results_span_domains
+  label_rows_by_domain
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -89,6 +90,25 @@ sub results_span_domains {
   my $rows = shift;
   my %names = map { (($_->{vrf} // '') => 1) } @$rows;
   return scalar(keys %names) > 1;
+}
+
+=head2 label_rows_by_domain( \@rows, $multi_domain )
+
+Returns copies of the report rows shaped for a table rendered in the browser.
+With more than one domain, C<vrf> is kept and the default table's empty name
+reads "default". With one domain, C<vrf> is dropped, so the page is the same as
+before domains.
+
+=cut
+
+sub label_rows_by_domain {
+  my ($rows, $multi_domain) = @_;
+  return [ map {
+    my %row = %$_;
+    if ($multi_domain) { $row{vrf} = 'default' if ($row{vrf} // '') eq '' }
+    else { delete $row{vrf} }
+    \%row;
+  } @$rows ];
 }
 
 1;
