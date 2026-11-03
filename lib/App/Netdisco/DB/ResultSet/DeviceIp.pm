@@ -12,6 +12,9 @@ my $AGE = q/replace( date_trunc( 'minute', age( LOCALTIMESTAMP, %s ) ) ::text, '
 my $VENDOR = q{COALESCE(me.vendor, CASE WHEN me.node THEN (SELECT m.company FROM manufacturer m}
   . q{ WHERE m.range @> ('x' || lpad(translate(me.mac::text, ':', ''), 16, '0'))::bit(64)::bigint LIMIT 1) END)};
 
+my $DOMAIN = q/CASE WHEN me.vrf = '' THEN 0 ELSE l3_domain_of(%s, me.vrf) END AS domain/;
+my $DOMAIN_NAME = q{(SELECT ld.name FROM l3_domain ld WHERE ld.id = me.domain) AS vrf};
+
 =head1 ADDITIONAL METHODS
 
 =head2 resolve_alias( $ip )
@@ -37,8 +40,10 @@ sub resolve_alias {
 
 Returns the IP Inventory report rows for C<$subnet> (a L<NetAddr::IP::Lite>):
 device interface addresses, node ARP and IPv6 neighbor cache entries, and
-NetBIOS entries, one row per IP, plus every unused address in the subnet when
-C<never> is set. The query starts from C<device_ip> and unions the node tables
+NetBIOS entries, one row per IP in each L3 domain, plus every unused address in
+the subnet when C<never> is set. Each row's C<vrf> is its domain's name; NetBIOS
+and unused addresses are in the default domain, and a row whose VRF name gives
+no single domain is left out. The query starts from C<device_ip> and unions the node tables
 onto it, which is why it lives in this class.
 
 Options: C<never>, C<age_invert>, C<limit>, and C<start> with C<end> (timestamps
@@ -59,21 +64,24 @@ sub ip_inventory {
       'alias AS ip', 'device_port.mac as mac', 'creation AS time_first',
       'device.last_discover AS time_last', 'dns', \'true AS active', \'false AS node',
       \(sprintf $AGE, 'device.last_discover'), 'device.vendor', \'null AS nbname',
+      \(sprintf $DOMAIN, 'me.ip'),
     ],
-    as => [qw( ip mac time_first time_last dns active node age vendor nbname )],
+    as => [qw( ip mac time_first time_last dns active node age vendor nbname domain )],
   })->hri;
 
   my $node_ips = $schema->resultset('NodeIp')->search_rs(undef, {
     join      => ['netbios'],
     columns   => [qw( ip mac time_first time_last dns active )],
-    '+select' => [ \'true AS node', \(sprintf $AGE, 'me.time_last'), \'NULL AS vendor', 'netbios.nbname' ],
-    '+as'     => [qw( node age vendor nbname )],
+    '+select' => [ \'true AS node', \(sprintf $AGE, 'me.time_last'), \'NULL AS vendor', 'netbios.nbname',
+                   \(sprintf $DOMAIN, 'me.router_last') ],
+    '+as'     => [qw( node age vendor nbname domain )],
   })->hri;
 
   my $netbios = $schema->resultset('NodeNbt')->search_rs(undef, {
     columns   => [qw( ip mac time_first time_last )],
-    '+select' => [ \'null AS dns', 'active', \'true AS node', \(sprintf $AGE, 'time_last'), \'NULL AS vendor', 'nbname' ],
-    '+as'     => [qw( dns active node age vendor nbname )],
+    '+select' => [ \'null AS dns', 'active', \'true AS node', \(sprintf $AGE, 'time_last'), \'NULL AS vendor', 'nbname',
+                   \'0 AS domain' ],
+    '+as'     => [qw( dns active node age vendor nbname domain )],
   })->hri;
 
   my $union = $devices->union_all([ $node_ips, $netbios ]);
@@ -83,21 +91,23 @@ sub ip_inventory {
     my $unused = $schema->resultset('Virtual::CidrIps')->search_rs(undef, {
       bind    => [ $subnet->cidr ],
       columns => [qw( ip mac time_first time_last dns active node age vendor nbname )],
+      '+select' => [ \'0 AS domain' ],
+      '+as'     => [ 'domain' ],
     })->hri;
     $union = $union->union_all([ $unused ]);
   }
 
-  my $one_per_ip = $union->search_rs({ ip => { '<<' => $subnet->cidr } }, {
+  my $one_per_ip = $union->search_rs({ ip => { '<<' => $subnet->cidr }, domain => { '!=' => undef } }, {
     select => [
-      \'DISTINCT ON (ip) ip', 'mac', 'dns',
+      \'DISTINCT ON (domain, ip) domain', 'ip', 'mac', 'dns',
       \q/date_trunc('second', time_last) AS time_last/,
       \q/date_trunc('second', time_first) AS time_first/,
       'active', 'node', 'age', 'vendor', 'nbname',
     ],
-    as => [qw( ip mac dns time_last time_first active node age vendor nbname )],
+    as => [qw( domain ip mac dns time_last time_first active node age vendor nbname )],
     # a generated never-seen row (active and node both false) must lose to any
     # real binding, even an inactive one, or a seen address reads as never seen
-    order_by => [ {-asc => 'ip'},
+    order_by => [ {-asc => 'domain'}, {-asc => 'ip'},
                   \'CASE WHEN active AND NOT node THEN 0 WHEN active THEN 1 WHEN node THEN 2 ELSE 3 END',
                   \'time_last DESC NULLS LAST', {-asc => 'dns'}, {-asc => 'mac'} ],
   })->as_query;
@@ -112,15 +122,15 @@ sub ip_inventory {
                              time_last => { '<=', $opts->{end} } ] ] };
   }
 
-  my $order = [ {-desc => 'age'}, {-asc => 'ip'} ];
+  my $order = [ {-desc => 'age'}, {-asc => 'ip'}, {-asc => 'domain'} ];
   my $limited = $union->search_rs($when, { from => { me => $one_per_ip } })
                       ->order_by($order)->limit($opts->{limit} || 256);
 
   return $union->search_rs(undef, {
     from      => { me => $limited->as_query },
     columns   => [qw( ip mac time_first time_last dns active node age nbname )],
-    '+select' => [ \$VENDOR ],
-    '+as'     => [ 'vendor' ],
+    '+select' => [ \$VENDOR, \$DOMAIN_NAME ],
+    '+as'     => [ 'vendor', 'vrf' ],
     order_by  => $order,
   })->hri;
 }

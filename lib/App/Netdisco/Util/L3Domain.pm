@@ -7,6 +7,7 @@ use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
   recompute_l3_domains
+  results_span_domains
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -74,6 +75,20 @@ sub recompute_l3_domains {
   });
 
   return ($written eq '0E0' ? 0 : $written);
+}
+
+=head2 results_span_domains( \@rows )
+
+True when the report rows, each carrying C<vrf> (its domain's name), hold more
+than one domain. Reports show a VRF column only then, so that a network with
+one domain sees the same report as before.
+
+=cut
+
+sub results_span_domains {
+  my $rows = shift;
+  my %names = map { (($_->{vrf} // '') => 1) } @$rows;
+  return scalar(keys %names) > 1;
 }
 
 1;
