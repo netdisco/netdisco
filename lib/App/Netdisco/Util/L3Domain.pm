@@ -31,9 +31,11 @@ subroutines.
 
 Rebuilds the inferred members of C<l3_domain_member> from C<device_vrf>: every
 VRF name other than the default table joins the domain of that name, which is
-created if it does not exist. Domains are matched on C<inferred_name>, which is unique; C<name> is for display and may repeat. Manual members are never changed, and a VRF that
-has a manual member is not inferred. Domains other than 0 left with no members
-are deleted. A domain keeps its id across recomputes while its name is in use.
+created if it does not exist. Domains are matched on C<inferred_name>, which is
+unique; C<name> is for display and may repeat. Manual members are never
+changed, and a VRF that has a manual member is not inferred. Domains other than
+0 left with no members are deleted. A domain keeps its id across recomputes
+while its name is in use.
 
 Runs in one transaction under an advisory lock. Returns the number of inferred
 members written. The discover job in 5b-3 will call it after refreshing

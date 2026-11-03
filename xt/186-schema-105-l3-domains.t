@@ -50,6 +50,15 @@ subtest 'step_104_105__l3_domain__inferred_name_unique_index_created_if_not_exis
   unlike($seed[0], qr/inferred_name/, 'domain 0 leaves inferred_name NULL');
 };
 
+subtest 'step_104_105__l3_domain__inferred_name_also_added_for_tables_from_an_earlier_step' => sub {
+  my @alter = statements_matching(qr/^ALTER TABLE l3_domain ADD COLUMN IF NOT EXISTS inferred_name text$/);
+  is(scalar @alter, 1, 'one ALTER ... ADD COLUMN IF NOT EXISTS');
+  my @all = map { s/^\s+//r } @{ [ statements_matching(qr/./) ] };
+  my ($alter_at) = grep { $all[$_] =~ /^ALTER TABLE l3_domain ADD COLUMN/ } 0 .. $#all;
+  my ($index_at) = grep { $all[$_] =~ /^CREATE UNIQUE INDEX IF NOT EXISTS l3_domain_inferred_name_key/ } 0 .. $#all;
+  ok(defined $alter_at && defined $index_at && $alter_at < $index_at, 'column added before the index');
+};
+
 subtest 'step_104_105__l3_domain_member__source_limited_to_inferred_or_manual' => sub {
   my @create = statements_matching(qr/^CREATE TABLE IF NOT EXISTS l3_domain_member\b/);
   is(scalar @create, 1, 'one CREATE TABLE IF NOT EXISTS');

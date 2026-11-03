@@ -74,6 +74,9 @@ CREATE TABLE IF NOT EXISTS l3_domain (
   inferred_name text
 );
 
+-- A table made by an earlier version of this step lacks the column.
+ALTER TABLE l3_domain ADD COLUMN IF NOT EXISTS inferred_name text;
+
 CREATE UNIQUE INDEX IF NOT EXISTS l3_domain_inferred_name_key ON l3_domain (inferred_name);
 
 INSERT INTO l3_domain (id, name) VALUES (0, '') ON CONFLICT (id) DO NOTHING;
