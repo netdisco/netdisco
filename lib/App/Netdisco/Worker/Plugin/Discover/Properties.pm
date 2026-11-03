@@ -9,9 +9,9 @@ use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use App::Netdisco::Util::Device qw/get_device is_discoverable/;
 use App::Netdisco::Util::DNS 'hostname_from_ip';
-use App::Netdisco::Util::SNMP qw/snmp_comm_reindex snmp_vrf_reindex snmp_vrf_context get_mibdirs_shortnames walk_mark
+use App::Netdisco::Util::SNMP qw/snmp_comm_reindex snmp_vrf_reindex get_mibdirs_shortnames walk_mark
   incomplete_walks incomplete_walks_for incomplete_walk_message incomplete_walk_level/;
-use App::Netdisco::Util::VRF qw/vrf_instances_for vrf_skipped netdisco_vrf/;
+use App::Netdisco::Util::VRF qw/vrf_instances_for vrf_skipped netdisco_vrf each_vrf_instance/;
 use App::Netdisco::Util::L3Domain 'recompute_l3_domains';
 use App::Netdisco::Util::Web 'sort_port';
 use App::Netdisco::Util::SNMPText qw/decode_snmp_text decode_text_with/;
@@ -471,67 +471,46 @@ sub _vrf_device_ip_rows {
   }} @$resolved_aliases;
 }
 
-# a record with no context, or context kind none, is read in place in the
-# default context like default itself, so attribution-mode classes never reconnect
-sub _reads_in_default_context {
-  my $context = $_[0]->{contexts} && $_[0]->{contexts}[0];
-  return (not $context or ($context->{kind} || '') eq 'none');
-}
-
-# in place first (default, then names sorted), then each named context sorted;
-# the restore is armed by the first switch, so a device with none pays nothing
+# the instance walk is shared with arpnip; in default-first order, as the
+# device_ip and subnet rows were built before it was shared
 sub _read_vrf_instances {
   my ($device, $snmp, $instances, $default_interfaces) = @_;
-  my @named = sort grep { $_ ne 'default' } keys %$instances;
-  my @in_place = ('default', grep { _reads_in_default_context($instances->{$_}) } @named);
-  my @switched = grep { not _reads_in_default_context($instances->{$_}) } @named;
-
-  my @reads = map { _read_vrf_instance($device, $snmp, $instances->{$_}, $default_interfaces) }
-    @in_place;
-
-  my $guard;
-  foreach my $name (@switched) {
-    my $instance = $instances->{$name};
-    # armed before the switch, so an update() that dies partway still restores
-    $guard ||= guard { snmp_vrf_context($snmp, $device, undef) };
-    if (not snmp_vrf_context($snmp, $device, $instance)) {
-      debug sprintf ' [%s] device - VRF %s has no context this session can reach',
-        $device->ip, $name;
-      push @reads, { instance => $instance, vrf => netdisco_vrf($name), complete => 0 };
-      next;
-    }
-    push @reads, _read_vrf_instance($device, $snmp, $instance, $default_interfaces, 'switched');
-  }
-  return @reads;
+  my $reads = each_vrf_instance($device, $snmp, $instances,
+    _vrf_alias_reader($snmp, $default_interfaces), walk_methods => ['interfaces']);
+  return map {
+    _vrf_instance_read($device, $instances->{$_}, $reads->{ netdisco_vrf($_) })
+  } ('default', sort grep { $_ ne 'default' } keys %$instances);
 }
 
-sub _read_vrf_instance {
-  my ($device, $snmp, $instance, $interfaces, $switched) = @_;
-  my $name = $instance->{name};
-  my $vrf = netdisco_vrf($name);
-  my $walk_mark = walk_mark($snmp);
-  # a context's own interfaces win, as in _get_ipv4_aliases' merge
-  $interfaces = { %$interfaces, %{ $snmp->interfaces || {} } } if $switched;
-  my $addresses = $snmp->vrf_addresses($name) || {};
-  my $subnets   = $snmp->vrf_subnets($name) || {};
-  my $complete  = ($snmp->vrf_read_complete($name) ? 1 : 0);
-  # any short walk since the mark, the readers' or interfaces', marks the read
-  # incomplete; a short interfaces walk alone would null every row's port
-  $complete = 0 if scalar incomplete_walks_for($device, $snmp, $walk_mark, 'interfaces');
-  if (not $complete) {
-    my $error = $snmp->error;
-    debug sprintf ' [%s] device - VRF %s read incomplete, keeping its rows%s',
-      $device->ip, $name, (defined $error ? ": $error" : '');
-  }
+# a context's own interfaces win, as in _get_ipv4_aliases' merge; the walk
+# check includes the interfaces walk, as a short one alone would null every port
+sub _vrf_alias_reader {
+  my ($snmp, $default_interfaces) = @_;
+  return sub {
+    my ($name, $instance, $switched) = @_;
+    my $interfaces = $switched
+      ? { %$default_interfaces, %{ $snmp->interfaces || {} } } : $default_interfaces;
+    return { interfaces => $interfaces,
+      addresses => ($snmp->vrf_addresses($name) || {}),
+      subnets   => ($snmp->vrf_subnets($name) || {}) };
+  };
+}
+
+sub _vrf_instance_read {
+  my ($device, $instance, $read) = @_;
+  my $vrf = netdisco_vrf($instance->{name});
+  my $data = $read->{data}
+    or return { instance => $instance, vrf => $vrf, complete => 0 };
+  my ($addresses, $subnets) = @{$data}{qw/addresses subnets/};
 
   my @aliases = _dedupe_aliases(map {
-    _vrf_alias($device, $addresses->{$_}, $interfaces, $vrf)
+    _vrf_alias($device, $addresses->{$_}, $data->{interfaces}, $vrf)
   } sort keys %$addresses);
   my @nets = List::MoreUtils::uniq grep {defined} map {
     _vrf_subnet($subnets->{$_})
   } sort keys %$subnets;
 
-  return { instance => $instance, vrf => $vrf, complete => $complete,
+  return { instance => $instance, vrf => $vrf, complete => $read->{complete},
     aliases => \@aliases, subnets => [ map {{ net => $_, vrf => $vrf }} @nets ] };
 }
 
