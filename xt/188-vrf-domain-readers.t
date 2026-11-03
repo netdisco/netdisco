@@ -52,14 +52,18 @@ my %report = map { $_->{tag} => $_ }
 
 subtest 'subnet_utilization__sql__matches_addresses_within_one_domain' => sub {
   ok(length $subnet_sql, 'found the view definition');
-  like($subnet_sql, qr/CASE WHEN s1\.vrf = '' THEN 0 ELSE l3_domain_of\(s1\.router_last, s1\.vrf\) END/,
-    'a subnet takes its domain from the device that reported it');
-  like($subnet_sql, qr/CASE WHEN ni\.vrf = '' THEN 0 ELSE l3_domain_of\(ni\.router_last, ni\.vrf\) END/,
-    'a node address takes its domain from the device that reported it');
-  like($subnet_sql, qr/CASE WHEN di\.vrf = '' THEN 0 ELSE l3_domain_of\(di\.ip, di\.vrf\) END/,
-    'a device address takes its domain from its own device');
-  my $equalities = () = $subnet_sql =~ /END\n\s+= CASE WHEN (s[12])\.vrf = '' THEN 0 ELSE l3_domain_of\(\1\.router_last, \1\.vrf\) END/g;
-  is($equalities, 2, 'both branches count an address only in its subnet\'s domain');
+  # each row's domain is computed once, in a fenced subquery, so a join on the
+  # domain compares columns rather than calling l3_domain_of per candidate pair
+  my $subnet_side = () = $subnet_sql =~ /CASE WHEN s\.vrf = '' THEN 0 ELSE l3_domain_of\(s\.router_last, s\.vrf\) END AS domain\s+FROM subnets s OFFSET 0\) s[12]\b/g;
+  is($subnet_side, 2, 'a subnet takes its domain from the device that reported it, once per row');
+  like($subnet_sql, qr/LATERAL \(SELECT CASE WHEN ni\.vrf = '' THEN 0 ELSE l3_domain_of\(ni\.router_last, ni\.vrf\) END AS domain\s+OFFSET 0\) nd/,
+    'a node address takes its domain from the device that reported it, once per row');
+  like($subnet_sql, qr/LATERAL \(SELECT CASE WHEN di\.vrf = '' THEN 0 ELSE l3_domain_of\(di\.ip, di\.vrf\) END AS domain\s+OFFSET 0\) dd/,
+    'a device address takes its domain from its own device, once per row');
+  like($subnet_sql, qr/AND nd\.domain = s1\.domain\n/, 'a node address counts only in its subnet\'s domain');
+  like($subnet_sql, qr/AND dd\.domain = s2\.domain\n/, 'a device address counts only in its subnet\'s domain');
+  my $calls = () = $subnet_sql =~ /l3_domain_of\(/g;
+  is($calls, 4, 'no other call to l3_domain_of');
   like($subnet_sql, qr/GROUP BY joined\.domain, net, ld\.name/, 'grouped by domain and net');
   like($subnet_sql, qr/JOIN l3_domain ld ON ld\.id = joined\.domain/, 'labeled from l3_domain');
   like($subnet_sql, qr/ld\.name as vrf/, 'the label is the vrf output column');
