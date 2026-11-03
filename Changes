@@ -13,7 +13,8 @@
     on, discover reads each VRF's addresses, subnets and instance facts in
     the VRF's own SNMP context, and a VRF it cannot read whole keeps its
     stored rows; SNMP arpnip reads each VRF's ARP and IPv6 neighbor
-    entries the same way (database schema 105: run netdisco-deploy)
+    entries and stores its subnets the same way (database schema 105: run
+    netdisco-deploy)
   * upgrade SNMP::Info dependency to 3.985000
 
 2.117001 - 2026-11-02

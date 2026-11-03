@@ -78,7 +78,7 @@ subtest 'renumber__dns_lookup__does_not_call_find_with_two_keys' => sub {
 
 subtest 'arpnip_and_discover__pass_the_device_ip_to_upsert_subnet' => sub {
   my %call = (
-    'lib/App/Netdisco/Worker/Plugin/Arpnip/Subnets.pm'      => qr/upsert_subnet\(\$_, \$now, '', \$device->ip\)/,
+    'lib/App/Netdisco/Worker/Plugin/Arpnip/Subnets.pm'      => qr/upsert_subnet\(\$cidr, \$now, \$vrf, \$device->ip\)/,
     'lib/App/Netdisco/Worker/Plugin/Discover/Properties.pm' => qr/upsert_subnet\(\$_, \$now, '', \$device->ip\)/,
   );
   while (my ($file, $pattern) = each %call) {
