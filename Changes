@@ -5,8 +5,9 @@
   * #1785 record the VRF of device addresses and subnets, VRF instances and
     L3 domains, and resolve addresses to devices through one rule; Subnet
     Utilization, IP Inventory and the shared and duplicate address reports
-    keep each VRF's address space apart, and API objects for addresses and
-    subnets carry their L3 domain (database schema 105: run
+    keep each VRF's address space apart, API objects for addresses and
+    subnets carry their L3 domain, and the Subnet Utilization and IP
+    Inventory report API rows carry the VRF (database schema 105: run
     netdisco-deploy)
 
 2.117001 - 2026-11-02

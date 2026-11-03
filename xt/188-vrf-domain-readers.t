@@ -52,16 +52,23 @@ my %report = map { $_->{tag} => $_ }
 
 subtest 'subnet_utilization__sql__matches_addresses_within_one_domain' => sub {
   ok(length $subnet_sql, 'found the view definition');
-  # each row's domain is computed once, in a fenced subquery, so a join on the
-  # domain compares columns rather than calling l3_domain_of per candidate pair
-  my $subnet_side = () = $subnet_sql =~ /CASE WHEN s\.vrf = '' THEN 0 ELSE l3_domain_of\(s\.router_last, s\.vrf\) END AS domain\s+FROM subnets s OFFSET 0\) s[12]\b/g;
+  # each subnet's domain is computed once per row in a DISTINCT subquery, and
+  # each address's beside the containment join; OFFSET 0 holds the domain
+  # comparison above that join, so it is a filter and never a join key
+  my $subnet_side = () = $subnet_sql =~ /SELECT DISTINCT s\.net, s\.last_discover,\s+CASE WHEN s\.vrf = '' THEN 0 ELSE l3_domain_of\(s\.router_last, s\.vrf\) END AS domain\s+FROM subnets s\) s[12]\b/g;
   is($subnet_side, 2, 'a subnet takes its domain from the device that reported it, once per row');
-  like($subnet_sql, qr/LATERAL \(SELECT CASE WHEN ni\.vrf = '' THEN 0 ELSE l3_domain_of\(ni\.router_last, ni\.vrf\) END AS domain\s+OFFSET 0\) nd/,
-    'a node address takes its domain from the device that reported it, once per row');
-  like($subnet_sql, qr/LATERAL \(SELECT CASE WHEN di\.vrf = '' THEN 0 ELSE l3_domain_of\(di\.ip, di\.vrf\) END AS domain\s+OFFSET 0\) dd/,
-    'a device address takes its domain from its own device, once per row');
-  like($subnet_sql, qr/AND nd\.domain = s1\.domain\n/, 'a node address counts only in its subnet\'s domain');
-  like($subnet_sql, qr/AND dd\.domain = s2\.domain\n/, 'a device address counts only in its subnet\'s domain');
+  unlike($subnet_sql, qr/FROM subnets s OFFSET 0/, 'no OFFSET 0 on the subnet side, which would cost the parallel plan');
+  like($subnet_sql, qr/CASE WHEN ni\.vrf = '' THEN 0 ELSE l3_domain_of\(ni\.router_last, ni\.vrf\) END AS ip_domain/,
+    'a node address takes its domain from the device that reported it');
+  like($subnet_sql, qr/CASE WHEN di\.vrf = '' THEN 0 ELSE l3_domain_of\(di\.ip, di\.vrf\) END AS ip_domain/,
+    'a device address takes its domain from its own device');
+  my $fences = () = $subnet_sql =~ /\n\s+OFFSET 0\) pairs\n\s+WHERE pairs\.ip_domain = pairs\.domain\n/g;
+  is($fences, 2, 'each half compares domains above an OFFSET 0 fence');
+  unlike($subnet_sql, qr/\.domain = s[12]\.domain|LATERAL/, 'the domain is not a join key');
+  like($subnet_sql, qr/AND ni\.ip <<= s1\.net\n/, 'node addresses join their subnet on containment');
+  like($subnet_sql, qr/AND di\.alias <<= s2\.net\n/, 'device addresses join their subnet on containment');
+  my $distinct = () = $subnet_sql =~ /SELECT DISTINCT pairs\.domain, pairs\.net, pairs\.ip\n/g;
+  is($distinct, 2, 'each half keeps the domain in its DISTINCT');
   my $calls = () = $subnet_sql =~ /l3_domain_of\(/g;
   is($calls, 4, 'no other call to l3_domain_of');
   like($subnet_sql, qr/GROUP BY joined\.domain, net, ld\.name/, 'grouped by domain and net');

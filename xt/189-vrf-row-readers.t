@@ -45,10 +45,11 @@ my $stub_row;
   };
 }
 
-subtest 'nbtstat__ip_fallback__default_vrf_row_wins_not_single' => sub {
+subtest 'nbtstat__ip_fallback__reads_default_vrf_rows_only' => sub {
   my $src = slurp('lib/App/Netdisco/Util/Nbtstat.pm');
-  like($src, qr/search\(\s*\{\s*ip => \$ip, -bool => 'active' \}\s*,\s*\{\s*order_by => 'vrf', rows => 1 \}\s*\)\s*->first/s,
-    'orders by vrf and takes the first row');
+  like($src, qr/search\(\s*\{\s*ip => \$ip, vrf => '', -bool => 'active' \}\s*,\s*\{\s*rows => 1 \}\s*\)\s*->first/s,
+    "restricted to vrf = '', first row taken");
+  unlike($src, qr/order_by => 'vrf'/, 'no ordering that could reach a VRF row');
   unlike($src, qr/->single\(\s*\{\s*ip => \$ip/, 'no single() on ip');
 };
 

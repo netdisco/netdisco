@@ -10,8 +10,12 @@ __PACKAGE__->table_class('DBIx::Class::ResultSource::View');
 
 __PACKAGE__->table('cidr_ips');
 __PACKAGE__->result_source_instance->is_virtual(1);
-# OFFSET 0 keeps each row's domain a computed column: inlined, a hash join on
-# the domain re-runs l3_domain_of for every candidate (subnet, address) pair.
+# The join is on containment alone, as before domains, so that the planner
+# keeps its parallel nested loop: as a join key the domain equality brought a
+# single-threaded merge join over every node_ip row. OFFSET 0 holds the
+# comparison above the join. DISTINCT, not OFFSET 0, keeps each subnet's
+# domain computed once per row, because an OFFSET 0 subquery cannot sit
+# under a parallel join.
 __PACKAGE__->result_source_instance->view_definition(<<'ENDSQL');
   SELECT net as subnet,
          ld.name as vrf,
@@ -19,37 +23,41 @@ __PACKAGE__->result_source_instance->view_definition(<<'ENDSQL');
          count(DISTINCT ip) as active,
          round(100 * count(DISTINCT ip) / power(2, (CASE family(net) WHEN 4 THEN 32 ELSE 128 END) - masklen(net))) as percent
     FROM (
-      SELECT DISTINCT s1.domain, s1.net, ni.ip
-        FROM (SELECT s.net, s.last_discover,
-                     CASE WHEN s.vrf = '' THEN 0 ELSE l3_domain_of(s.router_last, s.vrf) END AS domain
-                FROM subnets s OFFSET 0) s1,
-             node_ip ni,
-             LATERAL (SELECT CASE WHEN ni.vrf = '' THEN 0 ELSE l3_domain_of(ni.router_last, ni.vrf) END AS domain
-                        OFFSET 0) nd
-        WHERE s1.net <<= ?::cidr
-              AND ni.ip <<= s1.net
-              AND nd.domain = s1.domain
-              AND ((
-                ni.time_first IS null
-                AND ni.time_last IS null
-              ) OR (
-                ni.time_last >= ?
-                AND ni.time_last <= ?
-              ))
-              AND s1.last_discover >= ?
+      SELECT DISTINCT pairs.domain, pairs.net, pairs.ip
+        FROM (
+          SELECT s1.domain, s1.net, ni.ip,
+                 CASE WHEN ni.vrf = '' THEN 0 ELSE l3_domain_of(ni.router_last, ni.vrf) END AS ip_domain
+            FROM (SELECT DISTINCT s.net, s.last_discover,
+                         CASE WHEN s.vrf = '' THEN 0 ELSE l3_domain_of(s.router_last, s.vrf) END AS domain
+                    FROM subnets s) s1,
+                 node_ip ni
+            WHERE s1.net <<= ?::cidr
+                  AND ni.ip <<= s1.net
+                  AND ((
+                    ni.time_first IS null
+                    AND ni.time_last IS null
+                  ) OR (
+                    ni.time_last >= ?
+                    AND ni.time_last <= ?
+                  ))
+                  AND s1.last_discover >= ?
+          OFFSET 0) pairs
+        WHERE pairs.ip_domain = pairs.domain
       UNION
-      SELECT DISTINCT s2.domain, s2.net, di.alias as ip
-        FROM (SELECT s.net, s.last_discover,
-                     CASE WHEN s.vrf = '' THEN 0 ELSE l3_domain_of(s.router_last, s.vrf) END AS domain
-                FROM subnets s OFFSET 0) s2,
-             device_ip di JOIN device d USING (ip),
-             LATERAL (SELECT CASE WHEN di.vrf = '' THEN 0 ELSE l3_domain_of(di.ip, di.vrf) END AS domain
-                        OFFSET 0) dd
-        WHERE s2.net <<= ?::cidr
-              AND di.alias <<= s2.net
-              AND dd.domain = s2.domain
-              AND s2.last_discover >= ?
-              AND d.last_discover >= ?
+      SELECT DISTINCT pairs.domain, pairs.net, pairs.ip
+        FROM (
+          SELECT s2.domain, s2.net, di.alias as ip,
+                 CASE WHEN di.vrf = '' THEN 0 ELSE l3_domain_of(di.ip, di.vrf) END AS ip_domain
+            FROM (SELECT DISTINCT s.net, s.last_discover,
+                         CASE WHEN s.vrf = '' THEN 0 ELSE l3_domain_of(s.router_last, s.vrf) END AS domain
+                    FROM subnets s) s2,
+                 device_ip di JOIN device d USING (ip)
+            WHERE s2.net <<= ?::cidr
+                  AND di.alias <<= s2.net
+                  AND s2.last_discover >= ?
+                  AND d.last_discover >= ?
+          OFFSET 0) pairs
+        WHERE pairs.ip_domain = pairs.domain
     ) as joined
     JOIN l3_domain ld ON ld.id = joined.domain
     GROUP BY joined.domain, net, ld.name

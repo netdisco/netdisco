@@ -97,6 +97,7 @@ CREATE INDEX IF NOT EXISTS idx_l3_domain_member_vrf ON l3_domain_member (vrf, do
 ALTER TABLE node_ip ADD COLUMN IF NOT EXISTS router_last inet;
 ALTER TABLE subnets ADD COLUMN IF NOT EXISTS router_last inet;
 
+-- Default COST on purpose: COST 1 measured no faster and loses Memoize on PG 14 (device_ip_vrf_row_resolves keeps its COST 1).
 CREATE OR REPLACE FUNCTION l3_domain_of(row_router inet, row_vrf text)
   RETURNS integer LANGUAGE sql STABLE PARALLEL SAFE AS $$
     SELECT CASE WHEN row_vrf = '' THEN 0
