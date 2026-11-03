@@ -184,7 +184,7 @@ ajax '/ajax/data/subnet/typeahead' => require_login sub {
     $q = "$q\%" if $q !~ m/\%/;
     my $nets = schema(vars->{'tenant'})->resultset('Subnet')->search(
            { 'me.net::text'  => { '-ilike' => $q }},
-           { columns => ['net'], order_by => 'net', rows => setting('max_typeahead_rows') } );
+           { columns => ['net'], distinct => 1, order_by => 'net', rows => setting('max_typeahead_rows') } );
 
     content_type 'application/json';
     to_json [map {$_->net} $nets->all];

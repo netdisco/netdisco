@@ -6,6 +6,7 @@ use strict;
 use warnings;
 
 use base 'App::Netdisco::DB::Result';
+use App::Netdisco::Util::L3Domain 'row_l3_domain';
 
 __PACKAGE__->table("device_ip");
 __PACKAGE__->add_columns(
@@ -59,5 +60,22 @@ routed port or virtual interface).
 
 __PACKAGE__->belongs_to( device_port => 'App::Netdisco::DB::Result::DevicePort',
   { 'foreign.port' => 'self.port', 'foreign.ip' => 'self.ip' } );
+
+
+=head2 l3_domain
+
+Returns C<< { id, name } >> of the L3 domain this row's VRF belongs to, or undef
+when it cannot be determined. A default-table row is domain 0 without a query.
+
+=cut
+
+sub l3_domain { return row_l3_domain($_[0], $_[0]->get_column('ip')) }
+
+sub TO_JSON {
+  my $self = shift;
+  my $data = $self->next::method(@_);
+  $data->{l3_domain} = $self->l3_domain;
+  return $data;
+}
 
 1;

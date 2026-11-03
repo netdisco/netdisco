@@ -9,6 +9,7 @@ our @EXPORT_OK = qw/
   recompute_l3_domains
   results_span_domains
   label_rows_by_domain
+  row_l3_domain
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -109,6 +110,30 @@ sub label_rows_by_domain {
     else { delete $row{vrf} }
     \%row;
   } @$rows ];
+}
+
+=head2 row_l3_domain( $row, $router )
+
+Returns C<< { id =E<gt> ..., name =E<gt> ... } >> for the L3 domain of a result
+row with a C<vrf> column, or undef when the domain cannot be determined. C<$router>
+is the address of the device that reported the row (undef when unknown). The
+default table is domain 0 without a query. The query runs on the row's own
+schema, so tenants work.
+
+=cut
+
+sub row_l3_domain {
+  my ($row, $router) = @_;
+  return { id => 0, name => '' } if $row->get_column('vrf') eq '';
+
+  my $found;
+  $row->result_source->schema->storage->dbh_do(sub {
+    my (undef, $dbh) = @_;
+    $found = $dbh->selectrow_hashref(
+      'SELECT d.id, d.name FROM l3_domain d WHERE d.id = l3_domain_of(?, ?)',
+      undef, $router, $row->get_column('vrf'));
+  });
+  return $found ? { id => $found->{id}, name => $found->{name} } : undef;
 }
 
 1;
