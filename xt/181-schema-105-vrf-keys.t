@@ -27,7 +27,7 @@ subtest 'step_104_105__parses__one_transaction' => sub {
 
 subtest 'step_104_105__add_column__not_null_default_empty_in_one_statement' => sub {
   foreach my $table (qw(device_ip subnets)) {
-    my @add = grep { /^ALTER TABLE $table ADD COLUMN/ } @statements;
+    my @add = grep { /^ALTER TABLE $table ADD COLUMN IF NOT EXISTS vrf\b/ } @statements;
     is(scalar @add, 1, "$table: one ADD COLUMN");
     is($add[0], "ALTER TABLE $table ADD COLUMN IF NOT EXISTS vrf text NOT NULL DEFAULT ''",
       "$table: column, default and NOT NULL in one statement");

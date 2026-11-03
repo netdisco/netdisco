@@ -41,4 +41,64 @@ CREATE OR REPLACE VIEW device_ip_resolved AS
 -- is left in place: the harness re-runs single steps and wants no catalog change.
 CREATE INDEX IF NOT EXISTS idx_device_ip_alias_vrf_ip ON device_ip (alias, vrf, ip);
 
+-- VRF instances and L3 domains.
+--
+-- device_vrf holds every instance a device reports, the default table
+-- included as vrf = ''. rd NULL means unset. l3_domain_member places a
+-- (device, vrf) pair in a domain, inferred or set by hand. A row with
+-- vrf = '' is domain 0 and has no member rows.
+--
+-- l3_domain_of(router, vrf) gives the domain of an address row: '' is 0;
+-- else the domain of the member (router, vrf); else, when exactly one
+-- domain has members named vrf, that one; else NULL, so that a reader
+-- leaves an ambiguous row out of every domain total rather than guessing.
+-- A NULL router skips to the name step.
+CREATE TABLE IF NOT EXISTS device_vrf (
+  ip inet NOT NULL,
+  vrf text NOT NULL,
+  kind text,
+  rd text,
+  rt_import text[] NOT NULL DEFAULT '{}',
+  rt_export text[] NOT NULL DEFAULT '{}',
+  l3_isid integer,
+  listed_by text,
+  complete boolean NOT NULL DEFAULT false,
+  last_discover timestamp,
+  PRIMARY KEY (ip, vrf)
+);
+
+CREATE TABLE IF NOT EXISTS l3_domain (
+  id serial PRIMARY KEY,
+  name text NOT NULL
+);
+
+INSERT INTO l3_domain (id, name) VALUES (0, '') ON CONFLICT (id) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS l3_domain_member (
+  ip inet NOT NULL,
+  vrf text NOT NULL,
+  domain_id integer NOT NULL,
+  reason text NOT NULL,
+  source text NOT NULL CHECK (source IN ('inferred', 'manual')),
+  PRIMARY KEY (ip, vrf)
+);
+
+CREATE INDEX IF NOT EXISTS idx_l3_domain_member_vrf ON l3_domain_member (vrf, domain_id);
+
+-- Added bare: catalog-only on 9.6, and no backfill, because every row is
+-- vrf = '' (domain 0) whatever its router until the switch is on.
+ALTER TABLE node_ip ADD COLUMN IF NOT EXISTS router_last inet;
+ALTER TABLE subnets ADD COLUMN IF NOT EXISTS router_last inet;
+
+CREATE OR REPLACE FUNCTION l3_domain_of(row_router inet, row_vrf text)
+  RETURNS integer LANGUAGE sql STABLE PARALLEL SAFE AS $$
+    SELECT CASE WHEN row_vrf = '' THEN 0
+      ELSE COALESCE(
+        (SELECT m.domain_id FROM l3_domain_member m
+          WHERE m.ip = row_router AND m.vrf = row_vrf),
+        (SELECT (array_agg(DISTINCT n.domain_id))[1] FROM l3_domain_member n
+          WHERE n.vrf = row_vrf HAVING count(DISTINCT n.domain_id) = 1))
+      END
+  $$;
+
 COMMIT;

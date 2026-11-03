@@ -26,6 +26,8 @@ __PACKAGE__->add_columns(
   },
   "vrf",
   { data_type => "text", is_nullable => 0, default_value => "" },
+  "router_last",
+  { data_type => "inet", is_nullable => 1 },
 );
 __PACKAGE__->set_primary_key("net", "vrf");
 

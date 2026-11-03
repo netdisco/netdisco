@@ -113,6 +113,22 @@ all the interface IP aliases configured on the Device.
 
 __PACKAGE__->has_many( device_ips => 'App::Netdisco::DB::Result::DeviceIp', 'ip' );
 
+=head2 vrfs
+
+Returns the C<device_vrf> rows: the VRF instances this Device reports.
+
+=cut
+
+__PACKAGE__->has_many( vrfs => 'App::Netdisco::DB::Result::DeviceVrf', 'ip' );
+
+=head2 l3_domain_members
+
+Returns the C<l3_domain_member> rows placing this Device's VRF instances in L3 domains.
+
+=cut
+
+__PACKAGE__->has_many( l3_domain_members => 'App::Netdisco::DB::Result::L3DomainMember', 'ip' );
+
 =head2 device_ips_by_address_or_name
 
 Returns rows from the C<device_ip> table which relate to this Device. That is,
