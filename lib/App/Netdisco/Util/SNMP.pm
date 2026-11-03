@@ -16,6 +16,7 @@ our @EXPORT_OK = qw/
   get_communities
   snmp_comm_reindex
   snmp_vrf_reindex
+  snmp_vrf_context
   get_mibdirs
   get_mibdirs_shortnames
   decode_and_munge
@@ -132,6 +133,43 @@ is the VRF name as given, never the VLAN context prefix.
 sub snmp_vrf_reindex {
   my ($snmp, $device, $vrf) = @_;
   return _reindex($snmp, $device, $vrf, 'vrf');
+}
+
+=head2 snmp_vrf_context( $snmp, $device, $instance )
+
+Takes a record from C<vrf_instances()> and puts the session in that VRF's SNMP
+context, as SNMP::Info describes it in the record's C<contexts>. Returns true
+when the session can now read the VRF, false when it cannot (SNMPv2c on a class
+that refuses community suffixes), in which case the session is left alone.
+
+C<default>, or a record with no context entry (attribution mode), is read in
+the default context. An undefined C<$instance> restores the default context.
+
+=cut
+
+sub snmp_vrf_context {
+  my ($snmp, $device, $instance) = @_;
+  my $context = ($instance and $instance->{contexts} and $instance->{contexts}[0]);
+
+  # unconditional, as _reindex with index 0: nothing here can tell from the
+  # object that the session is already in the default context
+  if (not $context or ($context->{kind} || '') eq 'none') {
+    debug sprintf ' [%s] returning to the default context (ver: %s, class: %s)',
+      $device->ip, $snmp->snmp_ver, $snmp->class;
+    $snmp->update($snmp->snmp_ver == 3 ? (Context => '')
+                                       : (Community => $snmp->snmp_comm));
+    return 1;
+  }
+
+  my $v3 = ($snmp->snmp_ver == 3);
+  my $name = $v3 ? $context->{v3} : $context->{v2c};
+  return 0 unless defined $name;
+
+  debug sprintf ' [%s] switching to %s context (ver: %s, class: %s)',
+    $device->ip, ($instance->{name} // ''), $snmp->snmp_ver, $snmp->class;
+  $v3 ? $snmp->update(Context => $name)
+      : $snmp->update(Community => sprintf($name, $snmp->snmp_comm));
+  return 1;
 }
 
 sub _reindex {
