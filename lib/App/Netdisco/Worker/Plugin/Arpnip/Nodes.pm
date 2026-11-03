@@ -9,7 +9,7 @@ use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::Transport::SSH ();
 use App::Netdisco::Transport::SNMP ();
 
-use App::Netdisco::Util::Node qw/check_mac memoize_arp store_arp/;
+use App::Netdisco::Util::Node qw/check_mac memoize_arp store_arp retire_unvouched_arps/;
 use App::Netdisco::Util::VRF qw/vrf_instances_for each_vrf_instance/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 
@@ -69,6 +69,7 @@ register_worker({ phase => 'store', title => 'store ARP cache' }, sub {
 
   my $status = $job->best_status;
   if (Status->$status->level == Status->done->level) {
+      retire_unvouched_arps($device, $now, vars->{'vrf_read'}, vars->{'vrf_list_complete'});
       $device->update({last_arpnip => \$now});
   }
 

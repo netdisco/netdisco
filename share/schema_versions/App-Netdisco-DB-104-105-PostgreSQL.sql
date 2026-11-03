@@ -97,6 +97,13 @@ CREATE INDEX IF NOT EXISTS idx_l3_domain_member_vrf ON l3_domain_member (vrf, do
 ALTER TABLE node_ip ADD COLUMN IF NOT EXISTS router_last inet;
 ALTER TABLE subnets ADD COLUMN IF NOT EXISTS router_last inet;
 
+-- Serves arpnip's retirement of named-VRF rows. It references only vrf, a key
+-- column never updated, and active, already indexed, so router_last flips stay
+-- HOT; it is empty until a site turns store_vrfs on. The drop removes an
+-- earlier router_last index from databases that ran a draft of this step.
+DROP INDEX IF EXISTS idx_node_ip_router_last_active;
+CREATE INDEX IF NOT EXISTS idx_node_ip_vrf_named_active ON node_ip (vrf) WHERE active AND vrf <> '';
+
 -- Default COST on purpose: COST 1 measured no faster and loses Memoize on PG 14 (device_ip_vrf_row_resolves keeps its COST 1).
 CREATE OR REPLACE FUNCTION l3_domain_of(row_router inet, row_vrf text)
   RETURNS integer LANGUAGE sql STABLE PARALLEL SAFE AS $$

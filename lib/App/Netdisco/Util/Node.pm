@@ -5,6 +5,7 @@ use Dancer::Plugin::DBIC 'schema';
 
 use NetAddr::MAC;
 use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
+use App::Netdisco::Util::VRF qw/vrf_collection_enabled vrf_skipped/;
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -13,6 +14,7 @@ our @EXPORT_OK = qw/
   is_nbtstatable
   memoize_arp
   store_arp
+  retire_unvouched_arps
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -239,6 +241,91 @@ sub _arp_upsert_sql {
         END};
   my $path = "{$device_ip}";
   return ($sql, $device_ip, $device_ip, $device_ip, $path, $device_ip, $path);
+}
+
+=head2 retire_unvouched_arps( $device, $now, \%vrf_read?, $vrf_list_complete? )
+
+After a complete arpnip of C<$device>, deactivates the active C<node_ip> rows
+this router was the last to report (C<router_last>) and did not report in
+this run (C<time_last> before C<$now>, the timestamp given to C<store_arp>).
+Rows another router reported since name that router and stay; rows with no
+C<router_last> are never matched.
+
+With VRF collection off for the device (C<vrf_collection_enabled> in
+L<App::Netdisco::Util::VRF>), only rows in named VRFs are retired, never the
+default table. With it on and C<%vrf_read> (VRF name to 1 for a complete
+read, 0 for an incomplete one), the VRFs retired are those read whole, those
+skipped (C<vrf_skipped>), and, only when C<$vrf_list_complete> is 1, those the
+run did not read at all; a VRF read short is never retired. With it on but no
+C<%vrf_read> (an SSH or offline job, or a class without VRF support) nothing
+is retired.
+
+Returns the number of rows deactivated.
+
+=cut
+
+sub retire_unvouched_arps {
+  my ($device, $now, $vrf_read, $vrf_list_complete) = @_;
+  my $router = $device->ip;
+  my $collecting = vrf_collection_enabled($device);
+
+  if ($collecting and not $vrf_read) {
+    debug sprintf ' [%s] arpnip - no VRF reads with store_vrfs on, retired nothing',
+      $router;
+    return 0;
+  }
+
+  my $where = "WHERE active AND router_last = ? AND time_last < $now";
+  my ($retired, @vrfs) = (0);
+
+  schema(vars->{'tenant'})->txn_do(sub {
+    schema(vars->{'tenant'})->storage->dbh_do(sub {
+      my (undef, $dbh) = @_;
+      $dbh->do('SELECT pg_advisory_xact_lock(?, hashtext(host(?::inet)))',
+        undef, $ARP_LOCK_CLASS, $router);
+
+      if (not $collecting) {
+        $retired = $dbh->do("UPDATE node_ip SET active = false $where AND vrf <> ''",
+          undef, $router);
+        return;
+      }
+      ($retired, @vrfs) = _retire_read_vrfs($dbh, $device, $where, $vrf_read, $vrf_list_complete);
+    });
+  });
+
+  $retired = 0 + ($retired || 0);
+  debug sprintf ' [%s] arpnip - retired %d ARP entries no longer reported, in %s',
+    $router, $retired,
+    ($collecting ? ('VRFs ['. (join ', ', map { qq{"$_"} } @vrfs) .']') : 'named VRFs');
+  return $retired;
+}
+
+# idx_node_ip_vrf_named_active covers named-VRF rows only, so those
+# statements repeat its predicate and the default table gets its own UPDATE
+sub _retire_read_vrfs {
+  my ($dbh, $device, $where, $vrf_read, $vrf_list_complete) = @_;
+  my ($router, $retired) = ($device->ip, 0);
+
+  my $stored = $dbh->selectcol_arrayref(
+    "SELECT DISTINCT vrf FROM node_ip $where AND vrf <> ''", undef, $router);
+  my @named = grep { _vrf_unvouched($device, $_, $vrf_read, $vrf_list_complete) }
+              sort @$stored;
+  $retired += $dbh->do("UPDATE node_ip SET active = false $where"
+    ." AND vrf <> '' AND vrf = ANY(?::text[])", undef, $router, \@named)
+    if scalar @named;
+
+  my $default = _vrf_unvouched($device, '', $vrf_read, $vrf_list_complete);
+  $retired += $dbh->do("UPDATE node_ip SET active = false $where AND vrf = ''",
+    undef, $router) if $default;
+
+  return ($retired, ($default ? '' : ()), @named);
+}
+
+sub _vrf_unvouched {
+  my ($device, $vrf, $vrf_read, $vrf_list_complete) = @_;
+  return $vrf_read->{$vrf} if exists $vrf_read->{$vrf};
+  return 1 if vrf_skipped($device, $vrf);
+  return ($vrf_list_complete ? 1 : 0);
 }
 
 1;
