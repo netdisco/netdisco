@@ -41,8 +41,12 @@ changed, and a VRF that has a manual member is not inferred. Domains other than
 while its name is in use.
 
 Runs in one transaction under an advisory lock. Returns the number of inferred
-members written. The discover job in 5b-3 will call it after refreshing
-C<device_vrf>.
+members written. Discover calls it once per device, after the transaction that
+refreshes C<device_vrf> commits.
+
+Every writer of C<l3_domain> or C<l3_domain_member> must take
+C<pg_advisory_xact_lock(1729, 0)> in its transaction first, so that it does not
+interleave with a recompute.
 
 =cut
 

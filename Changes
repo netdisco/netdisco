@@ -9,8 +9,10 @@
     subnets carry their L3 domain, and the Subnet Utilization and IP
     Inventory report API rows carry the VRF; the new store_vrfs setting
     (off by default) turns on collection, with skip_vrf_devices,
-    vrf_no_name and vrf_no_devicevrf to leave devices or VRFs out (database
-    schema 105: run netdisco-deploy)
+    vrf_no_name and vrf_no_devicevrf to leave devices or VRFs out; with it
+    on, discover reads each VRF's addresses, subnets and instance facts in
+    the VRF's own SNMP context, and a VRF it cannot read whole keeps its
+    stored rows (database schema 105: run netdisco-deploy)
   * upgrade SNMP::Info dependency to 3.985000
 
 2.117001 - 2026-11-02
