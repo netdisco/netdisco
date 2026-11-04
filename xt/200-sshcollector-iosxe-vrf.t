@@ -400,4 +400,50 @@ subtest 'arpnip_by_vrf__through_the_worker__entries_keep_their_vrf' => sub {
   is vars->{'vrf_list_complete'}, 1, 'list complete';
 };
 
+# a session that cannot open its pty, as Net::OpenSSH reports a failed spawn
+{
+  package NoPtySSH;
+  our @ISA = ('Test::Netdisco::FakeSSH');
+  sub open2pty { my $self = shift; $self->{error} = 'spawn failed'; return () }
+  sub error { return $_[0]{error} }
+}
+
+subtest 'arpnip_by_vrf__pty_not_opened__warns_and_returns_undef' => sub {
+  my @warned;
+  local $SIG{__WARN__} = sub { push @warned, join '', @_ };
+  my $ssh = NoPtySSH->new(text => fixture_text());
+  my $guard = $ssh->install_expect;
+  is $IOSXE->arpnip_by_vrf('router', $ssh, {}), undef, 'no pty, no result, so the worker defers';
+  is_deeply [$ssh->commands], [], 'nothing sent';
+  is scalar(@warned), 1, 'one warning';
+  like $warned[0] // '', qr/unable to run remote command \[router\] spawn failed/, 'names the host and the error';
+};
+
+foreach my $command ('terminal length 0', 'terminal width 0') {
+  subtest "arpnip_by_vrf__${\ join '_', split / /, $command}_times_out__returns_undef_logs_info" => sub {
+    my @logged;
+    no warnings 'redefine';
+    local *App::Netdisco::SSHCollector::Platform::IOSXE::info = sub { push @logged, join '', @_ };
+    my $ssh = fake_ssh(timeout_on => [$command]);
+    is by_vrf($ssh), undef, 'no session, so the worker defers';
+    is +($ssh->commands)[-1], $command, 'nothing sent after the timed-out command';
+    is scalar(grep { m/arpnip_by_vrf\(\) unable to reach CLI prompt/ } @logged), 1, 'the skip is logged at info';
+  };
+}
+
+subtest 'arpnip_by_vrf__timeout_argument__used_for_every_expect_default_30' => sub {
+  my @timeouts;
+  my $original = \&Test::Netdisco::FakeSSH::Expect::expect;
+  no warnings 'redefine';
+  local *Test::Netdisco::FakeSSH::Expect::expect = sub { push @timeouts, $_[1]; goto &$original };
+  my $ssh = fake_ssh();
+  my $guard = $ssh->install_expect;
+  ok ref $IOSXE->arpnip_by_vrf('router', $ssh, { timeout => 7 }) eq 'HASH', 'read with a timeout argument';
+  ok scalar(@timeouts), 'expect was called';
+  is_deeply [ grep { $_ != 7 } @timeouts ], [], 'every expect waits the configured 7 s';
+  @timeouts = ();
+  ok ref $IOSXE->arpnip_by_vrf('router', fake_ssh(), undef) eq 'HASH', 'read with no arguments at all';
+  is_deeply [ grep { $_ != 30 } @timeouts ], [], 'every expect waits the default 30 s';
+};
+
 done_testing;

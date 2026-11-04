@@ -31,6 +31,10 @@ sub get {
     @$self{qw/ErrorStr ErrorNum/} = ('Timeout', -24);
     return undef;
   }
+  if (ref $answer) {
+    @$self{qw/ErrorStr ErrorNum/} = @$answer;
+    return undef;
+  }
   @$self{qw/ErrorStr ErrorNum/} = ('', 0);
   return ($answer eq 'nosuchobject' ? 'NOSUCHOBJECT' : 12345);
 }
@@ -55,7 +59,7 @@ sub update {
   # SNMP::Info::update() keeps the old session and returns false on failure
   return if $self->{fail_update_to}{$target};
   $self->{context} = $target;
-  return $self->{session};
+  return $self->{session} || 1;
 }
 
 package main;
@@ -139,6 +143,86 @@ subtest 'each_vrf_instance__return_to_default_succeeds__cached_reader_kept' => s
   run_each($snmp);
   is $readers->{ $device->ip }, $snmp, 'cached reader kept';
   delete $readers->{ $device->ip };
+};
+
+# only the same object is dropped: a reader cached since by another worker is
+# a fresh session in the default context
+subtest 'each_vrf_instance__return_fails_other_reader_cached__other_reader_kept' => sub {
+  my $snmp = FakeSNMP->new(fail_update_to => { '' => 1 });
+  my $other = FakeSNMP->new;
+  my $readers = App::Netdisco::Transport::SNMP->instance->readers;
+  $readers->{ $device->ip } = $other;
+  run_each($snmp);
+  is $snmp->{context}, 'red', 'session left in the last VRF context';
+  is $readers->{ $device->ip }, $other, 'the different cached object is kept';
+  delete $readers->{ $device->ip };
+};
+
+subtest 'each_vrf_instance__return_fails_nothing_cached__no_reader_added' => sub {
+  my $snmp = FakeSNMP->new(fail_update_to => { '' => 1 });
+  my $readers = App::Netdisco::Transport::SNMP->instance->readers;
+  delete $readers->{ $device->ip };
+  run_each($snmp);
+  ok !exists $readers->{ $device->ip }, 'no cache entry created for the device';
+};
+
+subtest 'each_vrf_instance__reader_dies__restored_and_error_propagated' => sub {
+  my $snmp = FakeSNMP->new;
+  my $readers = App::Netdisco::Transport::SNMP->instance->readers;
+  $readers->{ $device->ip } = $snmp;
+  my $ok = eval { each_vrf_instance($device, $snmp, \%instances,
+    sub { die "reader died\n" if $_[0] eq 'blue'; return 'data' }); 1 };
+  is $@, "reader died\n", 'the reader error propagates';
+  is $snmp->{context}, '', 'session back in the default context after the unwind';
+  is $readers->{ $device->ip }, $snmp, 'cached reader kept';
+  delete $readers->{ $device->ip };
+};
+
+subtest 'each_vrf_instance__reader_dies_return_fails__reader_dropped_error_kept' => sub {
+  my $snmp = FakeSNMP->new(fail_update_to => { '' => 1 });
+  my $readers = App::Netdisco::Transport::SNMP->instance->readers;
+  $readers->{ $device->ip } = $snmp;
+  my $ok = eval { each_vrf_instance($device, $snmp, \%instances,
+    sub { die "reader died\n" if $_[0] eq 'blue'; return 'data' }); 1 };
+  is $@, "reader died\n", 'the reader error is not replaced by the guard';
+  ok !exists $readers->{ $device->ip }, 'cached reader dropped on the unwind path';
+};
+
+# an error that is not a timeout is the agent answering; representative
+# ErrorStr text for a v3 unknownContexts report and a v1 noSuchName reply
+foreach my $case (
+  [ 'v3_unknown_contexts_report' => [ 'Unknown Context', -2 ] ],
+  [ 'v1_no_such_name' => [ '(noSuchName) There is no such variable name in this MIB.', 2 ] ],
+  [ 'generic_error' => [ 'genErr', 5 ] ],
+) {
+  my ($label, $answer) = @$case;
+  subtest "each_vrf_instance__context_answers_${label}__read_as_usual" => sub {
+    my $snmp = FakeSNMP->new(answers => { red => $answer });
+    my ($reads, $read) = run_each($snmp);
+    is_deeply $reads->{red}, { complete => 1, data => 'data of red' }, 'red read and complete';
+    is_deeply [grep { $_->[0] eq 'red' } @$read], [['red', 'red']], 'red read in its context';
+  };
+}
+
+subtest 'each_vrf_instance__timeout_in_longer_error_text__vrf_incomplete' => sub {
+  my $snmp = FakeSNMP->new(answers => { red => [ 'Timeout: No Response from 192.0.2.1', -24 ] });
+  my ($reads) = run_each($snmp);
+  is_deeply $reads->{red}, { complete => 0, data => undef }, 'red incomplete with no data';
+};
+
+subtest 'each_vrf_instance__session_without_get__context_counts_as_answering' => sub {
+  my $snmp = FakeSNMP->new;
+  $snmp->{session} = undef;
+  my ($reads) = run_each($snmp);
+  is_deeply $reads->{red}, { complete => 1, data => 'data of red' }, 'red read with no probe possible';
+  is_deeply $snmp->{probes}, [], 'nothing probed';
+};
+
+subtest 'each_vrf_instance__session_without_get_method__context_counts_as_answering' => sub {
+  my $snmp = FakeSNMP->new;
+  $snmp->{session} = bless {}, 'NoGetSession';
+  my ($reads) = run_each($snmp);
+  is_deeply $reads->{red}, { complete => 1, data => 'data of red' }, 'red read with no probe possible';
 };
 
 done_testing;

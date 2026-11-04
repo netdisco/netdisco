@@ -659,4 +659,53 @@ subtest 'each_vrf_instance__incomplete_read_that_set_an_error__log_includes_it' 
   like $log, qr/VRF default read incomplete, keeping its rows: Timeout on vrf walk$/, 'the read\'s own error is appended';
 };
 
+# the address and subnet filters of the VRF path, as the flat path applies
+# them; the /32 alias subnet is stored as master's flat path stores one
+subtest 'discover__vrf_path_unusable_and_ignored_entries__left_out' => sub {
+  my %fixture = vrf_fixture();
+  $fixture{instances}{red} = instance('red', rd => undef);
+  delete @{ $fixture{instances}{red} }{qw/rt_import rt_export/};
+  $fixture{context_interfaces} = { red => undef, blue => { 8 => 'Vlan8' } };
+  $fixture{vrf}{red}{addresses} = {
+    address(7, '10.40.0.1', 24),
+    address(7, '10.42.0.1', 32),
+    address(7, '0.0.0.0', 8),
+    address(7, '0:0:0:0:0:0:0:0', 64),
+    address(7, '127.0.0.5', 8),
+    address(7, 'fe80:0000:0000:0000:0000:0000:0000:0001', 64),
+    'x.bogus'  => { ifindex => 7, ip => 'not-an-address', prefix_len => 24, family => 'ipv4' },
+    'x.noip'   => { ifindex => 7, ip => undef, family => 'ipv4' },
+    'x.noport' => { ip => '10.43.0.1', family => 'ipv4' },
+  };
+  $fixture{vrf}{red}{subnets} = {
+    subnet('10.40.0.0', 24, 7),
+    subnet('127.0.0.0', 8, 7),
+    subnet('fe80:0000:0000:0000:0000:0000:0000:0000', 64, 7),
+    'x.nolen'  => { prefix => '10.44.0.0' },
+    'x.noprefix' => { len => 24 },
+    'x.bogus'  => { prefix => 'not-a-prefix', len => 24 },
+  };
+  my ($job) = with_settings(sub { run_discover(%fixture, interfaces => undef) },
+    store_vrfs => 1, ignore_private_nets => 0);
+  is $job->status, 'done', 'discover finished';
+  my @red = grep { $_->{vrf} eq 'red' } upserted('DeviceIp');
+  is_deeply [ sort map { $_->{alias} } @red ], [ '10.40.0.1', '10.42.0.1', '10.43.0.1' ],
+    'unspecified, loopback, link-local and unparsable addresses left out';
+  my ($host) = grep { $_->{alias} eq '10.42.0.1' } @red;
+  is $host->{subnet}, '10.42.0.1/32', 'a /32 address keeps its /32 subnet, as on master';
+  my ($bare) = grep { $_->{alias} eq '10.43.0.1' } @red;
+  is $bare->{subnet}, undef, 'no prefix length, no subnet';
+  is $bare->{port}, undef, 'no ifindex, no port';
+  my ($polled) = grep { $_->{alias} eq '192.0.2.1' } upserted('DeviceIp');
+  is $polled->{port}, undef, 'no default interfaces, no default port';
+  is_deeply [ nets_in('red') ], [ '10.40.0.0/24' ], 'only the usable red subnet stored';
+  my ($red_vrf) = grep { $_->{vrf} eq 'red' } upserted('DeviceVrf');
+  is_deeply [ @$red_vrf{qw/rd rt_import rt_export/} ], [ undef, [], [] ], 'absent RD and RT lists stored empty';
+
+  with_settings(sub { run_discover(%fixture) }, store_vrfs => 1, ignore_private_nets => 1);
+  is_deeply [ map { $_->{alias} } grep { $_->{vrf} eq 'red' } upserted('DeviceIp') ], [],
+    'ignore_private_nets drops the RFC 1918 aliases';
+  is_deeply [ nets_in('red') ], [], 'and the RFC 1918 subnet';
+};
+
 done_testing;

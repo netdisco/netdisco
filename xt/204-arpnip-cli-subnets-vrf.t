@@ -14,6 +14,7 @@ use App::Netdisco;
 use App::Netdisco::DB;
 use App::Netdisco::Backend::Job;
 use App::Netdisco::Transport::SSH ();
+use App::Netdisco::Transport::SNMP ();
 use App::Netdisco::Worker::Plugin::Arpnip::Subnets ();
 
 use Try::Tiny;
@@ -49,6 +50,42 @@ sub subnets_by_vrf {
   push @{ $self->{calls} }, [ 'subnets_by_vrf', @_ ];
   die $self->{die} if $self->{die};
   return $self->{by_vrf};
+}
+
+# the SNMP side, as xt/194 fakes it: each context answers only for its VRF
+package FakeSNMP;
+our $AUTOLOAD;
+sub new { my ($class, %vals) = @_; return bless { walk_failures => [], context => '', %vals }, $class }
+sub walk_failures { $_[0]{walk_failures} }
+sub walk_status { undef }
+sub snmp_ver { 2 }
+sub snmp_comm { 'public' }
+sub update {
+  my ($self, %args) = @_;
+  $self->{context} = exists $args{Context} ? $args{Context}
+    : ($args{Community} =~ m/\@(.+)$/ ? $1 : '');
+  return 1;
+}
+sub _context_of {
+  my ($self, $name) = @_;
+  my $ctx = $self->{instances}{$name}{contexts}[0];
+  return '' if not $ctx or ($ctx->{kind} || '') eq 'none';
+  return $ctx->{id};
+}
+sub vrf_instances { $_[0]{context} eq '' ? $_[0]{instances} : undef }
+sub vrf_instances_complete { $_[0]{context} eq '' ? 1 : undef }
+sub _vrf_answer {
+  my ($self, $what, $name) = @_;
+  return undef unless $self->{context} eq $self->_context_of($name);
+  return $self->{vrf}{$name}{$what};
+}
+sub vrf_subnets { $_[0]->_vrf_answer('subnets', $_[1]) }
+sub vrf_read_complete { $_[0]->_vrf_answer('complete', $_[1]) }
+sub AUTOLOAD {
+  my $self = shift;
+  (my $method = $AUTOLOAD) =~ s/.*:://;
+  return if $method eq 'DESTROY';
+  return $self->{$method};
 }
 
 package FakeSubnetRs;
@@ -99,6 +136,7 @@ sub run_subnets {
     : undef;
 
   local *App::Netdisco::Transport::SSH::session_for = sub { return $session };
+  local *App::Netdisco::Transport::SNMP::reader_for = sub { return $args{snmp} };
   local *App::Netdisco::Worker::Plugin::Arpnip::Subnets::schema = sub { return FakeSubnetRs->new };
 
   my $job = App::Netdisco::Backend::Job->new({
@@ -108,13 +146,15 @@ sub run_subnets {
   with_settings(sub {
     try { MyWorker->new()->run($job) }
     catch { $job->status('error'); $job->log("error running job: $_") };
-  }, device_auth => [{ driver => 'cli' }], store_vrfs => 1, ignore_private_nets => 0, %{ $args{settings} || {} });
+  }, device_auth => ($args{snmp} ? [{ driver => 'snmp' }, { driver => 'cli' }] : [{ driver => 'cli' }]), store_vrfs => 1, ignore_private_nets => 0, %{ $args{settings} || {} });
 
   return $job;
 }
 
 # net|vrf, ignoring the timestamp and the router
 sub stored { return join ' ', sort map { join '|', $_->[0], $_->[2] // '-' } @upserts }
+# the router each upsert names, deduplicated
+sub routers { my %seen; return join ' ', sort grep { not $seen{$_}++ } map { $_->[3] // '-' } @upserts }
 sub calls_of { my ($platform, $name) = @_; return grep { $_->[0] eq $name } @{ $platform->{calls} } }
 
 subtest 'cli_subnets__switch_on_platform_by_vrf__stored_under_each_vrf' => sub {
@@ -127,6 +167,7 @@ subtest 'cli_subnets__switch_on_platform_by_vrf__stored_under_each_vrf' => sub {
     'subnets_by_vrf called with the subnets arguments';
   is stored(), join(' ', sort '172.20.20.0/24|', '10.100.1.0/24|red', '10.100.1.0/24|blue', '2001:db8:1:0:0:0:0:0/64|red'),
     'default stored as the empty vrf; the same prefix in red and blue kept as two rows';
+  is routers(), '192.0.2.1', 'every row names the device as its router';
 };
 
 subtest 'cli_subnets__default_and_empty_both_named__one_row' => sub {
@@ -181,6 +222,7 @@ subtest 'cli_subnets__switch_off__flat_subnets_unchanged_no_by_vrf_call' => sub 
   is $job->status, 'info', 'arpnip finished with the store phase\'s info status';
   is scalar(calls_of($platform, 'subnets_by_vrf')), 0, 'subnets_by_vrf not called';
   is stored(), '192.0.2.0/24| 198.51.100.0/24|', 'flat subnets stored under the empty vrf';
+  is routers(), '192.0.2.1', 'flat rows name the device as their router';
 };
 
 subtest 'cli_subnets__platform_without_by_vrf__flat_as_today' => sub {
@@ -215,6 +257,35 @@ subtest 'cli_subnets__by_vrf_dies__nothing_stored_not_deferred' => sub {
   my $job = run_subnets(platform => $platform);
   is $job->status, 'info', 'not deferred';
   is scalar(@upserts), 0, 'nothing stored';
+};
+
+sub snmp_instance {
+  my $name = shift;
+  return { name => $name, kind => ($name eq 'default' ? 'default' : 'vrf'),
+    contexts => ($name eq 'default' ? [{ kind => 'none' }]
+      : [{ kind => 'vrf', id => $name, v2c => "%s\@$name", v3 => $name }]) };
+}
+
+sub snmp_subnet { my ($prefix, $len) = @_;
+  return ("$prefix/$len" => { prefix => $prefix, len => $len,
+    family => ($prefix =~ m/:/ ? 'ipv6' : 'ipv4'), ifindex => 1, sources => ['ipAddress'] }) }
+
+subtest 'arpnip_subnets__snmp_and_cli_in_one_job__both_sources_stored_once_with_router' => sub {
+  my $snmp = FakeSNMP->new(class => 'SNMP::Info::Layer3',
+    instances => { default => snmp_instance('default'), red => snmp_instance('red'), green => snmp_instance('green') },
+    vrf => {
+      default => { complete => 1, subnets => { snmp_subnet('198.51.100.0', 24) } },
+      red     => { complete => 1, subnets => { snmp_subnet('10.100.1.0', 24), snmp_subnet('203.0.113.0', 24) } },
+      green   => { complete => 1, subnets => { snmp_subnet('10.200.0.0', 16) } },
+    });
+  my $platform = ReportingPlatform->new(by_vrf => by_vrf());
+  my $job = run_subnets(platform => $platform, snmp => $snmp);
+  is $job->status, 'info', 'arpnip finished with the store phase\'s info status';
+  is scalar(calls_of($platform, 'subnets_by_vrf')), 1, 'the CLI worker ran in the same job as the SNMP one';
+  is stored(), join(' ', sort '172.20.20.0/24|', '198.51.100.0/24|', '10.100.1.0/24|red', '203.0.113.0/24|red',
+      '2001:db8:1:0:0:0:0:0/64|red', '10.100.1.0/24|blue', '10.200.0.0/16|green'),
+    'the union of both sources under their VRFs; red 10.100.1.0/24, found by both, stored once';
+  is routers(), '192.0.2.1', 'every row names the device as its router';
 };
 
 subtest 'store_cli_vrf_subnets__default_and_empty_both_named__counts_one_row' => sub {

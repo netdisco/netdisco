@@ -389,4 +389,53 @@ subtest 'voss_arpnip__lab_capture__unchanged_from_today' => sub {
   is_deeply [ sort keys %{ $rows[0] } ], [qw/ip mac/], 'no vrf key';
 };
 
+# a session that cannot open its pty, as Net::OpenSSH reports a failed spawn
+{
+  package NoPtySSH;
+  our @ISA = ('Test::Netdisco::FakeSSH');
+  sub open2pty { my $self = shift; $self->{error} = 'spawn failed'; return () }
+  sub error { return $_[0]{error} }
+}
+
+sub debug_lines_of {
+  my $code = shift;
+  my @logged;
+  no warnings 'redefine';
+  local *App::Netdisco::SSHCollector::Platform::VOSS::debug = sub { push @logged, join '', @_ };
+  my $result = $code->();
+  return ($result, @logged);
+}
+
+subtest 'voss_arpnip_by_vrf__pty_not_opened__returns_undef_logs_debug' => sub {
+  my $ssh = NoPtySSH->new(fixture => "$FIXTURES/edge1.txt");
+  my ($result, @logged) = debug_lines_of(sub { by_vrf($ssh) });
+  is $result, undef, 'failure, so the worker defers';
+  is_deeply [$ssh->commands], [], 'nothing sent';
+  is scalar(grep { m/unable to run remote command \[edge\] spawn failed/ } @logged), 1, 'logged at debug with the error';
+};
+
+subtest 'voss_arpnip_by_vrf__terminal_more_disable_times_out__abandoned' => sub {
+  my $ssh = fake_ssh('edge1', timeout_on => 'terminal more disable');
+  my ($result, @logged) = debug_lines_of(sub { by_vrf($ssh) });
+  is $result, undef, 'failure, so the worker defers';
+  is_deeply [$ssh->commands], ['terminal more disable', 'exit'], 'session closed, nothing else sent';
+  is scalar(grep { m/no prompt after terminal more disable \[edge\]/ } @logged), 1, 'the abandon is logged';
+};
+
+subtest 'voss_arpnip_by_vrf__terminal_more_disable_refused__abandoned' => sub {
+  my $ssh = Test::Netdisco::FakeSSH->new(text => with_output('terminal more disable',
+    "                    ^\n% Invalid input detected at '^' marker.\n\n"));
+  my ($result, @logged) = debug_lines_of(sub { by_vrf($ssh) });
+  is $result, undef, 'failure, so the worker defers';
+  is_deeply [$ssh->commands], ['terminal more disable', 'exit'], 'session closed, nothing else sent';
+  is scalar(grep { m/invalid command \[edge\]/ } @logged), 1, 'the abandon is logged';
+};
+
+subtest 'voss_arpnip_by_vrf__vrfs_setting_not_an_id_list__all_vrfs_asked' => sub {
+  my $ssh = fake_ssh('edge1');
+  my $result = by_vrf($ssh, { vrfs => 'red' });
+  is +($ssh->commands)[2], 'show ip arp vrfids 0-512', 'a name is not sent; the whole range is';
+  is $result->{vrf_list_complete}, 1, 'the whole range vouches for the list';
+};
+
 done_testing;

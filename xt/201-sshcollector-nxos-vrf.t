@@ -62,7 +62,7 @@ sub with_output {
 sub chain_of { return join ' ; ', map { (arp($_), nd($_)) } @_ }
 
 # the per-VRF commands are sent in these chained requests (640 bytes each)
-sub lab_requests { return (chain_of(@LISTED[0 .. 5]), chain_of(@LISTED[6])) }
+sub lab_requests { return (chain_of(@LISTED[0 .. 5]), chain_of($LISTED[6])) }
 
 # the exec requests after the VRF list
 sub chains_sent { my $ssh = shift; return [ grep { $_ ne 'show vrf | json' } $ssh->commands ] }
