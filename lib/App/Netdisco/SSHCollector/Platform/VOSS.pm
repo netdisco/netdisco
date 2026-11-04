@@ -8,7 +8,10 @@ App::Netdisco::SSHCollector::Platform::VOSS
 
 Collect ARP entries from Extreme VSP devices running the VOSS operating system.
 
-This is useful if running multiple VRFs as the built-in SNMP ARP collection will only fetch from the default GlobalRouter VRF.
+With C<store_vrfs> off, SNMP arpnip reads only the GlobalRouter VRF, so this
+module is the way to collect ARP entries from the other VRFs. With it on, SNMP
+reads each VRF too, and this module's C<arpnip_by_vrf> stores each entry under
+its VRF.
 
 By default this module gets ARP entries from all VRFs (0-512). To specify only certain VRFs in the config:
 
@@ -19,9 +22,9 @@ By default this module gets ARP entries from all VRFs (0-512). To specify only c
       only:
         - 10.1.1.1
         - 192.168.0.1
-     username: oliver
-     password: letmein
-     vrfs: 1,5,100
+      username: oliver
+      password: letmein
+      vrfs: 1,5,100
 
 The VRFs can be specified in any format that the "show ip arp vrfids" command will take. For example:
 
@@ -43,10 +46,11 @@ use Moo;
 
 =over 4
 
-=item B<arpnip($host, $ssh)>
+=item B<arpnip($host, $ssh, $args)>
 
 Retrieve ARP entries from device. C<$host> is the hostname or IP address
-of the device. C<$ssh> is a Net::OpenSSH connection to the device.
+of the device. C<$ssh> is a Net::OpenSSH connection to the device. C<$args>
+is the C<device_auth> entry; its C<vrfs> limits the VRFs read.
 
 Returns a list of hashrefs in the format C<{ mac =E<gt> MACADDR, ip =E<gt> IPADDR }>.
 
@@ -61,7 +65,8 @@ vrf_list_complete =E<gt> 0|1, families =E<gt> [4] }>, or undef when the session,
 C<show ip vrf> or the ARP command fails. Only IPv4 ARP is read, so
 C<families> is C<[4]>: a VRF counts as read whole only when another source in
 the same job read its IPv6 neighbors whole, so with this collector alone no
-VRF's entries retire.
+VRF's entries retire. A C<vrfs> setting other than C<0-512> makes
+C<vrf_list_complete> 0, so the VRFs it leaves out keep their stored entries.
 
 A subclass that overrides C<arpnip> must also override C<arpnip_by_vrf>, or
 with C<store_vrfs> on this C<arpnip_by_vrf> is used instead of the override.

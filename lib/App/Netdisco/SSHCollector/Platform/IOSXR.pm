@@ -6,10 +6,9 @@ App::Netdisco::SSHCollector::Platform::IOSXR
 
 =head1 DESCRIPTION
 
-Collect ARP entries from IOSXR routers using Expect
-
-This is a reworked version of the IOSXR module, and it is suitable
-for both 32- and 64-bit IOSXR.
+Collect ARP entries from Cisco IOS-XR routers using Expect, and, with
+C<store_vrfs> on, IPv6 neighbor entries as well. Suitable for both 32- and
+64-bit IOS-XR.
 
 =cut
 
@@ -54,7 +53,8 @@ though its IPv4 entries are reported. A VRF that is empty, misspelled or
 unknown prints nothing, so an empty table reads as whole. A VRF list row
 that cannot be parsed into a name makes C<vrf_list_complete> 0, and a VRF
 name outside C<[A-Za-z0-9_.:-]> or equal to C<all> is 0 with no command sent.
-A C<show vrf all> that returned with its header and no VRF is a whole, empty
+Only a VRF named exactly C<default> is skipped as the global table; C<Default>
+is a user VRF. A C<show vrf all> that returned with its header and no VRF is a whole, empty
 list. After a timeout the rest of the session is not read, and that VRF and
 every one not yet read are 0.
 

@@ -42,14 +42,15 @@ C<< [ { ip => '192.0.2.10', mac => '0011.2233.4455' },
 As C<arpnip>, used when C<store_vrfs> is on. Reads C<show vrf | json>, then
 sends the C<show ip arp vrf NAME | json> and C<show ipv6 neighbor vrf NAME |
 json> commands of the listed VRFs chained with C<;>, at most 16 commands and
-640 bytes per exec request, and names each entry's VRF from the list (C<default> is C<''>).
-Each reply document is assigned by its own VRF name and table shape, not its
-position. A VRF's family is read whole only when exactly one document for it
-decodes and holds as many rows as its own count (C<cnt-total> for ARP,
-C<count> for IPv6); a request that fails, or a document that does not decode,
-leaves the VRF and families after it unread. VRF names that differ only in case are all 0 and never queried, and make
-C<vrf_list_complete> 0. Rows without a MAC
-(C<INCOMPLETE>) are skipped but count as rows. Link-local neighbors are kept.
+640 bytes per exec request, and names each entry's VRF from the list
+(C<default> is C<''>). Each reply document is assigned by its own VRF name and
+table shape, not its position. A VRF's family is read whole only when exactly
+one document for it decodes and holds as many rows as its own count
+(C<cnt-total> for ARP, C<count> for IPv6); a request that fails, or a document
+that does not decode, leaves the VRF and families after it unread. VRF names
+that differ only in case are all 0 and never queried, and make
+C<vrf_list_complete> 0. Rows without a MAC (C<INCOMPLETE>) are skipped but
+count as rows. Link-local neighbors are kept.
 
 Returns C<< { entries =E<gt> [ { ip, mac, vrf } ], vrf_read =E<gt> { VRF =E<gt> 0|1 },
 vrf_list_complete =E<gt> 0|1, families =E<gt> [4, 6] } >>, or undef when

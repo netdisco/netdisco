@@ -11,7 +11,8 @@ CLI collectors for Cisco IOS-XE.
 ARP:
 IOS-XE does not always support "show ip arp vrf all". This module collects
 the global ARP table and, when VRFs are present, enumerates VRFs from
-"show vrf" and collects "show ip arp vrf <vrf>" for each.
+"show vrf" and collects "show ip arp vrf <vrf>" for each. With C<store_vrfs>
+on, C<arpnip_by_vrf> also reads IPv6 neighbors and keeps each entry's VRF.
 
 MAC:
 Collects forwarding entries from "show mac address-table" via an interactive

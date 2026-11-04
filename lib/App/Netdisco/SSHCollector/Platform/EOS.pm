@@ -6,7 +6,8 @@ App::Netdisco::SSHCollector::Platform::EOS
 
 =head1 DESCRIPTION
 
-Collect ARP entries from Arista EOS devices.
+Collect ARP and IPv6 neighbor entries, MAC table, and connected subnet data
+from Arista EOS devices.
 
 =cut
 
@@ -30,6 +31,7 @@ Retrieve ARP entries from device. C<$host> is the hostname or IP address
 of the device. C<$ssh> is a Net::OpenSSH connection to the device.
 
 Returns a list of hashrefs in the format C<< { mac => MACADDR, ip => IPADDR } >>.
+IPv4 ARP and IPv6 neighbor entries from all VRFs are flattened into one list.
 
 =item B<arpnip_by_vrf($host, $ssh, $args)>
 
@@ -46,6 +48,17 @@ C<arpnip>; one with no interface is still returned, without C<iface>.
 
 A subclass that overrides C<arpnip> must also override C<arpnip_by_vrf>, or
 with C<store_vrfs> on this C<arpnip_by_vrf> is used instead of the override.
+
+=item B<macsuck($host, $ssh)>
+
+Retrieve MAC address table entries from device, skipping entries on the
+C<Router> port. Returns a hashref in the format
+C<< { VLAN => { PORT => { MACADDR => COUNT } } } >>.
+
+=item B<subnets($host, $ssh)>
+
+Retrieve directly connected IPv4 subnets from every VRF's routing table,
+without host routes. Returns a list of CIDR strings such as C<10.1.1.0/24>.
 
 =back
 
