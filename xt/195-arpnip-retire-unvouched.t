@@ -228,6 +228,8 @@ sub AUTOLOAD {
 
 package FakeCLI;
 sub new { return bless {}, $_[0] }
+# a session stands in for its own platform, which has no arpnip_by_vrf
+sub platform { return $_[0] }
 sub arpnip { return ({ ip => '192.0.2.10', mac => '00:11:22:33:44:01' }) }
 
 package main;

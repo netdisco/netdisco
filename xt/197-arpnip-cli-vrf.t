@@ -1,0 +1,339 @@
+#!/usr/bin/env perl
+
+use strict; use warnings;
+no warnings 'once'; # local *glob = sub {} overrides below are single-use by design
+
+BEGIN { $ENV{DANCER_ENVDIR} = '/dev/null'; }
+
+use Test::More 0.88;
+use Test::File::ShareDir::Dist { 'App-Netdisco' => 'share/' };
+
+use lib 'xt/lib';
+
+use App::Netdisco;
+use App::Netdisco::DB;
+use App::Netdisco::Backend::Job;
+use App::Netdisco::Transport::SNMP ();
+use App::Netdisco::Transport::SSH ();
+use App::Netdisco::Worker::Plugin::Arpnip::Nodes ();
+
+use Try::Tiny;
+use Dancer qw/:moose :script !pass/;
+
+# The CLI arpnip worker with store_vrfs on, run through the Runner as xt/193
+# runs the SNMP one. session_for is faked to return a session over a stub
+# platform, so the worker's contract with a platform is tested without SSH.
+
+my $CONFIG = config();
+$CONFIG->{logger} = 'console';
+$CONFIG->{log} = ($ENV{'DANCER_DEBUG'} ? 'debug' : 'error');
+Dancer::Logger->init('console', $CONFIG);
+
+{
+  package MyWorker;
+  use Moo;
+  with 'App::Netdisco::Worker::Runner';
+}
+
+config->{'dns'}->{'no'} = ['0.0.0.0/0'];
+
+# today's platform contract: arpnip returns a flat list, as a site-local
+# App::NetdiscoX::SSHCollector::Platform::* module does
+package FlatPlatform;
+sub new { my ($class, %args) = @_; return bless { calls => [], %args }, $class }
+sub arpnip {
+  my $self = shift;
+  push @{ $self->{calls} }, [ 'arpnip', @_ ];
+  return @{ $self->{flat} || [] };
+}
+
+package ReportingPlatform;
+our @ISA = ('FlatPlatform');
+sub arpnip_by_vrf {
+  my $self = shift;
+  push @{ $self->{calls} }, [ 'arpnip_by_vrf', @_ ];
+  die $self->{die} if $self->{die};
+  return $self->{by_vrf};
+}
+
+package FakeSNMP;
+our $AUTOLOAD;
+sub new { my ($class, %vals) = @_; return bless { walk_failures => [], %vals }, $class }
+sub walk_failures { $_[0]{walk_failures} }
+sub walk_status { undef }
+sub error { undef }
+sub vrf_instances { $_[0]{instances} }
+sub vrf_instances_complete { $_[0]{instances_complete} }
+sub vrf_neighbors { $_[0]{vrf}{ $_[1] }{neighbors} }
+sub vrf_read_complete { $_[0]{vrf}{ $_[1] }{complete} }
+sub AUTOLOAD {
+  my $self = shift;
+  (my $method = $AUTOLOAD) =~ s/.*:://;
+  return if $method eq 'DESTROY';
+  return $self->{$method};
+}
+
+package main;
+
+my %device_cols = (
+  ip => '192.0.2.1', name => 'router1', layers => '00000100', snmp_ver => 2,
+  snmp_class => 'SNMP::Info::Layer3',
+);
+
+my @flat = (
+  { ip => '192.0.2.10', mac => '00:11:22:33:44:01' },
+  { ip => '2001:db8::10', mac => '00:11:22:33:44:02' },
+);
+
+sub by_vrf {
+  my (%over) = @_;
+  return {
+    entries => [
+      { ip => '192.0.2.10', mac => '00:11:22:33:44:01', vrf => '' },
+      { ip => '10.40.0.5',  mac => '00:11:22:33:44:07', vrf => 'red' },
+      { ip => '10.40.0.5',  mac => '00:11:22:33:44:08', vrf => 'blue' },
+    ],
+    vrf_read => { '' => 1, red => 1, blue => 1 },
+    vrf_list_complete => 1,
+    %over,
+  };
+}
+
+# SNMP attribution-mode instances, so every VRF is read with no update()
+sub snmp_fixture {
+  my (%complete) = @_;
+  my %instances = map { ($_ => { name => $_, kind => ($_ eq 'default' ? 'default' : 'vrf'),
+                                 contexts => [{ kind => 'none' }] }) } qw/default red blue/;
+  return (
+    instances_complete => (exists $complete{list} ? $complete{list} : 1),
+    instances => \%instances,
+    vrf => {
+      default => { complete => 1, neighbors => {} },
+      red  => { complete => (exists $complete{red} ? $complete{red} : 1),
+                neighbors => { '7.10.40.0.5' => { ip => '10.40.0.5', mac => '00:11:22:33:44:07' } } },
+      blue => { complete => 1, neighbors => {} },
+    },
+  );
+}
+
+our (@stored, @logged, @retired);
+
+sub with_settings {
+  my ($code, %settings) = @_;
+  my %saved = map { $_ => setting($_) } keys %settings;
+  set($_ => $settings{$_}) for keys %settings;
+  my @result = eval { $code->() };
+  my $error = $@;
+  set($_ => $saved{$_}) for keys %saved;
+  die $error if $error;
+  return @result;
+}
+
+# platform => object (or undef for a failed connection), snmp => FakeSNMP args
+sub run_arpnip {
+  my (%args) = @_;
+  delete @{ vars() }{qw/arps timestamp hook_data/};
+  @stored = (); @logged = (); @retired = ();
+
+  my $device = App::Netdisco::DB->resultset('Device')->new_result({ %device_cols });
+  $device->in_storage(1);
+  $device->{'_column_data'}{'since_last_arpnip'} = 0;
+
+  my $session = $args{platform}
+    ? MySession->new(platform => $args{platform}, host => $device->ip, ssh => 'SSH', auth => { platform => 'Stub' })
+    : undef;
+  my $fake_snmp = FakeSNMP->new(%{ $args{snmp} || {} });
+  no warnings 'once';
+
+  local *App::Netdisco::Transport::SSH::session_for = sub { return $session };
+  local *App::Netdisco::Transport::SNMP::reader_for = sub { return $fake_snmp };
+  local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::store_arp = sub { push @stored, { %{ $_[0] } } };
+  local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::retire_unvouched_arps = sub { push @retired, [ @_[2, 3] ]; 0 };
+  local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::debug = sub { push @logged, join '', @_ };
+  local *App::Netdisco::DB::Result::Device::update = sub { return $_[0] };
+
+  my $job = App::Netdisco::Backend::Job->new({
+    job => 0, device => $device, action => 'arpnip::nodes',
+  });
+
+  my $auth = ($args{snmp} ? [{ driver => 'snmp' }, { driver => 'cli' }] : [{ driver => 'cli' }]);
+  with_settings(sub {
+    try { MyWorker->new()->run($job) }
+    catch { $job->status('error'); $job->log("error running job: $_") };
+  }, device_auth => $auth, store_vrfs => 1, %{ $args{settings} || {} });
+
+  return $job;
+}
+
+sub entries { return join ' ', sort map { join '|', $_->{ip}, $_->{mac}, $_->{vrf} // '-' } @stored }
+sub flatten_lines { return grep { m/flatten/ } @logged }
+sub calls_of { my ($platform, $name) = @_; return grep { $_->[0] eq $name } @{ $platform->{calls} } }
+
+subtest 'cli_arpnip__switch_off__calls_arpnip_unchanged' => sub {
+  my $platform = ReportingPlatform->new(flat => [@flat], by_vrf => by_vrf());
+  my $job = run_arpnip(platform => $platform, settings => { store_vrfs => 0 });
+  is $job->status, 'done', 'arpnip done';
+  is scalar(calls_of($platform, 'arpnip_by_vrf')), 0, 'arpnip_by_vrf not called';
+  my ($call) = calls_of($platform, 'arpnip');
+  is_deeply $call, [ 'arpnip', '192.0.2.1', 'SSH', { platform => 'Stub' } ], 'arpnip called as today';
+  is_deeply [ sort { $a->{ip} cmp $b->{ip} } @stored ], \@flat, 'entries stored as returned';
+  is scalar(flatten_lines()), 0, 'no flattening line with the switch off';
+  ok !exists vars->{'vrf_read'}, 'no vrf_read';
+  ok !exists vars->{'vrf_list_complete'}, 'no vrf_list_complete';
+};
+
+subtest 'cli_arpnip__platform_without_arpnip_by_vrf__flattens_and_logs_once' => sub {
+  my $platform = FlatPlatform->new(flat => [@flat]);
+  my $job = run_arpnip(platform => $platform);
+  is $job->status, 'done', 'arpnip done';
+  is_deeply [ sort { $a->{ip} cmp $b->{ip} } @stored ], \@flat, 'entries stored as returned';
+  is scalar(flatten_lines()), 1, 'one flattening line';
+  like((flatten_lines())[0], qr/contributes no VRF reads/, 'the line says this collector reads no VRF');
+  like((flatten_lines())[0], qr/192\.0\.2\.1/, 'the line names the device');
+  ok !exists vars->{'vrf_read'}, 'no vrf_read, so nothing retires';
+  ok !exists vars->{'vrf_list_complete'}, 'no vrf_list_complete';
+};
+
+subtest 'cli_arpnip__site_local_flat_platform__works_with_switch_on' => sub {
+  my $platform = FlatPlatform->new(flat => [ { ip => '192.0.2.20', mac => '00:11:22:33:44:20', dns => undef } ]);
+  my $job = run_arpnip(platform => $platform);
+  is $job->status, 'done', 'arpnip done';
+  is scalar(calls_of($platform, 'arpnip')), 1, 'arpnip called once';
+  is entries(), '192.0.2.20|00:11:22:33:44:20|-', 'entry stored without a vrf';
+};
+
+subtest 'cli_arpnip__reporting_platform__entries_keep_vrf' => sub {
+  my $platform = ReportingPlatform->new(flat => [@flat], by_vrf => by_vrf());
+  my $job = run_arpnip(platform => $platform);
+  is $job->status, 'done', 'arpnip done';
+  is scalar(calls_of($platform, 'arpnip')), 0, 'flat arpnip not called';
+  my ($call) = calls_of($platform, 'arpnip_by_vrf');
+  is_deeply $call, [ 'arpnip_by_vrf', '192.0.2.1', 'SSH', { platform => 'Stub' } ],
+    'arpnip_by_vrf called with the arpnip arguments';
+  is entries(), join(' ', sort '192.0.2.10|00:11:22:33:44:01|',
+    '10.40.0.5|00:11:22:33:44:07|red', '10.40.0.5|00:11:22:33:44:08|blue'),
+    'one entry per VRF, same IP in two VRFs kept apart';
+  is_deeply vars->{'vrf_read'}, { '' => 1, red => 1, blue => 1 }, 'vrf_read from the platform';
+  is vars->{'vrf_list_complete'}, 1, 'vrf_list_complete from the platform';
+  is scalar(flatten_lines()), 0, 'no flattening line';
+};
+
+subtest 'cli_arpnip__default_named_default__stored_as_empty_vrf' => sub {
+  my $platform = ReportingPlatform->new(by_vrf => by_vrf(
+    entries => [ { ip => '192.0.2.10', mac => '00:11:22:33:44:01', vrf => 'default' } ],
+    vrf_read => { default => 1 }));
+  run_arpnip(platform => $platform);
+  is entries(), '192.0.2.10|00:11:22:33:44:01|', 'default stored as the empty vrf';
+  is_deeply vars->{'vrf_read'}, { '' => 1 }, 'vrf_read keyed by the empty vrf';
+};
+
+subtest 'cli_arpnip__skipped_vrf__entries_dropped' => sub {
+  my $platform = ReportingPlatform->new(by_vrf => by_vrf());
+  run_arpnip(platform => $platform, settings => { vrf_no_name => ['blue'] });
+  is scalar(grep { $_->{vrf} eq 'blue' } @stored), 0, 'no blue entries';
+  ok scalar(grep { $_->{vrf} eq 'red' } @stored), 'red entries stored';
+  ok !exists vars->{'vrf_read'}{blue}, 'blue absent from vrf_read, so it retires as skipped';
+  run_arpnip(platform => $platform, settings => { vrf_no_devicevrf => ['192.0.2.1:red'] });
+  is scalar(grep { $_->{vrf} eq 'red' } @stored), 0, 'vrf_no_devicevrf drops red';
+};
+
+subtest 'cli_arpnip__one_vrf_incomplete__others_complete_in_vrf_read' => sub {
+  my $platform = ReportingPlatform->new(by_vrf => by_vrf(vrf_read => { '' => 1, red => 0, blue => 1 }));
+  my $job = run_arpnip(platform => $platform);
+  is $job->status, 'done', 'arpnip done';
+  is_deeply vars->{'vrf_read'}, { '' => 1, red => 0, blue => 1 }, 'red incomplete, the others whole';
+  ok scalar(grep { $_->{vrf} eq 'red' } @stored), 'entries read from red still stored';
+  ok scalar(grep { $_->{vrf} eq 'blue' } @stored), 'blue stored';
+};
+
+subtest 'cli_arpnip__snmp_and_cli_both_read_vrf__complete_only_if_both_whole' => sub {
+  my $platform = ReportingPlatform->new(by_vrf => by_vrf(
+    vrf_read => { '' => 1, red => 1, blue => 0, green => 1 }, vrf_list_complete => 1));
+  my $job = run_arpnip(platform => $platform, snmp => { snmp_fixture(red => 0) });
+  is $job->status, 'done', 'arpnip done';
+  is scalar(calls_of($platform, 'arpnip_by_vrf')), 1, 'the CLI worker ran after the SNMP one';
+  is_deeply vars->{'vrf_read'}, { '' => 1, red => 0, blue => 0, green => 1 },
+    'red short on SNMP and blue short on CLI are both incomplete';
+  is vars->{'vrf_list_complete'}, 1, 'both lists complete';
+  is_deeply \@retired, [ [ { '' => 1, red => 0, blue => 0, green => 1 }, 1 ] ],
+    'retire receives the merged vrf_read and list completeness';
+
+  run_arpnip(platform => ReportingPlatform->new(by_vrf => by_vrf(vrf_list_complete => 0)),
+    snmp => { snmp_fixture() });
+  is vars->{'vrf_list_complete'}, 0, 'a short CLI list makes the merged list short';
+  run_arpnip(platform => ReportingPlatform->new(by_vrf => by_vrf()),
+    snmp => { snmp_fixture(list => 0) });
+  is vars->{'vrf_list_complete'}, 0, 'a short SNMP list makes the merged list short';
+};
+
+subtest 'cli_arpnip__flattening_cli_with_per_vrf_snmp__vrf_read_from_snmp_only' => sub {
+  my $platform = FlatPlatform->new(flat => [@flat]);
+  my $job = run_arpnip(platform => $platform, snmp => { snmp_fixture(red => 0) });
+  is $job->status, 'done', 'arpnip done';
+  is scalar(calls_of($platform, 'arpnip')), 1, 'the flat CLI collector ran';
+  is_deeply vars->{'vrf_read'}, { '' => 1, red => 0, blue => 1 }, 'vrf_read as SNMP read it';
+  is vars->{'vrf_list_complete'}, 1, 'vrf_list_complete as SNMP read it';
+  is_deeply \@retired, [ [ { '' => 1, red => 0, blue => 1 }, 1 ] ], 'retire receives SNMP\'s reads';
+};
+
+subtest 'cli_arpnip__entries_in_vrf_missing_from_vrf_read__read_incomplete' => sub {
+  my $platform = ReportingPlatform->new(by_vrf => by_vrf(vrf_read => { '' => 1, blue => 1 }));
+  run_arpnip(platform => $platform);
+  is_deeply vars->{'vrf_read'}, { '' => 1, red => 0, blue => 1 }, 'red has entries, so it reads incomplete';
+  ok scalar(grep { $_->{vrf} eq 'red' } @stored), 'red entries stored';
+};
+
+subtest 'cli_arpnip__empty_vrf_read_with_list_complete__no_vrf_vouched' => sub {
+  my $platform = ReportingPlatform->new(by_vrf => by_vrf(entries => [], vrf_read => {}, vrf_list_complete => 1));
+  my $job = run_arpnip(platform => $platform);
+  is $job->status, 'done', 'arpnip done';
+  ok !exists vars->{'vrf_read'}, 'no vrf_read, so nothing retires';
+  is vars->{'vrf_list_complete'}, 0, 'a platform that read nothing cannot vouch for its list';
+  run_arpnip(platform => $platform, snmp => { snmp_fixture() });
+  is vars->{'vrf_list_complete'}, 0, 'nor make a complete SNMP list stand';
+};
+
+subtest 'cli_arpnip__default_and_empty_both_reported__complete_only_if_both' => sub {
+  foreach my $pair ([1, 0], [0, 1]) {
+    my $platform = ReportingPlatform->new(by_vrf => by_vrf(
+      vrf_read => { '' => $pair->[0], default => $pair->[1], red => 1, blue => 1 }));
+    run_arpnip(platform => $platform);
+    is vars->{'vrf_read'}{''}, 0, "'' $pair->[0] and default $pair->[1] merge to 0";
+    ok !exists vars->{'vrf_read'}{default}, 'no default key';
+  }
+};
+
+subtest 'merge_vrf_reads__either_order__same_result' => sub {
+  my $merge = \&App::Netdisco::Worker::Plugin::Arpnip::Nodes::merge_vrf_reads;
+  my @sources = ([ { '' => 1, red => 0 }, 1 ], [ { red => 1, blue => 1 }, 0 ]);
+  foreach my $order ([0, 1], [1, 0]) {
+    delete @{ vars() }{qw/vrf_read vrf_list_complete/};
+    $merge->(@{ $sources[$_] }) for @$order;
+    is_deeply vars->{'vrf_read'}, { '' => 1, red => 0, blue => 1 }, "vrf_read, order @$order";
+    is vars->{'vrf_list_complete'}, 0, "vrf_list_complete, order @$order";
+  }
+};
+
+subtest 'cli_arpnip__session_fails__defers_and_vrf_read_untouched' => sub {
+  my $job = run_arpnip(platform => undef);
+  is $job->status, 'defer', 'no session defers as today';
+  ok !exists vars->{'vrf_read'}, 'no vrf_read';
+
+  foreach my $case ([ 'undef return', ReportingPlatform->new(by_vrf => undef) ],
+                    [ 'die', ReportingPlatform->new(die => "channel closed\n") ]) {
+    my ($label, $platform) = @$case;
+    $job = run_arpnip(platform => $platform);
+    is $job->status, 'defer', "$label defers";
+    like $job->log, ($label eq 'die' ? qr/channel closed/ : qr/no ARP data/), "$label reason in the job log";
+    ok !exists vars->{'vrf_read'}, "$label leaves no vrf_read";
+    ok !exists vars->{'vrf_list_complete'}, "$label leaves no vrf_list_complete";
+
+    $job = run_arpnip(platform => $platform, snmp => { snmp_fixture(red => 0) });
+    is_deeply vars->{'vrf_read'}, { '' => 1, red => 0, blue => 1 }, "$label leaves SNMP's vrf_read as read";
+    is vars->{'vrf_list_complete'}, 1, "$label leaves SNMP's vrf_list_complete as read";
+    ok scalar(grep { $_->status eq 'defer' and $_->phase eq 'main' } @{ $job->_statuslist }),
+      "$label records a defer from the CLI worker";
+  }
+};
+
+done_testing;

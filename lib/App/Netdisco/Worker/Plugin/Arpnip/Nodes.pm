@@ -10,7 +10,8 @@ use App::Netdisco::Transport::SSH ();
 use App::Netdisco::Transport::SNMP ();
 
 use App::Netdisco::Util::Node qw/check_mac memoize_arp store_arp retire_unvouched_arps/;
-use App::Netdisco::Util::VRF qw/vrf_instances_for each_vrf_instance/;
+use App::Netdisco::Util::VRF
+  qw/vrf_collection_enabled vrf_skipped netdisco_vrf vrf_instances_for each_vrf_instance/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 
 use NetAddr::IP::Lite ':lower';
@@ -110,13 +111,13 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 sub gather_arps_per_vrf {
   my ($device, $snmp, $instances) = @_;
   # read before any switch, as update() clears SNMP::Info's cache
-  vars->{'vrf_list_complete'} = ($snmp->vrf_instances_complete ? 1 : 0);
+  my $list_complete = $snmp->vrf_instances_complete;
 
   my $reads = each_vrf_instance($device, $snmp, $instances,
     sub { return $snmp->vrf_neighbors($_[0]) }, log_as => 'arpnip');
+  merge_vrf_reads({ map { ($_ => $reads->{$_}->{complete}) } keys %$reads }, $list_complete);
 
   foreach my $vrf (sort keys %$reads) {
-    vars->{'vrf_read'}->{$vrf} = $reads->{$vrf}->{complete};
     my $neighbors = $reads->{$vrf}->{data} || {};
     foreach my $key (sort keys %$neighbors) {
       my $arp = { mac => $neighbors->{$key}->{mac}, ip => $neighbors->{$key}->{ip},
@@ -150,12 +151,67 @@ register_worker({ phase => 'main', driver => 'cli' }, sub {
   my $cli = App::Netdisco::Transport::SSH->session_for($device)
     or return Status->defer("arpnip failed: could not SSH connect to $device");
 
+  if (vrf_collection_enabled($device)) {
+    return gather_arps_by_vrf_cli($device, $cli)
+      if $cli->platform->can('arpnip_by_vrf');
+    debug sprintf ' [%s] arpnip - %s collector flattens VRFs and contributes no VRF reads',
+      $device->ip, ref $cli->platform;
+  }
+
   # should be both v4 and v6
   map { vars->{'arps'}->{ memoize_arp($_) } = $_ }
       $cli->arpnip;
 
   return Status->done("Gathered arp caches from $device");
 });
+
+# a platform with arpnip_by_vrf returns { entries, vrf_read, vrf_list_complete }
+# with each entry's vrf named as netdisco stores it
+sub gather_arps_by_vrf_cli {
+  my ($device, $cli) = @_;
+  my $error = 'returned no ARP data';
+  my $result = try { $cli->arpnip_by_vrf } catch { ($error = "failed: $_") =~ s{\s+\z}{}; undef };
+  return Status->defer("arpnip failed: CLI session to $device $error")
+    unless ref {} eq ref $result;
+
+  my %vrf_read = ();
+  my $reads = $result->{vrf_read} || {};
+  foreach my $vrf (keys %$reads) {
+    my $name = netdisco_vrf($vrf);
+    # default and '' name one table, so it is whole only if both reads were
+    $vrf_read{$name} = (exists $vrf_read{$name} ? ($vrf_read{$name} && $reads->{$vrf}) : $reads->{$vrf});
+  }
+  # a platform that read no VRF cannot vouch that its list is whole
+  my $list_complete = (scalar keys %vrf_read ? $result->{vrf_list_complete} : 0);
+
+  foreach my $entry (@{ $result->{entries} || [] }) {
+    my $vrf = netdisco_vrf($entry->{vrf}) // '';
+    next if vrf_skipped($device, $vrf);
+    # entries from a VRF the platform did not report reading prove no read
+    $vrf_read{$vrf} = 0 unless exists $vrf_read{$vrf};
+    my $arp = { %$entry, vrf => $vrf };
+    vars->{'arps'}->{ memoize_arp($arp) } = $arp;
+  }
+
+  delete @vrf_read{ grep { vrf_skipped($device, $_) } keys %vrf_read };
+  merge_vrf_reads(\%vrf_read, $list_complete);
+  return Status->done("Gathered arp caches from $device");
+}
+
+# SNMP and CLI may both read a VRF in one job: it is complete only if every
+# read was whole, and the list only if every source's list was. A source that
+# read no VRF leaves vrf_read absent, so nothing retires on its word.
+sub merge_vrf_reads {
+  my ($reads, $list_complete) = @_;
+  foreach my $vrf (keys %$reads) {
+    my $whole = ($reads->{$vrf} ? 1 : 0);
+    vars->{'vrf_read'}->{$vrf} = (exists vars->{'vrf_read'}->{$vrf}
+      ? (vars->{'vrf_read'}->{$vrf} && $whole) : $whole);
+  }
+  my $list = ($list_complete ? 1 : 0);
+  vars->{'vrf_list_complete'} = (exists vars->{'vrf_list_complete'}
+    ? (vars->{'vrf_list_complete'} && $list) : $list);
+}
 
 register_worker({ phase => 'main', driver => 'direct' }, sub {
   my ($job, $workerconf) = @_;
