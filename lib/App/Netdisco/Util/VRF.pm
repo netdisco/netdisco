@@ -177,6 +177,9 @@ sub each_vrf_instance {
 sub _read_instance {
   my ($device, $snmp, $name, $instance, $reader, $switched, $options) = @_;
   my $walk_mark = walk_mark($snmp);
+  # error() returns any error pending since it was last read; discard it, so
+  # the one logged below is one this read set
+  $snmp->error;
   my $data = $reader->($name, $instance, $switched);
   my $complete = ($snmp->vrf_read_complete($name) ? 1 : 0);
   $complete = 0 if scalar incomplete_walks_for($device, $snmp, $walk_mark,

@@ -78,17 +78,14 @@ subtest 'step_104_105__router_last__added_bare_to_node_ip_and_subnets' => sub {
   is(scalar(statements_matching(qr/\brouter_last\b.*\b(?:DEFAULT|NOT NULL)\b/s)), 0, 'no default or NOT NULL');
 };
 
-subtest 'step_104_105__vrf_named_index__partial_on_active_named_vrfs_replaces_router_last_index' => sub {
+subtest 'step_104_105__vrf_named_index__partial_on_active_named_vrfs' => sub {
   my @index = statements_matching(qr/^CREATE INDEX IF NOT EXISTS idx_node_ip_vrf_named_active\b/);
   is(scalar @index, 1, 'one CREATE INDEX IF NOT EXISTS');
   is($index[0], "CREATE INDEX IF NOT EXISTS idx_node_ip_vrf_named_active ON node_ip (vrf) WHERE active AND vrf <> ''",
     'vrf only, active named-VRF rows only');
-  my @drop = statements_matching(qr/^DROP INDEX IF EXISTS idx_node_ip_router_last_active$/);
-  is(scalar @drop, 1, 'the earlier router_last index dropped, so test databases converge');
-  my @all = statements_matching(qr/./);
-  my ($drop_at)  = grep { $all[$_] =~ /^DROP INDEX IF EXISTS idx_node_ip_router_last_active$/ } 0 .. $#all;
-  my ($index_at) = grep { $all[$_] =~ /^CREATE INDEX IF NOT EXISTS idx_node_ip_vrf_named_active\b/ } 0 .. $#all;
-  ok(defined $drop_at && defined $index_at && $drop_at < $index_at, 'dropped before the create');
+  # the router_last index existed only in drafts of this step, so a released
+  # database never has it to drop
+  is(scalar(statements_matching(qr/\bidx_node_ip_router_last_active\b/)), 0, 'no draft-only DROP INDEX');
   # an index naming router_last makes every router_last change non-HOT
   is(scalar(statements_matching(qr/^CREATE\b.*\bINDEX\b.*\bON node_ip\b.*\brouter_last\b/s)), 0,
     'no node_ip index references router_last');

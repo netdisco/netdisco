@@ -42,9 +42,10 @@ Returns the IP Inventory report rows for C<$subnet> (a L<NetAddr::IP::Lite>):
 device interface addresses, node ARP and IPv6 neighbor cache entries, and
 NetBIOS entries, one row per IP in each L3 domain, plus every unused address in
 the subnet when C<never> is set. Each row's C<vrf> is its domain's name; NetBIOS
-and unused addresses are in the default domain, and a row whose VRF name gives
-no single domain is left out. The query starts from C<device_ip> and unions the node tables
-onto it, which is why it lives in this class.
+entries are in the default domain, an unused address is in the domain of each
+stored subnet holding it (the default domain when none does), and a row whose
+VRF name gives no single domain is left out. The query starts from C<device_ip>
+and unions the node tables onto it, which is why it lives in this class.
 
 Options: C<never>, C<age_invert>, C<limit>, and C<start> with C<end> (timestamps
 as C<YYYY-MM-DD HH:MM:SS>). For an IP with several rows the device's own
@@ -52,6 +53,17 @@ active address wins, then an active node, then an inactive node, then a
 generated never-seen address; among those, the most recently seen wins.
 
 =cut
+
+# the domain-aware never-seen form costs about twice the plain one on a /16,
+# so a prefix no named-VRF subnet touches (every prefix with the switch off)
+# keeps the plain form
+sub _named_vrf_subnet_overlaps {
+  my ($schema, $subnet) = @_;
+  return $schema->resultset('Subnet')->search({
+    vrf => { '!=' => '' },
+    net => { '&&' => $subnet->cidr },
+  }, { rows => 1 })->count;
+}
 
 sub ip_inventory {
   my ($rs, $subnet, $opts) = @_;
@@ -88,12 +100,17 @@ sub ip_inventory {
 
   if ($opts->{never}) {
     $subnet = NetAddr::IP::Lite->new('0.0.0.0/32') if ($subnet->bits ne 32);
-    my $unused = $schema->resultset('Virtual::CidrIps')->search_rs(undef, {
-      bind    => [ $subnet->cidr ],
-      columns => [qw( ip mac time_first time_last dns active node age vendor nbname )],
-      '+select' => [ \'0 AS domain' ],
-      '+as'     => [ 'domain' ],
-    })->hri;
+    my $unused = _named_vrf_subnet_overlaps($schema, $subnet)
+      ? $schema->resultset('Virtual::CidrIpsByDomain')->search_rs(undef, {
+          bind    => [ $subnet->cidr ],
+          columns => [qw( ip mac time_first time_last dns active node age vendor nbname domain )],
+        })->hri
+      : $schema->resultset('Virtual::CidrIps')->search_rs(undef, {
+          bind    => [ $subnet->cidr ],
+          columns => [qw( ip mac time_first time_last dns active node age vendor nbname )],
+          '+select' => [ \'0 AS domain' ],
+          '+as'     => [ 'domain' ],
+        })->hri;
     $union = $union->union_all([ $unused ]);
   }
 

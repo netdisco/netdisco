@@ -629,4 +629,34 @@ subtest 'discover__switch_dies__default_context_restored' => sub {
   is $last_snmp->{context}, '', 'session back in the default context';
 };
 
+# SNMP::Info's error() returns whatever error is pending since it was last
+# read, so a VRF read that set none must not log one left by an earlier call
+{ package ErrorPendingSnmp;
+  sub new { my ($class, $pending) = @_; return bless { error => $pending }, $class }
+  sub error { my $self = shift; my $error = $self->{error}; $self->{error} = undef; return $error }
+  sub vrf_read_complete { return 0 } }
+{ package ErrorLogDevice; sub ip { '192.0.2.1' } }
+
+sub incomplete_read_log {
+  my ($pending, $read_sets) = @_;
+  my $snmp = ErrorPendingSnmp->new($pending);
+  my @logged;
+  local *App::Netdisco::Util::VRF::debug = sub { push @logged, @_ };
+  App::Netdisco::Util::VRF::each_vrf_instance(bless({}, 'ErrorLogDevice'), $snmp,
+    { default => { contexts => [] } },
+    sub { $snmp->{error} = $read_sets if defined $read_sets; return {} });
+  return join "\n", grep { /read incomplete/ } @logged;
+}
+
+subtest 'each_vrf_instance__incomplete_read_with_stale_earlier_error__log_omits_stale_error' => sub {
+  my $log = incomplete_read_log('_global(serial1) NOSUCHOBJECT', undef);
+  like $log, qr/VRF default read incomplete, keeping its rows$/, 'logged with no error appended';
+  unlike $log, qr/NOSUCHOBJECT/, 'the earlier call\'s error is not reported';
+};
+
+subtest 'each_vrf_instance__incomplete_read_that_set_an_error__log_includes_it' => sub {
+  my $log = incomplete_read_log('_global(serial1) NOSUCHOBJECT', 'Timeout on vrf walk');
+  like $log, qr/VRF default read incomplete, keeping its rows: Timeout on vrf walk$/, 'the read\'s own error is appended';
+};
+
 done_testing;

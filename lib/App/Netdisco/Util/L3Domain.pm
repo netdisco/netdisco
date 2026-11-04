@@ -116,24 +116,25 @@ sub with_l3_domain_lock {
 
 =head2 results_span_domains( \@rows )
 
-True when the report rows, each carrying C<vrf> (its domain's name), hold more
-than one domain. Reports show a VRF column only then, so that a network with
-one domain sees the same report as before.
+True when any of the report rows, each carrying C<vrf> (its domain's name), is
+in a named domain; two domains always include one. Reports show a VRF column
+only then, so that a network using only the default table sees the same report
+as before.
 
 =cut
 
 sub results_span_domains {
   my $rows = shift;
-  my %names = map { (($_->{vrf} // '') => 1) } @$rows;
-  return scalar(keys %names) > 1;
+  return scalar grep { ($_->{vrf} // '') ne '' } @$rows;
 }
 
 =head2 label_rows_by_domain( \@rows, $multi_domain )
 
 Returns copies of the report rows shaped for a table rendered in the browser.
-With more than one domain, C<vrf> is kept and the default table's empty name
-reads "default". With one domain, C<vrf> is dropped, so the page is the same as
-before domains.
+When C<$multi_domain> is true (any row in a named domain, see
+C<results_span_domains>), C<vrf> is kept and the default table's empty name
+reads "default". Otherwise every row is in the default table and C<vrf> is
+dropped, so the page is the same as before domains.
 
 =cut
 

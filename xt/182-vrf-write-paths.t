@@ -123,6 +123,13 @@ subtest 'device_delete__l3_domain_member__written_under_the_l3_domain_lock' => s
     'the set loop holding L3DomainMember runs inside with_l3_domain_lock';
 };
 
+subtest 'device_delete__empty_set__existence_test_precedes_the_lock' => sub {
+  # deleting a set that matches no device must not queue behind a recompute
+  my $source = Path::Tiny::path('lib/App/Netdisco/DB/ResultSet/Device.pm')->slurp_utf8;
+  ok $source =~ /if \(\$devices->search\(undef, \{ rows => 1 \}\)->count\) \{\s*with_l3_domain_lock\(\$schema, sub \{/,
+    'the lock is taken only when the set holds a device';
+};
+
 subtest 'renumber__l3_domain_member__written_under_the_l3_domain_lock' => sub {
   ok lock_precedes_loop('lib/App/Netdisco/DB/Result/Device.pm'),
     'the set loop holding L3DomainMember runs inside with_l3_domain_lock';

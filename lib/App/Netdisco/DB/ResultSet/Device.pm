@@ -805,25 +805,28 @@ sub delete {
   $ip = ((ref {} eq ref $ip) ? [%$ip]->[1] : $ip);
   $ip ||= 'netdisco';
 
-  with_l3_domain_lock($schema, sub {
-    foreach my $set (qw/
-      Community
-      DeviceBrowser
-      DeviceIp
-      DeviceModule
-      DevicePower
-      DeviceVlan
-      DeviceVrf
-      L3DomainMember
-    /) {
-        my $gone = $schema->resultset($set)->search(
-          { ip => { '-in' => $devices->as_query } },
-        )->delete;
+  # an empty set must not queue behind a running recompute for nothing
+  if ($devices->search(undef, { rows => 1 })->count) {
+    with_l3_domain_lock($schema, sub {
+      foreach my $set (qw/
+        Community
+        DeviceBrowser
+        DeviceIp
+        DeviceModule
+        DevicePower
+        DeviceVlan
+        DeviceVrf
+        L3DomainMember
+      /) {
+          my $gone = $schema->resultset($set)->search(
+            { ip => { '-in' => $devices->as_query } },
+          )->delete;
 
-        Dancer::Logger::debug( sprintf( ' [%s] db/device - removed %d %s from %s',
-          $ip, $gone, _plural($gone), $set ) ) if defined Dancer::Logger::logger();
-    }
-  });
+          Dancer::Logger::debug( sprintf( ' [%s] db/device - removed %d %s from %s',
+            $ip, $gone, _plural($gone), $set ) ) if defined Dancer::Logger::logger();
+      }
+    });
+  }
 
   $schema->resultset('Admin')->search({
     device => { '-in' => $devices->as_query },

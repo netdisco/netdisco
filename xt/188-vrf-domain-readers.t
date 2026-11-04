@@ -34,6 +34,12 @@ sub slurp {
 my $subnet_sql = (slurp('lib/App/Netdisco/DB/Result/Virtual/SubnetUtilization.pm')
   =~ /<<'ENDSQL'\);\n(.*?)\nENDSQL/s)[0] // '';
 
+# the domain-aware never-seen form, as when a named-VRF subnet overlaps
+{
+  no warnings 'redefine';
+  *App::Netdisco::DB::ResultSet::DeviceIp::_named_vrf_subnet_overlaps = sub { 1 };
+}
+
 my $inventory_sql = do {
   my $schema = do {
     local $SIG{__WARN__} = sub { warn @_ unless $_[0] =~ /unversioned/ };
@@ -87,7 +93,10 @@ subtest 'ip_inventory__distinct_on__domain_then_ip' => sub {
   like($inventory_sql, qr/CASE WHEN me\.vrf = '' THEN 0 ELSE l3_domain_of\(me\.router_last, me\.vrf\) END AS domain/,
     'node addresses take the domain of the device that reported them');
   my $zeros = () = $inventory_sql =~ /\b0 AS domain\b/g;
-  is($zeros, 2, 'NetBIOS and generated never-seen rows are domain 0');
+  is($zeros, 1, 'NetBIOS rows are domain 0');
+  like($inventory_sql, qr/\bo\.domain\s+FROM addr a\b/,
+    'generated never-seen rows take their stored subnet\'s domain');
+  like($inventory_sql, qr/SELECT g\.int, 0 FROM addr\b/, 'else domain 0');
   like($inventory_sql, qr/domain IS NOT NULL/, 'a row with no single domain is left out');
   like($inventory_sql, qr/\(SELECT ld\.name FROM l3_domain ld WHERE ld\.id = me\.domain\) AS vrf/,
     'each row is labeled with its domain name');
@@ -126,11 +135,19 @@ subtest 'readers__switch_off_form__no_function_call_for_default_rows' => sub {
   }
 };
 
-subtest 'results_span_domains__rows__true_only_for_two_names' => sub {
+subtest 'results_span_domains__rows__true_for_two_names_or_any_named' => sub {
   ok(!results_span_domains([]), 'no rows');
-  ok(!results_span_domains([ { vrf => '' }, { vrf => '' } ]), 'default table only');
-  ok(!results_span_domains([ { vrf => 'RED' } ]), 'one named domain');
+  ok(results_span_domains([ { vrf => 'RED' } ]), 'one named domain');
   ok(results_span_domains([ { vrf => '' }, { vrf => 'RED' } ]), 'default and named');
+};
+
+subtest 'results_span_domains__all_default__false' => sub {
+  ok(!results_span_domains([ { vrf => '' }, { vrf => '' } ]), 'default table only');
+  ok(!results_span_domains([ { vrf => undef } ]), 'no name reads as the default table');
+};
+
+subtest 'results_span_domains__single_named_domain__true' => sub {
+  ok(results_span_domains([ { vrf => 'RED' }, { vrf => 'RED' } ]), 'every row in RED');
 };
 
 my %subnet_rows = (
@@ -171,6 +188,23 @@ subtest 'label_rows_by_domain__one_or_two_domains__shapes_rows_for_the_browser' 
 };
 
 my @views = map { "ajax/report/$_.tt" } qw/subnets subnets_csv ipinventory ipinventory_csv/;
+
+subtest 'report_templates__single_named_domain__vrf_column_shows_the_name' => sub {
+  my %red = (
+    subnets   => [ { %{ $subnet_rows{one}[0] }, vrf => 'RED' } ],
+    inventory => [ { %{ $inventory_rows{one}[0] }, vrf => 'RED' } ],
+  );
+  foreach my $view (@views) {
+    my $rows = $view =~ /subnets/ ? $red{subnets} : $red{inventory};
+    my $multi = results_span_domains($rows);
+    $rows = to_json_text(label_rows_by_domain($rows, $multi)) if $view eq 'ajax/report/ipinventory.tt';
+    my ($html, $error) = render_template($view,
+      { results => $rows, multi_domain => $multi, settings => { thousands_separator => ',' } });
+    is($error, undef, "$view renders");
+    like($html, qr/VRF/, "$view has a VRF column");
+    like($html, qr/RED/, "$view shows the domain name");
+  }
+};
 
 subtest 'report_templates__one_domain__no_vrf_column' => sub {
   foreach my $view (@views) {
