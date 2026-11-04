@@ -11,7 +11,7 @@ Collect ARP entries from Extreme VSP devices running the VOSS operating system.
 With C<store_vrfs> off, SNMP arpnip reads only the GlobalRouter VRF, so this
 module is the way to collect ARP entries from the other VRFs. With it on, SNMP
 reads each VRF too, and this module's C<arpnip_by_vrf> stores each entry under
-its VRF.
+its VRF and reads each VRF's IPv6 neighbors as well. C<arpnip> reads IPv4 only.
 
 By default this module gets ARP entries from all VRFs (0-512). To specify only certain VRFs in the config:
 
@@ -40,6 +40,7 @@ use warnings;
 
 use Dancer ':script';
 use Expect;
+use Socket ();
 use Moo;
 
 =head1 PUBLIC METHODS
@@ -56,17 +57,22 @@ Returns a list of hashrefs in the format C<{ mac =E<gt> MACADDR, ip =E<gt> IPADD
 
 =item B<arpnip_by_vrf($host, $ssh, $args)>
 
-As C<arpnip>, used when C<store_vrfs> is on. Also reads C<show ip vrf>, and
-names each entry's VRF from the C<IP Arp> block it appears in (GlobalRouter is
-C<''>).
+As C<arpnip>, used when C<store_vrfs> is on. Also reads C<show ip vrf> and
+C<show ipv6 neighbor vrfids>, and names each entry's VRF from the C<IP Arp> or
+C<Neighbor Information> block it appears in (GlobalRouter is C<''>). IPv6
+addresses are returned compressed. Neighbor rows are read whatever their TYPE
+and STATE, and link-local and router-own rows are kept.
 
 Returns C<{ entries =E<gt> [ { ip, mac, vrf } ], vrf_read =E<gt> { VRF =E<gt> 0|1 },
-vrf_list_complete =E<gt> 0|1, families =E<gt> [4] }>, or undef when the session,
-C<show ip vrf> or the ARP command fails. Only IPv4 ARP is read, so
-C<families> is C<[4]>: a VRF counts as read whole only when another source in
-the same job read its IPv6 neighbors whole, so with this collector alone no
-VRF's entries retire. A C<vrfs> setting other than C<0-512> makes
-C<vrf_list_complete> 0, so the VRFs it leaves out keep their stored entries.
+vrf_list_complete =E<gt> 0|1, families =E<gt> [4, 6] }>, or undef when the session,
+C<show ip vrf> or the ARP command fails. A block is read whole when its footer
+counts exactly the rows parsed. A VRF is 1 only when its ARP block and its
+neighbor block were read whole; a VRF the device says has no IPv6 instance
+(MgmtRouter) counts its IPv6 as read whole and empty. When the IPv6 command is
+refused or times out, or the ARP command timed out so it is never sent,
+C<families> is C<[4]> and C<vrf_read> covers IPv4 only. A C<vrfs> setting other
+than C<0-512> makes C<vrf_list_complete> 0, so the VRFs it leaves out keep their
+stored entries.
 
 A subclass that overrides C<arpnip> must also override C<arpnip_by_vrf>, or
 with C<store_vrfs> on this C<arpnip_by_vrf> is used instead of the override.
@@ -167,26 +173,48 @@ sub arpnip_by_vrf {
     }
 
     my $expect = _open_session($hostlabel, $ssh) or return undef;
-    my %result = (entries => [], vrf_read => {}, vrf_list_complete => 0, families => [4]);
 
-    my ($listed, $list_ok) = _read_vrf_list($hostlabel, $expect);
+    my ($listed, $list_ok, $vrf_by_id) = _read_vrf_list($hostlabel, $expect);
     # a timed-out VRF list fails the read, as an ARP command error does
-    my ($blocks, $arp_whole) = (defined $list_ok
-      ? _read_arp_by_vrf($hostlabel, $expect, $vrflist) : ());
-    unless ($blocks) {
+    my ($arp, $arp_whole) = (defined $list_ok
+      ? _read_blocks($hostlabel, $expect, 'ARP', "show ip arp vrfids $vrflist", \&_parse_arp_blocks) : ());
+    unless ($arp) {
         _close_session($expect);
         return undef;
     }
 
-    $result{vrf_read}->{$_} = 0 for @$listed;
-    @{ $result{vrf_read} }{ keys %{ $blocks->{read} } } = values %{ $blocks->{read} };
-    $result{entries} = $blocks->{entries};
+    # after a timeout the pty still holds the unfinished reply, so nothing
+    # more is sent; a refused or timed-out IPv6 read leaves IPv4 only
+    my ($nd, $nd_whole) = ($arp->{timed_out} ? () : _read_blocks($hostlabel, $expect,
+      'IPv6 neighbors', "show ipv6 neighbor vrfids $vrflist", \&_parse_neighbor_blocks));
+    ($nd, $nd_whole) = () if $nd and $nd->{timed_out};
+    _close_session($expect);
+
     # a configured subset never vouches for VRFs it did not ask for, and
     # after a timeout or a partial block nothing is vouched for
-    $result{vrf_list_complete} = ($list_ok and $arp_whole and $vrflist eq '0-512') ? 1 : 0;
+    my $complete = ($list_ok and $arp_whole and (!$nd or $nd_whole) and $vrflist eq '0-512');
+    return _vrf_result($listed, $vrf_by_id, $arp, $nd, $complete);
+}
 
-    _close_session($expect);
-    return \%result;
+# a VRF is read whole when its ARP block was and, with IPv6 read, its
+# neighbor block was or the device said it has no IPv6 instance
+sub _vrf_result {
+    my ($listed, $vrf_by_id, $arp, $nd, $complete) = @_;
+
+    my %no_ipv6 = map { (defined $vrf_by_id->{$_} ? ($vrf_by_id->{$_} => 1) : ()) }
+      @{ $nd ? $nd->{no_instance} : [] };
+    my %vrf_read = map { ($_ => 0) } @$listed;
+    foreach my $vrf (keys %{ $arp->{read} }) {
+        my $ipv6_whole = (!$nd or $no_ipv6{$vrf} or $nd->{read}->{$vrf});
+        $vrf_read{$vrf} = ($arp->{read}->{$vrf} and $ipv6_whole) ? 1 : 0;
+    }
+
+    return {
+        entries => [ @{ $arp->{entries} }, ($nd ? @{ $nd->{entries} } : ()) ],
+        vrf_read => \%vrf_read,
+        vrf_list_complete => ($complete ? 1 : 0),
+        families => ($nd ? [4, 6] : [4]),
+    };
 }
 
 # returns the Expect session after the pager is off, or undef
@@ -231,19 +259,21 @@ sub _close_session {
     $expect->soft_close();
 }
 
-# returns the VRF names listed (GlobalRouter as '') and whether the list is
+# returns the VRF names listed (GlobalRouter as ''), whether the list is
 # whole: 1 or 0, or undef on a timeout, after which Expect still holds the
-# partial output and nothing later can be parsed as fresh
+# partial output and nothing later can be parsed as fresh, and the names by
+# VRF id
 sub _read_vrf_list {
     my ($hostlabel, $expect) = @_;
 
     $expect->send("show ip vrf\n");
     my ($pos, undef, undef, $before) = $expect->expect(30, -re, $PROMPT);
 
-    my (@names, $shown, $total);
+    my (@names, %by_id, $shown, $total);
     foreach my $line (split m/\r?\n/, $before) {
         if ($line =~ m/^(\S+)\s+(\d+)\s+\d+\s+\d+\s+(?:TRUE|FALSE)\s/) {
             push @names, ($2 == 0 ? '' : $1);
+            $by_id{$2} = $names[-1];
         }
         elsif ($line =~ m/^\s*(\d+) out of (\d+) Total Num of VRF Entries displayed/) {
             ($shown, $total) = ($1, $2);
@@ -252,28 +282,28 @@ sub _read_vrf_list {
 
     unless ($pos) {
         info "[$hostlabel] arpnip - show ip vrf timed out, no VRF read";
-        return (\@names, undef);
+        return (\@names, undef, \%by_id);
     }
     my $whole = (defined $shown and $shown == $total and $shown == scalar @names) ? 1 : 0;
-    return (\@names, $whole);
+    return (\@names, $whole, \%by_id);
 }
 
-# returns ({ entries, read => { VRF => 0|1 } }, whether every block was read
-# whole), or nothing when the device answers an error
-sub _read_arp_by_vrf {
-    my ($hostlabel, $expect, $vrflist) = @_;
+# returns ({ entries, read => { VRF => 0|1 }, no_instance => [ids], timed_out },
+# whether every block was read whole), or nothing when the device answers an error
+sub _read_blocks {
+    my ($hostlabel, $expect, $what, $command, $parser) = @_;
 
-    $expect->send("show ip arp vrfids $vrflist\n");
+    $expect->send("$command\n");
     my ($pos, undef, undef, $before) = $expect->expect(60, -re, $PROMPT);
 
     if ($before =~ m/% Invalid input detected/ or $before =~ m/^\s*Error\s*:\s*([^\n]*)/m) {
-        debug "error fetching ARP [$hostlabel] : $vrflist : " . ($1 // 'invalid command');
+        debug "error fetching $what [$hostlabel] : $command : " . ($1 // 'invalid command');
         return;
     }
-    info "[$hostlabel] arpnip - show ip arp vrfids $vrflist timed out, no VRF read whole"
+    info "[$hostlabel] arpnip - $command timed out, no VRF read whole"
       unless $pos;
 
-    my $blocks = _parse_arp_blocks($hostlabel, $before);
+    my $blocks = $parser->($hostlabel, $before);
     # a block is whole only when its own footer counts exactly the rows parsed
     my %read = map {
         my $footer = $blocks->{footer}->{$_};
@@ -281,7 +311,8 @@ sub _read_arp_by_vrf {
     } keys %{ $blocks->{rows} };
     my $whole = ($pos and not $blocks->{unrecognized} and not grep { !$_ } values %read) ? 1 : 0;
 
-    return ({ entries => $blocks->{entries}, read => \%read }, $whole);
+    return ({ entries => $blocks->{entries}, read => \%read,
+              no_instance => ($blocks->{no_instance} || []), timed_out => ($pos ? 0 : 1) }, $whole);
 }
 
 sub _parse_arp_blocks {
@@ -314,6 +345,64 @@ sub _parse_arp_blocks {
     }
 
     return \%blocks;
+}
+
+# Each neighbor is two lines: "ADDRESS/" with the columns, then the MAC
+# indented. TYPE and STATE are not read: only static and local rows were ever
+# captured, and learned ones carry other values.
+sub _parse_neighbor_blocks {
+    my ($hostlabel, $output) = @_;
+
+    my $macregex = '(?:[[:xdigit:]]{2}:){5}[[:xdigit:]]{2}';
+
+    my %blocks = (entries => [], rows => {}, footer => {}, unrecognized => 0, no_instance => []);
+    my ($vrf, $address);
+    foreach my $line (split m/\r?\n/, $output) {
+        if ($line =~ m/^\s*Info: IPV6 Instance does not exist for VRF with id: ([\d,\-]+)/i) {
+            push @{ $blocks{no_instance} }, _expand_vrf_ids($1);
+            next;
+        }
+        # an unparsed header ends the previous block, so its rows are dropped
+        if ($line =~ m/Neighbor Information - /) {
+            $vrf = ($line =~ m/^\s*Neighbor Information - (?:VRF (\S+)|GlobalRouter)\s*$/) ? ($1 // '') : undef;
+            undef $address;
+            if (defined $vrf) { $blocks{rows}->{$vrf} //= 0 }
+            else { $blocks{unrecognized} = 1; debug "[$hostlabel] arpnip - unparsed header: $line" }
+            next;
+        }
+        next unless defined $vrf;
+        if ($line =~ m/^\s*(\d+) out of \d+ Total Num of Neighbor Entries displayed/) {
+            $blocks{footer}->{$vrf} = $1;
+            next;
+        }
+        if ($line =~ m{^([[:xdigit:]]*:[[:xdigit:]:.]*)/\s}) {
+            $address = $1;
+            $blocks{rows}->{$vrf}++;
+            next;
+        }
+        next unless defined $address and $line =~ m/^\s+($macregex)\s*$/;
+        my $ip = _compress_ipv6($address);
+        undef $address;
+        next unless defined $ip;
+        debug "[$hostlabel] arpnip - vrf '$vrf' mac $1 ip $ip";
+        push @{ $blocks{entries} }, { ip => $ip, mac => $1, vrf => $vrf };
+    }
+
+    return \%blocks;
+}
+
+# "3-4,512" as (3, 4, 512)
+sub _expand_vrf_ids {
+    my $list = shift;
+    return map { m/^(\d+)-(\d+)$/ ? ($1 .. $2) : (m/^\d+$/ ? $_ : ()) } split m/,/, $list;
+}
+
+# VOSS prints every group (2001:db8:1001:0:0:0:0:10); other drivers report
+# the compressed form, so one address keeps one spelling
+sub _compress_ipv6 {
+    my $address = shift;
+    my $packed = Socket::inet_pton(Socket::AF_INET6(), $address);
+    return (defined $packed ? Socket::inet_ntop(Socket::AF_INET6(), $packed) : undef);
 }
 
 1;

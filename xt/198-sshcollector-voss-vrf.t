@@ -16,8 +16,8 @@ use Test::Netdisco::FakeSSH;
 use Dancer qw/:moose :script !pass/;
 
 # VOSS arpnip_by_vrf against Fabric Engine 9.4 lab captures: the all-VRF
-# vrfids command names each VRF, so its blocks say which VRF a row is in
-# and which VRFs were read.
+# vrfids commands (ARP, then IPv6 neighbors) name each VRF, so their blocks
+# say which VRF a row is in and which VRFs were read.
 
 my $CONFIG = config();
 $CONFIG->{logger} = 'console';
@@ -42,10 +42,27 @@ sub by_vrf {
 
 sub fixture_text { local (@ARGV, $/) = ("$FIXTURES/$_[0].txt"); return scalar <> }
 
+# IPv4 entries by default; family 6 gives the IPv6 neighbors
 sub entries_in {
-  my ($result, $vrf) = @_;
-  return [ map { "$_->{ip} $_->{mac}" } grep { $_->{vrf} eq $vrf } @{ $result->{entries} } ];
+  my ($result, $vrf, $family) = @_;
+  my $v6 = (($family // 4) == 6);
+  return [ map { "$_->{ip} $_->{mac}" }
+    grep { $_->{vrf} eq $vrf and (($_->{ip} =~ m/:/) ? $v6 : !$v6) } @{ $result->{entries} } ];
 }
+
+# replace one command's captured output
+sub with_output {
+  my ($command, $output, $text) = @_;
+  $text //= fixture_text('edge1');
+  $text =~ s/^(#--- \Q$command\E\n).*?(?=^#---)/$1$output/ms or die "no section $command";
+  return $text;
+}
+
+my $STAMP = "************************************************************************************\n"
+  . "\t\tCommand Execution Time: Sat Oct 31 03:11:50 2026 UTC\n"
+  . "************************************************************************************\n";
+my $V6_CMD = 'show ipv6 neighbor vrfids 0-512';
+
 
 my %EDGE1_READ = ('' => 1, red => 1, blue => 1, green => 1, grey => 1, MgmtRouter => 1);
 
@@ -54,7 +71,7 @@ subtest 'voss_arpnip_by_vrf__lab_capture__entries_carry_their_vrf' => sub {
   my $result = by_vrf($ssh);
 
   is_deeply [$ssh->commands],
-    ['terminal more disable', 'show ip vrf', 'show ip arp vrfids 0-512', 'exit'],
+    ['terminal more disable', 'show ip vrf', 'show ip arp vrfids 0-512', $V6_CMD, 'exit'],
     'commands in order';
   is_deeply entries_in($result, ''), ['10.255.0.13 00:00:00:00:00:01'], 'GlobalRouter rows under the default table';
   is_deeply entries_in($result, 'red'), [
@@ -66,11 +83,11 @@ subtest 'voss_arpnip_by_vrf__lab_capture__entries_carry_their_vrf' => sub {
     '10.102.1.1 0c:00:5f:a8:c5:04', '10.102.1.10 02:00:00:00:05:15', '10.102.1.255 ff:ff:ff:ff:ff:ff',
   ], 'blue rows under blue, the shared 10.100.1.1 with its own MAC';
   is_deeply entries_in($result, 'grey'), ['10.104.1.1 00:00:00:00:00:02'], 'grey row';
-  is scalar(@{ $result->{entries} }), 14, 'no other rows';
+  is scalar(grep { $_->{ip} !~ m/:/ } @{ $result->{entries} }), 14, 'no other IPv4 rows';
   is_deeply [ sort keys %{ $result->{entries}->[0] } ], [qw/ip mac vrf/], 'entry keys';
   is_deeply $result->{vrf_read}, \%EDGE1_READ, 'every listed VRF read whole';
   is $result->{vrf_list_complete}, 1, 'list complete';
-  is_deeply $result->{families}, [4], 'IPv4 ARP only, so no IPv6 vouching';
+  is_deeply $result->{families}, [4, 6], 'both families';
 };
 
 subtest 'voss_arpnip_by_vrf__second_lab_capture__same_ip_kept_per_vrf' => sub {
@@ -101,20 +118,23 @@ subtest 'voss_arpnip_by_vrf__extn_block_header__does_not_reassign_rows' => sub {
   my ($mgmt) = $text =~ m/^#--- show ip arp vrfids 0-512\n(?:.*?\n)(?=\n=+\n\s+IP Arp - VRF MgmtRouter)(.*?)(?=^#---)/ms;
   ok length($mgmt // ''), 'MgmtRouter block cut from the 0-512 capture';
   $mgmt =~ s/^Info: No VRF exists with id: .*\n//m;
-  $text .= "#--- show ip arp vrfids 512\n" . ($text =~ m/^(\*+\n.*?\n\*+\n)/m)[0] . $mgmt;
+  $text .= "#--- show ip arp vrfids 512\n" . ($text =~ m/^(\*+\n.*?\n\*+\n)/m)[0] . $mgmt
+    . "#--- show ipv6 neighbor vrfids 512\n$STAMP\nInfo: IPV6 Instance does not exist for VRF with id: 512 \n\n";
   my $result = by_vrf(Test::Netdisco::FakeSSH->new(text => $text), { vrfs => '512' });
   is_deeply $result->{entries}, [], 'no entries';
   is $result->{vrf_read}->{MgmtRouter}, 1, 'MgmtRouter read whole';
   is $result->{vrf_read}->{''}, 0, 'default table not read';
 };
 
-subtest 'voss_arpnip_by_vrf__vrfids_times_out__every_vrf_incomplete' => sub {
+subtest 'voss_arpnip_by_vrf__vrfids_times_out__every_vrf_incomplete_no_ipv6_sent' => sub {
   my $ssh = fake_ssh('edge1', timeout_on => 'show ip arp vrfids 0-512');
   my $result = by_vrf($ssh);
   ok ref $result eq 'HASH', 'a result, not a failure';
   is_deeply $result->{vrf_read}, { map { ($_ => 0) } keys %EDGE1_READ }, 'every VRF incomplete';
   is $result->{vrf_list_complete}, 0, 'list not vouched after a timeout';
   is scalar(@{ $result->{entries} }), 14, 'the partial output still yields its rows';
+  is scalar(grep { $_ eq $V6_CMD } $ssh->commands), 0, 'nothing sent into the unfinished reply';
+  is_deeply $result->{families}, [4], 'IPv4 only';
   is_deeply [($ssh->commands)[-1]], ['exit'], 'session closed with exit';
 };
 
@@ -130,6 +150,7 @@ subtest 'voss_arpnip_by_vrf__configured_vrf_subset__list_incomplete' => sub {
   # is that a configured subset never vouches for the VRF list
   (my $text = fixture_text('edge1'))
     =~ s/^#--- show ip arp vrfids 0-512$/#--- show ip arp vrfids 0-4/m;
+  $text =~ s/^#--- \Q$V6_CMD\E$/#--- show ipv6 neighbor vrfids 0-4/m;
   my $ssh = Test::Netdisco::FakeSSH->new(text => $text);
   my $result = by_vrf($ssh, { vrfs => '0-4' });
   is_deeply [($ssh->commands)[2]], ['show ip arp vrfids 0-4'], 'configured subset sent';
@@ -194,7 +215,7 @@ subtest 'voss_arpnip_by_vrf__unrecognized_arp_header__rows_dropped' => sub {
     or die 'blue header not found';
   my $result = by_vrf(Test::Netdisco::FakeSSH->new(text => $text));
   is scalar(@{ entries_in($result, 'red') }), 6, 'blue rows not stored under red';
-  is scalar(@{ $result->{entries} }), 8, 'blue rows dropped';
+  is scalar(grep { $_->{ip} !~ m/:/ } @{ $result->{entries} }), 8, 'blue rows dropped';
   is $result->{vrf_read}->{blue}, 0, 'blue not read';
   is $result->{vrf_list_complete}, 0, 'list not vouched';
 };
@@ -215,6 +236,116 @@ subtest 'voss_arpnip_by_vrf__invalid_vrf_id_error__returns_undef' => sub {
   my $ssh = fake_ssh('edge1');
   is by_vrf($ssh, { vrfs => '999' }), undef, 'failure, so the worker defers';
   is_deeply [($ssh->commands)[2]], ['show ip arp vrfids 999'], 'configured id sent';
+};
+
+subtest 'voss_arpnip_by_vrf__ipv6_lab_capture__neighbors_carry_their_vrf_compressed' => sub {
+  my $result = by_vrf(fake_ssh('edge1'));
+  is_deeply entries_in($result, '', 6), ['2001:db8:1255::13 00:00:00:00:00:01'], 'GlobalRouter neighbor';
+  is_deeply entries_in($result, 'red', 6), [
+    '2001:db8:1001::1 0c:00:5c:9e:d5:01', '2001:db8:1001::10 02:00:00:00:05:11',
+    'fe80::e00:5cff:fe9e:d501 0c:00:5c:9e:d5:01',
+  ], 'red neighbors, the router-own and link-local rows kept';
+  is_deeply entries_in($result, 'blue', 6), [
+    '2001:db8:1001::1 0c:00:5c:9e:d5:02', '2001:db8:1001::10 02:00:00:00:05:12',
+    'fe80::e00:5cff:fe9e:d502 0c:00:5c:9e:d5:02',
+  ], 'blue keeps the address red also holds';
+  is_deeply entries_in($result, 'green', 6), [
+    '2001:db8:1201::1 0c:00:5c:9e:d5:05', '2001:db8:1201::10 02:00:00:00:05:16',
+    'fe80::e00:5cff:fe9e:d505 0c:00:5c:9e:d5:05',
+  ], 'green neighbors';
+  is_deeply entries_in($result, 'grey', 6), [], 'grey has none';
+  is $result->{vrf_read}->{grey}, 1, 'an empty block reads whole';
+  is $result->{vrf_read}->{MgmtRouter}, 1, 'a VRF with no IPv6 instance reads whole and empty';
+};
+
+subtest 'voss_arpnip_by_vrf__ipv6_second_lab_capture__global_host_read' => sub {
+  my $result = by_vrf(fake_ssh('edge3'));
+  ok scalar(grep { $_ eq '2001:db8:30::10 02:00:00:00:05:22' } @{ entries_in($result, '', 6) }),
+    'the GlobalRouter host';
+  is_deeply $result->{families}, [4, 6], 'both families';
+  is $result->{vrf_list_complete}, 1, 'list complete';
+};
+
+subtest 'voss_arpnip_by_vrf__ipv6_command_refused__families_ipv4_only' => sub {
+  foreach my $reply ("% Invalid input detected at '^' marker.\n", "\n Error : Invalid VRF ID \n\n") {
+    my $result = by_vrf(Test::Netdisco::FakeSSH->new(text => with_output($V6_CMD, $STAMP . $reply)));
+    is_deeply $result->{families}, [4], 'IPv4 only';
+    is_deeply $result->{vrf_read}, \%EDGE1_READ, 'IPv4 reads stand';
+    is $result->{vrf_list_complete}, 1, 'list complete';
+    is scalar(grep { $_->{ip} =~ m/:/ } @{ $result->{entries} }), 0, 'no IPv6 entries';
+  }
+};
+
+subtest 'voss_arpnip_by_vrf__ipv6_times_out__families_ipv4_only' => sub {
+  my $ssh = fake_ssh('edge1', timeout_on => $V6_CMD);
+  my $result = by_vrf($ssh);
+  is_deeply $result->{families}, [4], 'IPv4 only';
+  is_deeply $result->{vrf_read}, \%EDGE1_READ, 'IPv4 reads stand';
+  is scalar(grep { $_->{ip} =~ m/:/ } @{ $result->{entries} }), 0, 'partial IPv6 output dropped';
+  is_deeply [($ssh->commands)[-1]], ['exit'], 'session closed with exit';
+};
+
+subtest 'voss_arpnip_by_vrf__ipv6_footer_count_mismatch__that_vrf_0' => sub {
+  (my $text = fixture_text('edge1'))
+    =~ s/(Neighbor Information - VRF red\n(?:.*\n)*?)3 out of 3 Total/${1}4 out of 4 Total/
+    or die 'red neighbor footer not found';
+  my $result = by_vrf(Test::Netdisco::FakeSSH->new(text => $text));
+  is $result->{vrf_read}->{red}, 0, 'red IPv6 counts a row not parsed';
+  is $result->{vrf_read}->{blue}, 1, 'blue still whole';
+  is $result->{vrf_list_complete}, 0, 'list not vouched';
+};
+
+subtest 'voss_arpnip_by_vrf__listed_vrf_without_ipv6_block__that_vrf_0' => sub {
+  (my $text = fixture_text('edge1'))
+    =~ s/^=+\n\s+Neighbor Information - VRF green\n(?:.*\n)*?\d+ out of \d+ Total Num of Neighbor Entries displayed\.\n//m
+    or die 'green neighbor block not found';
+  my $result = by_vrf(Test::Netdisco::FakeSSH->new(text => $text));
+  is $result->{vrf_read}->{green}, 0, 'green IPv6 not read';
+  is $result->{vrf_read}->{red}, 1, 'red still whole';
+};
+
+subtest 'voss_arpnip_by_vrf__no_ipv6_instance_line__ranges_named_vrfs_whole' => sub {
+  (my $text = fixture_text('edge1'))
+    =~ s/^Info: IPV6 Instance does not exist for VRF with id: 512 $/Info: IPV6 Instance does not exist for VRF with id: 3-4,512 /m
+    or die 'no-instance line not found';
+  $text =~ s/^=+\n\s+Neighbor Information - VRF (?:green|grey)\n(?:.*\n)*?\d+ out of \d+ Total Num of Neighbor Entries displayed\.\n//mg;
+  my $result = by_vrf(Test::Netdisco::FakeSSH->new(text => $text));
+  is $result->{vrf_read}->{$_}, 1, "$_ whole and empty" for qw/green grey MgmtRouter/;
+
+  ($text = fixture_text('edge1')) =~ s/^Info: IPV6 Instance does not exist for VRF with id: 512 \n//m
+    or die 'no-instance line not found';
+  is by_vrf(Test::Netdisco::FakeSSH->new(text => $text))->{vrf_read}->{MgmtRouter}, 0,
+    'without the line MgmtRouter has no IPv6 read';
+};
+
+subtest 'voss_arpnip_by_vrf__ipv6_row_without_mac__counted_no_entry' => sub {
+  (my $text = fixture_text('edge1'))
+    =~ s/^(2001:db8:1001:0:0:0:0:10\/ .*V-41 .*\n)\s+02:00:00:00:05:11\s*\n/$1/m
+    or die 'red host row not found';
+  my $result = by_vrf(Test::Netdisco::FakeSSH->new(text => $text));
+  is scalar(@{ entries_in($result, 'red', 6) }), 2, 'the row without a MAC gives no entry';
+  is $result->{vrf_read}->{red}, 1, 'red still whole, the row was counted';
+};
+
+subtest 'voss_arpnip_by_vrf__learned_row_type_and_state__still_read' => sub {
+  # the lab VM learns no IPv6 neighbor, so learned rows were never captured
+  (my $text = fixture_text('edge1'))
+    =~ s/^(2001:db8:1001:0:0:0:0:10\/\s+V-41\s+1\/4\s+)STATIC  REACHABLE/${1}DYNAMIC STALE    /m
+    or die 'red host row not found';
+  my $result = by_vrf(Test::Netdisco::FakeSSH->new(text => $text));
+  ok scalar(grep { $_ eq '2001:db8:1001::10 02:00:00:00:05:11' } @{ entries_in($result, 'red', 6) }),
+    'read whatever its TYPE and STATE';
+  is $result->{vrf_read}->{red}, 1, 'red whole';
+};
+
+subtest 'voss_arpnip_by_vrf__unrecognized_ipv6_header__rows_dropped' => sub {
+  (my $text = fixture_text('edge1')) =~ s/Neighbor Information - VRF blue$/Neighbor Information - VRF blue sky/m
+    or die 'blue neighbor header not found';
+  my $result = by_vrf(Test::Netdisco::FakeSSH->new(text => $text));
+  is scalar(@{ entries_in($result, 'red', 6) }), 3, 'blue rows not stored under red';
+  is scalar(@{ entries_in($result, 'blue', 6) }), 0, 'blue rows dropped';
+  is $result->{vrf_read}->{blue}, 0, 'blue not read';
+  is $result->{vrf_list_complete}, 0, 'list not vouched';
 };
 
 subtest 'voss_arpnip__lab_capture__unchanged_from_today' => sub {
