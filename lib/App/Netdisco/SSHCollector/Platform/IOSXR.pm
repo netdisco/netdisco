@@ -180,8 +180,9 @@ sub _vrf_steps {
 }
 
 # (names, whether every row gave a name, whether this is a whole VRF list).
-# The global table is not listed ("default" is skipped should a build list it);
-# an indented line continues the row above and holds no name.
+# The global table is not listed ("default" is skipped should a build list it,
+# but only that exact name, since a complete list retires the VRFs it leaves
+# out); an indented line continues the row above and holds no name.
 sub _parse_vrf_list {
     my ($text) = @_;
     return ([], 0, 0) unless defined $text;
@@ -196,7 +197,7 @@ sub _parse_vrf_list {
         unless ($line =~ m/^(\S+)\s+\S/) { $names_whole = 0; next }
         $rows++;
         my $name = $1;
-        push @names, $name unless lc $name eq 'default' or $seen{$name}++;
+        push @names, $name unless $name eq 'default' or $seen{$name}++;
     }
 
     return (\@names, $names_whole, ($header and !$errored) ? 1 : 0);

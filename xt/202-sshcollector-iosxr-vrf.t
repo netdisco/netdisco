@@ -220,6 +220,20 @@ subtest 'arpnip_by_vrf__rt_continuation_lines__names_still_read' => sub {
   is $result->{vrf_list_complete}, 1, 'list complete';
 };
 
+subtest 'arpnip_by_vrf__vrf_named_Default__listed_and_read' => sub {
+  foreach my $name (qw/Default DEFAULT/) {
+    my $text = with_output('show vrf all', $STAMP
+      . "VRF                  RD                  RT                         AFI   SAFI     \n"
+      . "$name              not set            \n")
+      . "#--- show arp vrf $name\n$STAMP#--- show ipv6 neighbors vrf $name\n$STAMP";
+    my $ssh = fake_ssh(text => $text);
+    my $result = by_vrf($ssh);
+    is $result->{vrf_read}->{$name}, 1, "[$name] read whole";
+    ok scalar(grep { $_ eq "show arp vrf $name" } $ssh->commands), "[$name] queried";
+    is $result->{vrf_list_complete}, 1, 'list complete';
+  }
+};
+
 subtest 'arpnip_by_vrf__unparseable_list_row__list_incomplete_named_vrfs_read' => sub {
   foreach my $row ("   continuation with no row above\n", "lonelyname\n") {
     my $text = with_output('show vrf all', $STAMP
