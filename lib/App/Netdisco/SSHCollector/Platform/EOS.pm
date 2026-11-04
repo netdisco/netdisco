@@ -274,6 +274,10 @@ sub subnets_by_vrf {
 
         $read_any = 1;
         foreach my $vrf (keys %{ $data->{vrfs} }) {
+            unless (length $vrf) {
+                info "$hostlabel $$ $route->{name} table has a VRF with an empty name, so it contributes nothing";
+                next;
+            }
             my $table = $data->{vrfs}->{$vrf};
             my $routes = (ref {} eq ref $table) ? ($table->{routes} || {}) : undef;
             unless (ref {} eq ref $routes) {

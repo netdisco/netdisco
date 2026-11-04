@@ -199,6 +199,17 @@ subtest 'cli_subnets__by_vrf_undef__nothing_stored_not_deferred' => sub {
   is scalar(calls_of($platform, 'subnets')), 0, 'flat subnets not called';
 };
 
+subtest 'cli_subnets__malformed_vrf_value_or_entry__skipped_rest_stored' => sub {
+  my $platform = ReportingPlatform->new(by_vrf => {
+    red => 'x', blue => { 'a' => 1 },
+    green => [ '10.0.0.0/8', [], { prefix => '10.7.0.0', len => 24 } ],
+    '' => [ { prefix => '172.20.20.0', len => 24 } ],
+  });
+  my $job = run_subnets(platform => $platform);
+  is $job->status, 'info', 'the job does not error';
+  is stored(), '10.7.0.0/24|green 172.20.20.0/24|', 'well-formed entries stored, malformed skipped';
+};
+
 subtest 'cli_subnets__by_vrf_dies__nothing_stored_not_deferred' => sub {
   my $platform = ReportingPlatform->new(die => "boom\n");
   my $job = run_subnets(platform => $platform);

@@ -292,6 +292,14 @@ subtest 'eos_subnets_by_vrf__ipv6_vrfs_an_array__ipv4_still_returned' => sub {
   is_deeply prefixes_by_vrf($result), { default => ['172.20.20.0/24'], RED => \@R1_V4 }, 'IPv4 returned';
 };
 
+subtest 'eos_subnets_by_vrf__empty_vrf_key__not_filed_as_global' => sub {
+  (my $text = fixture_text('r1-routes')) =~ s/"RED": \{/"": {/g or die;
+  my ($result, @logged) = capture_info_lines(sub {
+    $EOS->subnets_by_vrf('r1', Test::Netdisco::FakeSSH->new(text => $text), {}) });
+  is_deeply prefixes_by_vrf($result), { default => ['172.20.20.0/24'] }, 'the empty key contributes nothing, default untouched';
+  ok scalar(@logged), 'it is logged';
+};
+
 subtest 'eos_subnets_by_vrf__both_fail__returns_undef' => sub {
   my ($result, @logged) = capture_info_lines(sub {
     [ $EOS->subnets_by_vrf('r1', fake_ssh_routes('r1', $V4_ROUTES, $V6_ROUTES), {}) ] });

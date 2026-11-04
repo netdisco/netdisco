@@ -141,7 +141,15 @@ sub store_cli_vrf_subnets {
   foreach my $device_vrf (sort keys %$found) {
     my $vrf = netdisco_vrf($device_vrf);
     next if vrf_skipped($device, $vrf);
-    foreach my $entry (@{ $found->{$device_vrf} || [] }) {
+    unless (ref [] eq ref $found->{$device_vrf}) {
+      debug sprintf ' [%s] arpnip (cli) - subnets for vrf "%s" are not a list, skipped', $device->ip, $vrf;
+      next;
+    }
+    foreach my $entry (@{ $found->{$device_vrf} }) {
+      unless (ref {} eq ref $entry) {
+        debug sprintf ' [%s] arpnip (cli) - subnet entry in vrf "%s" is not a hash, skipped', $device->ip, $vrf;
+        next;
+      }
       my $cidr = vrf_subnet_cidr($entry) or next;
       debug sprintf ' [%s] arpnip (cli) - found subnet %s in vrf "%s"', $device->ip, $cidr, $vrf;
       store_subnet($cidr, $vrf);
