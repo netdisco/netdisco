@@ -348,6 +348,19 @@ subtest 'voss_arpnip_by_vrf__unrecognized_ipv6_header__rows_dropped' => sub {
   is $result->{vrf_list_complete}, 0, 'list not vouched';
 };
 
+subtest 'voss_arpnip_by_vrf__debug_log__names_commands_and_families' => sub {
+  my @logged;
+  no warnings 'redefine';
+  local *App::Netdisco::SSHCollector::Platform::VOSS::debug = sub { push @logged, join '', @_ };
+  by_vrf(fake_ssh('edge1'));
+  ok scalar(grep { m/\Q$V6_CMD\E/ } @logged), 'the IPv6 command is logged';
+  ok scalar(grep { m/families \[4, 6\]/ } @logged), 'the families reported are logged';
+
+  @logged = ();
+  by_vrf(fake_ssh('edge1', timeout_on => $V6_CMD));
+  ok scalar(grep { m/families \[4\]/ } @logged), 'IPv4 only after an IPv6 timeout';
+};
+
 subtest 'voss_arpnip__lab_capture__unchanged_from_today' => sub {
   my $ssh = fake_ssh('edge1');
   my $guard = $ssh->install_expect;

@@ -193,7 +193,11 @@ sub arpnip_by_vrf {
     # a configured subset never vouches for VRFs it did not ask for, and
     # after a timeout or a partial block nothing is vouched for
     my $complete = ($list_ok and $arp_whole and (!$nd or $nd_whole) and $vrflist eq '0-512');
-    return _vrf_result($listed, $vrf_by_id, $arp, $nd, $complete);
+    my $result = _vrf_result($listed, $vrf_by_id, $arp, $nd, $complete);
+    debug sprintf '[%s] arpnip - families [%s], %d IPv6 neighbor entries, VRF list %s',
+      $hostlabel, join(', ', @{ $result->{families} }), ($nd ? scalar @{ $nd->{entries} } : 0),
+      ($complete ? 'complete' : 'incomplete');
+    return $result;
 }
 
 # a VRF is read whole when its ARP block was and, with IPv6 read, its
@@ -293,6 +297,7 @@ sub _read_vrf_list {
 sub _read_blocks {
     my ($hostlabel, $expect, $what, $command, $parser) = @_;
 
+    debug "[$hostlabel] arpnip - $command";
     $expect->send("$command\n");
     my ($pos, undef, undef, $before) = $expect->expect(60, -re, $PROMPT);
 
