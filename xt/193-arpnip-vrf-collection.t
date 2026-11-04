@@ -182,6 +182,8 @@ sub run_arpnip {
   local *App::Netdisco::Transport::SNMP::reader_for = sub { return $fake_snmp };
   local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::store_arp = sub { push @stored, { %{ $_[0] } } };
   local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::retire_unvouched_arps = sub { 0 };
+  # the store phase looks up the device's own MACs and addresses; xt/203 covers that
+  local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::own_identity = sub { return ({}, {}, {}) };
   local *App::Netdisco::DB::Result::Device::update = sub { return $_[0] };
 
   my $job = App::Netdisco::Backend::Job->new({

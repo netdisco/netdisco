@@ -17,8 +17,11 @@
     NX-OS and IOS-XR CLI collectors store ARP entries (IPv6 neighbor
     entries too for EOS, IOS-XE, NX-OS and IOS-XR) under their VRF, and
     after a complete arpnip a router retires the ARP entries it was last to
-    report and no longer reports, within the VRFs it read whole (database
-    schema 105: run netdisco-deploy)
+    report and no longer reports, within the VRFs it read whole, and a
+    router's own ARP entries (its MAC, the MACs of its address-holding
+    ports, and its own addresses at one of its port MACs) are no longer
+    stored as ARP nodes from any driver, on a device where arpnip read a
+    VRF (database schema 105: run netdisco-deploy)
   * upgrade SNMP::Info dependency to 3.985000
 
 2.117001 - 2026-11-02

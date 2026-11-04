@@ -255,6 +255,8 @@ sub run_arpnip {
   local *App::Netdisco::Transport::SNMP::reader_for = sub { return ($args{unreachable} ? undef : $fake_snmp) };
   local *App::Netdisco::Transport::SSH::session_for = sub { return FakeCLI->new };
   local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::store_arp = sub { push @order, ['store'] };
+  # own-row lookup needs a database; xt/203 covers it
+  local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::own_identity = sub { return ({}, {}, {}) };
   my $retire = \&App::Netdisco::Worker::Plugin::Arpnip::Nodes::retire_unvouched_arps;
   local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::retire_unvouched_arps = sub {
     push @order, ['retire', @_];

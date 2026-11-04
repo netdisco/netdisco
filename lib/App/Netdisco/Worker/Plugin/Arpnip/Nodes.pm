@@ -44,7 +44,10 @@ register_worker({ phase => 'store', title => 'store ARP cache' }, sub {
   # it just makes the rest of the "store" code easier
   vars->{'arps'} = [ values %{ vars->{'arps'} } ];
 
-  drop_flattened_twins($device) if vrf_collection_enabled($device);
+  if (vrf_collection_enabled($device)) {
+    drop_flattened_twins($device);
+    drop_own_entries($device);
+  }
 
   vars->{'arps'} = [ grep { check_mac(($_->{node} || $_->{mac}), $device) }
                           @{ vars->{'arps'} } ];
@@ -131,6 +134,74 @@ sub drop_flattened_twins {
 
   debug sprintf ' [%s] arpnip - dropped %d flattened ARP entries also reported under a VRF',
     $device->ip, $dropped if $dropped;
+}
+
+# With store_vrfs on, a router's own rows are not ARP nodes: SNMP::Info's
+# per-VRF reader drops them but CLI collectors report them. Entries carry no
+# ifIndex, so SNMP::Info's same-port MAC test cannot be reproduced; instead an
+# entry goes if its MAC is the device's or that of a port holding one of its
+# addresses, or if its (vrf, address) is one of the device's device_ip rows
+# AND its MAC is that of some port of the device (a stale alias must not drop
+# a real host). Any port's MAC alone is not enough: Aruba lists each AP's
+# Ethernet MAC as a port. Runs only when this job recorded a VRF read, since
+# only a whole VRF read retires the own rows stored earlier; a device with no
+# VRF read keeps its own rows as before. Those earlier rows retire when their
+# VRF is next read whole.
+sub drop_own_entries {
+  my ($device) = @_;
+  my $reads = vars->{'vrf_read'};
+  return unless ref {} eq ref $reads and scalar keys %$reads;
+  my ($own_macs, $port_macs, $own_addresses) = own_identity($device);
+
+  my $mac_of = sub {
+    my $mac = NetAddr::MAC->new(mac => ($_[0]->{node} || $_[0]->{mac} || ''));
+    return ($mac ? $mac->as_ieee : undef);
+  };
+  my $is_own = sub {
+    my $entry = shift;
+    my $mac = $mac_of->($entry);
+    return 0 unless defined $mac;
+    return 1 if $own_macs->{$mac};
+    return 0 unless $port_macs->{$mac};
+    my $ip = NetAddr::IP::Lite->new($entry->{ip} || '');
+    return ($ip and $own_addresses->{ join chr(28), ($entry->{vrf} // ''), $ip->addr }) ? 1 : 0;
+  };
+
+  my @kept = grep { not $is_own->($_) } @{ vars->{'arps'} };
+  my $dropped = scalar(@{ vars->{'arps'} }) - scalar(@kept);
+  vars->{'arps'} = \@kept;
+
+  debug sprintf ' [%s] arpnip - dropped %d ARP entries for the device\'s own MACs and addresses',
+    $device->ip, $dropped if $dropped;
+}
+
+# two queries: device_ip rows, then device_port rows
+sub own_identity {
+  my ($device) = @_;
+  my $normalize_mac = sub {
+    my $mac = NetAddr::MAC->new(mac => ($_[0] || ''));
+    return (($mac and $mac->as_ieee ne '00:00:00:00:00:00') ? $mac->as_ieee : undef);
+  };
+
+  my @aliases = schema('netdisco')->resultset('DeviceIp')
+    ->search({ ip => $device->ip }, { columns => [qw/alias vrf port/] })->hri->all;
+  my @ports = schema('netdisco')->resultset('DevicePort')
+    ->search({ ip => $device->ip, mac => { '!=' => undef } }, { columns => [qw/port mac/] })->hri->all;
+
+  my %port_macs = map { my $mac = $normalize_mac->($_->{mac}); defined $mac ? ($mac => 1) : () } @ports;
+  my %mac_of_port = map { ($_->{port} => $normalize_mac->($_->{mac})) } @ports;
+
+  my (%addresses, %own_macs);
+  foreach my $row (@aliases) {
+    my $mac = $mac_of_port{ $row->{port} // '' };
+    $own_macs{$mac} = 1 if defined $mac;
+    my $ip = NetAddr::IP::Lite->new($row->{alias} || '') or next;
+    $addresses{ join chr(28), ($row->{vrf} // ''), $ip->addr } = 1;
+  }
+  my $device_mac = $normalize_mac->($device->mac);
+  $own_macs{$device_mac} = 1 if defined $device_mac;
+
+  return (\%own_macs, \%port_macs, \%addresses);
 }
 
 # store_vrfs path: each VRF's ARP and neighbor entries are read in its own
