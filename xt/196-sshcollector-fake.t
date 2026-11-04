@@ -3,6 +3,7 @@ use warnings;
 
 use Test::More;
 use Test::Exception;
+use lib 'xt/lib';
 use Test::Netdisco::FakeSSH;
 
 # Fixture bytes matter: the blank line and the leading spaces must come back untouched.
