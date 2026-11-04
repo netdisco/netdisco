@@ -20,6 +20,36 @@ and controller-managed deployments.
 
 Both collectors normalise MAC formatting for Netdisco.
 
+=head1 PUBLIC METHODS
+
+=over 4
+
+=item B<arpnip_by_vrf($host, $ssh, $args)>
+
+As C<arpnip>, used when C<store_vrfs> is on. Reads C<show vrf>, then the global
+C<show ip arp> and C<show ipv6 neighbors> and, for each listed VRF,
+C<show ip arp vrf NAME> and, when the VRF lists C<ipv6> and the global
+C<show ipv6 neighbors> answered, C<show ipv6 neighbors vrf NAME>. Each entry's
+VRF is the one it was read from (the global table is C<''>). A VRF that does
+not list C<ipv6> has no IPv6 table, so its IPv6 counts as read whole and empty.
+
+Returns C<{ entries =E<gt> [ { ip, mac, vrf } ], vrf_read =E<gt> { VRF =E<gt> 0|1 },
+vrf_list_complete =E<gt> 0|1, families =E<gt> [4, 6] }>, or undef when the
+session or C<show vrf> fails. C<families> is C<[4]> when the global
+C<show ipv6 neighbors> did not answer cleanly (IPv6 is unsupported or
+unreached), and then C<vrf_read> covers IPv4 only; otherwise it is C<[4, 6]>.
+A table is read whole when it returned to the prompt with no C<%> error and
+every line was a header or an entry. A VRF is 1 only when its table for every
+family in C<families> was read whole, so a VRF whose IPv6 table fails is 0
+though its IPv4 entries are reported. A C<show vrf> that returned with no
+C<%> error and no VRF is a whole, empty list. After a timeout the rest of the
+session is not read, and that VRF and every one not yet read are 0.
+
+A subclass that overrides C<arpnip> must also override C<arpnip_by_vrf>, or
+with C<store_vrfs> on this C<arpnip_by_vrf> is used instead of the override.
+
+=back
+
 =cut
 
 use strict;
@@ -175,6 +205,190 @@ sub arpnip {
   debug "$hostlabel $$ arpnip() summary: total=$total (" . join(', ', @parts) . ")";
 
   return @arpentries;
+}
+
+# the prompt alone at the end of the output, so a row never ends a read
+my $VRF_PROMPT = qr/^\S+[>#]\s*\z/m;
+
+my $IPV4_HEADER = qr/^\s*Protocol\s+Address\s+Age/i;
+my $IPV6_HEADER = qr/^\s*IPv6 Address\s+Age\s+Link-layer/i;
+my $MAC_DOTTED  = qr/[0-9a-f]{4}\.[0-9a-f]{4}\.[0-9a-f]{4}/i;
+
+sub arpnip_by_vrf {
+  my ($self, $hostlabel, $ssh, $args) = @_;
+  debug "$hostlabel $$ arpnip_by_vrf()";
+
+  my ($exp, $timeout) = _open_vrf_session($hostlabel, $ssh, $args) or return undef;
+
+  my $list = _run_command($exp, $timeout, 'show vrf');
+  my @vrfs = defined $list ? _parse_vrfs($list) : ();
+  # no VRF rows and no error is a router with no VRFs, which is a whole list
+  my $list_whole = (defined $list and $list !~ m/^\s*%/m
+    and (!@vrfs or $list =~ m/^\s*Name\s+Default RD/mi));
+  unless ($list_whole) {
+    info "$hostlabel $$ arpnip_by_vrf() show vrf did not return a VRF list, so VRF collection by CLI was skipped";
+    _close_vrf_session($exp);
+    return undef;
+  }
+  my $protocols = _parse_vrf_protocols($list);
+
+  my $state = { entries => [], seen => {}, whole => {}, unread => {}, timed_out => 0 };
+  my $ipv6_answers = 0;
+  my @plan = ([ '', 4, 'show ip arp' ], [ '', 6, 'show ipv6 neighbors' ]);
+  while (my $step = shift @plan) {
+    my ($vrf, $family, $command) = @$step;
+    my $errored = _read_table($state, $exp, $timeout, $vrf, $family, $command);
+    if ($family == 6 and $vrf eq '') {
+      $ipv6_answers = !$errored;
+      push @plan, map { _vrf_steps($_, $protocols, $ipv6_answers, $state) } @vrfs;
+    }
+    if ($state->{timed_out}) {
+      info "$hostlabel $$ arpnip_by_vrf() [$command] timed out, so nothing after it was read";
+      last;
+    }
+  }
+  _close_vrf_session($exp);
+
+  my @families = ($ipv6_answers ? (4, 6) : (4));
+  my %vrf_read = map {
+    my $vrf = $_;
+    ($vrf => ((!$state->{unread}->{$vrf} and 0 == grep { !$state->{whole}->{$vrf}->{$_} } @families) ? 1 : 0))
+  } ('', @vrfs);
+
+  return {
+    entries => $state->{entries}, vrf_read => \%vrf_read,
+    vrf_list_complete => ($state->{timed_out} ? 0 : 1), families => \@families,
+  };
+}
+
+# the commands for one VRF; a VRF that lists no ipv6 has no IPv6 table, so
+# that family is whole and empty with no command sent
+sub _vrf_steps {
+  my ($vrf, $protocols, $ipv6_answers, $state) = @_;
+  my @steps = ([ $vrf, 4, "show ip arp vrf $vrf" ]);
+  if (!$ipv6_answers) { return @steps }
+  if (($protocols->{$vrf} // 'ipv6') =~ m/ipv6/i) {
+    push @steps, [ $vrf, 6, "show ipv6 neighbors vrf $vrf" ];
+  }
+  else { $state->{whole}->{$vrf}->{6} = 1 }
+  return @steps;
+}
+
+# VRF name => its Protocols column, where the row has one; wrapped interface
+# lines hold no name and protocols, so they never match
+sub _parse_vrf_protocols {
+  my ($text) = @_;
+  my %protocols;
+  for my $line (split /\r?\n/, ($text // '')) {
+    last if $line =~ /^\s*Platform iVRF Name/i;
+    next unless $line =~ m/^\s+(\S+)\s+.*?\s(ipv[46](?:,ipv[46])*)(?:\s|$)/i;
+    $protocols{$1} = $2;
+  }
+  return \%protocols;
+}
+
+# returns the Expect session once the pager is off, and the timeout, or nothing
+sub _open_vrf_session {
+  my ($hostlabel, $ssh, $args) = @_;
+
+  my ($pty, $pid) = $ssh->open2pty;
+  unless ($pty) {
+    warn "unable to run remote command [$hostlabel] " . $ssh->error;
+    return;
+  }
+
+  my $exp = Expect->init($pty);
+  $exp->raw_pty(1);
+  my $timeout = ($args && $args->{timeout}) ? $args->{timeout} : 30;
+
+  my ($pos) = $exp->expect($timeout, -re => $VRF_PROMPT);
+  # width 0 keeps a long command from scrolling the echo, which would spoil the read
+  unless ($pos and defined _run_command($exp, $timeout, 'terminal length 0')
+      and defined _run_command($exp, $timeout, 'terminal width 0')) {
+    info "$hostlabel $$ arpnip_by_vrf() unable to reach CLI prompt";
+    $exp->hard_close();
+    return;
+  }
+
+  return ($exp, $timeout);
+}
+
+sub _close_vrf_session {
+  my $exp = shift;
+  $exp->send("exit\n");
+  $exp->hard_close();
+}
+
+# the command's output without the echoed command, or undef on a timeout,
+# after which Expect still holds the partial output
+sub _run_command {
+  my ($exp, $timeout, $command) = @_;
+
+  $exp->send("$command\n");
+  my ($pos, undef, undef, $before) = $exp->expect($timeout, -re => $VRF_PROMPT);
+  return undef unless $pos;
+
+  my @lines = split /\r?\n/, ($before // '');
+  shift @lines if @lines and $lines[0] =~ m/^\s*\Q$command\E\s*$/;
+  return join "\n", @lines;
+}
+
+# runs one command and records its entries and whether it was read whole;
+# returns true when the device answered with an error or timed out
+sub _read_table {
+  my ($state, $exp, $timeout, $vrf, $family, $command) = @_;
+
+  my $output = _run_command($exp, $timeout, $command);
+  unless (defined $output) {
+    $state->{timed_out} = 1;
+    $state->{unread}->{$vrf} = 1;
+    return 1;
+  }
+
+  my ($entries, $whole, $errored) = _parse_table($output, $family);
+  foreach my $entry (@$entries) {
+    my $key = lc join '|', $vrf, @$entry{qw/ip mac/};
+    next if $state->{seen}->{$key}++;
+    push @{ $state->{entries} }, { %$entry, vrf => $vrf };
+  }
+  $state->{whole}->{$vrf}->{$family} = $whole;
+  return $errored;
+}
+
+# returns the entries, whether every line was a header or an entry, and
+# whether a "%" error line was seen
+sub _parse_table {
+  my ($output, $family) = @_;
+  my ($header, $row) = ($family == 4
+    ? ($IPV4_HEADER, \&_parse_arp_row) : ($IPV6_HEADER, \&_parse_neighbor_row));
+  my (@entries, $errored);
+  my $whole = 1;
+
+  foreach my $line (split /\r?\n/, $output) {
+    next if $line =~ m/^\s*$/ or $line =~ $header;
+    if ($line =~ m/^\s*%/) { $errored = 1; $whole = 0; next }
+    my ($recognized, $entry) = $row->($line);
+    $whole = 0 unless $recognized;
+    push @entries, $entry if $entry;
+  }
+
+  return (\@entries, $whole, $errored);
+}
+
+# returns whether the line is a row, and its entry unless the row is incomplete
+sub _parse_arp_row {
+  my ($line) = @_;
+  return (0) unless $line =~ m/^\s*Internet\s+(\d{1,3}(?:\.\d{1,3}){3})\s+\S+\s+(?:($MAC_DOTTED)|Incomplete)\s/;
+  return (1, ($2 ? { ip => $1, mac => mac_as_ieee($2) } : undef));
+}
+
+# IOS-XE prints IPv6 addresses in uppercase; an INCMP row has no usable MAC
+sub _parse_neighbor_row {
+  my ($line) = @_;
+  return (0) unless $line =~ m/^\s*([0-9a-f:.]+)\s+(?:\d+|-)\s+(?:($MAC_DOTTED)|\S+)\s+([A-Z]+)\s+\S+\s*$/i;
+  my ($ip, $mac, $state) = ($1, $2, $3);
+  return (1, { ip => lc $ip, mac => mac_as_ieee($mac) }) if $mac;
+  return (uc($state) eq 'INCMP' ? 1 : 0);
 }
 
 sub macsuck {
