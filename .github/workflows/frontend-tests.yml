@@ -180,6 +180,9 @@ jobs:
       - name: Every renderer and callback a fragment names exists
         run: node --test xt/js/tables-registry.test.js
 
+      - name: Folding subinterface groups needs no extra draws
+        run: node --test xt/js/tables-collapse.test.js
+
   error-reporter:
     name: global script error reporter
     runs-on: ubuntu-latest

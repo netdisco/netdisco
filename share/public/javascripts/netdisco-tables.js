@@ -497,62 +497,67 @@ const ndTables = (function () {
     }
   };
 
-  // toggle is bound with addEventListener as a plain function, so its this
-  // is the element that received the click.
+  // Folding a group of rows (the subinterfaces of a port) is a search filter
+  // on a row attribute, so the rows stay in the table and only leave the
+  // display. The filter is installed before the table's first draw, which
+  // therefore already hides the folded rows, and one click listener on the
+  // table serves every row, on any page. Nothing here draws the table with
+  // paging switched off to reach the rows: that attached all of them to the
+  // document just to find a toggle, twice per build and again per click.
   const collapse = {
-    // temporarily disable datatables paging
-    // returns [current_page_length, current_page_index]
-    disablePaging: function () {
-      DataTable.ext.search.pop();
-      const plen = new DataTable('#dp-data-table').page.len();
-      const pnum = new DataTable('#dp-data-table').page();
-      new DataTable('#dp-data-table').page.len(-1).draw(true);
-      return [plen, pnum];
-    },
+    // the search function in force, so a rebuilt table replaces it
+    filter: null,
 
-    // restore the datatables pagination and page number
-    restorePage: function (plen, pnum) {
-      new DataTable('#dp-data-table').page.len(plen).draw(true);
-      new DataTable('#dp-data-table').page(pnum).draw(false);
-    },
-
-    // install our row filter for datatables row group toggle
-    pushFilter: function () {
-      // ext.search is global: DataTables runs this for every table it draws
-      DataTable.ext.search.push(function (settings, _data, dataIndex) {
+    // fold the rows of `table` that carry data-is-collapsed="true"; a row
+    // without a group is never hidden. The row node is read from the
+    // settings because a lookup through the API costs a selector and an
+    // object for every row on every draw. DataTables 3 names those fields
+    // table and data[i].tr; version 2 named them nTable and aoData[i].nTr.
+    install: function (table) {
+      const search = DataTable.ext.search;
+      const old = search.indexOf(collapse.filter);
+      if (old >= 0) search.splice(old, 1);
+      collapse.filter = function (settings, _data, dataIndex) {
+        // ext.search is global: DataTables runs this for every table it draws
         if (settings.tableId !== 'dp-data-table') {
           return true;
         }
-        const row = new DataTable('#dp-data-table').row(dataIndex).node();
-        if (!row.dataset.collapsedGroup) {
-          return true;
-        }
+        if ((settings.table || settings.nTable) !== table) return true;
+        const held = (settings.data || settings.aoData)[dataIndex];
+        const row = held && (held.tr || held.nTr);
+        if (!row || !row.dataset.collapsedGroup) return true;
         return row.getAttribute('data-is-collapsed') === 'false';
+      };
+      search.push(collapse.filter);
+    },
+
+    // one listener per table element, which a rebuild replaces
+    bind: function (table) {
+      if (table.dataset.ndCollapseBound) return;
+      table.dataset.ndCollapseBound = 'true';
+      table.addEventListener('click', function (event) {
+        const toggle = event.target.closest && event.target.closest('.nd_row-collapser-toggle');
+        if (toggle) collapse.toggle(table, toggle);
       });
     },
 
-    // onclick handler
     // toggles visibility of a group of datatables rows
     // clicked element has the group name as data-collapsed-group
-    toggle: function () {
-      const groupname = this.getAttribute('data-collapsed-group');
-      const [plen, pnum] = ndTables.collapse.disablePaging();
+    toggle: function (table, toggle) {
+      const groupname = toggle.getAttribute('data-collapsed-group');
+      const api = new DataTable(table);
 
-      // groupname is not in a class selector due to port name characters
-      document.querySelectorAll('tr.nd_collapsible').forEach(function (row) {
+      // every row of the table, including those on other pages; groupname
+      // is not in a class selector due to port name characters
+      api.rows().nodes().each(function (row) {
         if (row.getAttribute('data-collapsed-group') === groupname) {
-          if (row.getAttribute('data-is-collapsed') === 'true') {
-            row.setAttribute('data-is-collapsed', 'false');
-          } else {
-            row.setAttribute('data-is-collapsed', 'true');
-          }
+          row.setAttribute('data-is-collapsed',
+            row.getAttribute('data-is-collapsed') === 'true' ? 'false' : 'true');
         }
       });
+      api.draw(false);
 
-      ndTables.collapse.pushFilter();
-      ndTables.collapse.restorePage(plen, pnum);
-
-      const icon = this.querySelector('i');
+      const icon = toggle.querySelector('i');
       if (icon) {
         icon.classList.toggle('fa-list-ol');
         icon.classList.toggle('fa-arrow-up-wide-short');
@@ -671,19 +676,18 @@ const ndTables = (function () {
     },
 
     /**
-     * device/ports: rebinds the row-group collapse toggle and restores paging after every table build.
-     * @returns {Function} the DataTables drawCallback function
+     * device/ports: folds the subinterface groups. The filter and the click listener are set
+     * up when the callback is resolved, which is before the table's first draw, so that draw
+     * already hides the folded rows; initComplete itself has nothing left to do.
+     * @param {object} _args unused
+     * @param {{[key: string]: string}} _urls unused
+     * @param {HTMLTableElement} table the ports table
+     * @returns {Function} the DataTables initComplete function
      */
-    portsCollapse: function () {
-      return function () {
-        const state = ndTables.collapse.disablePaging();
-        document.querySelectorAll('.nd_row-collapser-toggle').forEach(function (el) {
-          el.removeEventListener('click', ndTables.collapse.toggle);
-          el.addEventListener('click', ndTables.collapse.toggle);
-        });
-        ndTables.collapse.pushFilter();
-        ndTables.collapse.restorePage(state[0], state[1]);
-      };
+    portsCollapse: function (_args, _urls, table) {
+      ndTables.collapse.install(table);
+      ndTables.collapse.bind(table);
+      return function () {};
     }
   };
 

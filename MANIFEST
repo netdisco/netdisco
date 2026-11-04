@@ -857,6 +857,7 @@ xt/js/stranded-popovers.test.js
 xt/js/submit-dispatch.test.js
 xt/js/swagger-spec-url.test.js
 xt/js/tab-request-sync.test.js
+xt/js/tables-collapse.test.js
 xt/js/tables-registry.test.js
 xt/js/theme-resolver.test.js
 xt/js/theme-switch.test.js
