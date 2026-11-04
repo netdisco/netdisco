@@ -33,7 +33,7 @@ register_worker({ phase => 'early',
   # initialise the cache
   vars->{'arps'} = {};
   # netdisco-do runs every job in one process, so no job sees another's VRF reads
-  delete @{ vars() }{qw/vrf_read vrf_list_complete/};
+  delete @{ vars() }{qw/vrf_read vrf_read_families vrf_list_complete/};
 });
 
 register_worker({ phase => 'store', title => 'store ARP cache' }, sub {
@@ -142,7 +142,8 @@ sub gather_arps_per_vrf {
 
   my $reads = each_vrf_instance($device, $snmp, $instances,
     sub { return $snmp->vrf_neighbors($_[0]) }, log_as => 'arpnip');
-  merge_vrf_reads({ map { ($_ => $reads->{$_}->{complete}) } keys %$reads }, $list_complete);
+  # vrf_neighbors reads both the ARP and the IPv6 neighbor rows
+  merge_vrf_reads({ map { ($_ => $reads->{$_}->{complete}) } keys %$reads }, $list_complete, [4, 6]);
 
   foreach my $vrf (sort keys %$reads) {
     my $neighbors = $reads->{$vrf}->{data} || {};
@@ -192,8 +193,9 @@ register_worker({ phase => 'main', driver => 'cli' }, sub {
   return Status->done("Gathered arp caches from $device");
 });
 
-# a platform with arpnip_by_vrf returns { entries, vrf_read, vrf_list_complete }
-# with each entry's vrf named as netdisco stores it
+# a platform with arpnip_by_vrf returns { entries, vrf_read, vrf_list_complete,
+# families } with each entry's vrf named as netdisco stores it; families lists
+# the address families its vrf_read covers, [4] or [4, 6], and absent means [4, 6]
 sub gather_arps_by_vrf_cli {
   my ($device, $cli) = @_;
   my $error = 'returned no ARP data';
@@ -221,23 +223,38 @@ sub gather_arps_by_vrf_cli {
   }
 
   delete @vrf_read{ grep { vrf_skipped($device, $_) } keys %vrf_read };
-  merge_vrf_reads(\%vrf_read, $list_complete);
+  merge_vrf_reads(\%vrf_read, $list_complete, $result->{families});
   return Status->done("Gathered arp caches from $device");
 }
 
-# SNMP and CLI may both read a VRF in one job: it is complete only if every
-# read was whole, and the list only if every source's list was. A source that
-# read no VRF leaves vrf_read absent, so nothing retires on its word.
+# SNMP and CLI may both read a VRF in one job. Per address family, a VRF is
+# whole only if every source that read that family read it whole; vrf_read is
+# 1 only when both families were read whole by some source. The list is whole
+# only if every source's list was. A source that read no VRF leaves vrf_read
+# absent, so nothing retires on its word.
 sub merge_vrf_reads {
-  my ($reads, $list_complete) = @_;
+  my ($reads, $list_complete, $families) = @_;
+  my @families = (_well_formed_families($families) ? @$families : (4, 6));
+  my $by_family = (vars->{'vrf_read_families'} ||= {});
+
   foreach my $vrf (keys %$reads) {
     my $whole = ($reads->{$vrf} ? 1 : 0);
-    vars->{'vrf_read'}->{$vrf} = (exists vars->{'vrf_read'}->{$vrf}
-      ? (vars->{'vrf_read'}->{$vrf} && $whole) : $whole);
+    foreach my $family (@families) {
+      my $seen = $by_family->{$vrf}->{$family};
+      $by_family->{$vrf}->{$family} = (defined $seen ? ($seen && $whole) : $whole);
+    }
+    vars->{'vrf_read'}->{$vrf} = ((2 == grep { $by_family->{$vrf}->{$_} } 4, 6) ? 1 : 0);
   }
   my $list = ($list_complete ? 1 : 0);
   vars->{'vrf_list_complete'} = (exists vars->{'vrf_list_complete'}
     ? (vars->{'vrf_list_complete'} && $list) : $list);
+}
+
+# anything but a non-empty list of 4 and 6 reads as absent, never as no family
+sub _well_formed_families {
+  my $families = shift;
+  return 0 unless ref [] eq ref $families and scalar @$families;
+  return not scalar grep { not defined $_ or $_ !~ m/^[46]\z/ } @$families;
 }
 
 register_worker({ phase => 'main', driver => 'direct' }, sub {

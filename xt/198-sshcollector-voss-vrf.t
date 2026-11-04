@@ -70,6 +70,7 @@ subtest 'voss_arpnip_by_vrf__lab_capture__entries_carry_their_vrf' => sub {
   is_deeply [ sort keys %{ $result->{entries}->[0] } ], [qw/ip mac vrf/], 'entry keys';
   is_deeply $result->{vrf_read}, \%EDGE1_READ, 'every listed VRF read whole';
   is $result->{vrf_list_complete}, 1, 'list complete';
+  is_deeply $result->{families}, [4], 'IPv4 ARP only, so no IPv6 vouching';
 };
 
 subtest 'voss_arpnip_by_vrf__second_lab_capture__same_ip_kept_per_vrf' => sub {

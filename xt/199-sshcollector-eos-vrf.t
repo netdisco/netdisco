@@ -66,6 +66,7 @@ subtest 'eos_arpnip_by_vrf__lab_capture__entries_carry_their_vrf' => sub {
     'IPv4 entry keys keep iface, as arpnip does';
   is_deeply $result->{vrf_read}, \%R3_READ, 'every VRF in both outputs read whole';
   is $result->{vrf_list_complete}, 1, 'list complete';
+  is_deeply $result->{families}, [4, 6], 'ARP and IPv6 neighbors both read';
 };
 
 subtest 'eos_arpnip_by_vrf__default_key__maps_to_empty_vrf' => sub {

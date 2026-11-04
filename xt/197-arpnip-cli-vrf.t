@@ -307,10 +307,54 @@ subtest 'merge_vrf_reads__either_order__same_result' => sub {
   my $merge = \&App::Netdisco::Worker::Plugin::Arpnip::Nodes::merge_vrf_reads;
   my @sources = ([ { '' => 1, red => 0 }, 1 ], [ { red => 1, blue => 1 }, 0 ]);
   foreach my $order ([0, 1], [1, 0]) {
-    delete @{ vars() }{qw/vrf_read vrf_list_complete/};
+    delete @{ vars() }{qw/vrf_read vrf_read_families vrf_list_complete/};
     $merge->(@{ $sources[$_] }) for @$order;
     is_deeply vars->{'vrf_read'}, { '' => 1, red => 0, blue => 1 }, "vrf_read, order @$order";
     is vars->{'vrf_list_complete'}, 0, "vrf_list_complete, order @$order";
+  }
+};
+
+# SNMP reads '', red and blue whole in both families; the CLI declares its own
+subtest 'merge__v4_only_source_alone__vrf_not_whole' => sub {
+  run_arpnip(platform => ReportingPlatform->new(by_vrf => by_vrf(families => [4])));
+  is_deeply vars->{'vrf_read'}, { '' => 0, red => 0, blue => 0 }, 'no source read IPv6, so no VRF whole';
+  is_deeply \@retired, [ [ { '' => 0, red => 0, blue => 0 }, 1 ] ], 'retire receives vrf => 0|1';
+};
+
+subtest 'merge__snmp_both_whole_and_v4_only_whole__vrf_whole' => sub {
+  run_arpnip(platform => ReportingPlatform->new(by_vrf => by_vrf(families => [4])),
+    snmp => { snmp_fixture() });
+  is_deeply vars->{'vrf_read'}, { '' => 1, red => 1, blue => 1 }, 'SNMP covers IPv6, both read IPv4 whole';
+};
+
+subtest 'merge__snmp_both_whole_and_v4_only_timeout__vrf_not_whole' => sub {
+  run_arpnip(platform => ReportingPlatform->new(by_vrf => by_vrf(families => [4],
+    vrf_read => { '' => 1, red => 0, blue => 1 })), snmp => { snmp_fixture() });
+  is_deeply vars->{'vrf_read'}, { '' => 1, red => 0, blue => 1 }, 'red IPv4 short on the CLI';
+};
+
+subtest 'merge__vrf_only_v4_only_source_listed__not_whole' => sub {
+  run_arpnip(platform => ReportingPlatform->new(by_vrf => by_vrf(families => [4],
+    vrf_read => { '' => 1, red => 1, blue => 1, green => 1 })), snmp => { snmp_fixture() });
+  is vars->{'vrf_read'}{green}, 0, 'green: only an IPv4 source read it';
+  is vars->{'vrf_read'}{red}, 1, 'red: SNMP read both families';
+};
+
+subtest 'merge__families_absent__treated_as_both' => sub {
+  my $result = by_vrf();
+  ok !exists $result->{families}, 'the platform declares no families';
+  run_arpnip(platform => ReportingPlatform->new(by_vrf => $result));
+  is_deeply vars->{'vrf_read'}, { '' => 1, red => 1, blue => 1 }, 'whole in both families';
+  run_arpnip(platform => ReportingPlatform->new(by_vrf => by_vrf(families => [4, 6])));
+  is_deeply vars->{'vrf_read'}, { '' => 1, red => 1, blue => 1 }, 'same as declaring [4, 6]';
+};
+
+subtest 'merge__malformed_families__treated_as_both' => sub {
+  foreach my $families ([], 4, [5], [4, 7], 'six', { 4 => 1 }) {
+    my $label = (ref $families ? ref $families : $families);
+    my $job = run_arpnip(platform => ReportingPlatform->new(by_vrf => by_vrf(families => $families)));
+    is $job->status, 'done', "families $label: arpnip done";
+    is_deeply vars->{'vrf_read'}, { '' => 1, red => 1, blue => 1 }, "families $label: read as both";
   }
 };
 

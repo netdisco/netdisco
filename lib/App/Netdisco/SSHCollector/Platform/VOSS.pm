@@ -57,8 +57,11 @@ names each entry's VRF from the C<IP Arp> block it appears in (GlobalRouter is
 C<''>).
 
 Returns C<{ entries =E<gt> [ { ip, mac, vrf } ], vrf_read =E<gt> { VRF =E<gt> 0|1 },
-vrf_list_complete =E<gt> 0|1 }>, or undef when the session or the ARP command
-fails.
+vrf_list_complete =E<gt> 0|1, families =E<gt> [4] }>, or undef when the session
+or the ARP command fails. Only IPv4 ARP is read, so C<families> is C<[4]>
+(absent would mean C<[4, 6]>): a VRF counts as read whole only when another
+source in the same job read its IPv6 neighbors whole, so with this collector
+alone no VRF's entries retire.
 
 =back
 
@@ -156,7 +159,7 @@ sub arpnip_by_vrf {
     }
 
     my $expect = _open_session($hostlabel, $ssh) or return undef;
-    my %result = (entries => [], vrf_read => {}, vrf_list_complete => 0);
+    my %result = (entries => [], vrf_read => {}, vrf_list_complete => 0, families => [4]);
 
     my ($listed, $list_ok) = _read_vrf_list($hostlabel, $expect);
     $result{vrf_read}->{$_} = 0 for @$listed;

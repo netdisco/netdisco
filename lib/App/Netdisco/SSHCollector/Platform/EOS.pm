@@ -38,8 +38,10 @@ JSON key it appears under (C<default> is C<''>). A VRF is read whole only when
 both the ARP and the IPv6 neighbor command listed it with its neighbor table.
 
 Returns C<< { entries => [ { ip, mac, vrf } ], vrf_read => { VRF => 0|1 },
-vrf_list_complete => 0|1 } >>, or undef when neither command returned usable
-JSON. IPv4 entries also carry C<iface>, as in C<arpnip>.
+vrf_list_complete => 0|1, families => [4, 6] } >> (C<families> names the
+address families C<vrf_read> covers; absent means C<[4, 6]>), or undef
+when neither command returned usable JSON. IPv4 entries also carry
+C<iface>, as in C<arpnip>.
 
 =back
 
@@ -102,7 +104,8 @@ sub arpnip_by_vrf {
         ($_ => ($whole and ($listed{$_} // 0) == scalar @NEIGHBOR_FAMILIES) ? 1 : 0)
     } keys %seen;
 
-    return { entries => \@entries, vrf_read => \%vrf_read, vrf_list_complete => $whole };
+    return { entries => \@entries, vrf_read => \%vrf_read, vrf_list_complete => $whole,
+             families => [4, 6] };
 }
 
 # returns [ [VRF name as EOS gives it, [entries]], ... ] in hash order, or
