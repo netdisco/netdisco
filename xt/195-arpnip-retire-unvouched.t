@@ -351,4 +351,14 @@ subtest 'retire__switch_on_no_vrf_reads__unit__retires_nothing' => sub {
   is $count, 0, 'nothing retired';
 };
 
+subtest 'arpnip_timestamp_sql__microsecond_padding__orders_correctly' => sub {
+  my $early = App::Netdisco::Worker::Plugin::Arpnip::Nodes::_arpnip_timestamp_sql(1000, 99999);
+  my $later = App::Netdisco::Worker::Plugin::Arpnip::Nodes::_arpnip_timestamp_sql(1000, 100000);
+  is $early, 'to_timestamp(1000.099999)::timestamp', '99999 us is 0.099999 s';
+  is $later, 'to_timestamp(1000.100000)::timestamp', '100000 us is 0.1 s';
+  my ($e) = $early =~ /\(([\d.]+)\)/; my ($l) = $later =~ /\(([\d.]+)\)/;
+  cmp_ok $e, '<', $l, 'numeric order matches time order';
+  like App::Netdisco::Worker::Plugin::Arpnip::Nodes::_arpnip_timestamp_sql(5, 5), qr/\(5\.000005\)/, '5 us padded';
+};
+
 done_testing;

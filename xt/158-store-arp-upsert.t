@@ -76,7 +76,7 @@ subtest 'store_arp__upsert__conflict_key_and_columns' => sub {
   my ($update) = $sql =~ /DO UPDATE(.*)\z/s;
   like($update, qr/active = true/);
   like($update, qr/dns = EXCLUDED\.dns/);
-  like($update, qr/time_last = EXCLUDED\.time_last/);
+  like($update, qr/time_last = GREATEST\(n\.time_last, EXCLUDED\.time_last\)/);
   unlike($update, qr/time_first/, 'time_first only on insert');
   ok(index($sql, $now) >= 0, 'job time interpolated');
 };
@@ -145,6 +145,17 @@ subtest 'memoize_arp__same_ip_mac_two_vrfs__two_keys' => sub {
 subtest 'memoize_arp__no_vrf__equals_empty_vrf' => sub {
   is(memoize_arp({%host}), memoize_arp({%host, vrf => ''}));
   is(memoize_arp({%host}), join(chr(28), $host{node}, $host{ip}, ''));
+};
+
+# An older job of one router storing after a newer job must not lower time_last,
+# or the newer job's retire_unvouched_arps deactivates a host both reported.
+subtest 'store_arp__older_store_after_newer__time_last_not_lowered' => sub {
+  for my $device_ip ('198.51.100.1', undef) {
+    my @stmts = run_store({%host}, $now, $device_ip);
+    my ($update) = $stmts[2][0] =~ /DO UPDATE(.*)\z/s;
+    like($update, qr/time_last = GREATEST\(n\.time_last, EXCLUDED\.time_last\)/, 'keeps the later stamp');
+    unlike($update, qr/time_last = EXCLUDED\.time_last/, 'no unconditional overwrite');
+  }
 };
 
 done_testing;

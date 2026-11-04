@@ -220,6 +220,8 @@ sub store_arp {
   });
 }
 
+# time_last never moves back: an older overlapping job of one router must not
+# lower a row the newer job's retire_unvouched_arps will test
 # without a router (the deprecated sshcollector call) the maps and router_last
 # are left alone
 sub _arp_upsert_sql {
@@ -231,7 +233,7 @@ sub _arp_upsert_sql {
       (mac, ip, vrf, dns, active, time_first, time_last, seen_on_router_first, seen_on_router_last$router_column)
     VALUES (?, ?, ?, ?, true, $now, $now, $new_map, $new_map$router_value)
     ON CONFLICT (mac, ip, vrf) DO UPDATE
-      SET active = true, dns = EXCLUDED.dns, time_last = EXCLUDED.time_last};
+      SET active = true, dns = EXCLUDED.dns, time_last = GREATEST(n.time_last, EXCLUDED.time_last)};
   return $sql unless $device_ip;
 
   $sql .= qq{,

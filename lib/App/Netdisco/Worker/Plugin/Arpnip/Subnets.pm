@@ -170,7 +170,7 @@ register_worker({ phase => 'store', title => 'store subnets' }, sub {
   # use DDP; p $subs;
 
   my $now = vars->{'timestamp'}
-    || ('to_timestamp('. (join '.', gettimeofday) .')::timestamp');
+    || (sprintf 'to_timestamp(%d.%06d)::timestamp', gettimeofday);
 
   # update subnets with new networks
   my $stored = 0;

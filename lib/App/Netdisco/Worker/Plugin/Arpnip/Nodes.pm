@@ -20,6 +20,12 @@ use NetAddr::MAC ();
 use Time::HiRes 'gettimeofday';
 use Try::Tiny;
 
+# microseconds must be zero padded or 99999 us outranks 100000 us
+sub _arpnip_timestamp_sql {
+  my ($seconds, $microseconds) = @_;
+  return sprintf('to_timestamp(%d.%06d)::timestamp', $seconds, $microseconds);
+}
+
 register_worker({ phase => 'early',
   title => 'prepare common data' }, sub {
 
@@ -28,7 +34,7 @@ register_worker({ phase => 'early',
 
   vars->{'timestamp'} = ($job->is_offline and $job->entered)
     ? (schema('netdisco')->storage->dbh->quote($job->entered) .'::timestamp')
-    : 'to_timestamp('. (join '.', gettimeofday) .')::timestamp';
+    : _arpnip_timestamp_sql(gettimeofday);
 
   # initialise the cache
   vars->{'arps'} = {};
