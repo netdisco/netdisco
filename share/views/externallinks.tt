@@ -1,5 +1,5 @@
 [% BLOCK external_link %]
-<a href="[% link.url | evaltt %]" target="_blank">
+<a href="[% link.url | evaltt_cached %]" target="_blank">
      <span class="badge text-bg-secondary"><i class="fas fa-up-right-from-square"></i> [% link.displayname | html_entity %]</span></a>
 [% END %]
 
