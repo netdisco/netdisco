@@ -15,8 +15,9 @@ use Test::Netdisco::FakeSSH;
 
 use Dancer qw/:moose :script !pass/;
 
-# EOS arpnip_by_vrf against cEOS 4.36.2F lab captures: the vrf all JSON is
-# keyed by VRF name, so each entry's VRF and the VRFs read come from its keys.
+# EOS arpnip_by_vrf and subnets_by_vrf against cEOS 4.36.2F lab captures: the
+# vrf all JSON is keyed by VRF name, so each entry's VRF and the VRFs read come
+# from its keys.
 
 my $CONFIG = config();
 $CONFIG->{logger} = 'console';
@@ -201,6 +202,117 @@ subtest 'eos_arpnip__lab_capture__unchanged_from_today' => sub {
   my ($result, @logged) = capture_info_lines(sub { [ $EOS->arpnip('r3', fake_ssh('r3', $ARP, $ND), {}) ] });
   is_deeply $result, [], 'both failing: no rows';
   is scalar(@logged), 2, 'both failing: one info line per command';
+};
+
+my $V4_ROUTES = 'show ip route vrf all connected | json | no-more';
+my $V6_ROUTES = 'show ipv6 route vrf all connected | json | no-more';
+
+sub fake_ssh_routes {
+  my ($host, @timeouts) = @_;
+  my $ssh = Test::Netdisco::FakeSSH->new(fixture => "$FIXTURES/$host-routes.txt");
+  $ssh->timeout_on($_) for @timeouts;
+  return $ssh;
+}
+
+# fixture text with each named command answered with the captured reply EOS
+# gave to the misspelled twin of that command
+sub routes_text_with_invalid {
+  my ($host, @commands) = @_;
+  my $text = fixture_text("$host-routes");
+  foreach my $command (@commands) {
+    (my $misspelled = $command) =~ s/connected/conected/;
+    my ($reply) = $text =~ /^#--- \Q$misspelled\E\n(.*?)(?=^#---|\z)/ms or die;
+    $text =~ s/(^#--- \Q$command\E\n).*?(?=^#---|\z)/$1$reply/ms or die;
+  }
+  return $text;
+}
+
+sub prefixes_by_vrf {
+  my ($result) = @_;
+  return { map { my $vrf = $_; ($vrf => [ sort map { "$_->{prefix}/$_->{len}" } @{ $result->{$vrf} } ]) } keys %$result };
+}
+
+my @R1_V4 = ('10.110.12.0/30', '10.110.13.0/30', '10.111.1.0/24', '10.120.0.1/32');
+my @R1_V6 = ('2001:db8:110:12::/64', '2001:db8:110:13::/64', '2001:db8:111:1::/64', '2001:db8:120::1/128');
+
+subtest 'eos_subnets_by_vrf__lab_capture__prefixes_keyed_by_vrf' => sub {
+  my $ssh = fake_ssh_routes('r1');
+  my $result = $EOS->subnets_by_vrf('r1', $ssh, {});
+
+  is_deeply [$ssh->commands], [$V4_ROUTES, $V6_ROUTES], 'the two vrf all route commands';
+  is_deeply prefixes_by_vrf($result), {
+    default => ['172.20.20.0/24'],
+    RED => [ sort @R1_V4, @R1_V6 ],
+  }, 'IPv4 and IPv6 under the VRF EOS names, default kept as EOS gives it, nothing filtered here';
+
+  $result = $EOS->subnets_by_vrf('r3', fake_ssh_routes('r3'), {});
+  is_deeply prefixes_by_vrf($result), {
+    default => [], MGMT => ['172.20.20.0/24'],
+    RED_VRF => [ '10.110.13.0/30', '2001:db8:110:13::/64' ],
+    Red => [ sort '10.110.23.0/30', '10.111.3.0/24', '2001:db8:110:23::/64', '2001:db8:111:3::/64' ],
+  }, 'names differing only by case stay apart; a VRF with no routes maps to an empty list';
+};
+
+subtest 'eos_subnets_by_vrf__ipv6_command_fails__ipv4_still_returned' => sub {
+  my $expected = { default => ['172.20.20.0/24'], RED => \@R1_V4 };
+
+  my ($result, @logged) = capture_info_lines(sub {
+    $EOS->subnets_by_vrf('r1', Test::Netdisco::FakeSSH->new(text => routes_text_with_invalid('r1', $V6_ROUTES)), {}) });
+  is_deeply prefixes_by_vrf($result), $expected, 'undecodable IPv6 reply, IPv4 returned';
+  is scalar(@logged), 1, 'the failure is logged once';
+
+  ($result, @logged) = capture_info_lines(sub { $EOS->subnets_by_vrf('r1', fake_ssh_routes('r1', $V6_ROUTES), {}) });
+  is_deeply prefixes_by_vrf($result), $expected, 'SSH error on IPv6, IPv4 returned';
+
+  $result = $EOS->subnets_by_vrf('r1', fake_ssh_routes('r1', $V4_ROUTES), {});
+  is_deeply prefixes_by_vrf($result), { default => [], RED => \@R1_V6 }, 'SSH error on IPv4, IPv6 returned';
+};
+
+subtest 'eos_subnets_by_vrf__ipv6_routes_not_a_hash__ipv4_still_returned' => sub {
+  my $expected = { default => ['172.20.20.0/24'], RED => \@R1_V4 };
+  foreach my $shape ('[]', '"none"') {
+    (my $text = fixture_text('r1-routes')) =~ s/("routes": )\{\s*"2001:.*?\n {12}\}/$1$shape/s or die;
+    my $result = eval { $EOS->subnets_by_vrf('r1', Test::Netdisco::FakeSSH->new(text => $text), {}) };
+    is $@, '', "routes as $shape does not die";
+    is_deeply prefixes_by_vrf($result), $expected, "IPv4 returned, the malformed IPv6 VRF contributes nothing ($shape)";
+  }
+
+  (my $text = fixture_text('r1-routes')) =~ s/("RED": )\{(\s*"routingDisabled": true)/$1"none"$2/ or die;
+  $text =~ s/"none"\s*"routingDisabled": true.*?\n {8}\}\n/"none"\n/s or die;
+  my $result = eval { $EOS->subnets_by_vrf('r1', Test::Netdisco::FakeSSH->new(text => $text), {}) };
+  is $@, '', 'a VRF value that is not a hash does not die';
+  is_deeply prefixes_by_vrf($result), $expected, 'IPv4 returned';
+};
+
+subtest 'eos_subnets_by_vrf__ipv6_vrfs_an_array__ipv4_still_returned' => sub {
+  my $text = routes_text_with_invalid('r1', $V6_ROUTES);
+  $text =~ s/(^#--- \Q$V6_ROUTES\E\n).*?(?=^#---|\z)/$1\{"vrfs": []\}\n/ms or die;
+  my $result = eval { $EOS->subnets_by_vrf('r1', Test::Netdisco::FakeSSH->new(text => $text), {}) };
+  is $@, '', 'does not die';
+  is_deeply prefixes_by_vrf($result), { default => ['172.20.20.0/24'], RED => \@R1_V4 }, 'IPv4 returned';
+};
+
+subtest 'eos_subnets_by_vrf__both_fail__returns_undef' => sub {
+  my ($result, @logged) = capture_info_lines(sub {
+    [ $EOS->subnets_by_vrf('r1', fake_ssh_routes('r1', $V4_ROUTES, $V6_ROUTES), {}) ] });
+  is_deeply $result, [undef], 'both commands error: undef';
+  is scalar(@logged), 2, 'one info line per failed command';
+
+  my $text = routes_text_with_invalid('r1', $V4_ROUTES, $V6_ROUTES);
+  is $EOS->subnets_by_vrf('r1', Test::Netdisco::FakeSSH->new(text => $text), {}), undef,
+    'both replies undecodable: undef';
+
+  (my $novrfs = fixture_text('r1-routes')) =~ s/"vrfs"/"other"/g;
+  is $EOS->subnets_by_vrf('r1', Test::Netdisco::FakeSSH->new(text => $novrfs), {}), undef,
+    'JSON without vrfs: undef';
+};
+
+subtest 'eos_subnets__lab_capture__unchanged' => sub {
+  my $ssh = fake_ssh_routes('r1');
+  my @rows = $EOS->subnets('r1', $ssh, {});
+  is_deeply [$ssh->commands], [$V4_ROUTES], 'one IPv4 command, as before';
+  is_deeply [ sort @rows ], ['10.110.12.0/30', '10.110.13.0/30', '10.111.1.0/24', '172.20.20.0/24'],
+    'flat IPv4 list, host routes dropped';
 };
 
 done_testing;

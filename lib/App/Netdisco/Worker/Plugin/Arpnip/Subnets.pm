@@ -7,10 +7,13 @@ use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::Transport::SNMP ();
 use App::Netdisco::Transport::SSH ();
 use App::Netdisco::Util::Permission 'acl_matches';
-use App::Netdisco::Util::VRF qw/vrf_instances_for each_vrf_instance/;
+use App::Netdisco::Util::VRF qw/
+  vrf_collection_enabled vrf_skipped netdisco_vrf vrf_instances_for each_vrf_instance/;
 use Dancer::Plugin::DBIC 'schema';
 use NetAddr::IP::Lite ':lower';
 use Time::HiRes 'gettimeofday';
+use List::Util 'sum0';
+use Try::Tiny;
 
 register_worker({ phase => 'early', title => 'prepare subnets' }, sub {
   # netdisco-do runs every job in one process, so no job sees another's subnets
@@ -108,6 +111,9 @@ register_worker({ phase => 'main', driver => 'cli' }, sub {
   my $cli = App::Netdisco::Transport::SSH->session_for($device)
     or return Status->defer("arpnip (cli) failed: could not SSH connect to $device");
 
+  return store_cli_vrf_subnets($device, $cli)
+    if vrf_collection_enabled($device) and $cli->platform->can('subnets_by_vrf');
+
   my @subnets = grep { defined and length } $cli->subnets;
 
   debug sprintf ' [%s] arpnip (cli) - found subnet %s', $device->ip, $_ for @subnets;
@@ -116,6 +122,37 @@ register_worker({ phase => 'main', driver => 'cli' }, sub {
   return Status->info(sprintf ' [%s] arpnip (cli) - processed %s Subnet entries',
     $device->ip, scalar @subnets);
 });
+
+# a platform with subnets_by_vrf returns { VRF => [ { prefix, len } ] } with the
+# device's own VRF names, or undef when it read nothing. Nothing read stores
+# nothing and is not a defer: subnets never retire, and the ARP worker defers.
+# A platform subclass that overrides subnets must also override subnets_by_vrf,
+# or with store_vrfs on the inherited subnets_by_vrf runs instead of its subnets.
+sub store_cli_vrf_subnets {
+  my ($device, $cli) = @_;
+  my $error = 'returned no subnet data';
+  my $found = try { $cli->subnets_by_vrf } catch { ($error = "failed: $_") =~ s{\s+\z}{}; undef };
+  unless (ref {} eq ref $found) {
+    debug sprintf ' [%s] arpnip (cli) - subnets_by_vrf %s, so no subnets are stored', $device->ip, $error;
+    return Status->info(sprintf ' [%s] arpnip (cli) - processed 0 Subnet entries', $device->ip);
+  }
+
+  my %seen;
+  foreach my $device_vrf (sort keys %$found) {
+    my $vrf = netdisco_vrf($device_vrf);
+    next if vrf_skipped($device, $vrf);
+    foreach my $entry (@{ $found->{$device_vrf} || [] }) {
+      my $cidr = vrf_subnet_cidr($entry) or next;
+      debug sprintf ' [%s] arpnip (cli) - found subnet %s in vrf "%s"', $device->ip, $cidr, $vrf;
+      store_subnet($cidr, $vrf);
+      $seen{$vrf}{$cidr} = 1;
+    }
+  }
+
+  my $count = sum0(map { scalar keys %$_ } values %seen);
+  return Status->info(sprintf ' [%s] arpnip (cli) - processed %s Subnet entries',
+    $device->ip, $count);
+}
 
 register_worker({ phase => 'store', title => 'store subnets' }, sub {
   my ($job, $workerconf) = @_;

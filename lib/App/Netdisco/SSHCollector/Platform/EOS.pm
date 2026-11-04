@@ -60,6 +60,22 @@ C<< { VLAN => { PORT => { MACADDR => COUNT } } } >>.
 Retrieve directly connected IPv4 subnets from every VRF's routing table,
 without host routes. Returns a list of CIDR strings such as C<10.1.1.0/24>.
 
+=item B<subnets_by_vrf($host, $ssh, $args)>
+
+As C<subnets>, used when C<store_vrfs> is on, and reading IPv6 as well. Runs
+C<show ip route vrf all connected> and C<show ipv6 route vrf all connected>
+and names each prefix's VRF from the JSON key it appears under (the worker
+maps C<default> to C<''>).
+
+Returns C<< { VRF => [ { prefix => '10.1.1.0', len => 24 }, ... ] } >>, or
+undef when neither command returned usable JSON. A VRF with no connected routes
+maps to an empty list. Host routes and link-local prefixes are returned as
+EOS lists them: the worker filters them. A command that fails contributes
+nothing and the other family's prefixes are still returned.
+
+A subclass that overrides C<subnets> must also override C<subnets_by_vrf>, or
+with C<store_vrfs> on this C<subnets_by_vrf> is used instead of the override.
+
 =back
 
 =cut
@@ -70,6 +86,11 @@ my $if_name_map = {
   Eth => "Ethernet",
   Po => "Port-channel",
 };
+
+my @ROUTE_COMMANDS = (
+  { name => 'IPv4 route', command => "show ip route vrf all connected | json | no-more\n" },
+  { name => 'IPv6 route', command => "show ipv6 route vrf all connected | json | no-more\n" },
+);
 
 my @NEIGHBOR_FAMILIES = (
   { name => 'ARP', family => 4, key => 'ipV4Neighbors', split_iface => 1,
@@ -231,6 +252,42 @@ sub subnets {
     }
 
     return @subnets;
+}
+
+sub subnets_by_vrf {
+    my ($self, $hostlabel, $ssh, $args) = @_;
+    debug "$hostlabel $$ subnets_by_vrf()";
+
+    my (%subnets, $read_any);
+    foreach my $route (@ROUTE_COMMANDS) {
+        my @out = $ssh->capture({ stdin_data => $route->{command} });
+        if ($ssh->error) {
+            info "$hostlabel $$ error running $route->{name} command: " . $ssh->error;
+            next;
+        }
+
+        my $data = eval { decode_json(join '', @out) };
+        unless ($data and ref {} eq ref $data and ref {} eq ref $data->{vrfs}) {
+            info "$hostlabel $$ failed to parse $route->{name} JSON";
+            next;
+        }
+
+        $read_any = 1;
+        foreach my $vrf (keys %{ $data->{vrfs} }) {
+            my $table = $data->{vrfs}->{$vrf};
+            my $routes = (ref {} eq ref $table) ? ($table->{routes} || {}) : undef;
+            unless (ref {} eq ref $routes) {
+                info "$hostlabel $$ $route->{name} table for VRF $vrf is not a hash, so it contributes nothing";
+                next;
+            }
+            push @{ $subnets{$vrf} ||= [] }, map {
+                my ($prefix, $len) = m{^(.+)/(\d+)$} ? ($1, $2) : ($_, undef);
+                +{ prefix => $prefix, len => $len }
+            } sort keys %$routes;
+        }
+    }
+
+    return $read_any ? \%subnets : undef;
 }
 
 1;

@@ -67,6 +67,12 @@ Returns C<undef> if the connection fails.
       if $self->platform->can('macsuck');
   }
 
+  sub subnets_by_vrf {
+    my $self = shift;
+    $self->platform->subnets_by_vrf(@_, $self->host, $self->ssh, $self->auth)
+      if $self->platform->can('subnets_by_vrf');
+  }
+
   sub subnets {
     my $self = shift;
     $self->platform->subnets(@_, $self->host, $self->ssh, $self->auth)

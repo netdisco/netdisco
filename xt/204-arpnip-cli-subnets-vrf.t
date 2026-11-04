@@ -1,0 +1,218 @@
+#!/usr/bin/env perl
+
+use strict; use warnings;
+no warnings 'once'; # local *glob = sub {} overrides below are single-use by design
+
+BEGIN { $ENV{DANCER_ENVDIR} = '/dev/null'; }
+
+use Test::More 0.88;
+use Test::File::ShareDir::Dist { 'App-Netdisco' => 'share/' };
+
+use lib 'xt/lib';
+
+use App::Netdisco;
+use App::Netdisco::DB;
+use App::Netdisco::Backend::Job;
+use App::Netdisco::Transport::SSH ();
+use App::Netdisco::Worker::Plugin::Arpnip::Subnets ();
+
+use Try::Tiny;
+use Dancer qw/:moose :script !pass/;
+
+# The CLI arpnip subnets worker with store_vrfs on, run through the Runner as
+# xt/194 runs the SNMP one. session_for is faked to return a session over a
+# stub platform, and the Subnet resultset records the upsert_subnet calls.
+
+my $CONFIG = config();
+$CONFIG->{logger} = 'console';
+$CONFIG->{log} = ($ENV{'DANCER_DEBUG'} ? 'debug' : 'error');
+Dancer::Logger->init('console', $CONFIG);
+
+{
+  package MyWorker;
+  use Moo;
+  with 'App::Netdisco::Worker::Runner';
+}
+
+package FlatPlatform;
+sub new { my ($class, %args) = @_; return bless { calls => [], %args }, $class }
+sub subnets {
+  my $self = shift;
+  push @{ $self->{calls} }, [ 'subnets', @_ ];
+  return @{ $self->{flat} || [] };
+}
+
+package ReportingPlatform;
+our @ISA = ('FlatPlatform');
+sub subnets_by_vrf {
+  my $self = shift;
+  push @{ $self->{calls} }, [ 'subnets_by_vrf', @_ ];
+  die $self->{die} if $self->{die};
+  return $self->{by_vrf};
+}
+
+package FakeSubnetRs;
+sub new { bless {}, shift }
+sub upsert_subnet { my $self = shift; push @main::upserts, [ @_ ]; return 1 }
+sub resultset { return $_[0] }
+
+package main;
+
+my %device_cols = (
+  ip => '192.0.2.1', name => 'router1', layers => '00000100', snmp_ver => 2,
+  snmp_class => 'SNMP::Info::Layer3',
+);
+
+our @upserts;
+
+sub with_settings {
+  my ($code, %settings) = @_;
+  my %saved = map { $_ => setting($_) } keys %settings;
+  set($_ => $settings{$_}) for keys %settings;
+  my @result = eval { $code->() };
+  my $error = $@;
+  set($_ => $saved{$_}) for keys %saved;
+  die $error if $error;
+  return @result;
+}
+
+sub by_vrf {
+  return {
+    default => [ { prefix => '172.20.20.0', len => 24 } ],
+    red  => [ { prefix => '10.100.1.0', len => 24 }, { prefix => '2001:db8:1::', len => 64 } ],
+    blue => [ { prefix => '10.100.1.0', len => 24 } ],
+    @_,
+  };
+}
+
+sub run_subnets {
+  my (%args) = @_;
+  delete @{ vars() }{qw/timestamp hook_data/};
+  @upserts = ();
+
+  my $device = App::Netdisco::DB->resultset('Device')->new_result({ %device_cols });
+  $device->in_storage(1);
+  $device->{'_column_data'}{'since_last_arpnip'} = 0;
+
+  my $session = $args{platform}
+    ? MySession->new(platform => $args{platform}, host => $device->ip, ssh => 'SSH', auth => { platform => 'Stub' })
+    : undef;
+
+  local *App::Netdisco::Transport::SSH::session_for = sub { return $session };
+  local *App::Netdisco::Worker::Plugin::Arpnip::Subnets::schema = sub { return FakeSubnetRs->new };
+
+  my $job = App::Netdisco::Backend::Job->new({
+    job => 0, device => $device, action => 'arpnip::subnets',
+  });
+
+  with_settings(sub {
+    try { MyWorker->new()->run($job) }
+    catch { $job->status('error'); $job->log("error running job: $_") };
+  }, device_auth => [{ driver => 'cli' }], store_vrfs => 1, ignore_private_nets => 0, %{ $args{settings} || {} });
+
+  return $job;
+}
+
+# net|vrf, ignoring the timestamp and the router
+sub stored { return join ' ', sort map { join '|', $_->[0], $_->[2] // '-' } @upserts }
+sub calls_of { my ($platform, $name) = @_; return grep { $_->[0] eq $name } @{ $platform->{calls} } }
+
+subtest 'cli_subnets__switch_on_platform_by_vrf__stored_under_each_vrf' => sub {
+  my $platform = ReportingPlatform->new(flat => ['192.0.2.0/24'], by_vrf => by_vrf());
+  my $job = run_subnets(platform => $platform);
+  is $job->status, 'info', 'arpnip finished with the store phase\'s info status';
+  is scalar(calls_of($platform, 'subnets')), 0, 'flat subnets not called';
+  my ($call) = calls_of($platform, 'subnets_by_vrf');
+  is_deeply $call, [ 'subnets_by_vrf', '192.0.2.1', 'SSH', { platform => 'Stub' } ],
+    'subnets_by_vrf called with the subnets arguments';
+  is stored(), join(' ', sort '172.20.20.0/24|', '10.100.1.0/24|red', '10.100.1.0/24|blue', '2001:db8:1:0:0:0:0:0/64|red'),
+    'default stored as the empty vrf; the same prefix in red and blue kept as two rows';
+};
+
+subtest 'cli_subnets__default_and_empty_both_named__one_row' => sub {
+  my $platform = ReportingPlatform->new(by_vrf => by_vrf(red => [], blue => [], '' => [ { prefix => '172.20.20.0', len => 24 } ]));
+  run_subnets(platform => $platform);
+  is scalar(@upserts), 1, 'one row for the prefix, not one per name';
+  is stored(), '172.20.20.0/24|', 'stored under the empty vrf';
+};
+
+subtest 'cli_subnets__host_and_link_local_routes__dropped' => sub {
+  my $platform = ReportingPlatform->new(by_vrf => { red => [
+    { prefix => '10.120.0.1', len => 32 },
+    { prefix => '2001:db8:120::1', len => 128 },
+    { prefix => 'fe80::', len => 64 },
+    { prefix => '10.0.0.0', len => 0 },
+    { prefix => '127.0.0.0', len => 8 },
+    { prefix => '10.5.0.0' },
+    { prefix => '10.6.0.0', len => 24 },
+  ] });
+  run_subnets(platform => $platform);
+  is stored(), '10.6.0.0/24|red', 'only the connected network is stored';
+
+  run_subnets(platform => $platform, settings => { ignore_private_nets => 1 });
+  is stored(), '', 'ignore_private_nets drops RFC 1918';
+};
+
+subtest 'cli_subnets__skipped_vrf__not_stored' => sub {
+  my $platform = ReportingPlatform->new(by_vrf => by_vrf());
+  run_subnets(platform => $platform, settings => { vrf_no_name => ['blue'] });
+  is stored(), join(' ', sort '172.20.20.0/24|', '10.100.1.0/24|red', '2001:db8:1:0:0:0:0:0/64|red'), 'blue not stored';
+  run_subnets(platform => $platform, settings => { vrf_no_devicevrf => ['192.0.2.1:red'] });
+  is stored(), join(' ', sort '172.20.20.0/24|', '10.100.1.0/24|blue'), 'vrf_no_devicevrf drops red';
+};
+
+subtest 'cli_subnets__switch_off__flat_subnets_unchanged_no_by_vrf_call' => sub {
+  my $platform = ReportingPlatform->new(flat => ['192.0.2.0/24', '198.51.100.0/24'], by_vrf => by_vrf());
+  my $job = run_subnets(platform => $platform, settings => { store_vrfs => 0 });
+  is $job->status, 'info', 'arpnip finished with the store phase\'s info status';
+  is scalar(calls_of($platform, 'subnets_by_vrf')), 0, 'subnets_by_vrf not called';
+  is stored(), '192.0.2.0/24| 198.51.100.0/24|', 'flat subnets stored under the empty vrf';
+};
+
+subtest 'cli_subnets__platform_without_by_vrf__flat_as_today' => sub {
+  my $platform = FlatPlatform->new(flat => ['192.0.2.0/24']);
+  my $job = run_subnets(platform => $platform);
+  is $job->status, 'info', 'arpnip finished with the store phase\'s info status';
+  is scalar(calls_of($platform, 'subnets')), 1, 'flat subnets called';
+  is stored(), '192.0.2.0/24|', 'stored under the empty vrf';
+};
+
+subtest 'cli_subnets__by_vrf_undef__nothing_stored_not_deferred' => sub {
+  my $platform = ReportingPlatform->new(flat => ['192.0.2.0/24'], by_vrf => undef);
+  my $job = run_subnets(platform => $platform);
+  is $job->status, 'info', 'not deferred';
+  is scalar(@upserts), 0, 'nothing stored, and no fall back to the flat list';
+  is scalar(calls_of($platform, 'subnets')), 0, 'flat subnets not called';
+};
+
+subtest 'cli_subnets__by_vrf_dies__nothing_stored_not_deferred' => sub {
+  my $platform = ReportingPlatform->new(die => "boom\n");
+  my $job = run_subnets(platform => $platform);
+  is $job->status, 'info', 'not deferred';
+  is scalar(@upserts), 0, 'nothing stored';
+};
+
+subtest 'store_cli_vrf_subnets__default_and_empty_both_named__counts_one_row' => sub {
+  my $device = App::Netdisco::DB->resultset('Device')->new_result({ %device_cols });
+  my $prefix = [ { prefix => '172.20.20.0', len => 24 } ];
+  my $session = MySession->new(platform => ReportingPlatform->new(by_vrf => { default => $prefix, '' => $prefix }),
+    host => $device->ip, ssh => 'SSH', auth => {});
+  my ($status) = with_settings(sub {
+    App::Netdisco::Worker::Plugin::Arpnip::Subnets::store_cli_vrf_subnets($device, $session) },
+    store_vrfs => 1, ignore_private_nets => 0);
+  like $status->log, qr/processed 1 Subnet entries/, 'one stored row, one counted';
+};
+
+subtest 'store_cli_vrf_subnets__stored_prefixes__info_status_with_count' => sub {
+  my $device = App::Netdisco::DB->resultset('Device')->new_result({ %device_cols });
+  my $session = MySession->new(platform => ReportingPlatform->new(by_vrf => by_vrf(
+    blue => [ { prefix => '10.6.0.1', len => 32 } ])),
+    host => $device->ip, ssh => 'SSH', auth => {});
+  my ($status) = with_settings(sub {
+    App::Netdisco::Worker::Plugin::Arpnip::Subnets::store_cli_vrf_subnets($device, $session) },
+    store_vrfs => 1, ignore_private_nets => 0);
+  is $status->status, 'info', 'status info';
+  like $status->log, qr/processed 3 Subnet entries/, 'host route not counted';
+};
+
+done_testing;

@@ -1,0 +1,179 @@
+# Arista EOS (lab capture, cEOS 4.36.2F, r1), connected routes per VRF as EOS.pm reads them over capture with stdin_data
+# IPv6 unicast routing is off per VRF, so the IPv6 tables say routingDisabled true and still list connected routes.
+# The conected sections are a deliberate misspelling: EOS answers % Invalid input, which is not JSON.
+#--- show ip route vrf all connected | json | no-more
+{
+    "vrfs": {
+        "default": {
+            "routingDisabled": false,
+            "allRoutesProgrammedHardware": true,
+            "allRoutesProgrammedKernel": true,
+            "defaultRouteState": "notReachable",
+            "routes": {
+                "172.20.20.0/24": {
+                    "hardwareProgrammed": true,
+                    "routeType": "connected",
+                    "routeLeaked": false,
+                    "kernelProgrammed": true,
+                    "routeAction": "forward",
+                    "vias": [
+                        {
+                            "interface": "Management0"
+                        }
+                    ],
+                    "directlyConnected": true
+                }
+            }
+        },
+        "RED": {
+            "routingDisabled": false,
+            "allRoutesProgrammedHardware": true,
+            "allRoutesProgrammedKernel": true,
+            "defaultRouteState": "notSet",
+            "routes": {
+                "10.110.12.0/30": {
+                    "hardwareProgrammed": true,
+                    "routeType": "connected",
+                    "routeLeaked": false,
+                    "kernelProgrammed": true,
+                    "routeAction": "forward",
+                    "vias": [
+                        {
+                            "interface": "Ethernet1"
+                        }
+                    ],
+                    "directlyConnected": true
+                },
+                "10.110.13.0/30": {
+                    "hardwareProgrammed": true,
+                    "routeType": "connected",
+                    "routeLeaked": false,
+                    "kernelProgrammed": true,
+                    "routeAction": "forward",
+                    "vias": [
+                        {
+                            "interface": "Ethernet2"
+                        }
+                    ],
+                    "directlyConnected": true
+                },
+                "10.111.1.0/24": {
+                    "hardwareProgrammed": true,
+                    "routeType": "connected",
+                    "routeLeaked": false,
+                    "kernelProgrammed": true,
+                    "routeAction": "forward",
+                    "vias": [
+                        {
+                            "interface": "Ethernet3"
+                        }
+                    ],
+                    "directlyConnected": true
+                },
+                "10.120.0.1/32": {
+                    "hardwareProgrammed": true,
+                    "routeType": "connected",
+                    "routeLeaked": false,
+                    "kernelProgrammed": true,
+                    "routeAction": "forward",
+                    "vias": [
+                        {
+                            "interface": "Loopback5"
+                        }
+                    ],
+                    "directlyConnected": true
+                }
+            }
+        }
+    }
+}
+#--- show ipv6 route vrf all connected | json | no-more
+{
+    "vrfs": {
+        "default": {
+            "routingDisabled": true,
+            "allRoutesProgrammedHardware": true,
+            "allRoutesProgrammedKernel": true,
+            "defaultRouteState": "notSet",
+            "routes": {}
+        },
+        "RED": {
+            "routingDisabled": true,
+            "allRoutesProgrammedHardware": true,
+            "allRoutesProgrammedKernel": true,
+            "defaultRouteState": "notSet",
+            "routes": {
+                "2001:db8:110:12::/64": {
+                    "hardwareProgrammed": true,
+                    "routeType": "connected",
+                    "routeLeaked": false,
+                    "kernelProgrammed": true,
+                    "preference": 0,
+                    "metric": 0,
+                    "vias": [
+                        {
+                            "interface": "Ethernet1"
+                        }
+                    ],
+                    "routeAction": "forward",
+                    "directlyConnected": true
+                },
+                "2001:db8:110:13::/64": {
+                    "hardwareProgrammed": true,
+                    "routeType": "connected",
+                    "routeLeaked": false,
+                    "kernelProgrammed": true,
+                    "preference": 0,
+                    "metric": 0,
+                    "vias": [
+                        {
+                            "interface": "Ethernet2"
+                        }
+                    ],
+                    "routeAction": "forward",
+                    "directlyConnected": true
+                },
+                "2001:db8:111:1::/64": {
+                    "hardwareProgrammed": true,
+                    "routeType": "connected",
+                    "routeLeaked": false,
+                    "kernelProgrammed": true,
+                    "preference": 0,
+                    "metric": 0,
+                    "vias": [
+                        {
+                            "interface": "Ethernet3"
+                        }
+                    ],
+                    "routeAction": "forward",
+                    "directlyConnected": true
+                },
+                "2001:db8:120::1/128": {
+                    "hardwareProgrammed": true,
+                    "routeType": "connected",
+                    "routeLeaked": false,
+                    "kernelProgrammed": true,
+                    "preference": 0,
+                    "metric": 0,
+                    "vias": [
+                        {
+                            "interface": "Loopback5"
+                        }
+                    ],
+                    "routeAction": "forward",
+                    "directlyConnected": true
+                }
+            }
+        }
+    }
+}
+#--- show ip route vrf all conected | json | no-more
+
+> show ip route vrf all conected | json | no-more
+
+% Invalid input at line 1
+#--- show ipv6 route vrf all conected | json | no-more
+
+> show ipv6 route vrf all conected | json | no-more
+
+% Invalid input at line 1
