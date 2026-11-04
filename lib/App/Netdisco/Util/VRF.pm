@@ -7,6 +7,7 @@ use Dancer qw/:syntax :script !pass/;
 use App::Netdisco::Util::Permission 'acl_matches';
 use App::Netdisco::Util::SNMP qw/snmp_vrf_context walk_mark incomplete_walks_for/;
 use Scope::Guard 'guard';
+use Scalar::Util 'blessed';
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -162,9 +163,11 @@ sub each_vrf_instance {
   foreach my $name (@switched) {
     # armed before the switch, so an update() that dies partway still restores
     $guard ||= guard { snmp_vrf_context($snmp, $device, undef) };
-    if (not snmp_vrf_context($snmp, $device, $instances->{$name})) {
-      debug sprintf ' [%s] %s - VRF %s has no context this session can reach',
-        $device->ip, $log_as, $name;
+    my $unread = (not snmp_vrf_context($snmp, $device, $instances->{$name}))
+      ? 'has no context this session can reach'
+      : (not _context_answers($snmp)) ? 'context did not answer, so it was not read' : undef;
+    if ($unread) {
+      debug sprintf ' [%s] %s - VRF %s %s', $device->ip, $log_as, $name, $unread;
       $reads{ netdisco_vrf($name) } = { complete => 0, data => undef };
       next;
     }
@@ -172,6 +175,17 @@ sub each_vrf_instance {
       = _read_instance($device, $snmp, $name, $instances->{$name}, $reader, 1, \%options);
   }
   return \%reads;
+}
+
+# one get before the reader: a reader walks attribute after attribute, and a
+# context the device does not serve costs each of them the full timeout. Only a
+# timeout counts; an error or noSuchObject is an answer
+sub _context_answers {
+  my $session = $_[0]->session;
+  # no session to ask is no evidence of a dead context
+  return 1 unless blessed $session and $session->can('get');
+  $session->get('.1.3.6.1.2.1.1.3.0');
+  return (($session->{ErrorStr} || '') !~ m/timeout/i);
 }
 
 sub _read_instance {
