@@ -328,3 +328,63 @@ describe('total order over the whole corpus', () => {
     assert.deepStrictEqual(corpus.names.slice().sort(withTiebreak), corpus.order);
   });
 });
+
+// The comparator keeps the chunks it cut from each name, instead of cutting
+// both names again on every comparison, which at a few thousand ports was the
+// sort's whole cost. This is the comparator as it was before that, verbatim,
+// and the two must agree on every pair: the memo may change how fast the answer
+// comes and nothing about the answer.
+describe('chunks kept per name', () => {
+  function plainPortSort(a, b) {
+    var re = /(^0x[0-9a-f]+$|[0-9]+)/gi,
+        sre = /(^[ ]*|[ ]*$)/g,
+        ore = /^0/,
+        x = a.toString().replace(sre, '') || '',
+        y = b.toString().replace(sre, '') || '';
+    x = x.replace(/^10GigabitEthernet/, 'GigabitEthernet');
+    y = y.replace(/^10GigabitEthernet/, 'GigabitEthernet');
+    var xN = x.replace(re, '\0$1\0').replace(/\0$/,'').replace(/^\0/,'').split('\0'),
+        yN = y.replace(re, '\0$1\0').replace(/\0$/,'').replace(/^\0/,'').split('\0');
+    for (var cLoc=0, numS=Math.max(xN.length, yN.length); cLoc < numS; cLoc++) {
+        var oFxNcL = !(xN[cLoc] || '').match(ore) && parseFloat(xN[cLoc]) || xN[cLoc] || 0;
+        var oFyNcL = !(yN[cLoc] || '').match(ore) && parseFloat(yN[cLoc]) || yN[cLoc] || 0;
+        if (isNaN(oFxNcL) !== isNaN(oFyNcL)) { return (isNaN(oFxNcL)) ? 1 : -1; }
+        else if (typeof oFxNcL !== typeof oFyNcL) { oFxNcL += ''; oFyNcL += ''; }
+        if (oFxNcL < oFyNcL) { return -1; }
+        if (oFxNcL > oFyNcL) { return 1;  }
+    }
+    return 0;
+  }
+
+  const corpus = require(path.join(__dirname, '..', 'portsort-corpus.json'));
+  const odd = ['', ' ', '0', '00', '007', '0x1f', '0X1F', '1e3', '1.5', '-1', 'a', 'A', 'Gi', 'Gi1/0/1.100',
+    'Po1.0', 'Vlan0', '10GigabitEthernet1/1', 'TenGigabitEthernet1/1', 1, 10, 0, '1', '  3', '3  '];
+
+  test('portSort__every_pair_of_the_corpus_and_odd_names__agrees_with_the_plain_comparator', () => {
+    const names = corpus.names.concat(odd);
+    const wrong = [];
+    for (const a of names) {
+      for (const b of names) {
+        const got = sortTypes.asc(a, b), want = plainPortSort(a, b);
+        if (got !== want) wrong.push([a, b, got, want]);
+      }
+    }
+    assert.deepStrictEqual(wrong.slice(0, 5), []);
+  });
+
+  test('portSort__a_second_pass_over_the_same_names__gives_the_same_answers', () => {
+    const names = corpus.names.slice(0, 80);
+    const first = names.map((a) => names.map((b) => sortTypes.asc(a, b)));
+    const second = names.map((a) => names.map((b) => sortTypes.asc(a, b)));
+    assert.deepStrictEqual(second, first);
+  });
+
+  test('portSort__more_distinct_names_than_the_table_holds__still_sorts_correctly', () => {
+    const many = [];
+    for (let i = 0; i < 60000; i++) many.push('Gi' + (i % 7) + '/0/' + i);
+    const sorted = many.slice().sort(sortTypes.asc);
+    const plain = many.slice().sort(plainPortSort);
+    assert.deepStrictEqual(sorted.slice(0, 50), plain.slice(0, 50));
+    assert.deepStrictEqual(sorted.slice(-50), plain.slice(-50));
+  });
+});
