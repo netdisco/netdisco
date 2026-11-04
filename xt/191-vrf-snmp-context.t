@@ -30,7 +30,10 @@ sub session { $_[0]{session} }
 sub update {
   my ($self, %args) = @_;
   push @{ $self->{updates} }, {%args};
+  # SNMP::Info::update() keeps the old session and returns false on failure
+  return if $self->{fail_update};
   $self->{session}{$_} = $args{$_} for keys %args;
+  return $self->{session};
 }
 
 package main;
@@ -107,6 +110,21 @@ subtest 'snmp_vrf_context__switch_between_vrfs__formats_from_plain_community' =>
   snmp_vrf_context($snmp, $device, $red);
   snmp_vrf_context($snmp, $device, { name => 'blue', contexts => [{ kind => 'vrf', id => 'blue', v2c => '%s@blue', v3 => 'blue' }] });
   is_deeply $snmp->{updates}, [{ Community => 'labro@red' }, { Community => 'labro@blue' }], 'each switch uses snmp_comm';
+};
+
+subtest 'snmp_vrf_context__update_fails__returns_0' => sub {
+  foreach my $ver (2, 3) {
+    my $snmp = FakeSNMP->new(snmp_ver => $ver, fail_update => 1);
+    is snmp_vrf_context($snmp, $device, $red), 0, "v$ver switch that did not take returns 0";
+    is $snmp->session->{Community}, 'labro', "v$ver session still in the default context";
+  }
+};
+
+subtest 'snmp_vrf_context__restore_update_fails__returns_0' => sub {
+  my $snmp = FakeSNMP->new;
+  snmp_vrf_context($snmp, $device, $red);
+  $snmp->{fail_update} = 1;
+  is snmp_vrf_context($snmp, $device, undef), 0, 'restore that did not take returns 0';
 };
 
 subtest 'snmp_vrf_context__never_concatenates_community_at_name' => sub {

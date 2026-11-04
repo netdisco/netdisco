@@ -7,7 +7,8 @@ use Dancer qw/:syntax :script !pass/;
 use App::Netdisco::Util::Permission 'acl_matches';
 use App::Netdisco::Util::SNMP qw/snmp_vrf_context walk_mark incomplete_walks_for/;
 use Scope::Guard 'guard';
-use Scalar::Util 'blessed';
+use Scalar::Util qw/blessed refaddr/;
+use App::Netdisco::Transport::SNMP ();
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -162,7 +163,7 @@ sub each_vrf_instance {
   my $guard;
   foreach my $name (@switched) {
     # armed before the switch, so an update() that dies partway still restores
-    $guard ||= guard { snmp_vrf_context($snmp, $device, undef) };
+    $guard ||= guard { _return_to_default($device, $snmp, $log_as) };
     my $unread = (not snmp_vrf_context($snmp, $device, $instances->{$name}))
       ? 'has no context this session can reach'
       : (not _context_answers($snmp)) ? 'context did not answer, so it was not read' : undef;
@@ -175,6 +176,18 @@ sub each_vrf_instance {
       = _read_instance($device, $snmp, $name, $instances->{$name}, $reader, 1, \%options);
   }
   return \%reads;
+}
+
+# the reader is cached for the job, so a session stuck in a VRF context would
+# feed every later worker that VRF's rows as the default table's
+sub _return_to_default {
+  my ($device, $snmp, $log_as) = @_;
+  return if snmp_vrf_context($snmp, $device, undef);
+  warning sprintf ' [%s] %s - could not return to the default context, so the SNMP session is dropped',
+    $device->ip, $log_as;
+  my $readers = App::Netdisco::Transport::SNMP->instance->readers;
+  delete $readers->{ $device->ip }
+    if $readers and (refaddr($readers->{ $device->ip }) || 0) == refaddr($snmp);
 }
 
 # one get before the reader: a reader walks attribute after attribute, and a

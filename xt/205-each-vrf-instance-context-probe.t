@@ -10,6 +10,7 @@ use Test::File::ShareDir::Dist { 'App-Netdisco' => 'share/' };
 use App::Netdisco;
 use App::Netdisco::DB;
 use App::Netdisco::Util::VRF 'each_vrf_instance';
+use App::Netdisco::Transport::SNMP ();
 use Dancer qw/:script !pass/;
 
 # A v2c community@vrf the device drops costs every attribute a VRF reader
@@ -50,8 +51,11 @@ sub error { undef }
 sub vrf_read_complete { 1 }
 sub update {
   my ($self, %args) = @_;
-  $self->{context} = ($args{Community} =~ m/\@(.+)$/ ? $1 : '');
-  return 1;
+  my $target = ($args{Community} =~ m/\@(.+)$/ ? $1 : '');
+  # SNMP::Info::update() keeps the old session and returns false on failure
+  return if $self->{fail_update_to}{$target};
+  $self->{context} = $target;
+  return $self->{session};
 }
 
 package main;
@@ -106,6 +110,35 @@ subtest 'each_vrf_instance__default_context__not_probed' => sub {
   run_each($snmp);
   is_deeply [map { $_->[0] } @{ $snmp->{probes} }], ['blue', 'red'],
     'only the switched contexts are probed';
+};
+
+subtest 'each_vrf_instance__switch_fails__vrf_incomplete_reader_not_called' => sub {
+  my $snmp = FakeSNMP->new(fail_update_to => { red => 1 });
+  my ($reads, $read) = run_each($snmp);
+  is_deeply $reads->{red}, { complete => 0, data => undef }, 'red incomplete with no data';
+  ok !(grep { $_->[0] eq 'red' } @$read), 'red reader not called';
+  ok !(grep { $_->[0] eq 'blue' and $_->[1] ne 'blue' } @$read), 'blue read only in its own context';
+  is_deeply $reads->{blue}, { complete => 1, data => 'data of blue' }, 'blue still read';
+};
+
+# the reader is cached for the job, so later workers would read the VRF's
+# context as the default one
+subtest 'each_vrf_instance__return_to_default_fails__cached_reader_dropped' => sub {
+  my $snmp = FakeSNMP->new(fail_update_to => { '' => 1 });
+  my $readers = App::Netdisco::Transport::SNMP->instance->readers;
+  $readers->{ $device->ip } = $snmp;
+  run_each($snmp);
+  is $snmp->{context}, 'red', 'session left in the last VRF context';
+  ok !exists $readers->{ $device->ip }, 'cached reader dropped, so the next reader_for reconnects';
+};
+
+subtest 'each_vrf_instance__return_to_default_succeeds__cached_reader_kept' => sub {
+  my $snmp = FakeSNMP->new;
+  my $readers = App::Netdisco::Transport::SNMP->instance->readers;
+  $readers->{ $device->ip } = $snmp;
+  run_each($snmp);
+  is $readers->{ $device->ip }, $snmp, 'cached reader kept';
+  delete $readers->{ $device->ip };
 };
 
 done_testing;
