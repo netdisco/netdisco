@@ -170,8 +170,9 @@ sub run_arpnip {
   # netdisco-do runs every job in one process
   delete @{ vars() }{qw/arps timestamp hook_data/};
   @stored = ();
+  my $device_over = delete $snmp{device} || {};
 
-  my $device = App::Netdisco::DB->resultset('Device')->new_result({ %device_cols });
+  my $device = App::Netdisco::DB->resultset('Device')->new_result({ %device_cols, %$device_over });
   $device->in_storage(1);
   $device->{'_column_data'}{'since_last_arpnip'} = 0;
 
@@ -218,6 +219,18 @@ subtest 'arpnip__switch_off__today_entries_and_no_vrf_read' => sub {
   ok !$last_snmp->{vrf_reads}, 'vrf_neighbors not read';
   ok !exists vars->{'vrf_read'}, 'no vrf_read';
   ok !exists vars->{'vrf_list_complete'}, 'no vrf_list_complete';
+};
+
+# a snapshot read offline: update() would clear the snapshot from the cache
+subtest 'arpnip__offline_snapshot_device__flat_read_and_no_update' => sub {
+  my ($job) = run_with_vrfs(offline => 1, device => { is_pseudo => 1 });
+  is $job->status, 'done', 'arpnip done';
+  is_deeply [ sort { $a->{ip} cmp $b->{ip} } @stored ], $todays, 'entries as with the switch off';
+  ok !$last_snmp->{reads}{vrf_instances}, 'vrf_instances not read';
+  ok !$last_snmp->{reads}{vrf_instances_complete}, 'vrf_instances_complete not read';
+  ok !$last_snmp->{vrf_reads}, 'vrf_neighbors not read';
+  is_deeply $last_snmp->{contexts_asked}, [], 'no update() call';
+  ok !exists vars->{'vrf_read'}, 'no vrf_read';
 };
 
 subtest 'arpnip__unsupported_class__today_entries_and_no_vrf_read' => sub {

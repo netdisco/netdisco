@@ -51,13 +51,16 @@ sub snmp_comm { 'public' }
 sub class { 'SNMP::Info::Layer3::Fake' }
 sub session { $_[0]{session} }
 sub walk_failures { $_[0]{walk_failures} }
-sub error { undef }
+sub error { my $self = shift; my $error = $self->{error}; $self->{error} = undef; return $error }
 sub vrf_read_complete { 1 }
 sub update {
   my ($self, %args) = @_;
   my $target = ($args{Community} =~ m/\@(.+)$/ ? $1 : '');
   # SNMP::Info::update() keeps the old session and returns false on failure
-  return if $self->{fail_update_to}{$target};
+  if ($self->{fail_update_to}{$target}) {
+    $self->{error} = $self->{update_error} if exists $self->{update_error};
+    return;
+  }
   $self->{context} = $target;
   return $self->{session} || 1;
 }
@@ -123,6 +126,45 @@ subtest 'each_vrf_instance__switch_fails__vrf_incomplete_reader_not_called' => s
   ok !(grep { $_->[0] eq 'red' } @$read), 'red reader not called';
   ok !(grep { $_->[0] eq 'blue' and $_->[1] ne 'blue' } @$read), 'blue read only in its own context';
   is_deeply $reads->{blue}, { complete => 1, data => 'data of blue' }, 'blue still read';
+};
+
+sub logged_by_each {
+  my ($snmp, $instances) = @_;
+  my @logged;
+  no warnings 'redefine';
+  local *App::Netdisco::Util::VRF::debug = sub { push @logged, "debug:@_" };
+  local *App::Netdisco::Util::VRF::warning = sub { push @logged, "warning:@_" };
+  each_vrf_instance($device, $snmp, $instances || \%instances, sub { 'data' });
+  return @logged;
+}
+
+subtest 'each_vrf_instance__switch_update_fails__logged_apart_from_no_context_with_error' => sub {
+  my $error = 'SNMP::Info::update() Net-SNMP session creation failed. no route';
+  my @logged = logged_by_each(FakeSNMP->new(fail_update_to => { red => 1 }, update_error => $error));
+  is_deeply [ grep { m/VRF red/ } @logged ],
+    [ "debug: [192.0.2.1] device - VRF red could not be switched to, update() failed: $error" ],
+    'failed update named, with the error';
+  @logged = logged_by_each(FakeSNMP->new(fail_update_to => { red => 1 }));
+  is_deeply [ grep { m/VRF red/ } @logged ],
+    [ 'debug: [192.0.2.1] device - VRF red could not be switched to, update() failed' ],
+    'no error to append';
+  my %refused = (%instances,
+    red => { name => 'red', contexts => [{ kind => 'vrf', id => 'red', v2c => undef, v3 => 'red' }] });
+  @logged = logged_by_each(FakeSNMP->new, \%refused);
+  is_deeply [ grep { m/VRF red/ } @logged ],
+    [ 'debug: [192.0.2.1] device - VRF red has no context this session can reach' ],
+    'a class refusing community suffixes keeps its own text';
+};
+
+subtest 'each_vrf_instance__return_to_default_fails__warning_carries_error' => sub {
+  my @logged = logged_by_each(FakeSNMP->new(fail_update_to => { '' => 1 }, update_error => 'timeout'));
+  is_deeply [ grep { m/^warning:/ } @logged ],
+    [ 'warning: [192.0.2.1] device - could not return to the default context, so the SNMP session is dropped: timeout' ],
+    'error appended';
+  @logged = logged_by_each(FakeSNMP->new(fail_update_to => { '' => 1 }));
+  is_deeply [ grep { m/^warning:/ } @logged ],
+    [ 'warning: [192.0.2.1] device - could not return to the default context, so the SNMP session is dropped' ],
+    'unchanged with no error';
 };
 
 # the reader is cached for the job, so later workers would read the VRF's

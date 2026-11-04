@@ -36,14 +36,22 @@ subroutines.
 
 =head2 vrf_collection_enabled( $device )
 
-True only when the C<store_vrfs> setting is on and the device does not match
-C<skip_vrf_devices>.
+True only when the C<store_vrfs> setting is on, the device does not match
+C<skip_vrf_devices>, and the device is not a pseudo device. A pseudo device may
+be read from a snapshot, so every worker treats it as if C<store_vrfs> were off,
+whether it is read from a snapshot or live.
 
 =cut
 
 sub vrf_collection_enabled {
   my $device = shift;
-  return (setting('store_vrfs') and not acl_matches($device, 'skip_vrf_devices'));
+  return 0 unless setting('store_vrfs');
+  # a context switch is an update(), which clears SNMP::Info's cache: for a
+  # snapshot read offline that cache is the snapshot. Transport::SNMP marks a
+  # device pseudo when it loads one, so for a device not yet stored this is
+  # only reliable after reader_for
+  return 0 if $device->is_pseudo;
+  return (not acl_matches($device, 'skip_vrf_devices'));
 }
 
 =head2 vrf_skipped( $device, $local_name )
@@ -164,8 +172,9 @@ sub each_vrf_instance {
   foreach my $name (@switched) {
     # armed before the switch, so an update() that dies partway still restores
     $guard ||= guard { _return_to_default($device, $snmp, $log_as) };
-    my $unread = (not snmp_vrf_context($snmp, $device, $instances->{$name}))
-      ? 'has no context this session can reach'
+    my $switched = snmp_vrf_context($snmp, $device, $instances->{$name});
+    my $unread = (not defined $switched) ? 'has no context this session can reach'
+      : (not $switched) ? 'could not be switched to, update() failed'. _error_suffix($snmp)
       : (not _context_answers($snmp)) ? 'context did not answer, so it was not read' : undef;
     if ($unread) {
       debug sprintf ' [%s] %s - VRF %s %s', $device->ip, $log_as, $name, $unread;
@@ -183,11 +192,16 @@ sub each_vrf_instance {
 sub _return_to_default {
   my ($device, $snmp, $log_as) = @_;
   return if snmp_vrf_context($snmp, $device, undef);
-  warning sprintf ' [%s] %s - could not return to the default context, so the SNMP session is dropped',
-    $device->ip, $log_as;
+  warning sprintf ' [%s] %s - could not return to the default context, so the SNMP session is dropped%s',
+    $device->ip, $log_as, _error_suffix($snmp);
   my $readers = App::Netdisco::Transport::SNMP->instance->readers;
   delete $readers->{ $device->ip }
     if $readers and (refaddr($readers->{ $device->ip }) || 0) == refaddr($snmp);
+}
+
+sub _error_suffix {
+  my $error = $_[0]->error;
+  return (defined $error and length $error) ? ": $error" : '';
 }
 
 # one get before the reader: a reader walks attribute after attribute, and a

@@ -56,14 +56,14 @@ subtest 'snmp_vrf_context__v2c_template__formats_community' => sub {
 subtest 'snmp_vrf_context__v2c_without_template__false_and_session_untouched' => sub {
   my $snmp = FakeSNMP->new;
   my $nxos = { name => 'red', contexts => [{ kind => 'vrf', id => 'red', v2c => undef, v3 => 'red' }] };
-  ok !snmp_vrf_context($snmp, $device, $nxos), 'returns false';
+  is snmp_vrf_context($snmp, $device, $nxos), undef, 'returns undef, apart from a failed update';
   is_deeply $snmp->{updates}, [], 'no update issued';
 };
 
 subtest 'snmp_vrf_context__v3_without_name__false_and_session_untouched' => sub {
   my $snmp = FakeSNMP->new(snmp_ver => 3);
   my $nameless = { name => 'red', contexts => [{ kind => 'vrf', id => 'red', v2c => '%s@red', v3 => undef }] };
-  ok !snmp_vrf_context($snmp, $device, $nameless), 'returns false';
+  is snmp_vrf_context($snmp, $device, $nameless), undef, 'returns undef, apart from a failed update';
   is_deeply $snmp->{updates}, [], 'no update issued';
 };
 

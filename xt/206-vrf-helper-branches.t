@@ -98,8 +98,8 @@ subtest 'snmp_vrf_context__context_without_kind_or_name__switched_or_refused' =>
   is snmp_vrf_context($snmp, $device, { contexts => [{ v2c => '%s@red' }] }), 1,
     'a context with no kind and no instance name is switched to';
   is_deeply $snmp->{updates}, [{ Community => 'public@red' }], 'with its template';
-  is snmp_vrf_context($snmp, $device, { name => 'blue', contexts => [{ kind => 'vrf' }] }), 0,
-    'no template for the version, no switch';
+  is snmp_vrf_context($snmp, $device, { name => 'blue', contexts => [{ kind => 'vrf' }] }), undef,
+    'no template for the version, no switch, undef as for a refused suffix';
   is scalar @{ $snmp->{updates} }, 1, 'nothing more sent';
 };
 

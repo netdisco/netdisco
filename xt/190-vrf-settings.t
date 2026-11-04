@@ -13,6 +13,7 @@ use Test::More 0.88;
 use Test::File::ShareDir::Dist { 'App-Netdisco' => 'share/' };
 
 use App::Netdisco::Configuration;
+use App::Netdisco::DB;
 use Dancer qw/:script !pass/;
 use App::Netdisco::Util::VRF qw/
   vrf_collection_enabled vrf_skipped netdisco_vrf vrf_instances_for
@@ -20,8 +21,9 @@ use App::Netdisco::Util::VRF qw/
 
 {
   package FakeDevice;
-  sub new { bless { ip => $_[1] }, $_[0] }
+  sub new { bless { ip => $_[1], is_pseudo => $_[2] }, $_[0] }
   sub ip  { $_[0]{ip} }
+  sub is_pseudo { $_[0]{is_pseudo} }
 }
 
 {
@@ -67,6 +69,24 @@ subtest 'vrf_collection_enabled__on_but_device_in_skip_vrf_devices__false' => su
     ok(!vrf_collection_enabled($device), 'skipped device');
     ok(vrf_collection_enabled(FakeDevice->new('198.51.100.9')), 'other device');
   }, store_vrfs => 1, skip_vrf_devices => ['192.0.2.1']);
+};
+
+# update() clears SNMP::Info's cache, which for a device read from a snapshot
+# is the snapshot itself, and the context probe is a live get
+subtest 'vrf_collection__offline_snapshot_device__behaves_as_switch_off' => sub {
+  with_settings(sub {
+    my $pseudo = FakeDevice->new('192.0.2.1', 1);
+    ok(!vrf_collection_enabled($pseudo), 'collection disabled for a pseudo device');
+    my $result = eval { vrf_instances_for($pseudo, bless {}, 'DyingSNMP') };
+    is($@, '', 'no SNMP method called');
+    is($result, undef, 'undef, as with the switch off');
+
+    # Transport::SNMP marks an unstored device read from a snapshot file so
+    my $from_file = App::Netdisco::DB->resultset('Device')->new_result({ ip => '192.0.2.2' });
+    ok(vrf_collection_enabled($from_file), 'enabled before the snapshot is loaded');
+    $from_file->set_column(is_pseudo => \'true');
+    ok(!vrf_collection_enabled($from_file), 'disabled once marked pseudo');
+  }, store_vrfs => 1);
 };
 
 subtest 'vrf_skipped__global_name__true' => sub {

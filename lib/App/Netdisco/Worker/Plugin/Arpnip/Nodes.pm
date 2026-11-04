@@ -303,6 +303,10 @@ sub gather_arps_by_vrf_cli {
   }
 
   delete @vrf_read{ grep { vrf_skipped($device, $_) } keys %vrf_read };
+  my @not_whole = sort grep { not $vrf_read{$_} } keys %vrf_read;
+  info sprintf ' [%s] arpnip (cli) - VRFs not read whole, so their entries are kept: %s',
+    $device->ip, join ', ', map { qq{"$_"} } @not_whole
+    if scalar @not_whole;
   merge_vrf_reads(\%vrf_read, $list_complete, $result->{families});
   return Status->done("Gathered arp caches from $device");
 }

@@ -117,7 +117,7 @@ sub snmp_fixture {
   );
 }
 
-our (@stored, @logged, @retired);
+our (@stored, @logged, @informed, @retired);
 
 sub with_settings {
   my ($code, %settings) = @_;
@@ -134,7 +134,7 @@ sub with_settings {
 sub run_arpnip {
   my (%args) = @_;
   delete @{ vars() }{qw/arps timestamp hook_data/};
-  @stored = (); @logged = (); @retired = ();
+  @stored = (); @logged = (); @informed = (); @retired = ();
 
   my $device = App::Netdisco::DB->resultset('Device')->new_result({ %device_cols });
   $device->in_storage(1);
@@ -153,6 +153,7 @@ sub run_arpnip {
   # the store phase looks up the device's own MACs and addresses; xt/203 covers that
   local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::own_identity = sub { return ({}, {}, {}) };
   local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::debug = sub { push @logged, join '', @_ };
+  local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::info = sub { push @informed, join '', @_ };
   local *App::Netdisco::DB::Result::Device::update = sub { return $_[0] };
 
   my $job = App::Netdisco::Backend::Job->new({
@@ -247,6 +248,24 @@ subtest 'cli_arpnip__one_vrf_incomplete__others_complete_in_vrf_read' => sub {
   is_deeply vars->{'vrf_read'}, { '' => 1, red => 0, blue => 1 }, 'red incomplete, the others whole';
   ok scalar(grep { $_->{vrf} eq 'red' } @stored), 'entries read from red still stored';
   ok scalar(grep { $_->{vrf} eq 'blue' } @stored), 'blue stored';
+};
+
+sub not_whole_lines { return grep { m/not read whole/ } @informed }
+
+subtest 'cli_arpnip__partial_read__info_line_names_vrfs_not_read_whole' => sub {
+  my $platform = ReportingPlatform->new(by_vrf => by_vrf(vrf_read => { '' => 0, red => 0, blue => 1, gone => 1 }));
+  run_arpnip(platform => $platform, settings => { vrf_no_name => ['gone'] });
+  is_deeply [ not_whole_lines() ],
+    [ ' [192.0.2.1] arpnip (cli) - VRFs not read whole, so their entries are kept: "", "red"' ],
+    'one info line naming the unread VRFs, the skipped VRF left out';
+};
+
+subtest 'cli_arpnip__whole_read__no_not_read_whole_line' => sub {
+  run_arpnip(platform => ReportingPlatform->new(by_vrf => by_vrf()));
+  is scalar(not_whole_lines()), 0, 'no line';
+  run_arpnip(platform => ReportingPlatform->new(by_vrf => by_vrf(vrf_read => { '' => 1, red => 1, blue => 1, gone => 0 })),
+    settings => { vrf_no_name => ['gone'] });
+  is scalar(not_whole_lines()), 0, 'no line when only a skipped VRF was read short';
 };
 
 subtest 'cli_arpnip__snmp_and_cli_both_read_vrf__complete_only_if_both_whole' => sub {

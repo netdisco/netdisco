@@ -139,9 +139,10 @@ sub snmp_vrf_reindex {
 
 Takes a record from C<vrf_instances()> and puts the session in that VRF's SNMP
 context, as SNMP::Info describes it in the record's C<contexts>. Returns true
-when the session can now read the VRF, false when it cannot (SNMPv2c on a class
-that refuses community suffixes, or an C<update()> that failed), in which case
-the session is left where it was.
+when the session can now read the VRF. When it cannot, the session is left
+where it was and the return is C<undef> if the record names no context for
+this SNMP version (SNMPv2c on a class that refuses community suffixes), or 0
+if the C<update()> failed, and C<< $snmp->error >> says why.
 
 C<default>, or a record with no context entry (attribution mode), is read in
 the default context. An undefined C<$instance> restores the default context,
@@ -165,7 +166,7 @@ sub snmp_vrf_context {
 
   my $v3 = ($snmp->snmp_ver == 3);
   my $name = $v3 ? $context->{v3} : $context->{v2c};
-  return 0 unless defined $name;
+  return undef unless defined $name;
 
   debug sprintf ' [%s] switching to %s context (ver: %s, class: %s)',
     $device->ip, ($instance->{name} // ''), $snmp->snmp_ver, $snmp->class;

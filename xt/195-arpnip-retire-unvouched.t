@@ -154,6 +154,14 @@ subtest 'retire__switch_on_device_in_skip_vrf_devices__named_vrfs_only' => sub {
   like update_of(@stmts)->[0], qr/AND vrf <> ''\s*$/, 'a stale vrf_read does not override the device skip';
 };
 
+subtest 'retire__switch_on_offline_snapshot_device__named_vrfs_only' => sub {
+  @ran = (); $txns = 0; @stored_vrfs = ('', 'red');
+  my $device = device();
+  $device->set_column(is_pseudo => \'true');
+  my $count = retire_unvouched_arps($device, $now, undef, undef);
+  check_named_only($count, @ran);
+};
+
 subtest 'retire__switch_on__named_statements_carry_the_partial_index_predicate' => sub {
   my (undef, $lock, $select, $named, $default) = run_retire(['', 'red'], $now, { '' => 1, red => 1 }, 1);
   like $select->[0], qr/AND vrf <> ''\s*$/, 'VRF query over named rows only';
