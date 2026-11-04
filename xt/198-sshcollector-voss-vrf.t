@@ -200,6 +200,17 @@ subtest 'voss_arpnip_by_vrf__output_cut_before_block_footer__vrf_not_read_whole'
   is $result->{vrf_list_complete}, 0, 'list not vouched';
 };
 
+subtest 'voss_arpnip_by_vrf__arp_row_without_mac__counted_no_entry' => sub {
+  # no capture shows an unresolved VOSS ARP row; the footer counts it either way
+  (my $text = fixture_text('edge1'))
+    =~ s/^(10\.100\.1\.10\s+)02:00:00:00:05:11(\s+41 )/${1}INCOMPLETE       $2/m
+    or die 'red row not found';
+  my $result = by_vrf(Test::Netdisco::FakeSSH->new(text => $text));
+  is scalar(@{ entries_in($result, 'red') }), 5, 'the row without a MAC gives no entry';
+  is $result->{vrf_read}->{red}, 1, 'red still whole, the row was counted';
+  is $result->{vrf_list_complete}, 1, 'list complete';
+};
+
 subtest 'voss_arpnip_by_vrf__block_footer_count_mismatch__vrf_incomplete' => sub {
   (my $text = fixture_text('edge1'))
     =~ s/(IP Arp - VRF blue\n(?:.*\n)*?)6 out of 15 ARP/${1}7 out of 15 ARP/

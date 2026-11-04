@@ -343,10 +343,13 @@ sub _parse_arp_blocks {
             $blocks{footer}->{$vrf} = $1;
             next;
         }
-        next unless $line =~ m/^\s*($ipregex)\s+($macregex)(?:\s|$)/;
-        debug "[$hostlabel] arpnip - vrf '$vrf' mac $2 ip $1";
-        push @{ $blocks{entries} }, { ip => $1, mac => $2, vrf => $vrf };
+        # the footer counts every row, so one without a MAC still counts
+        next unless $line =~ m/^\s*($ipregex)\s+(\S+)/;
+        my ($ip, $mac) = ($1, $2);
         $blocks{rows}->{$vrf}++;
+        next unless $mac =~ m/^$macregex$/;
+        debug "[$hostlabel] arpnip - vrf '$vrf' mac $mac ip $ip";
+        push @{ $blocks{entries} }, { ip => $ip, mac => $mac, vrf => $vrf };
     }
 
     return \%blocks;
