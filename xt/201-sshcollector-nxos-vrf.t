@@ -464,4 +464,214 @@ subtest 'arpnip_by_vrf__through_the_worker__entries_keep_their_vrf' => sub {
   is vars->{'vrf_list_complete'}, 1, 'list complete';
 };
 
+# subnets_by_vrf: the connected-route commands for all VRFs, one exec request
+# each. 'direct' lists only connected and local-direct routes; the worker drops
+# host routes, so the capture's /32 and /128 are returned here.
+my $ROUTES_FIXTURE = 'xt/data/sshcollector/nxos/nxos9300v-routes.txt';
+my $V4_ROUTES = 'show ip route direct vrf all | json';
+my $V6_ROUTES = 'show ipv6 route direct vrf all | json';
+
+sub routes_ssh {
+  my ($text, @timeout_on) = @_;
+  my $ssh = Test::Netdisco::FakeSSH->new(text => $text // slurp($ROUTES_FIXTURE));
+  $ssh->timeout_on($_) for @timeout_on;
+  return $ssh;
+}
+
+sub routes_text_with {
+  my ($command, $output) = @_;
+  (my $text = slurp($ROUTES_FIXTURE)) =~ s/^(#--- \Q$command\E\n).*?(?=^#---|\z)/$1$output/ms
+    or die "no section $command";
+  return $text;
+}
+
+sub capture_nxos_info {
+  my $code = shift;
+  my @logged;
+  no warnings 'redefine';
+  local *App::Netdisco::SSHCollector::Platform::NXOS::info = sub { push @logged, join '', @_ };
+  my $result = $code->();
+  return ($result, @logged);
+}
+
+sub prefixes_by_vrf {
+  my ($result) = @_;
+  return { map { my $vrf = $_; ($vrf => [ sort map { "$_->{prefix}/$_->{len}" } @{ $result->{$vrf} } ]) } keys %$result };
+}
+
+my @LAB_V4 = (
+  management => ['172.20.20.0/24'],
+  red => ['10.10.10.0/24', '10.11.0.0/24'],
+  blue => ['10.10.10.0/24', '10.12.0.0/24'],
+  grey => ['10.14.0.1/32'],
+);
+
+sub lab_prefixes {
+  my %by_vrf = @LAB_V4;
+  return \%by_vrf;
+}
+
+subtest 'nxos_subnets_by_vrf__lab_capture__prefixes_keyed_by_vrf' => sub {
+  my $ssh = routes_ssh();
+  my $result = $NXOS->subnets_by_vrf('switch', $ssh, {});
+
+  is_deeply [$ssh->commands], [$V4_ROUTES, $V6_ROUTES], 'the two direct route commands, one exec request each';
+  my $got = prefixes_by_vrf($result);
+  ok !exists $got->{default}, 'default has no connected routes, so it is absent';
+  ok exists $got->{management}, 'management present';
+  is_deeply $got->{management}, ['172.20.20.0/24'], 'management IPv4';
+  is_deeply $got->{red}, [ sort '10.10.10.0/24', '10.11.0.0/24', '2001:db8:10::/64', '2001:db8:11::/64' ],
+    'red: IPv4 and IPv6 together';
+  is_deeply $got->{green}, ['2001:db8:13::/64'], 'green: IPv6 only, its empty IPv4 table adds nothing';
+  is_deeply $got->{grey}, [ sort '10.14.0.1/32', '2001:db8:14::1/128' ],
+    'host routes are returned as the device lists them: the worker filters';
+  is_deeply [ sort keys %$result ], [qw/blue green grey management red/], 'every VRF with a connected route';
+  is_deeply [ sort keys %{ $result->{red}->[0] } ], [qw/len prefix/], 'entry keys';
+};
+
+subtest 'nxos_subnets_by_vrf__same_prefix_in_two_vrfs__one_row_per_vrf' => sub {
+  my $result = $NXOS->subnets_by_vrf('switch', routes_ssh(), {});
+  is scalar(grep { $_->{prefix} eq '10.10.10.0' and $_->{len} == 24 } @{ $result->{red} }), 1, 'in red';
+  is scalar(grep { $_->{prefix} eq '10.10.10.0' and $_->{len} == 24 } @{ $result->{blue} }), 1, 'in blue';
+  is scalar(grep { $_->{prefix} eq '2001:db8:10::' and $_->{len} == 64 } @{ $result->{red} }, @{ $result->{blue} }), 2,
+    'the shared IPv6 prefix once per VRF';
+  is_deeply [ grep { /^10\.10\.10\.0\/24$/ } @{ prefixes_by_vrf($result)->{red} } ], ['10.10.10.0/24'], 'not doubled';
+};
+
+subtest 'nxos_subnets_by_vrf__single_row__hash_not_array_parsed' => sub {
+  my $got = prefixes_by_vrf($NXOS->subnets_by_vrf('switch', routes_ssh(), {}));
+  is_deeply $got->{management}, ['172.20.20.0/24'], 'a ROW_prefix hash is one prefix';
+
+  my $one_vrf = '{"TABLE_vrf": {"ROW_vrf": {"vrf-name-out": "solo", "TABLE_addrf": {"ROW_addrf": '
+    . '{"addrf": "ipv4", "TABLE_prefix": {"ROW_prefix": {"ipprefix": "192.0.2.0/25"}}}}}}}';
+  my $text = routes_text_with($V4_ROUTES, "$one_vrf\n");
+  $text =~ s/^(#--- \Q$V6_ROUTES\E\n).*?(?=^#---|\z)/$1\{"TABLE_vrf": \{\}\}\n/ms or die;
+  is_deeply prefixes_by_vrf($NXOS->subnets_by_vrf('switch', routes_ssh($text), {})), { solo => ['192.0.2.0/25'] },
+    'ROW_vrf, ROW_addrf and ROW_prefix all hashes';
+
+  my $two_addrf = '{"TABLE_vrf": {"ROW_vrf": {"vrf-name-out": "dual", "TABLE_addrf": {"ROW_addrf": ['
+    . '{"addrf": "ipv4", "TABLE_prefix": {"ROW_prefix": [{"ipprefix": "192.0.2.0/25"}, {"ipprefix": "198.51.100.0/24"}]}},'
+    . '{"addrf": "ipv4"}]}}}}';
+  $text = routes_text_with($V4_ROUTES, "$two_addrf\n");
+  is_deeply prefixes_by_vrf($NXOS->subnets_by_vrf('switch', routes_ssh($text), {}))->{dual},
+    ['192.0.2.0/25', '198.51.100.0/24'], 'ROW_addrf and ROW_prefix as arrays';
+};
+
+subtest 'nxos_subnets_by_vrf__egress_loadbalance_name__passed_through' => sub {
+  my $one = '{"TABLE_vrf": {"ROW_vrf": {"vrf-name-out": "egress-loadbalance-resolution-", '
+    . '"TABLE_addrf": {"ROW_addrf": {"addrf": "ipv4", "TABLE_prefix": {"ROW_prefix": {"ipprefix": "192.0.2.0/25"}}}}}}}';
+  my $result = $NXOS->subnets_by_vrf('switch', routes_ssh(routes_text_with($V4_ROUTES, "$one\n")), {});
+  ok exists $result->{'egress-loadbalance-resolution-'}, 'the name is the device\'s own';
+};
+
+subtest 'nxos_subnets_by_vrf__ipv6_fails__ipv4_still_returned' => sub {
+  my $expected = lab_prefixes();
+
+  my ($result, @logged) = capture_nxos_info(sub {
+    $NXOS->subnets_by_vrf('switch', routes_ssh(routes_text_with($V6_ROUTES, qq({"TABLE_vrf": \n))), {}) });
+  is_deeply prefixes_by_vrf($result), $expected, 'undecodable IPv6 reply, IPv4 returned';
+  is scalar(@logged), 1, 'logged once';
+  like $logged[0] // '', qr/IPv6 route/, 'names the failed command';
+
+  ($result, @logged) = capture_nxos_info(sub { $NXOS->subnets_by_vrf('switch', routes_ssh(undef, $V6_ROUTES), {}) });
+  is_deeply prefixes_by_vrf($result), $expected, 'capture error on IPv6 (inactivity timeout), IPv4 returned';
+  is scalar(@logged), 1, 'logged once';
+
+  $result = $NXOS->subnets_by_vrf('switch', routes_ssh(undef, $V4_ROUTES), {});
+  is_deeply [ sort keys %$result ], [qw/blue green grey red/], 'capture error on IPv4, IPv6 returned';
+  is_deeply prefixes_by_vrf($result)->{green}, ['2001:db8:13::/64'], 'IPv6 prefixes present';
+};
+
+subtest 'nxos_subnets_by_vrf__error_reply__family_contributes_nothing' => sub {
+  my $error = "Syntax error while parsing 'show ip route direkt vrf all | json'\n\n\nCmd exec error.\n";
+  my $result = $NXOS->subnets_by_vrf('switch', routes_ssh(routes_text_with($V4_ROUTES, $error)), {});
+  is_deeply [ sort keys %$result ], [qw/blue green grey red/], 'the Syntax error reply is skipped, IPv6 stands';
+  is_deeply prefixes_by_vrf($result)->{red}, ['2001:db8:10::/64', '2001:db8:11::/64'], 'only IPv6 under red';
+
+  my $both = routes_text_with($V6_ROUTES, $error);
+  $both =~ s/^(#--- \Q$V4_ROUTES\E\n).*?(?=^#---|\z)/$1$error/ms or die;
+  is $NXOS->subnets_by_vrf('switch', routes_ssh($both), {}), undef, 'both error replies: undef';
+};
+
+subtest 'nxos_subnets_by_vrf__wrong_shape__family_contributes_nothing' => sub {
+  foreach my $reply ('[]', '"none"', '{"TABLE_vrf": []}', '{"TABLE_vrf": {"ROW_vrf": "x"}}', '{"other": {}}', 'null') {
+    my $text = routes_text_with($V6_ROUTES, "$reply\n");
+    my $result = eval { $NXOS->subnets_by_vrf('switch', routes_ssh($text), {}) };
+    is $@, '', "$reply does not die";
+    is_deeply prefixes_by_vrf($result)->{red}, ['10.10.10.0/24', '10.11.0.0/24'], "IPv4 stands ($reply)";
+  }
+};
+
+subtest 'nxos_subnets_by_vrf__both_fail__returns_undef' => sub {
+  my ($result, @logged) = capture_nxos_info(sub { [ $NXOS->subnets_by_vrf('switch', routes_ssh(undef, $V4_ROUTES, $V6_ROUTES), {}) ] });
+  is_deeply $result, [undef], 'both capture errors: undef';
+  is scalar(@logged), 2, 'one info line per failed command';
+
+  my $text = routes_text_with($V4_ROUTES, "garbage\n");
+  $text =~ s/^(#--- \Q$V6_ROUTES\E\n).*?(?=^#---|\z)/$1garbage\n/ms or die;
+  is $NXOS->subnets_by_vrf('switch', routes_ssh($text), {}), undef, 'both undecodable: undef';
+};
+
+subtest 'nxos_subnets_by_vrf__unnamable_vrf_row__contributes_nothing_others_stand' => sub {
+  foreach my $name ('{"x": 1}', '""', '["red"]', 'null') {
+    my $rows = qq({"vrf-name-out": $name, "TABLE_addrf": {"ROW_addrf": {"addrf": "ipv4", )
+      . q("TABLE_prefix": {"ROW_prefix": {"ipprefix": "192.0.2.0/25"}}}}});
+    my $reply = qq({"TABLE_vrf": {"ROW_vrf": [$rows, {"vrf-name-out": "solo", "TABLE_addrf": )
+      . q({"ROW_addrf": {"addrf": "ipv4", "TABLE_prefix": {"ROW_prefix": {"ipprefix": "198.51.100.0/24"}}}}}]}});
+    my $result = $NXOS->subnets_by_vrf('switch', routes_ssh(routes_text_with($V4_ROUTES, "$reply\n")), {});
+    is_deeply [ grep { /^(?:HASH|ARRAY)|^$/ } keys %$result ], [], "no junk or global key for name $name";
+    is_deeply prefixes_by_vrf($result)->{solo}, ['198.51.100.0/24'], "the named row stands ($name)";
+    ok !grep({ $_->{prefix} eq '192.0.2.0' } map { @$_ } values %$result), "the unnamable row stored nowhere ($name)";
+  }
+};
+
+subtest 'nxos_subnets_by_vrf__inner_shapes_wrong__row_contributes_nothing_not_dying' => sub {
+  my $good = '{"ipprefix": "192.0.2.0/25"}';
+  my $addrf = sub { qq({"TABLE_vrf": {"ROW_vrf": {"vrf-name-out": "solo", "TABLE_addrf": $_[0]}}}) };
+  my %replies = (
+    'ROW_addrf is a string' => $addrf->('{"ROW_addrf": "x"}'),
+    'TABLE_addrf is a list' => $addrf->('[]'),
+    'ROW_prefix element is a string' => $addrf->(qq({"ROW_addrf": {"TABLE_prefix": {"ROW_prefix": ["x", 7]}}})),
+    'ipprefix is an object' => $addrf->(q({"ROW_addrf": {"TABLE_prefix": {"ROW_prefix": {"ipprefix": {"a": 1}}}}})),
+  );
+  foreach my $label (sort keys %replies) {
+    my $text = routes_text_with($V4_ROUTES, "$replies{$label}\n");
+    my $result = eval { $NXOS->subnets_by_vrf('switch', routes_ssh($text), {}) };
+    is $@, '', "$label does not die";
+    ok !exists $result->{solo}, "$label: nothing stored";
+    is_deeply prefixes_by_vrf($result)->{red}, ['2001:db8:10::/64', '2001:db8:11::/64'], "$label: IPv6 stands";
+  }
+};
+
+subtest 'nxos_subnets_by_vrf__prefix_without_length__passed_through_for_the_worker_to_drop' => sub {
+  my $reply = '{"TABLE_vrf": {"ROW_vrf": {"vrf-name-out": "solo", "TABLE_addrf": {"ROW_addrf": '
+    . '{"TABLE_prefix": {"ROW_prefix": {"ipprefix": "192.0.2.0"}}}}}}}';
+  my $result = $NXOS->subnets_by_vrf('switch', routes_ssh(routes_text_with($V4_ROUTES, "$reply\n")), {});
+  is_deeply $result->{solo}, [ { prefix => '192.0.2.0', len => undef } ],
+    'returned with an undef length; vrf_subnet_cidr drops it (xt/204 tests the worker side)';
+};
+
+subtest 'nxos_subnets_by_vrf__exec_requests__no_pty' => sub {
+  my $ssh = routes_ssh();
+  my ($pty_opened, @calls);
+  no warnings qw/redefine once/;
+  my $capture = \&Test::Netdisco::FakeSSH::capture;
+  local *Test::Netdisco::FakeSSH::capture = sub { push @calls, [ @_[1 .. $#_] ]; goto &$capture };
+  local *Test::Netdisco::FakeSSH::open2pty = sub { ++$pty_opened; return };
+  $NXOS->subnets_by_vrf('switch', $ssh, {});
+  ok !$pty_opened, 'no pty opened';
+  is_deeply \@calls, [ [$V4_ROUTES], [$V6_ROUTES] ], 'each a plain command string, as arpnip_by_vrf sends them';
+};
+
+subtest 'nxos_subnets__unchanged' => sub {
+  my $command = 'show ip route vrf all | inc attached | exc /32 | no-more ';
+  my $text = "#prompt: switch# \n#--- $command\n"
+    . "10.1.1.0/24, ubest/mbest: 1/0, attached\n10.2.0.0/16, ubest/mbest: 1/0, attached\n";
+  my $ssh = Test::Netdisco::FakeSSH->new(text => $text);
+  my $guard = $ssh->install_expect;
+  my @rows = $NXOS->subnets('switch', $ssh, {});
+  is_deeply [$ssh->commands], [$command], 'the one pty command subnets has always sent';
+  is_deeply \@rows, ['10.1.1.0/24', '10.2.0.0/16'], 'the flat IPv4 list';
+};
+
 done_testing;

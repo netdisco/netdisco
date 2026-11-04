@@ -136,6 +136,20 @@ subtest 'cli_subnets__default_and_empty_both_named__one_row' => sub {
   is stored(), '172.20.20.0/24|', 'stored under the empty vrf';
 };
 
+subtest 'cli_subnets__nxos_shaped_result_default_vrf__stored_as_the_empty_vrf' => sub {
+  my $platform = ReportingPlatform->new(by_vrf => {
+    default => [ { prefix => '192.0.2.0', len => 25 }, { prefix => '192.0.2.77', len => undef } ],
+    management => [ { prefix => '172.20.20.0', len => 24 } ],
+    'egress-loadbalance-resolution-' => [ { prefix => '10.0.0.0', len => 8 } ],
+  });
+  run_subnets(platform => $platform, settings => { ignore_private_nets => 1 });
+  is stored(), '192.0.2.0/25|', 'default is the empty vrf, never a vrf literally named default';
+
+  run_subnets(platform => $platform);
+  is stored(), join(' ', sort '192.0.2.0/25|', '172.20.20.0/24|management', '10.0.0.0/8|egress-loadbalance-resolution-'),
+    'every named VRF stored; the prefix with no length dropped';
+};
+
 subtest 'cli_subnets__host_and_link_local_routes__dropped' => sub {
   my $platform = ReportingPlatform->new(by_vrf => { red => [
     { prefix => '10.120.0.1', len => 32 },

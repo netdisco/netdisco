@@ -84,6 +84,29 @@ Returns a list of IPv4 CIDR strings in the format C<< X.X.X.X/NN >>.
 Example:
 C<< [ '10.1.1.0/24', '192.0.2.0/25' ] >>.
 
+=item B<subnets_by_vrf($host, $ssh, $args)>
+
+As C<subnets>, used when C<store_vrfs> is on, and reading IPv6 as well. Sends
+C<show ip route direct vrf all | json> and C<show ipv6 route direct vrf all |
+json>, each as one exec request (no pty), and names each prefix's VRF from
+C<vrf-name-out> (the worker maps C<default> to C<''>). C<direct> lists only
+connected and local-direct routes, so no default or learned route is returned,
+but host routes (C</32>, C</128>) are: the worker filters them. VRF names, such
+as C<egress-loadbalance-resolution->, are passed through as the device prints
+them. Where NX-OS prints a hash for a one-row table, it is read as a list of
+one.
+
+Returns C<< { VRF =E<gt> [ { prefix =E<gt> '10.1.1.0', len =E<gt> 24 }, ... ] } >>, or
+undef when neither command returned usable JSON. A VRF with no connected routes
+is absent. A command that fails contributes nothing and the other family's
+prefixes are still returned. A failure is an SSH error (including a non-zero
+exit, which a C<Syntax error> reply gives), a reply that does not decode, or a
+reply that is not the expected table. Some images leave the exec channel open
+after a complete reply; that costs the SSH inactivity timeout and that family.
+
+A subclass that overrides C<subnets> must also override C<subnets_by_vrf>, or
+with C<store_vrfs> on this C<subnets_by_vrf> is used instead of the override.
+
 =back
 
 =cut
@@ -476,6 +499,63 @@ sub subnets {
         }
     }
     return @subnets;
+}
+
+my @ROUTE_COMMANDS = (
+  { name => 'IPv4 route', command => 'show ip route direct vrf all | json' },
+  { name => 'IPv6 route', command => 'show ipv6 route direct vrf all | json' },
+);
+
+sub subnets_by_vrf {
+    my ($self, $hostlabel, $ssh, $args) = @_;
+    debug "$hostlabel $$ subnets_by_vrf()";
+
+    my (%subnets, $read_any);
+    foreach my $route (@ROUTE_COMMANDS) {
+        my @out = $ssh->capture($route->{command});
+        if ($ssh->error) {
+            info "$hostlabel $$ error running $route->{name} command: " . $ssh->error;
+            next;
+        }
+
+        my $data = eval { decode_json(join '', @out) };
+        unless (ref {} eq ref $data and ref {} eq ref $data->{TABLE_vrf}) {
+            info "$hostlabel $$ failed to parse $route->{name} JSON";
+            next;
+        }
+
+        $read_any = 1;
+        foreach my $vrf_row (_rows($data->{TABLE_vrf}, 'ROW_vrf')) {
+            my $name = $vrf_row->{'vrf-name-out'};
+            # an unnamable row must not be filed as a junk VRF or the global table
+            next if not defined $name or ref $name or not length $name;
+            my @prefixes = _row_prefixes($vrf_row);
+            push @{ $subnets{$name} }, @prefixes if scalar @prefixes;
+        }
+    }
+
+    return $read_any ? \%subnets : undef;
+}
+
+# the hash rows under TABLE->{ROW}, however many the device printed
+sub _rows {
+    my ($table, $key) = @_;
+    return grep { ref {} eq ref $_ } _as_list(ref {} eq ref $table ? $table->{$key} : undef);
+}
+
+# every connected prefix under one ROW_vrf, across its address families
+sub _row_prefixes {
+    my $vrf_row = shift;
+    my @prefixes;
+    foreach my $addrf (_rows($vrf_row->{TABLE_addrf}, 'ROW_addrf')) {
+        foreach my $row (_rows($addrf->{TABLE_prefix}, 'ROW_prefix')) {
+            my $cidr = $row->{ipv6prefix} // $row->{ipprefix};
+            next unless defined $cidr and not ref $cidr;
+            my ($prefix, $len) = $cidr =~ m{^(.+)/(\d+)$} ? ($1, $2) : ($cidr, undef);
+            push @prefixes, { prefix => $prefix, len => $len };
+        }
+    }
+    return @prefixes;
 }
 
 1;
