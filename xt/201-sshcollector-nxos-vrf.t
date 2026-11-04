@@ -17,16 +17,20 @@ use Test::Netdisco::FakeSSH;
 
 use Dancer qw/:moose :script !pass/;
 
-# NX-OS arpnip_by_vrf against a 9300v lab capture: one exec request per VRF
-# and address family, each judged whole on its own count, so a bad name or an
-# undecodable reply spoils only the reads it touches.
+# NX-OS arpnip_by_vrf against a 9300v lab capture: the VRF list, then the
+# per-VRF commands chained into a few exec requests. Each document is
+# assigned by its own VRF and shape and judged whole on its own count, so a
+# bad name or a missing document spoils only the reads it touches; a failed
+# request or undecodable fragment spoils the rest of its request.
 
 my $CONFIG = config();
 $CONFIG->{logger} = 'console';
 $CONFIG->{log} = ($ENV{'DANCER_DEBUG'} ? 'debug' : 'error');
 Dancer::Logger->init('console', $CONFIG);
 
+my @LISTED = qw/blue default egress-loadbalance-resolution- green grey management red/;
 my $FIXTURE = 'xt/data/sshcollector/nxos/nxos9300v.txt';
+my $CHAIN_FIXTURE = 'xt/data/sshcollector/nxos/nxos9300v-chain.txt';
 my $TEXT_FIXTURE = 'xt/data/sshcollector/nxos/nxos9300v-text.txt';
 my $NXOS = App::Netdisco::SSHCollector::Platform::NXOS->new;
 
@@ -54,21 +58,57 @@ sub with_output {
   return $text;
 }
 
+# the chained command for names, as the collector sends it: ARP then neighbor each
+sub chain_of { return join ' ; ', map { (arp($_), nd($_)) } @_ }
+
+# the per-VRF commands are sent in these chained requests (640 bytes each)
+sub lab_requests { return (chain_of(@LISTED[0 .. 5]), chain_of(@LISTED[6])) }
+
+# the exec requests after the VRF list
+sub chains_sent { my $ssh = shift; return [ grep { $_ ne 'show vrf | json' } $ssh->commands ] }
+
+# the chain fixture with the documents of each request (or only request $only)
+# passed through $change (a list in, a list out)
+sub chain_with {
+  my ($change, $only) = @_;
+  my @commands = lab_requests();
+  my $text = slurp($CHAIN_FIXTURE);
+  foreach my $index (0 .. $#commands) {
+    next if defined $only and $only != $index;
+    $text =~ s{^(#--- \Q$commands[$index]\E\n)(.*?)(?=^#---|\z)}{
+      my ($head, @docs) = ($1, split /\n/, $2); $head . join('', map { "$_\n" } $change->(@docs)) }mse
+      or die 'chain fixture changed';
+  }
+  return $text;
+}
+
+# synthetic: default plus v1..v8, each an empty table in both families, for
+# lists that need more than one chained request
+sub many_vrf_text {
+  my @names = @_ ? @_ : ('default', map { "v$_" } 1 .. 8);
+  my $list = join ', ', map { qq({"vrf_name": "$_"}) } @names;
+  my $text = with_output('show vrf | json', qq({"TABLE_vrf": {"ROW_vrf": [$list]}}\n));
+  foreach my $name (@names) {
+    $text .= "#--- " . arp($name) . "\n"
+      . qq({"TABLE_vrf": {"ROW_vrf": {"vrf-name-out": "$name", "cnt-total": "0"}}}\n)
+      . "#--- " . nd($name) . "\n"
+      . qq({"TABLE_vrf": {"ROW_vrf": {"vrf-name-out": "$name", "TABLE_afi": {"ROW_afi": {"afi": "ipv6", "count": "0"}}}}}\n);
+  }
+  return ($text, @names);
+}
+
 sub arp { return "show ip arp vrf $_[0] | json | no-more" }
 sub nd  { return "show ipv6 neighbor vrf $_[0] | json | no-more" }
 
 my %LAB_READ = ('' => 1, blue => 1, 'egress-loadbalance-resolution-' => 1,
                 green => 1, grey => 1, management => 1, red => 1);
-my @LISTED = qw/blue default egress-loadbalance-resolution- green grey management red/;
 
 subtest 'arpnip_by_vrf__lab_capture__entries_under_their_vrf' => sub {
   my $ssh = fake_ssh();
   my $result = by_vrf($ssh);
 
-  is_deeply [$ssh->commands], [
-    'show vrf | json',
-    (map { (arp($_), nd($_)) } @LISTED),
-  ], 'commands in order';
+  is_deeply [$ssh->commands], [ 'show vrf | json', lab_requests() ],
+    'the list, then the per-VRF commands chained into two exec requests';
 
   my @red = @{ entries_in($result, 'red') };
   my @blue = @{ entries_in($result, 'blue') };
@@ -149,21 +189,16 @@ subtest 'arpnip_by_vrf__reply_names_other_vrf__vrf_unread' => sub {
   (my $text = slurp($FIXTURE)) =~ s/"vrf-name-out": "blue"/"vrf-name-out": "red"/
     or die 'fixture changed';
   my $result = by_vrf(fake_ssh(text => $text));
-  is $result->{vrf_read}->{blue}, 0, 'blue unread when the reply names red';
-  is scalar(grep { /^10\./ } @{ entries_in($result, 'blue') }), 0, 'its ARP rows are not taken';
-  is $result->{vrf_read}->{red}, 1, 'red whole';
+  is $result->{vrf_read}->{blue}, 0, 'blue unread when its reply names red';
+  is $result->{vrf_read}->{red}, 1, 'red whole: the stray document is in a request that did not ask for red';
+  is scalar(grep { /^10\./ } @{ entries_in($result, 'blue') }), 0, 'blue takes no ARP rows';
+  is scalar(grep { /^10\./ } @{ entries_in($result, 'red') }), 2, 'red keeps its own two';
+  is $result->{vrf_read}->{green}, 1, 'green whole';
 
   (my $cased = slurp($FIXTURE)) =~ s/"vrf-name-out": "green"/"vrf-name-out": "GREEN"/g;
   my $same = by_vrf(fake_ssh(text => $cased));
   is $same->{vrf_read}->{green}, 1, 'case differences are the same VRF';
   ok !exists $same->{vrf_read}->{GREEN}, 'the listed name is used';
-};
-
-subtest 'arpnip_by_vrf__capture_error_on_one_vrf__that_vrf_unread' => sub {
-  my $result = by_vrf(fake_ssh(timeout_on => [ arp('blue') ]));
-  is $result->{vrf_read}->{blue}, 0, 'blue unread';
-  is $result->{vrf_read}->{red}, 1, 'other VRFs still read';
-  is $result->{vrf_list_complete}, 1, 'the list was whole';
 };
 
 subtest 'arpnip_by_vrf__incomplete_row__skipped_and_counted' => sub {
@@ -217,7 +252,7 @@ subtest 'arpnip_by_vrf__list_without_default__global_read_list_incomplete' => su
   my $result = by_vrf($ssh);
   is_deeply $result->{vrf_read}, { '' => 1, red => 1, blue => 1 }, 'the global table is read and reported';
   is $result->{vrf_list_complete}, 0, 'a list that omits default is not vouched';
-  ok scalar(grep { $_ eq arp('default') } $ssh->commands), 'show ip arp vrf default was sent';
+  ok scalar(grep { index($_, arp('default')) >= 0 } $ssh->commands), 'show ip arp vrf default was sent';
 };
 
 subtest 'arpnip_by_vrf__list_with_default__list_complete' => sub {
@@ -260,6 +295,114 @@ subtest 'arpnip_by_vrf__vrf_named_all__unread_without_a_command' => sub {
   is $result->{vrf_read}->{red}, 1, 'red whole';
 };
 
+subtest 'arpnip_by_vrf__chained_reply__entries_under_their_vrf' => sub {
+  my $ssh = fake_ssh(text => slurp($CHAIN_FIXTURE));
+  my $chained = by_vrf($ssh);
+  is_deeply chains_sent($ssh), [ lab_requests() ], 'two chained exec requests';
+  my $per_command = by_vrf(fake_ssh());
+  is_deeply $chained->{vrf_read}, \%LAB_READ, 'every VRF read whole';
+  is_deeply $chained->{entries}, $per_command->{entries}, 'the entries the per-command replies give';
+  is scalar(@{ entries_in($chained, 'red') }), 2 + 6, 'red: 2 ARP rows and 6 neighbors';
+};
+
+subtest 'arpnip_by_vrf__chained_reply_missing_one_document__only_that_vrf_family_unread' => sub {
+  my $text = chain_with(sub { grep { !/"vrf-name-out": "green", "TABLE_afi"/ } @_ });
+  my $result = by_vrf(fake_ssh(text => $text));
+  is_deeply $result->{vrf_read}, { %LAB_READ, green => 0 }, 'only green unread';
+  is_deeply entries_in($result, 'green'), [], 'its other family has no rows either';
+  is scalar(@{ entries_in($result, 'red') }), 2 + 6, 'red unaffected';
+};
+
+subtest 'arpnip_by_vrf__chained_reply_out_of_order__assigned_by_content' => sub {
+  my $result = by_vrf(fake_ssh(text => chain_with(sub { reverse @_ })));
+  my $per_command = by_vrf(fake_ssh());
+  is_deeply $result->{vrf_read}, \%LAB_READ, 'every VRF read whole';
+  is_deeply [ sort map { "$_->{vrf} $_->{ip} $_->{mac}" } @{ $result->{entries} } ],
+            [ sort map { "$_->{vrf} $_->{ip} $_->{mac}" } @{ $per_command->{entries} } ],
+    'each entry under the VRF its document names';
+};
+
+subtest 'arpnip_by_vrf__duplicate_document__that_vrf_family_unread' => sub {
+  my $text = chain_with(sub { map { ($_, /"vrf-name-out": "red", "cnt-total"/ ? $_ : ()) } @_ });
+  my $result = by_vrf(fake_ssh(text => $text));
+  is_deeply $result->{vrf_read}, { %LAB_READ, red => 0 }, 'only red unread';
+  is scalar(grep { /^10\./ } @{ entries_in($result, 'red') }), 0, 'neither copy of its ARP table is taken';
+};
+
+subtest 'arpnip_by_vrf__undecodable_fragment__rest_of_request_unread' => sub {
+  my $text = chain_with(sub {
+    my @docs = @_;
+    splice @docs, 8, 0, '{"TABLE_vrf": {"ROW_vrf": {"vrf-na';
+    return @docs;
+  }, 0);
+  my $result = by_vrf(fake_ssh(text => $text));
+  is_deeply $result->{vrf_read},
+    { %LAB_READ, grey => 0, management => 0 },
+    'grey and the rest of its request unread, the next request read';
+  is scalar(@{ entries_in($result, 'blue') }), 2 + 7, 'documents before it are kept';
+};
+
+# VRF names in each chained request sent
+sub groups_of { return [ map { [ /show ip arp vrf (\S+) \|/g ] } @{ chains_sent($_[0]) } ] }
+
+# nine VRFs are 18 commands; the 640 byte cap stops a request before the 16
+# command cap can (eight 1-character VRFs already take 661 bytes)
+subtest 'arpnip_by_vrf__more_than_16_commands__split_into_requests' => sub {
+  my ($text, @names) = many_vrf_text();
+  my $ssh = fake_ssh(text => $text);
+  my $result = by_vrf($ssh);
+  my $chains = chains_sent($ssh);
+  cmp_ok scalar(@$chains), '>', 1, 'split into several requests';
+  is scalar(grep { length $_ > 640 or 16 < scalar(split / ; /) } @$chains), 0, 'each within both caps';
+  is_deeply [ map { @$_ } @{ groups_of($ssh) } ], \@names, 'every VRF asked once, in list order';
+  is_deeply $result->{vrf_read}, { '' => 1, map { ("v$_" => 1) } 1 .. 8 }, 'all read whole';
+};
+
+subtest 'arpnip_by_vrf__capture_error_on_one_request__other_requests_read' => sub {
+  my ($text, @names) = many_vrf_text();
+  my @groups = @{ groups_of(do { my $ssh = fake_ssh(text => $text); by_vrf($ssh); $ssh }) };
+  my %all = map { ($_ eq 'default' ? '' : $_) => 1 } @names;
+  my $last = by_vrf(fake_ssh(text => $text, timeout_on => [ arp($groups[-1][0]) ]));
+  is_deeply $last->{vrf_read},
+    { %all, map { ($_ eq 'default' ? '' : $_) => 0 } @{ $groups[-1] } }, 'only the last request unread';
+  my $first = by_vrf(fake_ssh(text => $text, timeout_on => [ arp($groups[0][0]) ]));
+  is_deeply $first->{vrf_read},
+    { %all, map { ($_ eq 'default' ? '' : $_) => 0 } @{ $groups[0] } }, 'only the first request unread';
+  is $first->{vrf_list_complete}, 1, 'the list was whole';
+};
+
+subtest 'arpnip_by_vrf__document_for_vrf_not_asked__ignored' => sub {
+  my $text = chain_with(sub { (@_, '{"TABLE_vrf": {"ROW_vrf": {"vrf-name-out": "stray", "cnt-total": "0"}}}') });
+  my $result = by_vrf(fake_ssh(text => $text));
+  is_deeply $result->{vrf_read}, \%LAB_READ, 'the others are unaffected';
+  ok !exists $result->{vrf_read}->{stray}, 'and stray is not reported';
+};
+
+subtest 'arpnip_by_vrf__names_differ_only_in_case__all_unread_list_incomplete' => sub {
+  my $text = with_output('show vrf | json',
+    '{"TABLE_vrf": {"ROW_vrf": [{"vrf_name": "default"}, {"vrf_name": "Red"}, {"vrf_name": "red"}, {"vrf_name": "blue"}]}}' . "\n");
+  my $ssh = fake_ssh(text => $text);
+  my $result = by_vrf($ssh);
+  is_deeply $result->{vrf_read}, { '' => 1, Red => 0, red => 0, blue => 1 }, 'both spellings unread';
+  is scalar(grep { /vrf red/i } $ssh->commands), 0, 'no command for either';
+  is_deeply entries_in($result, $_), [], "no entries under $_" for qw/Red red/;
+  is $result->{vrf_list_complete}, 0, 'list not vouched';
+};
+
+subtest 'arpnip_by_vrf__long_names__requests_capped_at_640_bytes' => sub {
+  my @names = ('default', map { sprintf 'long-vrf-name-%02d-', $_ } 1 .. 11);
+  @names = map { $_ eq 'default' ? $_ : $_ . ('x' x (40 - length $_)) } @names;
+  my ($text) = many_vrf_text(@names);
+  my $ssh = fake_ssh(text => $text);
+  my $result = by_vrf($ssh);
+  my $chains = chains_sent($ssh);
+  cmp_ok scalar(@$chains), '>', 1, 'split into several requests';
+  is scalar(grep { length $_ > 640 } @$chains), 0, 'none over 640 bytes';
+  ok scalar(grep { scalar(split / ; /) < 16 } @$chains), 'split by bytes, not by the 16 command cap';
+  is_deeply [ sort keys %{ $result->{vrf_read} } ], [ sort map { $_ eq 'default' ? '' : $_ } @names ], 'every VRF reported';
+  is scalar(grep { !$_ } values %{ $result->{vrf_read} }), 0, 'all read whole';
+};
+
 subtest 'arpnip_by_vrf__uses_exec_requests_only__no_pty' => sub {
   my $ssh = fake_ssh();
   my (@calls, $pty_opened);
@@ -269,7 +412,7 @@ subtest 'arpnip_by_vrf__uses_exec_requests_only__no_pty' => sub {
   local *Test::Netdisco::FakeSSH::open2pty = sub { ++$pty_opened; return };
   by_vrf($ssh);
   ok !$pty_opened, 'no pty opened';
-  is scalar(@calls), 1 + 2 * @LISTED, 'every command went through capture';
+  is scalar(@calls), 3, 'the list and two chained requests went through capture';
   is scalar(grep { ref $_->[0] or @$_ != 1 } @calls), 0, 'each a plain command string, no stdin_data';
 };
 

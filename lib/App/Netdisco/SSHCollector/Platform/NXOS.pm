@@ -40,12 +40,16 @@ C<< [ { ip => '192.0.2.10', mac => '0011.2233.4455' },
 =item B<arpnip_by_vrf($host, $ssh, $args)>
 
 As C<arpnip>, used when C<store_vrfs> is on. Reads C<show vrf | json>, then
-C<show ip arp vrf NAME | json> and C<show ipv6 neighbor vrf NAME | json> for
-each listed VRF, all as exec requests, and names each entry's VRF from the
-list (C<default> is C<''>). A VRF's family is read whole only when its reply
-decodes, names the VRF asked for, and holds as many rows as its own count
-(C<cnt-total> for ARP, C<count> for IPv6); rows without a MAC (C<INCOMPLETE>)
-are skipped but count as rows. Link-local neighbors are kept.
+sends the C<show ip arp vrf NAME | json> and C<show ipv6 neighbor vrf NAME |
+json> commands of the listed VRFs chained with C<;>, at most 16 commands and
+640 bytes per exec request, and names each entry's VRF from the list (C<default> is C<''>).
+Each reply document is assigned by its own VRF name and table shape, not its
+position. A VRF's family is read whole only when exactly one document for it
+decodes and holds as many rows as its own count (C<cnt-total> for ARP,
+C<count> for IPv6); a request that fails, or a document that does not decode,
+leaves the VRF and families after it unread. VRF names that differ only in case are all 0 and never queried, and make
+C<vrf_list_complete> 0. Rows without a MAC
+(C<INCOMPLETE>) are skipped but count as rows. Link-local neighbors are kept.
 
 Returns C<< { entries =E<gt> [ { ip, mac, vrf } ], vrf_read =E<gt> { VRF =E<gt> 0|1 },
 vrf_list_complete =E<gt> 0|1, families =E<gt> [4, 6] } >>, or undef when
@@ -174,17 +178,30 @@ sub arpnip {
 }
 
 my $VRF_NAME = qr/\A[A-Za-z0-9_.:-]+\z/;
+my $COMMANDS_PER_REQUEST = 16;
+# the live device ran a 676 byte command line; stay under what is proven
+my $BYTES_PER_REQUEST = 640;
 
-# exec requests, as macsuck sends them: no pty and no echo to parse
+# exec requests, as macsuck sends them: no pty and no echo to parse. Each
+# exec costs a round trip, so the per-VRF commands share requests, chained
+# with " ; ": NX-OS prints one JSON document per command, in order.
 sub arpnip_by_vrf {
     my ($self, $hostlabel, $ssh, $args) = @_;
 
     debug "$hostlabel $$ arpnip_by_vrf()";
 
-    my ($vrfs, $list_whole) = _listed_vrfs($hostlabel, $ssh);
+    my ($vrfs, $list_whole, $ambiguous) = _listed_vrfs($hostlabel, $ssh);
     unless (scalar @$vrfs) {
         info "$hostlabel $$ show vrf | json did not return a VRF list, so VRF collection by CLI was skipped";
         return undef;
+    }
+
+    # "all" is refused because its reply names itself and would pass for
+    # every VRF at once
+    my @askable = grep { $_ =~ $VRF_NAME and lc $_ ne 'all' and not $ambiguous->{$_} } @$vrfs;
+    my %reads;
+    foreach my $chunk (_request_chunks(@askable)) {
+        %reads = (%reads, _read_chained($hostlabel, $ssh, $chunk));
     }
 
     my (@entries, %vrf_read, %seen);
@@ -192,7 +209,7 @@ sub arpnip_by_vrf {
         my $name = netdisco_vrf($vrf);
         my $whole = 1;
         foreach my $family (4, 6) {
-            my $read = _read_family($hostlabel, $ssh, $vrf, $family);
+            my $read = $reads{$vrf}->{$family} || { whole => 0, entries => [] };
             $whole = 0 unless $read->{whole};
             foreach my $entry (@{ $read->{entries} }) {
                 next if $seen{ join '|', $name, @$entry{qw/ip mac/} }++;
@@ -206,26 +223,113 @@ sub arpnip_by_vrf {
              vrf_list_complete => $list_whole, families => [4, 6] };
 }
 
-# ([names in the order NX-OS lists them], list whole); no names when the list
-# did not decode. A row that cannot be named, or a list without "default",
-# leaves the list not whole, since the VRF behind it was never asked about.
+# ([names in the order NX-OS lists them], list whole, { names ambiguous by
+# case }); no names when the list did not decode. A row that cannot be named,
+# a list without "default", or names that differ only in case (NX-OS show
+# commands ignore case, so neither could be read unambiguously) leave the
+# list not whole.
 sub _listed_vrfs {
     my ($hostlabel, $ssh) = @_;
-    my $data = _json_reply($hostlabel, $ssh, 'show vrf | json') or return ([], 0);
+    my $data = _json_reply($hostlabel, $ssh, 'show vrf | json') or return ([], 0, {});
 
-    my (%seen, @names);
+    my (%seen, @names, %spellings);
     my $whole = 1;
     foreach my $row (_as_list(eval { $data->{TABLE_vrf}->{ROW_vrf} })) {
         my $name = (ref {} eq ref $row ? $row->{vrf_name} : undef);
         if (not defined $name or ref $name or not length $name) { $whole = 0; next }
-        push @names, $name unless $seen{lc $name}++;
+        next if $seen{$name}++;
+        push @names, $name;
+        push @{ $spellings{lc $name} }, $name;
     }
+    my %ambiguous = map { ($_ => 1) } map { @$_ } grep { 1 < scalar @$_ } values %spellings;
+    $whole = 0 if scalar %ambiguous;
     # the global table is always read; a list that hides it cannot vouch for it
     if (@names and not grep { $_ eq 'default' } @names) {
         push @names, 'default';
         $whole = 0;
     }
-    return (\@names, $whole);
+    return (\@names, $whole, \%ambiguous);
+}
+
+# lists of VRF names, each small enough for one chained request
+sub _request_chunks {
+    my @names = @_;
+    my (@chunks, @current);
+    foreach my $name (@names) {
+        my $with = [ @current, $name ];
+        if (@current and (2 * @$with > $COMMANDS_PER_REQUEST
+                          or length(_chain_command(@$with)) > $BYTES_PER_REQUEST)) {
+            push @chunks, [ @current ];
+            @current = ();
+        }
+        push @current, $name;
+    }
+    push @chunks, \@current if @current;
+    return @chunks;
+}
+
+sub _chain_command {
+    return join ' ; ', map {
+        ("show ip arp vrf $_ | json | no-more", "show ipv6 neighbor vrf $_ | json | no-more")
+    } @_;
+}
+
+# one exec request for the ARP and neighbor commands of these VRFs; returns
+# (VRF => { 4 => read, 6 => read }). Each document is assigned by what it
+# says (its VRF and its table shape), never by its position, so a missing or
+# reordered document cannot shift another VRF's rows onto it. A (VRF, family)
+# without exactly one document is unread.
+sub _read_chained {
+    my ($hostlabel, $ssh, $vrfs) = @_;
+    my %asked = map { (lc $_ => $_) } @$vrfs;
+    my $command = _chain_command(@$vrfs);
+
+    my @out = $ssh->capture($command);
+    if ($ssh->error) {
+        debug "$hostlabel $$ error in SSH command [$command] " . $ssh->error;
+        return ();
+    }
+
+    my (%documents, %reads);
+    foreach my $data (_json_documents(join '', @out)) {
+        my ($vrf_row, $family) = _document_identity($data);
+        my $vrf = (defined $vrf_row ? $asked{ lc($vrf_row->{'vrf-name-out'} // '') } : undef);
+        unless (defined $vrf and $family) {
+            debug "$hostlabel $$ ignoring a document that answers no command asked";
+            next;
+        }
+        push @{ $documents{$vrf}->{$family} }, $vrf_row;
+    }
+    foreach my $vrf (keys %documents) {
+        foreach my $family (keys %{ $documents{$vrf} }) {
+            my $rows = $documents{$vrf}->{$family};
+            $reads{$vrf}->{$family} = _family_read($rows->[0], $family) if 1 == scalar @$rows;
+        }
+    }
+    return %reads;
+}
+
+# the documents of a stream, up to the first one that does not decode
+sub _json_documents {
+    my $text = shift;
+    my $parser = JSON->new;
+    $parser->incr_parse($text);
+    my @documents;
+    while (1) {
+        my $data = eval { $parser->incr_parse };
+        last unless defined $data;
+        push @documents, $data if ref {} eq ref $data;
+    }
+    return @documents;
+}
+
+# (the ROW_vrf hash, 4 or 6), or nothing when the document is neither table
+sub _document_identity {
+    my $data = shift;
+    my $vrf_row = _the_row($data->{TABLE_vrf}, 'ROW_vrf') or return ();
+    return ($vrf_row, 6) if exists $vrf_row->{TABLE_afi};
+    return ($vrf_row, 4) if exists $vrf_row->{'cnt-total'};
+    return ();
 }
 
 # a reply that is a JSON object, or undef; empty output is the unknown-name form
@@ -253,22 +357,12 @@ sub _the_row {
     return (1 == scalar @rows and ref {} eq ref $rows[0]) ? $rows[0] : undef;
 }
 
-# { whole => 0|1, entries => [...] }; whole needs a decoded reply for this VRF
-# and as many rows as it counts. "all" is refused because its reply names
-# itself and would pass for every VRF at once.
-sub _read_family {
-    my ($hostlabel, $ssh, $vrf, $family) = @_;
+# { whole => 0|1, entries => [...] } from one document's ROW_vrf; whole needs
+# as many rows as the document counts
+sub _family_read {
+    my ($vrf_row, $family) = @_;
     my $unread = { whole => 0, entries => [] };
-    my ($command, $count_key, $ip_key) = (4 == $family)
-      ? ("show ip arp vrf $vrf | json | no-more", 'cnt-total', 'ip-addr-out')
-      : ("show ipv6 neighbor vrf $vrf | json | no-more", 'count', 'ipv6-addr');
-
-    return $unread unless $vrf =~ $VRF_NAME and lc $vrf ne 'all';
-    my $data = _json_reply($hostlabel, $ssh, $command) or return $unread;
-
-    my $vrf_row = _the_row($data->{TABLE_vrf}, 'ROW_vrf') or return $unread;
-    return $unread unless defined $vrf_row->{'vrf-name-out'}
-        and lc $vrf_row->{'vrf-name-out'} eq lc $vrf;
+    my ($count_key, $ip_key) = (4 == $family) ? ('cnt-total', 'ip-addr-out') : ('count', 'ipv6-addr');
 
     my $holder = $vrf_row;
     if (6 == $family) {

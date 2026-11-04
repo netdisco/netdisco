@@ -25,7 +25,7 @@ A header line C<#prompt: TEXT> sets the literal prompt (default C<< > >>), then
 each C<#--- COMMAND> line starts that command's output, which runs verbatim
 to the next C<#---> line. Prompts, blank lines and indentation are kept exactly.
 Output is served followed by the prompt; commands are not echoed. A collector that
-sends C<exit> needs a C<#--- exit> section. Sending a command with no section dies, listing the known ones. The same table serves
+sends C<exit> needs a C<#--- exit> section. Sending a command with no section dies, listing the known ones. A C<capture> of a command chained with C<' ; '> and having no section of its own is answered by the sections of its parts, joined; a timeout on any part times out the chain. The same table serves
 C<capture> (command from the last plain argument, or C<stdin_data>).
 
 =head1 METHODS
@@ -94,8 +94,14 @@ sub capture {
 
     push @{ $self->{commands} }, $command;
     $self->{error} = '';
-    my $output = $self->_output_for($command);
-    if ($self->{timeouts}{$command}) {
+    # a chain "a ; b" with no section of its own answers each part in turn,
+    # one document per line as NX-OS prints them
+    my @parts = (exists $self->{table}{$command} ? ($command) : split / ; /, $command);
+    my $output = join '', map {
+        my $part = $self->_output_for($_);
+        (length $part and $part !~ /\n\z/) ? "$part\n" : $part;
+    } @parts;
+    if (grep { $self->{timeouts}{$_} } $command, @parts) {
         $self->{error} = "command '$command' timed out";
         return wantarray ? () : '';
     }

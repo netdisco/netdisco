@@ -142,4 +142,21 @@ subtest 'install_expect__real_handle__falls_through_to_real_init' => sub {
     isnt ref $exp, 'Test::Netdisco::FakeSSH::Expect';
 };
 
+subtest 'capture__chained_commands__exact_section_wins_else_parts_joined' => sub {
+    my $text = join '', map { "$_\n" }
+        '#--- one', '1', '#--- two', '2', '#--- one ; two', 'chain section';
+    is scalar(Test::Netdisco::FakeSSH->new(text => $text)->capture('one ; two')),
+        "chain section\n", 'an exact section for the chain wins';
+
+    my $parts = join '', map { "$_\n" } '#--- one', '1', '#--- two', '2';
+    my $ssh = Test::Netdisco::FakeSSH->new(text => $parts);
+    is scalar($ssh->capture('one ; two')), "1\n2\n", 'no section of its own: parts joined, one line each';
+    is_deeply [$ssh->commands], ['one ; two'], 'recorded as the one chained command';
+
+    $ssh->timeout_on('two');
+    is scalar($ssh->capture('one ; two')), '', 'a timeout on any part times out the chain';
+    like $ssh->error, qr/timed out/, 'with an error';
+    is scalar($ssh->capture('one')), "1\n", 'the part alone still answers';
+};
+
 done_testing;
