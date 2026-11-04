@@ -866,6 +866,8 @@ device_ip
 device_module
 device_power
 device_vlan
+device_vrf
+l3_domain_member
 
 # use 'device' as PK
 admin
