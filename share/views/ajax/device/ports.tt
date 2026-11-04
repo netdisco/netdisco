@@ -1,4 +1,10 @@
 [% PROCESS 'externallinks.tt' -%]
+[%# The prefixes the rows link to, worked out once: uri_for builds a URI object
+    on every call, and the rows asked for it about three times each. -%]
+[% SET uri_portlog = uri_for('/report/portlog') -%]
+[% SET uri_search = uri_for('/search') -%]
+[% SET uri_port_nodes = uri_for('/ajax/content/device/port/nodes') -%]
+[% SET uri_topology = uri_for('/admin/topology') -%]
 <table id="dp-data-table" class="table table-bordered table-striped" width="100%" cellspacing="0"
   data-nd-table='{
   "columnDefs": [
@@ -95,7 +101,7 @@
       <td nowrap data-order="[% row.port | html_entity %]" data-filter="[% row.port | html_entity %]">
       [% END %]
         <a class="nd_log-icon"
-          href="[% uri_for('/report/portlog') | none %]?q=[% device.ip | uri %]&f=[% row.port | uri %]">
+          href="[% uri_portlog | none %]?q=[% device.ip | uri %]&f=[% row.port | uri %]">
           <i class="far fa-file-lines"
             rel="tooltip" data-bs-placement="top"
             data-bs-animation="false" data-bs-title="View Port Log"></i>
@@ -264,10 +270,10 @@
         [% IF row.vlan AND row.vlan > 0 %]
         <a class="nd_linkcell"
           [% IF params.p_vlan_names %]
-            href="[% uri_for('/search') | none %]?tab=vlan&q=[% row.get_column('native_vlan_name') | uri %]">
+            href="[% uri_search | none %]?tab=vlan&q=[% row.get_column('native_vlan_name') | uri %]">
               [% row.get_column('native_vlan_name') | html_entity %]</a>
           [% ELSE %]
-            href="[% uri_for('/search') | none %]?tab=vlan&q=[% row.vlan | uri %]">
+            href="[% uri_search | none %]?tab=vlan&q=[% row.vlan | uri %]">
               [% row.vlan | html_entity %]</a>
           [% END %]
         [% END %]
@@ -292,7 +298,7 @@
             <div class="nd_collapsing nd_collapse-pre-hidden">
           [% END %]
           [% FOREACH vlan IN vlanlist %]
-            <a href="[% uri_for('/search') %]?tab=vlan&q=[% vlan | uri %]">[% vlan | html_entity %]</a>
+            <a href="[% uri_search %]?tab=vlan&q=[% vlan | uri %]">[% vlan | html_entity %]</a>
             [% ', ' IF NOT loop.last %]
           [% END %]
           [% IF vlan_count > settings.devport_vlans_collapse_threshold %]
@@ -471,7 +477,7 @@
           </span>
         </div>
         <div class="nd_collapsing nd_collapse-pre-hidden nd_nodes-deferred"
-             hx-get="[% uri_for('/ajax/content/device/port/nodes') %]?q=[% device.ip | uri %]&amp;port=[% row.port | uri %][% deferred_node_params %]"
+             hx-get="[% uri_port_nodes %]?q=[% device.ip | uri %]&amp;port=[% row.port | uri %][% deferred_node_params %]"
              hx-trigger="none"
              hx-target="this"
              hx-swap="innerHTML"
@@ -482,7 +488,7 @@
         [% END %]
         [% IF params.c_admin AND settings.portctl_topology AND row.port_acl_service %]
         <a class="nd_log-icon"
-          href="[% uri_for('/admin/topology') | none %]?dev1=[% device.ip | uri %]&port1=[% row.port | uri %]">
+          href="[% uri_topology | none %]?dev1=[% device.ip | uri %]&port1=[% row.port | uri %]">
           <i class="fas fa-link text-warning"
             rel="tooltip" data-bs-placement="top"
             data-bs-animation="false" data-bs-title="Manual Topology"></i>
