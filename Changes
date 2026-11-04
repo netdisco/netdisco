@@ -13,11 +13,12 @@
     on, discover reads each VRF's addresses, subnets and instance facts in
     the VRF's own SNMP context, and a VRF it cannot read whole keeps its
     stored rows; SNMP arpnip reads each VRF's ARP and IPv6 neighbor
-    entries and stores its subnets the same way, the VOSS and EOS CLI
-    collectors store ARP entries (EOS IPv6 neighbor entries too) under
-    their VRF, and after a complete arpnip a router retires the ARP
-    entries it was last to report and no longer reports, within the VRFs
-    it read whole (database schema 105: run netdisco-deploy)
+    entries and stores its subnets the same way, the VOSS, EOS, IOS-XE and
+    NX-OS CLI collectors store ARP entries (IPv6 neighbor entries too for
+    EOS, IOS-XE and NX-OS) under their VRF, and after a complete arpnip a
+    router retires the ARP entries it was last to report and no longer
+    reports, within the VRFs it read whole (database schema 105: run
+    netdisco-deploy)
   * upgrade SNMP::Info dependency to 3.985000
 
 2.117001 - 2026-11-02

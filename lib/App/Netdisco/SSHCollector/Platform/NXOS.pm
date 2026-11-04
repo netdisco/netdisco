@@ -18,6 +18,9 @@ use Moo;
 use Expect;
 use NetAddr::MAC qw/mac_as_ieee/;
 use Regexp::Common 'net';
+use JSON qw(decode_json);
+
+use App::Netdisco::Util::VRF qw/netdisco_vrf/;
 
 =head1 PUBLIC METHODS
 
@@ -33,6 +36,25 @@ Entries from all VRFs are flattened into a single returned list.
 Example:
 C<< [ { ip => '192.0.2.10', mac => '0011.2233.4455' },
       { ip => '2001:db8::1', mac => 'aabb.ccdd.eeff' } ] >>.
+
+=item B<arpnip_by_vrf($host, $ssh, $args)>
+
+As C<arpnip>, used when C<store_vrfs> is on. Reads C<show vrf | json>, then
+C<show ip arp vrf NAME | json> and C<show ipv6 neighbor vrf NAME | json> for
+each listed VRF, all as exec requests, and names each entry's VRF from the
+list (C<default> is C<''>). A VRF's family is read whole only when its reply
+decodes, names the VRF asked for, and holds as many rows as its own count
+(C<cnt-total> for ARP, C<count> for IPv6); rows without a MAC (C<INCOMPLETE>)
+are skipped but count as rows. Link-local neighbors are kept.
+
+Returns C<< { entries =E<gt> [ { ip, mac, vrf } ], vrf_read =E<gt> { VRF =E<gt> 0|1 },
+vrf_list_complete =E<gt> 0|1, families =E<gt> [4, 6] } >>, or undef when
+C<show vrf | json> fails or lists no VRF. A list row with no usable name makes
+C<vrf_list_complete> 0. A VRF named C<all> is 0 and is never queried. A VRF is 1 only when both families
+were read whole.
+
+A subclass that overrides C<arpnip> must also override C<arpnip_by_vrf>, or
+with C<store_vrfs> on this C<arpnip_by_vrf> is used instead of the override.
 
 =item B<macsuck($host, $ssh)>
 
@@ -148,6 +170,118 @@ sub arpnip {
     }
 
     return @arpentries;
+}
+
+my $VRF_NAME = qr/\A[A-Za-z0-9_.:-]+\z/;
+
+# exec requests, as macsuck sends them: no pty and no echo to parse
+sub arpnip_by_vrf {
+    my ($self, $hostlabel, $ssh, $args) = @_;
+
+    debug "$hostlabel $$ arpnip_by_vrf()";
+
+    my ($vrfs, $list_whole) = _listed_vrfs($hostlabel, $ssh);
+    unless (scalar @$vrfs) {
+        info "$hostlabel $$ show vrf | json did not return a VRF list, so VRF collection by CLI was skipped";
+        return undef;
+    }
+
+    my (@entries, %vrf_read, %seen);
+    foreach my $vrf (@$vrfs) {
+        my $name = netdisco_vrf($vrf);
+        my $whole = 1;
+        foreach my $family (4, 6) {
+            my $read = _read_family($hostlabel, $ssh, $vrf, $family);
+            $whole = 0 unless $read->{whole};
+            foreach my $entry (@{ $read->{entries} }) {
+                next if $seen{ join '|', $name, @$entry{qw/ip mac/} }++;
+                push @entries, { %$entry, vrf => $name };
+            }
+        }
+        $vrf_read{$name} = $whole;
+    }
+
+    return { entries => \@entries, vrf_read => \%vrf_read,
+             vrf_list_complete => $list_whole, families => [4, 6] };
+}
+
+# ([names in the order NX-OS lists them], list whole); no names when the list
+# did not decode. A row that cannot be named leaves the list not whole, since
+# the VRF behind it was never asked about.
+sub _listed_vrfs {
+    my ($hostlabel, $ssh) = @_;
+    my $data = _json_reply($hostlabel, $ssh, 'show vrf | json') or return ([], 0);
+
+    my (%seen, @names);
+    my $whole = 1;
+    foreach my $row (_as_list(eval { $data->{TABLE_vrf}->{ROW_vrf} })) {
+        my $name = (ref {} eq ref $row ? $row->{vrf_name} : undef);
+        if (not defined $name or ref $name or not length $name) { $whole = 0; next }
+        push @names, $name unless $seen{lc $name}++;
+    }
+    return (\@names, $whole);
+}
+
+# a reply that is a JSON object, or undef; empty output is the unknown-name form
+sub _json_reply {
+    my ($hostlabel, $ssh, $command) = @_;
+    my @out = $ssh->capture($command);
+    if ($ssh->error) {
+        debug "$hostlabel $$ error in SSH command [$command] " . $ssh->error;
+        return undef;
+    }
+    my $data = eval { decode_json(join '', @out) };
+    return (ref {} eq ref $data ? $data : undef);
+}
+
+# NX-OS gives a hash where a table has one row
+sub _as_list {
+    my $rows = shift;
+    return (ref [] eq ref $rows ? @$rows : defined $rows ? ($rows) : ());
+}
+
+# the one hash under TABLE->{ROW}, or undef
+sub _the_row {
+    my ($table, $key) = @_;
+    my @rows = _as_list(ref {} eq ref $table ? $table->{$key} : undef);
+    return (1 == scalar @rows and ref {} eq ref $rows[0]) ? $rows[0] : undef;
+}
+
+# { whole => 0|1, entries => [...] }; whole needs a decoded reply for this VRF
+# and as many rows as it counts. "all" is refused because its reply names
+# itself and would pass for every VRF at once.
+sub _read_family {
+    my ($hostlabel, $ssh, $vrf, $family) = @_;
+    my $unread = { whole => 0, entries => [] };
+    my ($command, $count_key, $ip_key) = (4 == $family)
+      ? ("show ip arp vrf $vrf | json | no-more", 'cnt-total', 'ip-addr-out')
+      : ("show ipv6 neighbor vrf $vrf | json | no-more", 'count', 'ipv6-addr');
+
+    return $unread unless $vrf =~ $VRF_NAME and lc $vrf ne 'all';
+    my $data = _json_reply($hostlabel, $ssh, $command) or return $unread;
+
+    my $vrf_row = _the_row($data->{TABLE_vrf}, 'ROW_vrf') or return $unread;
+    return $unread unless defined $vrf_row->{'vrf-name-out'}
+        and lc $vrf_row->{'vrf-name-out'} eq lc $vrf;
+
+    my $holder = $vrf_row;
+    if (6 == $family) {
+        $holder = _the_row($vrf_row->{TABLE_afi}, 'ROW_afi') or return $unread;
+        return $unread unless defined $holder->{afi} and $holder->{afi} eq 'ipv6';
+    }
+    my $count = $holder->{$count_key};
+    return $unread unless defined $count and $count =~ m/\A\d+\z/;
+
+    my @rows = grep { ref {} eq ref $_ }
+               _as_list(ref {} eq ref $holder->{TABLE_adj} ? $holder->{TABLE_adj}->{ROW_adj} : undef);
+    my @entries;
+    foreach my $row (@rows) {
+        my ($ip, $mac) = @$row{ $ip_key, 'mac' };
+        next unless defined $ip and defined $mac and $mac =~ m/\A(?:[0-9a-f]{4}\.){2}[0-9a-f]{4}\z/i;
+        push @entries, { ip => (6 == $family ? lc $ip : $ip), mac => mac_as_ieee($mac) };
+    }
+
+    return { whole => ($count == scalar @rows ? 1 : 0), entries => \@entries };
 }
 
 sub macsuck {
