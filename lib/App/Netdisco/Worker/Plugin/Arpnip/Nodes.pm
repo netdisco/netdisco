@@ -195,7 +195,10 @@ register_worker({ phase => 'main', driver => 'cli' }, sub {
 
 # a platform with arpnip_by_vrf returns { entries, vrf_read, vrf_list_complete,
 # families } with each entry's vrf named as netdisco stores it; families lists
-# the address families its vrf_read covers, [4] or [4, 6], and absent means [4, 6]
+# the address families its vrf_read covers, [4], [6] or [4, 6], and absent or
+# malformed means [4], so a platform that does not say never vouches for IPv6.
+# A platform subclass that overrides arpnip must also override arpnip_by_vrf,
+# or with store_vrfs on the inherited arpnip_by_vrf runs instead of its arpnip.
 sub gather_arps_by_vrf_cli {
   my ($device, $cli) = @_;
   my $error = 'returned no ARP data';
@@ -234,7 +237,7 @@ sub gather_arps_by_vrf_cli {
 # absent, so nothing retires on its word.
 sub merge_vrf_reads {
   my ($reads, $list_complete, $families) = @_;
-  my @families = (_well_formed_families($families) ? @$families : (4, 6));
+  my @families = (_well_formed_families($families) ? @$families : (4));
   my $by_family = (vars->{'vrf_read_families'} ||= {});
 
   foreach my $vrf (keys %$reads) {
@@ -250,7 +253,7 @@ sub merge_vrf_reads {
     ? (vars->{'vrf_list_complete'} && $list) : $list);
 }
 
-# anything but a non-empty list of 4 and 6 reads as absent, never as no family
+# anything but a non-empty list of 4 and 6 reads as absent, so as IPv4 only
 sub _well_formed_families {
   my $families = shift;
   return 0 unless ref [] eq ref $families and scalar @$families;

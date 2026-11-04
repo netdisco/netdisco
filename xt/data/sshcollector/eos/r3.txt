@@ -1,4 +1,4 @@
-# Arista cEOS 4.36.2F lab capture (vrf/eos-domain r3), the JSON EOS.pm reads over capture with stdin_data
+# Arista EOS (lab capture, cEOS 4.36.2F, r3), the JSON EOS.pm reads over capture with stdin_data
 #--- show ip arp vrf all | json | no-more
 {
     "vrfs": {

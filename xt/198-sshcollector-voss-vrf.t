@@ -118,13 +118,9 @@ subtest 'voss_arpnip_by_vrf__vrfids_times_out__every_vrf_incomplete' => sub {
   is_deeply [($ssh->commands)[-1]], ['exit'], 'session closed with exit';
 };
 
-subtest 'voss_arpnip_by_vrf__vrf_list_times_out__list_incomplete' => sub {
+subtest 'voss_arpnip_by_vrf__vrf_list_times_out__returns_undef' => sub {
   my $ssh = fake_ssh('edge1', timeout_on => 'show ip vrf');
-  my $result = by_vrf($ssh);
-  ok ref $result eq 'HASH', 'a result, not a failure';
-  is $result->{vrf_list_complete}, 0, 'list incomplete';
-  ok !(grep { $_ } values %{ $result->{vrf_read} }), 'no VRF read whole';
-  is_deeply $result->{entries}, [], 'later output not parsed as fresh';
+  is by_vrf($ssh), undef, 'failure, so the worker defers';
   is_deeply [$ssh->commands], ['terminal more disable', 'show ip vrf', 'exit'],
     'stops after the timeout';
 };

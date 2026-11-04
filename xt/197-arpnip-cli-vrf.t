@@ -95,6 +95,7 @@ sub by_vrf {
     ],
     vrf_read => { '' => 1, red => 1, blue => 1 },
     vrf_list_complete => 1,
+    families => [4, 6],
     %over,
   };
 }
@@ -305,7 +306,7 @@ subtest 'cli_arpnip__default_and_empty_both_reported__complete_only_if_both' => 
 
 subtest 'merge_vrf_reads__either_order__same_result' => sub {
   my $merge = \&App::Netdisco::Worker::Plugin::Arpnip::Nodes::merge_vrf_reads;
-  my @sources = ([ { '' => 1, red => 0 }, 1 ], [ { red => 1, blue => 1 }, 0 ]);
+  my @sources = ([ { '' => 1, red => 0 }, 1, [4, 6] ], [ { red => 1, blue => 1 }, 0, [4, 6] ]);
   foreach my $order ([0, 1], [1, 0]) {
     delete @{ vars() }{qw/vrf_read vrf_read_families vrf_list_complete/};
     $merge->(@{ $sources[$_] }) for @$order;
@@ -340,21 +341,23 @@ subtest 'merge__vrf_only_v4_only_source_listed__not_whole' => sub {
   is vars->{'vrf_read'}{red}, 1, 'red: SNMP read both families';
 };
 
-subtest 'merge__families_absent__treated_as_both' => sub {
+subtest 'merge__families_absent__treated_as_ipv4_only' => sub {
   my $result = by_vrf();
-  ok !exists $result->{families}, 'the platform declares no families';
+  delete $result->{families};
   run_arpnip(platform => ReportingPlatform->new(by_vrf => $result));
-  is_deeply vars->{'vrf_read'}, { '' => 1, red => 1, blue => 1 }, 'whole in both families';
+  is_deeply vars->{'vrf_read'}, { '' => 0, red => 0, blue => 0 }, 'alone, IPv6 is unvouched';
+  run_arpnip(platform => ReportingPlatform->new(by_vrf => $result), snmp => { snmp_fixture() });
+  is_deeply vars->{'vrf_read'}, { '' => 1, red => 1, blue => 1 }, 'with SNMP reading both, whole';
   run_arpnip(platform => ReportingPlatform->new(by_vrf => by_vrf(families => [4, 6])));
-  is_deeply vars->{'vrf_read'}, { '' => 1, red => 1, blue => 1 }, 'same as declaring [4, 6]';
+  is_deeply vars->{'vrf_read'}, { '' => 1, red => 1, blue => 1 }, 'declaring [4, 6] vouches both';
 };
 
-subtest 'merge__malformed_families__treated_as_both' => sub {
-  foreach my $families ([], 4, [5], [4, 7], 'six', { 4 => 1 }) {
-    my $label = (ref $families ? ref $families : $families);
+subtest 'merge__malformed_families__treated_as_ipv4_only' => sub {
+  foreach my $families (undef, [], 4, 6, [5], [4, 7], [6, 'x'], 'six', { 4 => 1 }) {
+    my $label = (ref $families ? ref($families) . ' ' . (join ',', map { $_ // 'undef' } (ref [] eq ref $families ? @$families : ())) : ($families // 'undef'));
     my $job = run_arpnip(platform => ReportingPlatform->new(by_vrf => by_vrf(families => $families)));
     is $job->status, 'done', "families $label: arpnip done";
-    is_deeply vars->{'vrf_read'}, { '' => 1, red => 1, blue => 1 }, "families $label: read as both";
+    is_deeply vars->{'vrf_read'}, { '' => 0, red => 0, blue => 0 }, "families $label: read as IPv4 only";
   }
 };
 

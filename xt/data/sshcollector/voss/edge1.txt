@@ -1,4 +1,4 @@
-# VOSS / Fabric Engine 9.4 lab capture (spb/voss-fabric edge1), the sections VOSS.pm reads
+# VOSS (lab capture, Fabric Engine 9.4, edge1), the sections VOSS.pm reads
 #prompt: edge1:1>
 #--- terminal more disable
 #--- show ip vrf

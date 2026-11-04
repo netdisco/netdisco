@@ -57,11 +57,14 @@ names each entry's VRF from the C<IP Arp> block it appears in (GlobalRouter is
 C<''>).
 
 Returns C<{ entries =E<gt> [ { ip, mac, vrf } ], vrf_read =E<gt> { VRF =E<gt> 0|1 },
-vrf_list_complete =E<gt> 0|1, families =E<gt> [4] }>, or undef when the session
-or the ARP command fails. Only IPv4 ARP is read, so C<families> is C<[4]>
-(absent would mean C<[4, 6]>): a VRF counts as read whole only when another
-source in the same job read its IPv6 neighbors whole, so with this collector
-alone no VRF's entries retire.
+vrf_list_complete =E<gt> 0|1, families =E<gt> [4] }>, or undef when the session,
+C<show ip vrf> or the ARP command fails. Only IPv4 ARP is read, so
+C<families> is C<[4]>: a VRF counts as read whole only when another source in
+the same job read its IPv6 neighbors whole, so with this collector alone no
+VRF's entries retire.
+
+A subclass that overrides C<arpnip> must also override C<arpnip_by_vrf>, or
+with C<store_vrfs> on this C<arpnip_by_vrf> is used instead of the override.
 
 =back
 
@@ -162,20 +165,20 @@ sub arpnip_by_vrf {
     my %result = (entries => [], vrf_read => {}, vrf_list_complete => 0, families => [4]);
 
     my ($listed, $list_ok) = _read_vrf_list($hostlabel, $expect);
-    $result{vrf_read}->{$_} = 0 for @$listed;
-
-    if (defined $list_ok) {
-        my ($blocks, $arp_whole) = _read_arp_by_vrf($hostlabel, $expect, $vrflist);
-        unless ($blocks) {
-            _close_session($expect);
-            return undef;
-        }
-        @{ $result{vrf_read} }{ keys %{ $blocks->{read} } } = values %{ $blocks->{read} };
-        $result{entries} = $blocks->{entries};
-        # a configured subset never vouches for VRFs it did not ask for, and
-        # after a timeout or a partial block nothing is vouched for
-        $result{vrf_list_complete} = ($list_ok and $arp_whole and $vrflist eq '0-512') ? 1 : 0;
+    # a timed-out VRF list fails the read, as an ARP command error does
+    my ($blocks, $arp_whole) = (defined $list_ok
+      ? _read_arp_by_vrf($hostlabel, $expect, $vrflist) : ());
+    unless ($blocks) {
+        _close_session($expect);
+        return undef;
     }
+
+    $result{vrf_read}->{$_} = 0 for @$listed;
+    @{ $result{vrf_read} }{ keys %{ $blocks->{read} } } = values %{ $blocks->{read} };
+    $result{entries} = $blocks->{entries};
+    # a configured subset never vouches for VRFs it did not ask for, and
+    # after a timeout or a partial block nothing is vouched for
+    $result{vrf_list_complete} = ($list_ok and $arp_whole and $vrflist eq '0-512') ? 1 : 0;
 
     _close_session($expect);
     return \%result;

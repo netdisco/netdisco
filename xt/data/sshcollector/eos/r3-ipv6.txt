@@ -1,4 +1,4 @@
-# Synthetic: r3.txt (cEOS 4.36.2F lab capture, vrf/eos-domain r3) with one hand-added IPv6
+# Synthetic: r3.txt (lab capture, cEOS 4.36.2F, r3) with one hand-added IPv6
 # neighbor in Red, since the lab has none; its fields are modeled on the IPv4 shape.
 #--- show ip arp vrf all | json | no-more
 {

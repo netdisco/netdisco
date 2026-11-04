@@ -92,33 +92,39 @@ subtest 'eos_arpnip_by_vrf__ipv6_neighbor__stored_under_its_vrf' => sub {
   is_deeply $result->{vrf_read}, \%R3_READ, 'every VRF read whole';
 };
 
-subtest 'eos_arpnip_by_vrf__ipv6_command_fails__every_vrf_incomplete' => sub {
+subtest 'eos_arpnip_by_vrf__ipv6_command_fails__vouches_ipv4_only' => sub {
   my ($result, @logged) = capture_info_lines(sub { $EOS->arpnip_by_vrf('r3', fake_ssh('r3', $ND), {}) });
   ok ref $result eq 'HASH', 'a result, not a failure';
-  is_deeply $result->{vrf_read}, { map { ($_ => 0) } keys %R3_READ }, 'every VRF incomplete';
-  is $result->{vrf_list_complete}, 0, 'list incomplete';
-  is scalar(@{ $result->{entries} }), 2, 'IPv4 entries still returned';
+  is_deeply $result->{families}, [4], 'IPv4 only';
+  is_deeply $result->{vrf_read}, \%R3_READ, 'every VRF the ARP output listed read whole';
+  is $result->{vrf_list_complete}, 1, 'the ARP output listed every VRF';
+  is scalar(@{ $result->{entries} }), 2, 'IPv4 entries returned';
   is scalar(@logged), 1, 'one info line';
   like $logged[0] // '', qr/IPv6 neighbor command/, 'names the failed command';
-
-  ($result) = $EOS->arpnip_by_vrf('r3', fake_ssh('r3', $ARP), {});
-  is_deeply $result->{vrf_read}, { map { ($_ => 0) } keys %R3_READ }, 'IPv4 failing: every VRF incomplete';
-  is $result->{vrf_list_complete}, 0, 'IPv4 failing: list incomplete';
 };
 
-subtest 'eos_arpnip_by_vrf__undecodable_json__list_incomplete' => sub {
+subtest 'eos_arpnip_by_vrf__ipv4_command_fails__vouches_ipv6_only' => sub {
+  my ($result) = $EOS->arpnip_by_vrf('r3', fake_ssh('r3-ipv6', $ARP), {});
+  is_deeply $result->{families}, [6], 'IPv6 only';
+  is_deeply $result->{vrf_read}, \%R3_READ, 'every VRF the IPv6 output listed read whole';
+  is $result->{vrf_list_complete}, 1, 'the IPv6 output listed every VRF';
+  is_deeply [ map { $_->{ip} } @{ $result->{entries} } ], ['2001:db8:111:3::2'], 'IPv6 entries only';
+};
+
+subtest 'eos_arpnip_by_vrf__undecodable_ipv6_json__vouches_ipv4_only' => sub {
   (my $text = fixture_text('r3')) =~ s/(#--- \Q$ND\E\n(?:.*\n){5})(?:.*\n)*/$1/
     or die 'IPv6 section not found';
   my ($result, @logged) = capture_info_lines(sub {
     $EOS->arpnip_by_vrf('r3', Test::Netdisco::FakeSSH->new(text => $text), {}) });
-  is $result->{vrf_list_complete}, 0, 'list incomplete';
-  is_deeply $result->{vrf_read}, { map { ($_ => 0) } keys %R3_READ }, 'every VRF incomplete';
+  is_deeply $result->{families}, [4], 'IPv6 undecodable: IPv4 only';
+  is $result->{vrf_list_complete}, 1, 'list complete from the ARP output';
+  is_deeply $result->{vrf_read}, \%R3_READ, 'VRFs vouched from the ARP output';
   is scalar(@logged), 1, 'one info line';
 
   ($text = fixture_text('r3')) =~ s/#--- \Q$ND\E\n(?:.*\n)*/#--- $ND\n{ "notVrfs": {} }\n/;
   $result = $EOS->arpnip_by_vrf('r3', Test::Netdisco::FakeSSH->new(text => $text), {});
-  is $result->{vrf_list_complete}, 0, 'JSON without vrfs: list incomplete';
-  is $result->{vrf_read}->{Red}, 0, 'JSON without vrfs: Red incomplete';
+  is_deeply $result->{families}, [4], 'JSON without vrfs: IPv4 only';
+  is $result->{vrf_read}->{Red}, 1, 'JSON without vrfs: Red vouched for IPv4';
 };
 
 subtest 'eos_arpnip_by_vrf__vrf_missing_from_one_family__incomplete' => sub {
@@ -149,6 +155,21 @@ subtest 'eos_arpnip_by_vrf__multi_interface_entry__split_as_arpnip' => sub {
   my $result = $EOS->arpnip_by_vrf('r3', Test::Netdisco::FakeSSH->new(text => $text), {});
   is_deeply [ sort { $a cmp $b } map { $_->{iface} } grep { $_->{vrf} eq 'Red' } @{ $result->{entries} } ],
     ['Port-Channel46', 'Vlan3134'], 'one entry per interface';
+};
+
+subtest 'eos_arpnip_by_vrf__neighbor_without_interface__still_reported' => sub {
+  (my $text = fixture_text('r3')) =~ s/"interface": "Management0"/"interface": ""/ or die 'MGMT interface not found';
+  my $result = $EOS->arpnip_by_vrf('r3', Test::Netdisco::FakeSSH->new(text => $text), {});
+  my @mgmt = grep { $_->{vrf} eq 'MGMT' } @{ $result->{entries} };
+  is scalar(@mgmt), 1, 'empty interface: one entry';
+  is_deeply [ sort keys %{ $mgmt[0] } ], [qw/ip mac vrf/], 'empty interface: no iface';
+
+  ($text = fixture_text('r3')) =~ s/,\s*"interface": "Management0"//
+    or die 'MGMT interface not found';
+  $result = $EOS->arpnip_by_vrf('r3', Test::Netdisco::FakeSSH->new(text => $text), {});
+  @mgmt = grep { $_->{vrf} eq 'MGMT' } @{ $result->{entries} };
+  is scalar(@mgmt), 1, 'missing interface: one entry';
+  ok !exists $mgmt[0]->{iface}, 'missing interface: no iface';
 };
 
 subtest 'eos_arpnip_by_vrf__both_commands_fail__returns_undef' => sub {
