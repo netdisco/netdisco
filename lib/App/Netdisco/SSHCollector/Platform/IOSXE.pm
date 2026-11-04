@@ -208,7 +208,7 @@ sub arpnip {
 }
 
 # the prompt alone at the end of the output, so a row never ends a read
-my $VRF_PROMPT = qr/^\S+[>#]\s*\z/m;
+my $VRF_PROMPT = qr/^[^\s#>]+[>#]\s*\z/m;
 
 my $IPV4_HEADER = qr/^\s*Protocol\s+Address\s+Age/i;
 my $IPV6_HEADER = qr/^\s*IPv6 Address\s+Age\s+Link-layer/i;

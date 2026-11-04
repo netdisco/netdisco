@@ -26,7 +26,7 @@ $CONFIG->{logger} = 'console';
 $CONFIG->{log} = ($ENV{'DANCER_DEBUG'} ? 'debug' : 'error');
 Dancer::Logger->init('console', $CONFIG);
 
-my $FIXTURE = 'xt/data/sshcollector/iosxe/iol1.txt';
+my $FIXTURE = 'xt/data/sshcollector/iosxe/iosxe.txt';
 my $IOSXE = App::Netdisco::SSHCollector::Platform::IOSXE->new;
 
 sub fixture_text { local (@ARGV, $/) = ($FIXTURE); return scalar <> }
@@ -41,7 +41,7 @@ sub fake_ssh {
 sub by_vrf {
   my ($ssh) = @_;
   my $guard = $ssh->install_expect;
-  return $IOSXE->arpnip_by_vrf('iol1', $ssh, {});
+  return $IOSXE->arpnip_by_vrf('router', $ssh, {});
 }
 
 sub entries_in {
@@ -199,8 +199,42 @@ subtest 'arpnip_by_vrf__echoed_commands_crlf__same_result' => sub {
   is_deeply $echoed->{vrf_read}, \%LAB_READ, 'every table whole despite the echo';
 };
 
+subtest 'arpnip_by_vrf__hash_only_banner_before_prompt__not_taken_as_prompt' => sub {
+  # the banner arrives in a read of its own, and the real prompt after it
+  my $ssh = fake_ssh();
+  my $guard = $ssh->install_expect;
+  no warnings qw/redefine once/;
+  my $new = \&Test::Netdisco::FakeSSH::Expect::new;
+  local *Test::Netdisco::FakeSSH::Expect::new = sub {
+    my $self = $new->(@_);
+    ($self->{late}, $self->{buffer}) = ($self->{buffer}, "####\r\n");
+    return $self;
+  };
+  local *Test::Netdisco::FakeSSH::Expect::expect = sub {
+    my ($self, $timeout, @patterns) = @_;
+    my ($regex) = grep { ref $_ eq 'Regexp' } @patterns;
+    # a pty is read as it arrives, so the first prompt wins, not the last
+    while (1) {
+      my $buffer = $self->{buffer};
+      foreach my $end (grep { substr($buffer, $_ - 1, 1) =~ m/[#>\n]/ } 1 .. length $buffer) {
+        my $seen = substr $buffer, 0, $end;
+        next unless $seen =~ $regex;
+        ($self->{before}, $self->{match}, $self->{after}) = ($`, $&, $');
+        $self->{buffer} = substr $buffer, $end;
+        return (1, undef, $&, $`, $');
+      }
+      return (undef, '1:TIMEOUT', undef, $buffer, '') unless exists $self->{late};
+      $self->{buffer} .= delete $self->{late};
+    }
+  };
+  my $result = $IOSXE->arpnip_by_vrf('router', $ssh, {});
+  ok $result, 'a result, not a deferral';
+  is_deeply $result->{vrf_read}, \%LAB_READ, 'every table read whole';
+  is_deeply [ ($ssh->commands)[0, 1, 2] ], ['terminal length 0', 'terminal width 0', 'show vrf'], 'commands in step';
+};
+
 subtest 'arpnip_by_vrf__no_prompt__returns_undef' => sub {
-  my $ssh = Test::Netdisco::FakeSSH->new(text => "#prompt: iol1\$ \n#--- terminal length 0\n#--- terminal width 0\n#--- exit\n");
+  my $ssh = Test::Netdisco::FakeSSH->new(text => "#prompt: router\$ \n#--- terminal length 0\n#--- terminal width 0\n#--- exit\n");
   is by_vrf($ssh), undef, 'no [>#] prompt, no session';
 };
 
@@ -249,7 +283,7 @@ subtest 'arpnip_by_vrf__repeated_row__deduped_within_a_vrf' => sub {
 subtest 'arpnip__lab_capture__unchanged' => sub {
   my $ssh = fake_ssh();
   my $guard = $ssh->install_expect;
-  my @entries = $IOSXE->arpnip('iol1', $ssh, {});
+  my @entries = $IOSXE->arpnip('router', $ssh, {});
 
   is_deeply [$ssh->commands], [
     'terminal length 0', 'show ip arp', 'show vrf',
@@ -269,7 +303,7 @@ subtest 'arpnip_by_vrf__through_the_worker__entries_keep_their_vrf' => sub {
   my $ssh = fake_ssh();
   my $guard = $ssh->install_expect;
   my $cli = bless {}, 'IosxeCliStub';
-  { no strict 'refs'; *{'IosxeCliStub::arpnip_by_vrf'} = sub { $IOSXE->arpnip_by_vrf('iol1', $ssh, {}) }; }
+  { no strict 'refs'; *{'IosxeCliStub::arpnip_by_vrf'} = sub { $IOSXE->arpnip_by_vrf('router', $ssh, {}) }; }
 
   delete @{ vars() }{qw/arps vrf_read vrf_read_families vrf_list_complete/};
   vars->{'arps'} = {};

@@ -1,5 +1,5 @@
-# IOS-XE (lab capture, IOL-XE 17.18, iol1), the sections IOSXE.pm reads
-#prompt: iol1#
+# IOS-XE (lab capture, IOL-XE 17.18), the sections IOSXE.pm reads
+#prompt: router#
 #--- terminal length 0
 #--- terminal width 0
 #--- show vrf
