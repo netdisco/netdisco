@@ -148,24 +148,105 @@ subtest 'arpnip_by_vrf__vrf_list_timeout__returns_undef' => sub {
     'stops after the timeout';
 };
 
-subtest 'arpnip_by_vrf__vrf_list_error__returns_undef' => sub {
-  my $text = with_output('show vrf', "% Invalid input detected at '^' marker.\n");
-  is by_vrf(fake_ssh(text => $text)), undef, 'an error in place of the list fails the read';
+my $HEADER = "  Name                             Default RD            Protocols   Interfaces\n";
+
+# the list is not vouched, but the global tables are still read and returned
+sub assert_list_incomplete_global_read {
+  my ($output, $label, $expect_vrfs) = @_;
+  my $ssh = fake_ssh(text => with_output('show vrf', $output));
+  my $result = by_vrf($ssh);
+  ok $result, "$label: a result, not a deferral" or return;
+  is $result->{vrf_list_complete}, 0, "$label: list not vouched";
+  is_deeply $result->{vrf_read}, $expect_vrfs // { '' => 1 }, "$label: vrf_read";
+  is_deeply $result->{families}, [4, 6], "$label: both families";
+  ok scalar(grep { $_ eq 'show ip arp' } $ssh->commands), "$label: the global table was read";
+}
+
+subtest 'arpnip_by_vrf__vrf_list_error__list_incomplete_global_read' => sub {
+  assert_list_incomplete_global_read("% Invalid input detected at '^' marker.\n", 'error');
 };
 
-subtest 'arpnip_by_vrf__rows_without_header__returns_undef' => sub {
-  my $text = with_output('show vrf', "  red   <not set>   ipv4,ipv6   Et0/1\n");
-  is by_vrf(fake_ssh(text => $text)), undef, 'rows with no header line are not trusted';
+subtest 'arpnip_by_vrf__authorization_failed_list__list_incomplete_global_read' => sub {
+  assert_list_incomplete_global_read("Command authorization failed.\n", 'denied');
 };
 
-subtest 'arpnip_by_vrf__no_vrfs__global_read_list_complete' => sub {
-  foreach my $output ('', "  Name                             Default RD            Protocols   Interfaces\n") {
-    my $ssh = fake_ssh(text => with_output('show vrf', $output));
+subtest 'arpnip_by_vrf__empty_list_reply__list_incomplete_global_read' => sub {
+  assert_list_incomplete_global_read('', 'empty');
+};
+
+subtest 'arpnip_by_vrf__rows_without_header__list_incomplete_rows_read' => sub {
+  assert_list_incomplete_global_read("  red   <not set>   ipv4,ipv6   Et0/1\n", 'headerless',
+    { '' => 1, red => 1 });
+};
+
+subtest 'arpnip_by_vrf__unrecognized_list_line__list_incomplete' => sub {
+  my $red = "  red                              <not set>             ipv4,ipv6   Et0/1\n";
+  assert_list_incomplete_global_read("$HEADER$red" . "unindented                         <not set>             ipv4,ipv6   Et0/2\n",
+    'unindented row', { '' => 1, red => 1 });
+  assert_list_incomplete_global_read("$HEADER$red" . "  blue   ipv4,ipv6\n",
+    'row with too few columns', { '' => 1, red => 1 });
+  assert_list_incomplete_global_read("$HEADER$red" . "Command authorization failed.\n",
+    'trailing prose', { '' => 1, red => 1 });
+  assert_list_incomplete_global_read("$HEADER  Et0/9\n$red", 'continuation before any row', { '' => 1, red => 1 });
+};
+
+subtest 'arpnip_by_vrf__header_only_list__whole_empty_list' => sub {
+  my $ssh = fake_ssh(text => with_output('show vrf', $HEADER));
+  my $result = by_vrf($ssh);
+  is_deeply $result->{vrf_read}, { '' => 1 }, 'the global tables read whole';
+  is $result->{vrf_list_complete}, 1, 'a header with no rows is a whole, empty list';
+  is_deeply $result->{families}, [4, 6], 'both families';
+  is_deeply [ grep { /vrf/ } $ssh->commands ], ['show vrf'], 'no per-VRF command';
+};
+
+subtest 'arpnip_by_vrf__name_only_line_at_name_column__list_incomplete' => sub {
+  my $red = "  red                              <not set>             ipv4,ipv6   Et0/1\n";
+  assert_list_incomplete_global_read("$HEADER$red  wrappedvrf1\n", 'name column', { '' => 1, red => 1 });
+  assert_list_incomplete_global_read("$HEADER$red" . (' ' x 69) . "notiface\n", 'no digit', { '' => 1, red => 1 });
+};
+
+subtest 'arpnip_by_vrf__vrf_named_Default__listed_and_read' => sub {
+  foreach my $name (qw/Default DEFAULT/) {
+    (my $text = fixture_text()) =~ s/^  grey( +)/"  $name" . $1/me;
+    $text .= "#--- show ip arp vrf $name\n"
+      . "Protocol  Address          Age (min)  Hardware Addr   Type   Interface\n"
+      . "Internet  10.46.0.1               0   aabb.cc00.0146  ARPA   Ethernet0/1\n"
+      . "#--- show ipv6 neighbors vrf $name\n"
+      . "IPv6 Address                              Age Link-layer Addr State Interface\n";
+    my $ssh = fake_ssh(text => $text);
     my $result = by_vrf($ssh);
-    is_deeply $result->{vrf_read}, { '' => 1 }, 'the global tables read whole';
-    is $result->{vrf_list_complete}, 1, 'an empty list is a whole list';
-    is_deeply $result->{families}, [4, 6], 'both families';
-    is_deeply [ grep { /vrf/ } $ssh->commands ], ['show vrf'], 'no per-VRF command';
+    is $result->{vrf_read}->{$name}, 1, "$name read as a named VRF";
+    is_deeply entries_in($result, $name), ['10.46.0.1 aa:bb:cc:00:01:46'], "$name entries under its own name";
+    ok scalar(grep { $_ eq "show ip arp vrf $name" } $ssh->commands), "$name queried";
+  }
+};
+
+subtest 'arpnip__vrf_named_Default__skipped_as_today' => sub {
+  (my $text = fixture_text()) =~ s/^  grey( +)/"  Default" . $1/me;
+  my $ssh = fake_ssh(text => $text);
+  my $guard = $ssh->install_expect;
+  $IOSXE->arpnip('router', $ssh, {});
+  is_deeply [ grep { /^show ip arp vrf/ } $ssh->commands ],
+    [ map { "show ip arp vrf $_" } qw/blue green red/ ], 'arpnip never queries Default';
+};
+
+subtest 'arpnip_by_vrf__interface_continuation_lines__list_whole' => sub {
+  my $result = by_vrf(fake_ssh());
+  is $result->{vrf_list_complete}, 1, 'the capture wraps blue and red onto a second line';
+};
+
+subtest 'arpnip_by_vrf__vrf_named_all__unread_without_a_command' => sub {
+  foreach my $name ('all', 'ALL', 'bad;name', "r\x{e9}d") {
+    (my $text = fixture_text()) =~ s/^  grey( +)/"  $name" . $1/me;
+    $text .= "#--- show ip arp vrf $name\n"
+      . "Protocol  Address          Age (min)  Hardware Addr   Type   Interface\n"
+      . "#--- show ipv6 neighbors vrf $name\n"
+      . "IPv6 Address                              Age Link-layer Addr State Interface\n";
+    my $ssh = fake_ssh(text => $text);
+    my $result = by_vrf($ssh);
+    is $result->{vrf_read}->{$name}, 0, "$name reported 0";
+    is_deeply [ grep { / vrf \Q$name\E$/ } $ssh->commands ], [], "$name never sent";
+    is $result->{vrf_read}->{red}, 1, 'red whole';
   }
 };
 

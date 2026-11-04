@@ -49,9 +49,10 @@ are skipped but count as rows. Link-local neighbors are kept.
 
 Returns C<< { entries =E<gt> [ { ip, mac, vrf } ], vrf_read =E<gt> { VRF =E<gt> 0|1 },
 vrf_list_complete =E<gt> 0|1, families =E<gt> [4, 6] } >>, or undef when
-C<show vrf | json> fails or lists no VRF. A list row with no usable name makes
-C<vrf_list_complete> 0. A VRF named C<all> is 0 and is never queried. A VRF is 1 only when both families
-were read whole.
+C<show vrf | json> fails or lists no VRF. A list row with no usable name, or a
+list without C<default>, makes C<vrf_list_complete> 0; the global table is read
+either way. A VRF named C<all> is 0 and is never queried. A VRF is 1 only when
+both families were read whole.
 
 A subclass that overrides C<arpnip> must also override C<arpnip_by_vrf>, or
 with C<store_vrfs> on this C<arpnip_by_vrf> is used instead of the override.
@@ -206,8 +207,8 @@ sub arpnip_by_vrf {
 }
 
 # ([names in the order NX-OS lists them], list whole); no names when the list
-# did not decode. A row that cannot be named leaves the list not whole, since
-# the VRF behind it was never asked about.
+# did not decode. A row that cannot be named, or a list without "default",
+# leaves the list not whole, since the VRF behind it was never asked about.
 sub _listed_vrfs {
     my ($hostlabel, $ssh) = @_;
     my $data = _json_reply($hostlabel, $ssh, 'show vrf | json') or return ([], 0);
@@ -218,6 +219,11 @@ sub _listed_vrfs {
         my $name = (ref {} eq ref $row ? $row->{vrf_name} : undef);
         if (not defined $name or ref $name or not length $name) { $whole = 0; next }
         push @names, $name unless $seen{lc $name}++;
+    }
+    # the global table is always read; a list that hides it cannot vouch for it
+    if (@names and not grep { $_ eq 'default' } @names) {
+        push @names, 'default';
+        $whole = 0;
     }
     return (\@names, $whole);
 }

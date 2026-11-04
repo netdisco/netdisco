@@ -35,15 +35,20 @@ not list C<ipv6> has no IPv6 table, so its IPv6 counts as read whole and empty.
 
 Returns C<{ entries =E<gt> [ { ip, mac, vrf } ], vrf_read =E<gt> { VRF =E<gt> 0|1 },
 vrf_list_complete =E<gt> 0|1, families =E<gt> [4, 6] }>, or undef when the
-session or C<show vrf> fails. C<families> is C<[4]> when the global
+session fails or C<show vrf> times out. C<families> is C<[4]> when the global
 C<show ipv6 neighbors> did not answer cleanly (IPv6 is unsupported or
 unreached), and then C<vrf_read> covers IPv4 only; otherwise it is C<[4, 6]>.
 A table is read whole when it returned to the prompt with no C<%> error and
 every line was a header or an entry. A VRF is 1 only when its table for every
 family in C<families> was read whole, so a VRF whose IPv6 table fails is 0
-though its IPv4 entries are reported. A C<show vrf> that returned with no
-C<%> error and no VRF is a whole, empty list. After a timeout the rest of the
-session is not read, and that VRF and every one not yet read are 0.
+though its IPv4 entries are reported. A C<show vrf> is a whole list only when
+it holds the header line and every other line is a VRF row or an interface-only
+continuation (one name in the header's C<Interfaces> column); a reply without
+the header (an error, a denial, nothing) makes C<vrf_list_complete> 0 and the
+global tables are still read. A VRF named C<all> or with an unusual name is 0
+and is never queried. Only a VRF named exactly C<default> is the global table;
+C<Default> is a user VRF. After a timeout the rest of the session is not read,
+and that VRF and every one not yet read are 0.
 
 A subclass that overrides C<arpnip> must also override C<arpnip_by_vrf>, or
 with C<store_vrfs> on this C<arpnip_by_vrf> is used instead of the override.
@@ -107,8 +112,10 @@ sub _open_expect {
   return ($exp, $prompt, $timeout);
 }
 
+# arpnip skips "default" in any case, as it always has; arpnip_by_vrf passes
+# $case_sensitive because IOS-XE VRF names are
 sub _parse_vrfs {
-  my ($text) = @_;
+  my ($text, $case_sensitive) = @_;
   my @vrfs;
 
   # "show vrf" includes a Platform iVRF section on some builds; stop before that.
@@ -121,7 +128,7 @@ sub _parse_vrfs {
     # IOS-XE prints VRF name in column 1 (indented)
     if ($line =~ /^\s+(\S+)\s+\S+\s+\S+/) {
       my $vrf = $1;
-      next if lc($vrf) eq 'default'; # global handled separately
+      next if ($case_sensitive ? $vrf eq 'default' : lc($vrf) eq 'default'); # global handled separately
       push @vrfs, $vrf;
     }
   }
@@ -221,15 +228,15 @@ sub arpnip_by_vrf {
   my ($exp, $timeout) = _open_vrf_session($hostlabel, $ssh, $args) or return undef;
 
   my $list = _run_command($exp, $timeout, 'show vrf');
-  my @vrfs = defined $list ? _parse_vrfs($list) : ();
-  # no VRF rows and no error is a router with no VRFs, which is a whole list
-  my $list_whole = (defined $list and $list !~ m/^\s*%/m
-    and (!@vrfs or $list =~ m/^\s*Name\s+Default RD/mi));
-  unless ($list_whole) {
-    info "$hostlabel $$ arpnip_by_vrf() show vrf did not return a VRF list, so VRF collection by CLI was skipped";
+  unless (defined $list) {
+    info "$hostlabel $$ arpnip_by_vrf() show vrf timed out, so VRF collection by CLI was skipped";
     _close_vrf_session($exp);
     return undef;
   }
+  my @vrfs = _parse_vrfs($list, 1);
+  my $list_whole = _vrf_list_whole($list);
+  info "$hostlabel $$ arpnip_by_vrf() show vrf was not a whole VRF list, so no VRF is vouched absent"
+    unless $list_whole;
   my $protocols = _parse_vrf_protocols($list);
 
   my $state = { entries => [], seen => {}, whole => {}, unread => {}, timed_out => 0 };
@@ -257,14 +264,41 @@ sub arpnip_by_vrf {
 
   return {
     entries => $state->{entries}, vrf_read => \%vrf_read,
-    vrf_list_complete => ($state->{timed_out} ? 0 : 1), families => \@families,
+    vrf_list_complete => (($state->{timed_out} or !$list_whole) ? 0 : 1), families => \@families,
   };
 }
 
+# The list is whole only when it holds the header and every other line is
+# a VRF row or the interface-only line that continues the row above; a
+# denied or unrecognized reply must not read as "no VRFs".
+sub _vrf_list_whole {
+  my ($text) = @_;
+  my ($header, $after_row, $interfaces_column) = (0, 0, undef);
+  for my $line (split /\r?\n/, $text) {
+    last if $line =~ /^\s*Platform iVRF Name/i;
+    next if $line =~ /^\s*$/ or $line =~ /^\s*-+\s*$/;
+    return 0 if $line =~ /^\s*%/;
+    if ($line =~ /^\s*Name\s+Default RD/i) {
+      ($header, $interfaces_column) = (1, index($line, 'Interfaces'));
+      next;
+    }
+    if ($line =~ /^\s+\S+\s+\S+\s+\S+/) { $after_row = 1; next }
+    # a wrapped VRF name sits in the name column; only the Interfaces column continues a row
+    return 0 unless $after_row and $interfaces_column >= 0
+      and $line =~ /^(\s+)([A-Za-z]\S*\d\S*)\s*$/ and length($1) >= $interfaces_column;
+  }
+  return $header;
+}
+
 # the commands for one VRF; a VRF that lists no ipv6 has no IPv6 table, so
-# that family is whole and empty with no command sent
+# that family is whole and empty with no command sent. A name that is not
+# plain is never sent, and "all" would answer for every VRF at once.
 sub _vrf_steps {
   my ($vrf, $protocols, $ipv6_answers, $state) = @_;
+  unless ($vrf =~ m/\A[A-Za-z0-9_.:-]+\z/ and lc $vrf ne 'all') {
+    $state->{unread}->{$vrf} = 1;
+    return ();
+  }
   my @steps = ([ $vrf, 4, "show ip arp vrf $vrf" ]);
   if (!$ipv6_answers) { return @steps }
   if (($protocols->{$vrf} // 'ipv6') =~ m/ipv6/i) {

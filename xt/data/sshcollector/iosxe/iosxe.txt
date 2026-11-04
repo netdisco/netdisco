@@ -1,5 +1,7 @@
 # IOS-XE (lab capture, IOL-XE 17.18), the sections IOSXE.pm reads
 #prompt: router#
+# The "terminal width 0" section is SYNTHETIC: it was not captured, it only mirrors the
+# captured "terminal length 0" shape
 #--- terminal length 0
 #--- terminal width 0
 #--- show vrf

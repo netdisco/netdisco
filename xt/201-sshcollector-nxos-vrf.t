@@ -109,7 +109,7 @@ subtest 'arpnip_by_vrf__single_row_as_hash__parsed' => sub {
 
 subtest 'arpnip_by_vrf__unknown_name_empty_reply__vrf_unread' => sub {
   my $text = with_output('show vrf | json',
-    '{"TABLE_vrf": {"ROW_vrf": [{"vrf_name": "red"}, {"vrf_name": "nosuchvrf"}]}}' . "\n");
+    '{"TABLE_vrf": {"ROW_vrf": [{"vrf_name": "red"}, {"vrf_name": "default"}, {"vrf_name": "nosuchvrf"}]}}' . "\n");
   $text .= "#--- " . nd('nosuchvrf') . "\n";
   my $result = by_vrf(fake_ssh(text => $text));
   is $result->{vrf_read}->{nosuchvrf}, 0, 'empty output is unread, not empty';
@@ -208,6 +208,24 @@ subtest 'arpnip_by_vrf__unnamable_vrf_row__list_incomplete' => sub {
     is $result->{vrf_list_complete}, 0, "list incomplete with row $rows";
     is $result->{vrf_read}->{red}, 1, 'the named VRF is still read';
   }
+};
+
+subtest 'arpnip_by_vrf__list_without_default__global_read_list_incomplete' => sub {
+  my $text = with_output('show vrf | json',
+    '{"TABLE_vrf": {"ROW_vrf": [{"vrf_name": "red"}, {"vrf_name": "blue"}]}}' . "\n");
+  my $ssh = fake_ssh(text => $text);
+  my $result = by_vrf($ssh);
+  is_deeply $result->{vrf_read}, { '' => 1, red => 1, blue => 1 }, 'the global table is read and reported';
+  is $result->{vrf_list_complete}, 0, 'a list that omits default is not vouched';
+  ok scalar(grep { $_ eq arp('default') } $ssh->commands), 'show ip arp vrf default was sent';
+};
+
+subtest 'arpnip_by_vrf__list_with_default__list_complete' => sub {
+  my $text = with_output('show vrf | json',
+    '{"TABLE_vrf": {"ROW_vrf": [{"vrf_name": "red"}, {"vrf_name": "default"}]}}' . "\n");
+  my $result = by_vrf(fake_ssh(text => $text));
+  is_deeply $result->{vrf_read}, { '' => 1, red => 1 }, 'default read once, as the empty name';
+  is $result->{vrf_list_complete}, 1, 'list complete';
 };
 
 subtest 'arpnip_by_vrf__afi_not_ipv6__vrf_unread' => sub {
