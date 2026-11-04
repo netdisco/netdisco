@@ -336,4 +336,80 @@ subtest 'cli_arpnip__session_fails__defers_and_vrf_read_untouched' => sub {
   }
 };
 
+# the SNMP fixture reports 10.40.0.5 / 00:11:22:33:44:07 in red; a flattening CLI
+# collector then reports hosts with no VRF
+sub merge_run {
+  my ($flat, %settings) = @_;
+  return run_arpnip(platform => FlatPlatform->new(flat => $flat),
+    snmp => { snmp_fixture() }, settings => \%settings);
+}
+
+subtest 'merge__switch_on__flattened_copy_of_named_entry_dropped' => sub {
+  merge_run([ { ip => '10.40.0.5', mac => '00:11:22:33:44:07' } ]);
+  is entries(), '10.40.0.5|00:11:22:33:44:07|red', 'only the red entry remains';
+  is scalar(grep { m/dropped 1 flattened/ } @logged), 1, 'one debug line with the count';
+};
+
+subtest 'merge__switch_off__nothing_dropped' => sub {
+  # a flat-path platform may hand back vrf keys; the switch alone decides
+  my @pair = ({ ip => '10.40.0.5', mac => '00:11:22:33:44:07', vrf => 'red' },
+              { ip => '10.40.0.5', mac => '00:11:22:33:44:07' });
+  foreach my $settings ({ store_vrfs => 0 }, { skip_vrf_devices => ['192.0.2.1'] }) {
+    run_arpnip(platform => FlatPlatform->new(flat => [ map { { %$_ } } @pair ]), settings => $settings);
+    is scalar(grep { m/dropped \d+ flattened/ } @logged), 0, 'no drop line';
+    is entries(), join(' ', sort '10.40.0.5|00:11:22:33:44:07|red', '10.40.0.5|00:11:22:33:44:07|-'),
+      'named entry and its empty-vrf twin both survive';
+  }
+};
+
+subtest 'merge__flattened_entry_with_no_named_twin__kept' => sub {
+  merge_run([ { ip => '192.0.2.10', mac => '00:11:22:33:44:01' } ]);
+  is entries(), join(' ', sort '10.40.0.5|00:11:22:33:44:07|red', '192.0.2.10|00:11:22:33:44:01|-'),
+    'unrelated flat entry kept';
+  is scalar(grep { m/dropped \d+ flattened/ } @logged), 0, 'no drop line';
+};
+
+subtest 'merge__dotted_and_colon_mac_forms__treated_as_one_host' => sub {
+  merge_run([ { ip => '10.40.0.5', mac => '0011.2233.4407' } ]);
+  is entries(), '10.40.0.5|00:11:22:33:44:07|red', 'dotted flat copy dropped';
+};
+
+subtest 'merge__same_ip_different_mac__kept' => sub {
+  merge_run([ { ip => '10.40.0.5', mac => '00:11:22:33:44:99' } ]);
+  is scalar(grep { $_->{ip} eq '10.40.0.5' } @stored), 2, 'a different host on the same IP is kept';
+};
+
+subtest 'merge__same_mac_different_ip__kept' => sub {
+  merge_run([ { ip => '10.40.0.6', mac => '00:11:22:33:44:07' } ]);
+  is scalar(grep { $_->{mac} eq '00:11:22:33:44:07' } @stored), 2, 'one MAC with two IPs keeps both';
+};
+
+subtest 'merge__node_key_instead_of_mac__treated_as_one_host' => sub {
+  merge_run([ { ip => '10.40.0.5', node => '00:11:22:33:44:07' } ]);
+  is entries(), '10.40.0.5|00:11:22:33:44:07|red', 'flat copy keyed by node dropped';
+};
+
+subtest 'merge__ipv6_short_and_long_forms__treated_as_one_address' => sub {
+  my %snmp = snmp_fixture();
+  $snmp{vrf}{red}{neighbors} = { v6 => { ip => '2001:db8::5', mac => '00:11:22:33:44:07' } };
+  run_arpnip(platform => FlatPlatform->new(flat => [
+      { ip => '2001:0db8:0000:0000:0000:0000:0000:0005', mac => '00:11:22:33:44:07' } ]),
+    snmp => \%snmp);
+  is scalar(@stored), 1, 'long-form flat copy dropped';
+  is $stored[0]{vrf}, 'red', 'the named entry remains';
+};
+
+subtest 'merge__unparsable_named_entry_before_valid_one__valid_twin_still_dropped' => sub {
+  my $drop = \&App::Netdisco::Worker::Plugin::Arpnip::Nodes::drop_flattened_twins;
+  my $device = App::Netdisco::DB->resultset('Device')->new_result({ %device_cols });
+  vars->{'arps'} = [
+    { ip => '10.40.0.9', mac => 'not-a-mac', vrf => 'red' },
+    { ip => '10.40.0.5', mac => '00:11:22:33:44:07', vrf => 'red' },
+    { ip => '10.40.0.5', mac => '00:11:22:33:44:07' },
+  ];
+  $drop->($device);
+  is scalar(@{ vars->{'arps'} }), 2, 'the flat twin of the valid named entry is dropped';
+  is_deeply [ map { $_->{vrf} // '-' } @{ vars->{'arps'} } ], [ 'red', 'red' ], 'both named entries remain';
+};
+
 done_testing;

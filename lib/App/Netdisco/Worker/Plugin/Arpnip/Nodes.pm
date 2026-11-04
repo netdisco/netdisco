@@ -44,6 +44,8 @@ register_worker({ phase => 'store', title => 'store ARP cache' }, sub {
   # it just makes the rest of the "store" code easier
   vars->{'arps'} = [ values %{ vars->{'arps'} } ];
 
+  drop_flattened_twins($device) if vrf_collection_enabled($device);
+
   vars->{'arps'} = [ grep { check_mac(($_->{node} || $_->{mac}), $device) }
                           @{ vars->{'arps'} } ];
 
@@ -105,6 +107,31 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
 
   return Status->done("Gathered arp caches from $device");
 });
+
+# a flattening CLI collector reports a host with no VRF that a VRF-aware driver
+# reported under its VRF in the same job; keep only the named one. Accepted
+# edge: a host really in both '' and a named VRF keeps only the named row.
+sub drop_flattened_twins {
+  my ($device) = @_;
+  my $key_of = sub {
+    my $entry = shift;
+    my $mac = NetAddr::MAC->new(mac => ($entry->{node} || $entry->{mac} || ''));
+    my $ip = NetAddr::IP::Lite->new($entry->{ip} || '');
+    return ($mac and $ip) ? join(chr(28), $mac->as_ieee, $ip->addr) : undef;
+  };
+
+  my %named = map { my $key = $key_of->($_); defined $key ? ($key => 1) : () }
+              grep { length($_->{vrf} // '') } @{ vars->{'arps'} };
+  return unless %named;
+
+  my @kept = grep { my $key = (length($_->{vrf} // '') ? undef : $key_of->($_));
+                    not (defined $key and $named{$key}) } @{ vars->{'arps'} };
+  my $dropped = scalar(@{ vars->{'arps'} }) - scalar(@kept);
+  vars->{'arps'} = \@kept;
+
+  debug sprintf ' [%s] arpnip - dropped %d flattened ARP entries also reported under a VRF',
+    $device->ip, $dropped if $dropped;
+}
 
 # store_vrfs path: each VRF's ARP and neighbor entries are read in its own
 # context, and vrf_read says which VRFs were read whole
