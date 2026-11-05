@@ -116,7 +116,7 @@ sub ip_inventory {
 
   my $one_per_ip = $union->search_rs({ ip => { '<<' => $subnet->cidr }, domain => { '!=' => undef } }, {
     select => [
-      \'DISTINCT ON (domain, ip) domain', 'ip', 'mac', 'dns',
+      \'DISTINCT ON (ip, domain) domain', 'ip', 'mac', 'dns',
       \q/date_trunc('second', time_last) AS time_last/,
       \q/date_trunc('second', time_first) AS time_first/,
       'active', 'node', 'age', 'vendor', 'nbname',
@@ -124,7 +124,7 @@ sub ip_inventory {
     as => [qw( domain ip mac dns time_last time_first active node age vendor nbname )],
     # a generated never-seen row (active and node both false) must lose to any
     # real binding, even an inactive one, or a seen address reads as never seen
-    order_by => [ {-asc => 'domain'}, {-asc => 'ip'},
+    order_by => [ {-asc => 'ip'}, {-asc => 'domain'},
                   \'CASE WHEN active AND NOT node THEN 0 WHEN active THEN 1 WHEN node THEN 2 ELSE 3 END',
                   \'time_last DESC NULLS LAST', {-asc => 'dns'}, {-asc => 'mac'} ],
   })->as_query;

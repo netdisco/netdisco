@@ -66,8 +66,8 @@ subtest 'ip_inventory__vendor__is_looked_up_after_the_limit' => sub {
 subtest 'ip_inventory__distinct_on__ranks_real_rows_above_generated_then_recency' => sub {
   # a generated never-seen row (active and node both false) must lose to any
   # real binding, even an inactive one, or a seen address reads as never seen
-  like($sql, qr/DISTINCT ON \(domain, ip\)/, 'one row per IP in each L3 domain');
-  like($sql, qr/ORDER BY domain ASC, ip ASC, CASE WHEN active AND NOT node THEN 0 WHEN active THEN 1 WHEN node THEN 2 ELSE 3 END, time_last DESC NULLS LAST, dns ASC, mac ASC/,
+  like($sql, qr/DISTINCT ON \(ip, domain\)/, 'one row per IP in each L3 domain');
+  like($sql, qr/ORDER BY ip ASC, domain ASC, CASE WHEN active AND NOT node THEN 0 WHEN active THEN 1 WHEN node THEN 2 ELSE 3 END, time_last DESC NULLS LAST, dns ASC, mac ASC/,
     'active device row, active node, inactive node, generated; then most recently seen, name, MAC');
 };
 

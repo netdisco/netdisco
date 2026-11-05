@@ -84,10 +84,12 @@ subtest 'subnet_utilization__sql__matches_addresses_within_one_domain' => sub {
     'the result class declares vrf');
 };
 
-subtest 'ip_inventory__distinct_on__domain_then_ip' => sub {
-  like($inventory_sql, qr/DISTINCT ON \(domain, ip\)/, 'one row per domain and IP');
-  like($inventory_sql, qr/ORDER BY domain ASC, ip ASC, CASE WHEN active AND NOT node THEN 0/,
-    'domain first, then the existing tie-break order');
+subtest 'ip_inventory__distinct_on__ip_then_domain' => sub {
+  like($inventory_sql, qr/DISTINCT ON \(ip, domain\)/, 'one row per IP and domain');
+  # ip leads the sort key: with every row in domain 0, a domain-first key
+  # made each comparison of a large sort fall through to ip
+  like($inventory_sql, qr/ORDER BY ip ASC, domain ASC, CASE WHEN active AND NOT node THEN 0/,
+    'ip, then domain, then the existing tie-break order');
   like($inventory_sql, qr/CASE WHEN me\.vrf = '' THEN 0 ELSE l3_domain_of\(me\.ip, me\.vrf\) END AS domain/,
     'device addresses take the domain of their own device');
   like($inventory_sql, qr/CASE WHEN me\.vrf = '' THEN 0 ELSE l3_domain_of\(me\.router_last, me\.vrf\) END AS domain/,
