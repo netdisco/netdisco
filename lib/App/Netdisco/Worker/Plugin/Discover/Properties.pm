@@ -12,7 +12,7 @@ use App::Netdisco::Util::DNS 'hostname_from_ip';
 use App::Netdisco::Util::SNMP qw/snmp_comm_reindex snmp_vrf_reindex get_mibdirs_shortnames walk_mark
   incomplete_walks incomplete_walks_for incomplete_walk_message incomplete_walk_level/;
 use App::Netdisco::Util::VRF qw/vrf_instances_for vrf_skipped netdisco_vrf each_vrf_instance/;
-use App::Netdisco::Util::L3Domain 'recompute_l3_domains';
+use App::Netdisco::Util::L3Domain qw/recompute_l3_domains l3_domain_recompute_needed/;
 use App::Netdisco::Util::Web 'sort_port';
 use App::Netdisco::Util::SNMPText qw/decode_snmp_text decode_text_with/;
 
@@ -420,7 +420,11 @@ sub _store_aliases_per_vrf {
   my @vrf_seen = ((map {{ vrf => $_->{vrf} }} @vrf_rows),
     map {{ vrf => $_ }} sort keys %stored_vrfs, _cli_listed_vrfs($device));
 
+  my $evidence_changed = 0;
   my $status = schema('netdisco')->txn_do(sub {
+    # read before the upsert, in the transaction that replaces the rows
+    my %before = _stored_vrf_evidence($device);
+    $evidence_changed = _evidence_changed(\%before, \@vrf_rows, \@vrf_seen);
     my $rs = schema('netdisco')->resultset('DeviceIp');
     $rs->upsert(\@rows);
     my $gone = $rs->remove_unseen({ ip => $device->ip }, \@seen);
@@ -437,7 +441,7 @@ sub _store_aliases_per_vrf {
       $device->ip, scalar @aliases, scalar @subnets, scalar @reads);
   });
 
-  _recompute_l3_domains_after($device);
+  _recompute_l3_domains_after($device, $evidence_changed);
   return $status;
 }
 
@@ -449,12 +453,48 @@ sub _cli_listed_vrfs {
     $device->vrfs(undef, { columns => [qw/vrf listed_by/], %hri })->all;
 }
 
+sub _stored_vrf_evidence {
+  my $device = shift;
+  return _named_vrf_evidence(schema('netdisco')->resultset('DeviceVrf')
+    ->search({ ip => $device->ip, vrf => { '!=' => '' } },
+      { columns => [qw/vrf rt_import rt_export l3_isid/],
+        result_class => 'DBIx::Class::ResultClass::HashRefInflator' })->all);
+}
+
+# Route-target sets are cleaned as the SQL key does (no NULL or empty, no
+# repeats, byte order), so a set that merely came back in another order is the
+# same evidence.
+sub _evidence_tuple {
+  my $row = shift;
+  my $clean = sub { my %seen; join ',', sort grep { defined and length and not $seen{$_}++ } @{ $_[0] || [] } };
+  return join "\0", $clean->($row->{rt_import}), $clean->($row->{rt_export}), $row->{l3_isid} // '';
+}
+
+sub _named_vrf_evidence {
+  return map { ($_->{vrf} => _evidence_tuple($_)) } grep { length($_->{vrf} // '') } @_;
+}
+
+# the named VRFs the device will hold once the refresh commits: the stored ones
+# the refresh keeps, with the rows it writes laid over them
+sub _evidence_changed {
+  my ($before, $written, $seen) = @_;
+  my %keep = map { ($_->{vrf} => 1) } @$seen;
+  my %after = (map { ($_ => $before->{$_}) } grep { $keep{$_} } keys %$before);
+  %after = (%after, _named_vrf_evidence(@$written));
+  return 0 if join("\n", map { "$_\t$before->{$_}" } sort keys %$before)
+    eq join("\n", map { "$_\t$after{$_}" } sort keys %after);
+  return 1;
+}
+
 # outside the discover transaction: the recompute is network-wide and takes its
 # own lock; the rows are committed, so a failure waits for the next discover
 sub _recompute_l3_domains_after {
-  my $device = shift;
-  try { recompute_l3_domains(schema('netdisco')) }
-  catch { warning sprintf ' [%s] device - L3 domain recompute failed, the next discover retries: %s',
+  my ($device, $evidence_changed) = @_;
+  try {
+    if (l3_domain_recompute_needed(schema('netdisco'), $evidence_changed)) { recompute_l3_domains(schema('netdisco')) }
+    else { debug sprintf ' [%s] device - L3 domain recompute skipped, no VRF evidence changed', $device->ip }
+  }
+  catch { warning sprintf ' [%s] device - L3 domain recompute failed, the next discover that finds a change retries: %s',
     $device->ip, $_ };
 }
 

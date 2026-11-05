@@ -51,11 +51,15 @@ package main;
 
 my $device = App::Netdisco::DB->resultset('Device')->new_result({ ip => '192.0.2.1' });
 
+# what xt/213 covers: vrf_domains, manual rows and legacy keys, asked of the database
+our $other_reason_to_recompute = 0;
+
 sub record {
   my ($rs, $vrf_read, $list_complete) = @_;
   my $recomputed = 0;
   no warnings 'redefine';
   local *App::Netdisco::Util::Node::schema = sub { FakeSchema->new($rs) };
+  local *App::Netdisco::Util::Node::l3_domain_recompute_needed = sub { $_[1] || $other_reason_to_recompute };
   local *App::Netdisco::Util::Node::recompute_l3_domains = sub { $recomputed++; 0 };
   my $changed = App::Netdisco::Util::Node::record_cli_vrfs($device, $vrf_read, $list_complete, 'LOCALTIMESTAMP');
   return ($changed, $recomputed);
@@ -104,6 +108,14 @@ subtest 'record_cli_vrfs__nothing_changed__no_recompute' => sub {
   my ($changed, $recomputed) = record($rs, { red => 1 }, 1);
   is($recomputed, 0, 'no recompute');
   ok(!$changed, 'reports no change');
+};
+
+subtest 'arpnip__cli_vrfs_unchanged_but_manual_rows__recompute' => sub {
+  local $other_reason_to_recompute = 1;
+  my $rs = FakeVrfRS->new(changed => 0);
+  my ($changed, $recomputed) = record($rs, { red => 1 }, 1);
+  is($recomputed, 1, 'recomputed although no row changed');
+  ok(!$changed, 'still reports no row change');
 };
 
 subtest 'record_cli_vrfs__no_vrf_read__no_upsert' => sub {

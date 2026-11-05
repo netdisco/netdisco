@@ -6,8 +6,8 @@ use warnings;
 # recompute_l3_domains puts each VRF in the domain of its evidence key (I-SID,
 # route targets, else the VRF name) unless a vrf_domains entry places it. It
 # owns the manual member rows too (xt/211), never deletes domain 0, and keeps
-# domain ids stable by reusing a domain that already has the key. It runs on every discover with
-# store_vrfs on, so it writes only what changed: an unchanged network deletes
+# domain ids stable by reusing a domain that already has the key. It runs after a discover with
+# store_vrfs on (xt/213 says when), so it writes only what changed: an unchanged network deletes
 # and inserts nothing. Only the database handle is faked; these check the SQL
 # and binds sent.
 

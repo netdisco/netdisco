@@ -13,6 +13,7 @@ use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
   recompute_l3_domains
+  l3_domain_recompute_needed
   manual_l3_entries
   manual_l3_members
   l3_domain_evidence_sql
@@ -187,7 +188,7 @@ An unchanged network and setting write nothing.
 Runs in one transaction under C<with_l3_domain_lock>. Returns the number of
 member rows inserted plus deleted plus domains renamed, so 0 means everything
 was already right. Discover calls it once per device, after the transaction
-that refreshes C<device_vrf> commits.
+that refreshes C<device_vrf> commits, when C<l3_domain_recompute_needed> says so.
 
 =cut
 
@@ -636,6 +637,92 @@ sub recompute_l3_domains {
   });
 
   return $written;
+}
+
+=head2 l3_domain_recompute_needed( $schema, $device_changed )
+
+True when a caller that has just refreshed one device's C<device_vrf> rows
+should run C<recompute_l3_domains>, false when the recompute would find
+nothing to change. It is true when any of these holds:
+
+=over 4
+
+=item 1. C<$device_changed> is true
+
+The caller found that the device's evidence changed (VRFs added or removed
+count). No SQL runs.
+
+=item 2. C<vrf_domains> is set
+
+Any non-empty value, a malformed one included, so that the recompute warns
+about it. Group membership can change with no device change, so a configured
+site recomputes every time.
+
+=item 3. C<l3_domain_member> holds a C<manual> row
+
+This covers removing the last C<vrf_domains> entry.
+
+=item 4. a domain other than 0 has an C<inferred_name> with no C<:>, or none
+
+A key from before the evidence keys. One cheap query re-keys it.
+
+=item 5. a named C<device_vrf> row has no C<l3_domain_member> row
+
+=item 6. an C<l3_domain_member> row has no C<device_vrf> row
+
+Both are primary-key anti-joins. They make a failed recompute that left rows
+unplaced be retried by the next discover anywhere.
+
+=item 7. a domain other than 0 has no member
+
+Deleting a device removes its C<device_vrf> and member rows together, so
+neither 5 nor 6 fires. The next discover anywhere then deletes the empty
+domain. It is checked last, as the most expensive.
+
+=back
+
+An evidence change on another device is recomputed by that device's own
+discover. A failed recompute after a pure route-target or I-SID change (no VRF
+added or removed) stays stale until the next change. So does the display name of a domain that
+lost members to a device delete but still has some (cosmetic).
+
+=cut
+
+# any non-empty value counts, whatever its type: a malformed one must reach the
+# recompute, which warns that the setting is ignored
+sub _vrf_domains_is_set {
+  my $entries = shift;
+  return 0 unless defined $entries;
+  return scalar(@$entries) ? 1 : 0 if ref $entries eq 'ARRAY';
+  return scalar(keys %$entries) ? 1 : 0 if ref $entries eq 'HASH';
+  return length($entries) ? 1 : 0;
+}
+
+sub l3_domain_recompute_needed {
+  my ($schema, $device_changed) = @_;
+  return 1 if $device_changed;
+  return 1 if _vrf_domains_is_set(setting('vrf_domains'));
+
+  return $schema->storage->dbh_do(sub {
+    my (undef, $dbh) = @_;
+    $dbh->selectrow_array($_) and return 1 for _recompute_needed_sql();
+    return 0;
+  });
+}
+
+# cheapest first, and the caller stops at the first true
+sub _recompute_needed_sql {
+  return (
+    q{SELECT EXISTS (SELECT 1 FROM l3_domain_member WHERE source = 'manual')},
+    q{SELECT EXISTS (SELECT 1 FROM l3_domain
+      WHERE id <> 0 AND (inferred_name IS NULL OR position(':' IN inferred_name) = 0))},
+    q{SELECT EXISTS (SELECT 1 FROM device_vrf d WHERE d.vrf <> ''
+      AND NOT EXISTS (SELECT 1 FROM l3_domain_member m WHERE m.ip = d.ip AND m.vrf = d.vrf))},
+    q{SELECT EXISTS (SELECT 1 FROM l3_domain_member m WHERE NOT EXISTS
+      (SELECT 1 FROM device_vrf d WHERE d.ip = m.ip AND d.vrf = m.vrf))},
+    q{SELECT EXISTS (SELECT 1 FROM l3_domain d WHERE d.id <> 0
+      AND NOT EXISTS (SELECT 1 FROM l3_domain_member m WHERE m.domain_id = d.id))},
+  );
 }
 
 =head2 with_l3_domain_lock( $schema, \&code )
