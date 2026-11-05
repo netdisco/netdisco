@@ -106,13 +106,15 @@ subtest 'ip_inventory__distinct_on__ip_then_domain' => sub {
 
 subtest 'shipped_reports__shared_and_duplicate__group_by_domain' => sub {
   my $shared = $report{devicesharedaddresses}{query};
-  like($shared, qr/GROUP BY domain, alias\b/, 'shared addresses group by domain and alias');
+  like($shared, qr/GROUP BY domain, alias, ld\.name\b/, 'shared addresses group by domain and alias');
   like($shared, qr/domain IS NOT NULL/, 'and leave out a row with no single domain');
   my $duplicate = $report{duplicateprivatenetworks}{query};
-  like($duplicate, qr/GROUP BY domain, subnet\b/, 'duplicate networks group by domain and subnet');
+  like($duplicate, qr/GROUP BY domain, subnet, ld\.name\b/, 'duplicate networks group by domain and subnet');
   like($duplicate, qr/domain IS NOT NULL/, 'and leave out a row with no single domain');
   is_deeply([ map { grep { !/^_/ } keys %$_ } @{ $report{devicesharedaddresses}{columns} } ],
-    [qw/alias count/], 'shared addresses keep their columns');
+    [qw/alias vrf count/], 'shared addresses gain only the VRF column');
+  is_deeply([ map { grep { !/^_/ } keys %$_ } @{ $report{duplicateprivatenetworks}{columns} } ],
+    [qw/subnet vrf count seen/], 'duplicate networks gain only the VRF column');
 };
 
 subtest 'shipped_reports__multiple_addresses__count_distinct_alias' => sub {

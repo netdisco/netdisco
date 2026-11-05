@@ -375,15 +375,17 @@ system_reports:
     category: Device
     columns:
       - { 'alias': 'Interface IP', _searchable: true }
+      - { 'vrf': 'VRF', _omit_if_empty: true, _empty_as: 'default' }
       - { 'count': 'Instance Count' }
     query: |
-      SELECT alias, count(DISTINCT ip)
+      SELECT alias, ld.name AS vrf, count(DISTINCT ip)
         FROM (SELECT di.ip, di.alias,
                 CASE WHEN di.vrf = '' THEN 0 ELSE l3_domain_of(di.ip, di.vrf) END AS domain
               FROM device_ip di
               WHERE di.alias != '127.0.0.1') AS di
+        JOIN l3_domain ld ON ld.id = di.domain
         WHERE domain IS NOT NULL
-        GROUP BY domain, alias
+        GROUP BY domain, alias, ld.name
         HAVING count(DISTINCT ip) > 1
         ORDER BY count(DISTINCT ip) DESC, alias ASC, domain ASC
   - tag: recentlyaddeddevices
@@ -428,10 +430,11 @@ system_reports:
     label: 'Duplicate Private Networks'
     columns:
       - { subnet: 'Subnet', _searchable: true }
+      - { vrf: 'VRF', _omit_if_empty: true, _empty_as: 'default' }
       - { count: 'Instances' }
       - { seen: 'Where Seen', _searchable: true }
     query: |
-      SELECT subnet, count(subnet), array_agg(host(alias)::text || ' on ' || host(ip)::text) AS seen
+      SELECT subnet, ld.name AS vrf, count(subnet), array_agg(host(alias)::text || ' on ' || host(ip)::text) AS seen
         FROM (SELECT di.ip, di.alias, di.subnet,
                 CASE WHEN di.vrf = '' THEN 0 ELSE l3_domain_of(di.ip, di.vrf) END AS domain
               FROM device_ip di
@@ -442,8 +445,9 @@ system_reports:
                 OR di.subnet << '192.168.0.0/16'
                 OR di.subnet << '100.64.0.0/10'
                 OR di.subnet << 'fd00::/8')) AS di
+        JOIN l3_domain ld ON ld.id = di.domain
         WHERE domain IS NOT NULL
-        GROUP BY domain, subnet
+        GROUP BY domain, subnet, ld.name
         HAVING count(subnet) > 1
         ORDER BY subnet, domain
   - tag: vlansonlyuplinks

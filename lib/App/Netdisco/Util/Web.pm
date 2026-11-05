@@ -32,6 +32,7 @@ our @EXPORT_OK = qw/
   pane_history_header
   escape_for_script_context
   escape_results_token
+  omit_empty_columns
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -679,6 +680,36 @@ sub escape_results_token {
 
   $tokens->{results} = escape_for_script_context( $tokens->{results} );
   return $tokens;
+}
+
+=head2 omit_empty_columns( \@rows, \@column_order, \%column_config )
+
+Applies two column options of a configured report and returns the columns to
+show, in order. C<_omit_if_empty> leaves a column out when no row has a value
+for it, and deletes its key from every row. C<_empty_as> gives the text an empty
+cell shows when the column is kept. A missing key counts as empty. Rows are
+changed in place.
+
+=cut
+
+sub omit_empty_columns {
+  my ($rows, $column_order, $column_config) = @_;
+  my @kept;
+  foreach my $col (@$column_order) {
+    my $options = $column_config->{$col} || {};
+    my $has_value = grep { defined $_->{$col} and $_->{$col} ne '' } @$rows;
+    if ($options->{_omit_if_empty} and not $has_value) {
+      delete $_->{$col} for @$rows;
+      next;
+    }
+    if (defined $options->{_empty_as}) {
+      foreach my $row (grep { not defined $_->{$col} or $_->{$col} eq '' } @$rows) {
+        $row->{$col} = $options->{_empty_as};
+      }
+    }
+    push @kept, $col;
+  }
+  return @kept;
 }
 
 1;
