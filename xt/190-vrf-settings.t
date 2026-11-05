@@ -149,10 +149,11 @@ subtest 'vrf_instances_for__incomplete_walk__still_returns_names' => sub {
   }, store_vrfs => 1);
 };
 
-subtest 'build_pl__snmp_info_floor__3_985000' => sub {
+# 3.985001 has vrf_read_leaked and vrf_exclude_ports (snmp-info #682)
+subtest 'build_pl__snmp_info_floor__3_985001' => sub {
   open my $fh, '<', 'Build.PL' or die "Build.PL: $!";
   my $text = do { local $/; <$fh> };
-  like($text, qr/'SNMP::Info'\s*=>\s*'3\.985000'/, 'floor is 3.985000');
+  like($text, qr/'SNMP::Info'\s*=>\s*'3\.985001'/, 'floor is 3.985001');
 };
 
 done_testing;
