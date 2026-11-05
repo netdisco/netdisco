@@ -262,4 +262,35 @@ subtest 'node_search_templates__named_vrf__labels_local_vrf' => sub {
   like($alias, qr/10\.250\.1\.51<\/a>.*?in VRF red/s, 'node_by_ip labels a MAC\'s other addresses too');
 };
 
+# Ports tab connected nodes: each node IP is labeled with its local VRF, like
+# the "(on vlan N)" note beside a node whose VLAN differs from the port's.
+sub port_nodes_html {
+  my @ips = @_;
+  my $node = { active => 1, vlan => 10, net_mac => { as_ieee => '00:1c:73:aa:00:01' },
+               stitched_ips => \@ips, wireless => [] };
+  my ($html, $error) = render_template('ajax/device/port_nodes.tt', {
+    row => { vlan => 10, stitched_nodes => [ $node ] },
+    params => { n_ip4 => 1, n_ip6 => 1, n_dns => 1 }, settings => { devport_ips_collapse_threshold => 10 },
+    mac_format_call => 'as_ieee', search_node => '/search?tab=node',
+  });
+  is($error, undef, 'port_nodes renders');
+  return $html // '';
+}
+
+subtest 'port_nodes__default_rows__render_as_before' => sub {
+  my $with = port_nodes_html({ ip => '10.250.1.50', dns => 'host50', active => 1, vrf => '' },
+                             { ip => '10.250.1.51', active => 1, vrf => '' });
+  my $without = port_nodes_html({ ip => '10.250.1.50', dns => 'host50', active => 1 },
+                                { ip => '10.250.1.51', active => 1 });
+  is($with, $without, 'a default-table IP renders as an IP without vrf');
+  unlike($with, qr/in VRF/, 'no VRF label');
+};
+
+subtest 'port_nodes__named_vrf__labels_each_ip' => sub {
+  my $html = port_nodes_html({ ip => '10.250.1.50', dns => 'host50', active => 1, vrf => 'blue' },
+                             { ip => '10.250.1.51', active => 1, vrf => '<b>R&D</b>' });
+  like($html, qr/\(10\.250\.1\.50\)<\/a>\s*in VRF blue/, 'label after the IP shown with its name');
+  like($html, qr/10\.250\.1\.51<\/a>\s*in VRF &lt;b&gt;R&amp;D&lt;\/b&gt;/, 'label after a bare IP, escaped');
+};
+
 done_testing;
