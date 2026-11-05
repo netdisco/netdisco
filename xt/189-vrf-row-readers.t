@@ -113,8 +113,6 @@ subtest 'audit__left_as_they_are__unchanged' => sub {
       [ 'SELECT 1 FROM device_ip di WHERE di.alias = device_port.remote_ip' ],
     'lib/App/Netdisco/DB/Result/Virtual/UndiscoveredNeighbors.pm' =>
       [ 'AND ((p.remote_ip NOT IN (SELECT alias FROM device_ip))' ],
-    'lib/App/Netdisco/Web/Plugin/Device/Addresses.pm' =>
-      [ 'my @results = $device->device_ips' ],
     'lib/App/Netdisco/Web/Plugin/Device/Details.pm' =>
       [ 'my @interfaces = $device->device_ips->hri->all;' ],
     'lib/App/Netdisco/Web/Plugin/Search/Node.pm' =>

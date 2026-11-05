@@ -16,6 +16,8 @@ use lib 'xt/lib';
 use Test::Netdisco::Snapshot qw/render_template snapshot_path/;
 
 use App::Netdisco::Util::Web 'omit_empty_columns';
+use App::Netdisco::Util::L3Domain qw/results_span_domains label_rows_by_domain/;
+use JSON::PP ();
 
 my %report = map { ($_->{tag} => $_) }
   @{ YAML::XS::LoadFile('share/config.yml')->{system_reports} };
@@ -82,6 +84,81 @@ subtest 'generic_report_csv__vrf_kept__header_and_row_arity_match' => sub {
   my @lines = grep { /\S/ } split /\r?\n/, $csv;
   is(scalar @lines, 3, 'header and two rows');
   is_deeply([ map { scalar(() = /,/g) } @lines ], [2, 2, 2], 'three fields on every line');
+};
+
+# The Addresses tab lists one device's own addresses, so it labels each with
+# the device's local VRF name (design 4.10), through the same helpers as the
+# domain-aware reports.
+sub address_rows {
+  my @vrfs = @_;
+  return [ map { { alias => '10.250.1.1', vrf => $_, dns => 'leaf01-vlan10',
+                   port => 'Vlan10', subnet => '10.250.1.0/24',
+                   device_port => { name => 'servers' } } } @vrfs ];
+}
+
+sub addresses_stash {
+  my ($rows, $csv) = @_;
+  my $multi = results_span_domains($rows);
+  my $labeled = label_rows_by_domain($rows, $multi);
+  return { results => ($csv ? $labeled : JSON::PP->new->canonical->encode($labeled)),
+           multi_domain => $multi, user_has_role => sub { 0 } };
+}
+
+subtest 'addresses_templates__default_only__no_vrf_column' => sub {
+  my $rows = address_rows('', '');
+  my ($html, $error) = render_template('ajax/device/addresses.tt', addresses_stash($rows));
+  is($error, undef, 'renders');
+  unlike($html, qr/VRF|"vrf"/, 'no VRF column and no vrf key in the data');
+  my ($csv) = render_template('ajax/device/addresses_csv.tt', addresses_stash($rows, 1));
+  like($csv, qr/^Address,DNS,Interface,Description,Prefix\r?$/m, 'CSV header as before');
+};
+
+subtest 'addresses_templates__two_vrfs__vrf_column_after_address' => sub {
+  my $rows = address_rows('', 'blue');
+  my ($html, $error) = render_template('ajax/device/addresses.tt', addresses_stash($rows));
+  is($error, undef, 'renders');
+  like($html, qr{<th>Address</th>\s*<th>VRF</th>}, 'VRF header after Address');
+  like($html, qr/\{"data":"alias","render":"escape"\},\s*\{"data":"vrf","render":"escape"\}/,
+    'VRF is the second column');
+  like($html, qr/"vrf":"default"/, 'default table reads default');
+  like($html, qr/"vrf":"blue"/, 'named VRF by its local name');
+
+  my ($csv) = render_template('ajax/device/addresses_csv.tt', addresses_stash($rows, 1));
+  my @lines = grep { /\S/ } split /\r?\n/, $csv;
+  is($lines[0], 'Address,VRF,DNS,Interface,Description,Prefix', 'CSV header');
+  is_deeply([ map { scalar(() = /,/g) } @lines ], [5, 5, 5], 'six fields on every line');
+  like($lines[2], qr/^10\.250\.1\.1,blue,/, 'CSV row carries the VRF');
+
+  SKIP: {
+    skip 'xt/snapshots is not shipped in the distribution', 2 unless -d 'xt/snapshots';
+    foreach my $pair (['ajax/device/addresses.tt', $html], ['ajax/device/addresses_csv.tt', $csv]) {
+      my ($view, $got) = @$pair;
+      my $path = snapshot_path($view) =~ s/\.html\z/.two-domains.html/r;
+      if ($ENV{ND_WRITE_DOMAIN_SNAPSHOTS}) {
+        open my $fh, '>:encoding(UTF-8)', $path or die "$path: $!";
+        print {$fh} $got;
+        close $fh;
+      }
+      open my $fh, '<:encoding(UTF-8)', $path or do { fail("$path is missing"); next };
+      my $want = do { local $/; <$fh> };
+      is($got, $want, "$view matches $path");
+    }
+  }
+};
+
+subtest 'addresses_templates__vrf_name__escaped' => sub {
+  my $rows = address_rows('', '<b>R&D</b>');
+  my ($html) = render_template('ajax/device/addresses.tt', addresses_stash($rows));
+  unlike($html, qr/<b>R&D/, 'no raw markup in the page');
+  like($html, qr/\\u003cb>R&D/, 'the data block escapes <');
+};
+
+subtest 'addresses_controller__shapes_rows_by_vrf' => sub {
+  my $src = do { local (@ARGV, $/) = 'lib/App/Netdisco/Web/Plugin/Device/Addresses.pm'; <> };
+  like($src, qr/results_span_domains\(\\\@results\)/, 'decides the column from the rows');
+  like($src, qr/label_rows_by_domain\(\\\@results, \$multi_domain\)/, 'labels or drops vrf');
+  my $passes = () = $src =~ /multi_domain => \$multi_domain/g;
+  is($passes, 2, 'both templates get the flag');
 };
 
 done_testing;
