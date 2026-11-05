@@ -319,7 +319,8 @@ sub gather_arps_by_vrf_cli {
     # entries from a VRF the platform did not report reading prove no read
     $vrf_read{$vrf} = 0 unless exists $vrf_read{$vrf};
     my $arp = { %$entry, vrf => $vrf };
-    vars->{'arps'}->{ memoize_arp($arp) } = $arp;
+    # a global table may list VRF hosts too (IOS XR's show ipv6 neighbors)
+    cache_arp($arp, ($vrf eq ''));
   }
 
   delete @vrf_read{ grep { vrf_skipped($device, $_) } keys %vrf_read };

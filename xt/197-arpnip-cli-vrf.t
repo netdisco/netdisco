@@ -462,6 +462,28 @@ subtest 'merge__partial_snmp_default_read__twin_dropped' => sub {
   is scalar(grep { m/dropped 1 flattened/ } @logged), 1, 'one debug line with the count';
 };
 
+# IOS XR's global show ipv6 neighbors also lists every VRF's neighbors
+subtest 'cli_arpnip__global_table_lists_a_vrf_host__default_copy_dropped' => sub {
+  my $platform = ReportingPlatform->new(by_vrf => by_vrf(entries => [
+    { ip => '2001:db8:60::2', mac => '02:00:00:00:06:01', vrf => '' },
+    { ip => '2001:db8:60::2', mac => '02:00:00:00:06:01', vrf => 'red' },
+    { ip => '192.0.2.10', mac => '00:11:22:33:44:01', vrf => '' },
+  ]));
+  run_arpnip(platform => $platform);
+  is entries(), join(' ', sort '2001:db8:60::2|02:00:00:00:06:01|red', '192.0.2.10|00:11:22:33:44:01|'),
+    'the default-table copy of the red host is dropped, the default host kept';
+};
+
+subtest 'cli_arpnip__whole_snmp_default_entry_and_cli_global_copy__snmp_entry_wins' => sub {
+  my $platform = ReportingPlatform->new(by_vrf => by_vrf(entries => [
+    { ip => '10.40.0.5', mac => '00:11:22:33:44:07', vrf => '' },
+    { ip => '10.40.0.5', mac => '00:11:22:33:44:07', vrf => 'red' },
+  ]));
+  run_arpnip(platform => $platform, snmp => snmp_with_default_twin(1));
+  is entries(), join(' ', sort '10.40.0.5|00:11:22:33:44:07|red', '10.40.0.5|00:11:22:33:44:07|'),
+    'the whole SNMP default read still vouches for its genuine twin';
+};
+
 subtest 'merge__whole_snmp_default_entry_and_cli_flat_copy__snmp_entry_wins' => sub {
   # the CLI driver runs after SNMP and its flat copy has the same cache key
   run_arpnip(platform => FlatPlatform->new(flat => [ { ip => '10.40.0.5', mac => '00:11:22:33:44:07' } ]),
