@@ -768,7 +768,7 @@ sub _port_rows {
 # Whether this is a site's ajax/device/ports.tt from before the neighbor's
 # MAC came as neighbor_net_mac: one that reads stitched_nodes, where it used
 # to find it, and not neighbor_net_mac. TT comments are left out, so a note
-# naming either decides nothing. The site-local rule ports-neighbor-mac tells
+# naming either decides nothing. The site-local rule ports-row-keys tells
 # the admin about such a copy.
 sub _ports_template_is_legacy {
     my ($text) = @_;
