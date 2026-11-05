@@ -117,7 +117,7 @@ sub snmp_fixture {
   );
 }
 
-our (@stored, @logged, @informed, @retired);
+our (@stored, @logged, @informed, @retired, @cli_vrfs);
 
 sub with_settings {
   my ($code, %settings) = @_;
@@ -134,7 +134,7 @@ sub with_settings {
 sub run_arpnip {
   my (%args) = @_;
   delete @{ vars() }{qw/arps timestamp hook_data/};
-  @stored = (); @logged = (); @informed = (); @retired = ();
+  @stored = (); @logged = (); @informed = (); @retired = (); @cli_vrfs = ();
 
   my $device = App::Netdisco::DB->resultset('Device')->new_result({ %device_cols });
   $device->in_storage(1);
@@ -150,12 +150,13 @@ sub run_arpnip {
   local *App::Netdisco::Transport::SNMP::reader_for = sub { return $fake_snmp };
   local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::store_arp = sub { push @stored, { %{ $_[0] } } };
   # device_vrf writes need a database; xt/209 covers record_cli_vrfs
-  local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::record_cli_vrfs = sub { 0 };
+  local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::record_cli_vrfs = sub { push @cli_vrfs, [ { %{ $_[1] } }, $_[2] ]; die "deadlock\n" if $args{record_dies}; 0 };
   local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::retire_unvouched_arps = sub { push @retired, [ @_[2, 3] ]; 0 };
   # the store phase looks up the device's own MACs and addresses; xt/203 covers that
   local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::own_identity = sub { return ({}, {}, {}) };
   local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::debug = sub { push @logged, join '', @_ };
   local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::info = sub { push @informed, join '', @_ };
+  local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::warning = sub { push @logged, join '', @_ };
   local *App::Netdisco::DB::Result::Device::update = sub { return $_[0] };
 
   my $job = App::Netdisco::Backend::Job->new({
@@ -241,6 +242,22 @@ subtest 'cli_arpnip__skipped_vrf__entries_dropped' => sub {
   ok !exists vars->{'vrf_read'}{blue}, 'blue absent from vrf_read, so it retires as skipped';
   run_arpnip(platform => $platform, settings => { vrf_no_devicevrf => ['192.0.2.1:red'] });
   is scalar(grep { $_->{vrf} eq 'red' } @stored), 0, 'vrf_no_devicevrf drops red';
+};
+
+subtest 'cli_arpnip__vrfs_read__recorded_once_without_skipped' => sub {
+  run_arpnip(platform => ReportingPlatform->new(by_vrf => by_vrf()), settings => { vrf_no_name => ['blue'] });
+  is_deeply \@cli_vrfs, [ [ { '' => 1, red => 1 }, 1 ] ], 'what was read, skipped blue left out, with the list state';
+  run_arpnip(platform => ReportingPlatform->new(by_vrf => by_vrf()), settings => { store_vrfs => 0 });
+  is_deeply \@cli_vrfs, [], 'nothing recorded with the switch off';
+  run_arpnip(platform => FlatPlatform->new(flat => [@flat]));
+  is_deeply \@cli_vrfs, [], 'nothing recorded for a collector that reads no VRF';
+};
+
+subtest 'cli_arpnip__recording_vrfs_fails__entries_still_retired_and_job_done' => sub {
+  my $job = run_arpnip(platform => ReportingPlatform->new(by_vrf => by_vrf()), record_dies => 1);
+  is $job->status, 'done', 'arpnip done';
+  is scalar(@retired), 1, 'retirement still ran';
+  ok scalar(grep { m/recording the VRFs read failed.*deadlock/ } @logged), 'the failure is logged';
 };
 
 subtest 'cli_arpnip__one_vrf_incomplete__others_complete_in_vrf_read' => sub {

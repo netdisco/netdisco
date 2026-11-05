@@ -283,7 +283,7 @@ sub record_cli_vrfs {
   return 0 unless $changed;
 
   try { recompute_l3_domains(schema(vars->{'tenant'})) }
-  catch { warning sprintf ' [%s] arpnip - L3 domain recompute failed, the next arpnip retries: %s',
+  catch { warning sprintf ' [%s] arpnip - L3 domain recompute failed, the next discover retries: %s',
     $device->ip, $_ };
   return $changed;
 }

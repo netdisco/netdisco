@@ -75,8 +75,12 @@ register_worker({ phase => 'store', title => 'store ARP cache' }, sub {
 
   my $now = vars->{'timestamp'};
   store_arp(\%$_, $now, $device->ip) for @{ vars->{'arps'} };
-  record_cli_vrfs($device, vars->{'cli_vrf_list'}{read}, vars->{'cli_vrf_list'}{complete}, $now)
-    if vars->{'cli_vrf_list'} and vrf_collection_enabled($device);
+  if (vars->{'cli_vrf_list'} and vrf_collection_enabled($device)) {
+      # the entries are stored, so a failed write only delays the VRFs' domains
+      try { record_cli_vrfs($device, vars->{'cli_vrf_list'}{read}, vars->{'cli_vrf_list'}{complete}, $now) }
+      catch { warning sprintf ' [%s] arpnip - recording the VRFs read failed, the next arpnip retries: %s',
+        $device->ip, $_ };
+  }
 
   debug sprintf ' [%s] arpnip - processed %s ARP Cache entries',
     $device->ip, $v4;

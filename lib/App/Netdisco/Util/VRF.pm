@@ -167,10 +167,15 @@ sub each_vrf_instance {
                         and not _has_no_context($instances->{$_}) } @named;
   my $log_as = $options{log_as} || 'device';
 
+  # a partial default read is reported only once it is known not to be
+  # completed below, so a log never says rows are kept that then retire
+  my $default_partial;
   my %reads = map {
-    (netdisco_vrf($_) => _read_instance($device, $snmp, $_, $instances->{$_}, $reader, 0, \%options))
+    (netdisco_vrf($_) => _read_instance($device, $snmp, $_, $instances->{$_}, $reader, 0, \%options,
+      ($_ eq 'default' ? \$default_partial : undef)))
   } @in_place;
   my $leaked = _leaked_instances($snmp, $reads{''});
+  debug $default_partial if defined $default_partial and not $leaked;
   my %leaked_ports;
 
   foreach my $name (@unserved) {
@@ -227,6 +232,12 @@ sub _leaked_ports {
 sub _complete_default_read {
   my ($device, $snmp, $instances, $reader, $reads, $leaked, $ports, $guard, $options) = @_;
   my $log_as = $options->{log_as} || 'device';
+  my @skipped = grep { not $instances->{$_} } @$leaked;
+  if (@skipped) {
+    debug sprintf ' [%s] %s - default read stays partial: %s is not collected (vrf_no_name or vrf_no_devicevrf)',
+      $device->ip, $log_as, join(', ', @skipped);
+    return;
+  }
   my @unread = grep { not $ports->{$_} } @$leaked;
   if (@unread) {
     debug sprintf ' [%s] %s - default read stays partial: %s not read whole in their own context',
@@ -274,7 +285,7 @@ sub _context_answers {
 }
 
 sub _read_instance {
-  my ($device, $snmp, $name, $instance, $reader, $switched, $options) = @_;
+  my ($device, $snmp, $name, $instance, $reader, $switched, $options, $deferred_log) = @_;
   my $walk_mark = walk_mark($snmp);
   # error() returns any error pending since it was last read; discard it, so
   # the one logged below is one this read set
@@ -285,8 +296,9 @@ sub _read_instance {
     @{ $options->{walk_methods} || [] });
   if (not $complete) {
     my $error = $snmp->error;
-    debug sprintf ' [%s] %s - VRF %s read incomplete, keeping its rows%s',
+    my $line = sprintf ' [%s] %s - VRF %s read incomplete, keeping its rows%s',
       $device->ip, ($options->{log_as} || 'device'), $name, (defined $error ? ": $error" : '');
+    if ($deferred_log) { $$deferred_log = $line } else { debug $line }
   }
   return { complete => $complete, data => $data };
 }

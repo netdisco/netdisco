@@ -52,7 +52,10 @@ sub walk_failures { $_[0]{walk_failures} }
 sub error { my $self = shift; my $error = $self->{error}; $self->{error} = undef; return $error }
 sub update {
   my ($self, %args) = @_;
-  $self->{context} = ($args{Community} =~ m/\@(.+)$/ ? $1 : '');
+  my $target = ($args{Community} =~ m/\@(.+)$/ ? $1 : '');
+  # SNMP::Info::update() keeps the old session and returns false on failure
+  return if $self->{fail_update_to}{$target};
+  $self->{context} = $target;
   $self->{updates}++;
   # update() calls clear_cache(), which forgets recorded exclusions
   $self->{excluded} = {};
@@ -187,6 +190,49 @@ subtest 'each_vrf_instance__exclusion_refused__keeps_first_read' => sub {
   is(default_reads($read), 1, 'default not read again');
   is($reads->{''}{complete}, 0, 'default stays partial');
   ok((grep { m/default read stays partial/ and m/refused/ } @logged), 'the refusal is logged with its error');
+};
+
+sub logged_run {
+  my ($snmp, $instances) = @_;
+  my @logged;
+  no warnings 'redefine';
+  local *App::Netdisco::Util::VRF::debug = sub { push @logged, "@_" };
+  my ($reads, $read) = run_each($snmp, $instances);
+  return ($reads, \@logged);
+}
+
+subtest 'each_vrf_instance__leaked_default_completed__no_incomplete_line' => sub {
+  my ($reads, $logged) = logged_run(FakeLeakSNMP->new(leaks => ['red'], %red_ports));
+  is($reads->{''}{complete}, 1, 'default whole');
+  ok(!(grep { m/VRF default read incomplete/ } @$logged), 'the first read is not reported as kept partial');
+};
+
+subtest 'each_vrf_instance__older_snmp_info__incomplete_line_kept' => sub {
+  my (undef, $logged) = logged_run(FakeSNMP->new(leaks => ['red'], %red_ports));
+  ok((grep { m/VRF default read incomplete, keeping its rows/ } @$logged), 'logged as before');
+};
+
+subtest 'each_vrf_instance__leaked_instance_skipped__default_partial_and_named_as_skipped' => sub {
+  my %without_blue = %instances; delete $without_blue{blue};
+  my $snmp = FakeLeakSNMP->new(leaks => ['blue', 'red'], %red_ports);
+  my ($reads, $logged) = logged_run($snmp, \%without_blue);
+  is_deeply($snmp->{exclusions}, [], 'no exclusion');
+  is($reads->{''}{complete}, 0, 'default stays partial');
+  ok((grep { m/default read stays partial: blue is not collected/ } @$logged), 'the skip is named as the cause');
+  ok(!(grep { m/blue not read whole/ } @$logged), 'not reported as a failed read');
+};
+
+# the guard is dismissed only once the session is back in default, so a failed
+# return still drops the cached reader instead of leaving it in a VRF context
+subtest 'each_vrf_instance__return_to_default_fails__first_read_stands_and_session_dropped' => sub {
+  my $snmp = FakeLeakSNMP->new(leaks => ['red'], fail_update_to => { '' => 1 }, %red_ports);
+  my $readers = App::Netdisco::Transport::SNMP->instance->readers;
+  $readers->{ $device->ip } = $snmp;
+  my ($reads, $read) = do { no warnings 'redefine'; local *App::Netdisco::Util::VRF::warning = sub {}; run_each($snmp) };
+  is_deeply($snmp->{exclusions}, [], 'no exclusion recorded outside the default context');
+  is(default_reads($read), 1, 'default read once');
+  is($reads->{''}{complete}, 0, 'default stays partial');
+  ok(!exists $readers->{ $device->ip }, 'cached reader dropped, so the next reader_for reconnects');
 };
 
 done_testing;

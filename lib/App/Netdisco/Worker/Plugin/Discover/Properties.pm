@@ -441,8 +441,6 @@ sub _store_aliases_per_vrf {
   return $status;
 }
 
-# outside the discover transaction: the recompute is network-wide and takes its
-# own lock; the rows are committed, so a failure waits for the next discover
 # VRFs a CLI collector recorded (record_cli_vrfs) are that collector's to retire
 sub _cli_listed_vrfs {
   my $device = shift;
@@ -451,6 +449,8 @@ sub _cli_listed_vrfs {
     $device->vrfs(undef, { columns => [qw/vrf listed_by/], %hri })->all;
 }
 
+# outside the discover transaction: the recompute is network-wide and takes its
+# own lock; the rows are committed, so a failure waits for the next discover
 sub _recompute_l3_domains_after {
   my $device = shift;
   try { recompute_l3_domains(schema('netdisco')) }

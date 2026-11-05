@@ -122,10 +122,7 @@ subtest 'arpnip__cli_vrf_list__saved_by_the_cli_worker_and_reset_each_job' => su
   like($nodes, qr/delete \@\{ vars\(\) \}\{qw\/[^\/]*\bcli_vrf_list\b[^\/]*\/\}/, 'reset in early with the other VRF keys');
 };
 
-subtest 'arpnip__store_phase__records_cli_vrfs_only_with_collection_on' => sub {
-  like($nodes, qr/record_cli_vrfs\(\$device, vars->\{'cli_vrf_list'\}\{read\}, vars->\{'cli_vrf_list'\}\{complete\}, \$now\)\s*\n\s*if vars->\{'cli_vrf_list'\} and vrf_collection_enabled\(\$device\);/,
-    'called from the store phase, only with store_vrfs on and a CLI list');
-};
+# the store phase's call, its arguments and its failure handling: xt/197
 
 subtest 'discover__cli_listed_vrfs__kept_by_remove_unseen' => sub {
   like($properties, qr/_cli_listed_vrfs\(\$device\)/, 'discover reads the CLI-listed VRFs');
