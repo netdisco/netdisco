@@ -19,7 +19,7 @@ my $sql = l3_domain_evidence_sql();
 
 my $sorted = sub {
   my $column = shift;
-  return quotemeta("array_to_string(ARRAY(SELECT DISTINCT x FROM unnest($column) x WHERE x IS NOT NULL AND x <> '' ORDER BY x), ',')");
+  return quotemeta("array_to_string(ARRAY(SELECT DISTINCT x COLLATE \"C\" FROM unnest($column) x WHERE x IS NOT NULL AND x <> '' ORDER BY x COLLATE \"C\"), ',')");
 };
 
 subtest 'evidence_key__isid_present__keyed_isid_before_rt' => sub {
@@ -37,7 +37,7 @@ subtest 'evidence_key__rt_arrays_unordered_with_duplicates__same_key' => sub {
 
 subtest 'evidence_key__rt_arrays_only_null_or_empty__falls_back_to_name' => sub {
   for my $column (qw/d.rt_import d.rt_export/) {
-    my $filtered = quotemeta("ARRAY(SELECT DISTINCT x FROM unnest($column) x WHERE x IS NOT NULL AND x <> '' ORDER BY x)");
+    my $filtered = quotemeta("ARRAY(SELECT DISTINCT x COLLATE \"C\" FROM unnest($column) x WHERE x IS NOT NULL AND x <> '' ORDER BY x COLLATE \"C\")");
     like($flat, qr/$filtered/, "$column drops NULL and empty elements");
     like($flat, qr/array_length\($filtered, 1\)/, "$column has-route-targets test uses the filtered array");
   }
@@ -79,7 +79,7 @@ subtest 'display_name__tie__alphabetically_first' => sub {
   ok($rename, 'a rename statement runs');
   (my $flat_rename = $rename) =~ s/\s+/ /g;
   like($flat_rename, qr/SELECT DISTINCT ON \(m\.domain_id\) m\.domain_id, m\.vrf/, 'one name per domain');
-  like($flat_rename, qr/ORDER BY m\.domain_id, count\(\*\) DESC, m\.vrf ASC/, 'most common, then alphabetical');
+  like($flat_rename, qr/ORDER BY m\.domain_id, count\(\*\) DESC, m\.vrf COLLATE "C" ASC/, 'most common, then alphabetical');
   like($flat_rename, qr/l\.name IS DISTINCT FROM top\.vrf/, 'writes only a changed name');
   like($flat_rename, qr/l\.inferred_name NOT LIKE 'manual:%'/, 'manual domains keep their configured name');
 };

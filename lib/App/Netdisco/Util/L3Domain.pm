@@ -115,11 +115,13 @@ that refreshes C<device_vrf> commits.
 
 sub _rows { my $rows = shift; return ($rows eq '0E0' ? 0 : $rows) }
 
+# COLLATE "C": byte order decides the key on every server, whatever its
+# locale or glibc version
 # NULL and empty elements are dropped so a VRF holding only those has no
 # route targets, instead of every such VRF keying as 'rt:/'
 my $_clean_set = sub {
   my $column = shift;
-  return qq{ARRAY(SELECT DISTINCT x FROM unnest($column) x WHERE x IS NOT NULL AND x <> '' ORDER BY x)};
+  return qq{ARRAY(SELECT DISTINCT x COLLATE "C" FROM unnest($column) x WHERE x IS NOT NULL AND x <> '' ORDER BY x COLLATE "C")};
 };
 
 sub l3_domain_evidence_sql {
@@ -445,9 +447,9 @@ sub manual_l3_members {
 sub _desired_sql {
   my $evidence = l3_domain_evidence_sql();
   return qq{WITH man AS (SELECT * FROM unnest(?::inet[], ?::text[], ?::text[], ?::text[]) AS man(ip, vrf, key, reason))
-    SELECT man.ip, man.vrf, man.key, man.reason, substr(man.key, 8) AS display, 'manual' AS source FROM man
+    SELECT man.ip, man.vrf, man.key, man.reason, substr(man.key, 8) AS display, 'manual'::text AS source FROM man
     UNION ALL
-    SELECT e.ip, e.vrf, e.key, e.reason, e.display, 'inferred' AS source FROM ($evidence) e
+    SELECT e.ip, e.vrf, e.key, e.reason, e.display, 'inferred'::text AS source FROM ($evidence) e
     WHERE NOT EXISTS (SELECT 1 FROM man WHERE man.ip = e.ip AND man.vrf = e.vrf)};
 }
 
@@ -459,29 +461,29 @@ sub _manual_arrays {
 }
 
 sub _ensure_domains {
-  my ($dbh, $desired, @manual) = @_;
+  my $dbh = shift;
   return $dbh->do(qq{INSERT INTO l3_domain (name, inferred_name)
-    SELECT DISTINCT ON (e.key) e.display, e.key FROM ($desired) e
+    SELECT DISTINCT ON (e.key) e.display, e.key FROM l3_domain_desired e
     WHERE NOT EXISTS (SELECT 1 FROM l3_domain x WHERE x.inferred_name = e.key)
-    ORDER BY e.key, e.display}, undef, @manual);
+    ORDER BY e.key, e.display COLLATE "C"});
 }
 
 sub _delete_stale_members {
-  my ($dbh, $desired, @manual) = @_;
+  my $dbh = shift;
   return _rows($dbh->do(qq{DELETE FROM l3_domain_member m
-    WHERE NOT EXISTS (SELECT 1 FROM ($desired) e
+    WHERE NOT EXISTS (SELECT 1 FROM l3_domain_desired e
         JOIN l3_domain l ON l.inferred_name = e.key
-        WHERE e.ip = m.ip AND e.vrf = m.vrf AND l.id = m.domain_id)}, undef, @manual));
+        WHERE e.ip = m.ip AND e.vrf = m.vrf AND l.id = m.domain_id)}));
 }
 
 sub _insert_members {
-  my ($dbh, $desired, @manual) = @_;
+  my $dbh = shift;
   return _rows($dbh->do(qq{INSERT INTO l3_domain_member (ip, vrf, domain_id, reason, source)
     SELECT e.ip, e.vrf, l.id, e.reason, e.source
-    FROM ($desired) e
+    FROM l3_domain_desired e
     JOIN l3_domain l ON l.inferred_name = e.key
     WHERE NOT EXISTS (SELECT 1 FROM l3_domain_member m
-      WHERE m.ip = e.ip AND m.vrf = e.vrf)}, undef, @manual));
+      WHERE m.ip = e.ip AND m.vrf = e.vrf)}));
 }
 
 sub _rename_domains {
@@ -490,7 +492,7 @@ sub _rename_domains {
     FROM (SELECT DISTINCT ON (m.domain_id) m.domain_id, m.vrf
       FROM l3_domain_member m
       GROUP BY m.domain_id, m.vrf
-      ORDER BY m.domain_id, count(*) DESC, m.vrf ASC) top
+      ORDER BY m.domain_id, count(*) DESC, m.vrf COLLATE "C" ASC) top
     WHERE top.domain_id = l.id
       AND l.name IS DISTINCT FROM top.vrf
       AND l.inferred_name NOT LIKE 'manual:%'}));
@@ -513,9 +515,13 @@ sub recompute_l3_domains {
       my (undef, $dbh) = @_;
       my $desired = _desired_sql();
 
-      _ensure_domains($dbh, $desired, @manual);
-      $written += _delete_stale_members($dbh, $desired, @manual);
-      $written += _insert_members($dbh, $desired, @manual);
+      # the evidence keys cost far more than the writes, so compute them once;
+      # the DROP covers a second call inside the caller's transaction
+      $dbh->do('DROP TABLE IF EXISTS l3_domain_desired');
+      $dbh->do("CREATE TEMP TABLE l3_domain_desired ON COMMIT DROP AS $desired", undef, @manual);
+      _ensure_domains($dbh);
+      $written += _delete_stale_members($dbh);
+      $written += _insert_members($dbh);
       $written += _rename_domains($dbh);
       _delete_empty_domains($dbh);
     });

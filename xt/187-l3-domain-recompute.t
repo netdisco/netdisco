@@ -46,23 +46,53 @@ sub dbh_do  { my ($self, $code) = @_; return $code->($self, $self->{dbh}) }
 
 package main;
 
+# the evidence is computed once into a temp table, so the two statements that
+# build it are dropped from the list the per-statement tests index into
 sub run_recompute {
   @ran = (); $txns = 0; %rows_for = @_;
   my $count = recompute_l3_domains(FakeSchema->new);
-  return ($count, @ran);
+  return ($count, grep { $_->[0] !~ /^\s*(?:DROP TABLE|CREATE TEMP TABLE)/ } @ran);
 }
 
 subtest 'recompute__statements__run_in_order_inside_one_locked_transaction' => sub {
-  my ($count, @stmts) = run_recompute();
-  is(scalar @stmts, 6, 'lock plus five statements');
+  run_recompute();
+  my @stmts = @ran;
+  is(scalar @stmts, 8, 'lock, the two evidence statements, five writes');
   like($stmts[0][0], qr/pg_advisory_xact_lock\(\?, \?\)/, 'lock first');
   is_deeply([@{$stmts[0]}[1 .. 2]], [1729, 0], 'one global key');
-  like($stmts[1][0], qr/INSERT INTO l3_domain\b/, 'create domains for new names');
-  like($stmts[2][0], qr/^\s*DELETE FROM l3_domain_member/, 'delete members that no longer qualify');
-  like($stmts[3][0], qr/INSERT INTO l3_domain_member/, 'insert missing members');
-  like($stmts[4][0], qr/^\s*UPDATE l3_domain\b/, 'rename domains after their majority name');
-  like($stmts[5][0], qr/^\s*DELETE FROM l3_domain\b/, 'drop empty domains');
+  like($stmts[1][0], qr/^\s*DROP TABLE IF EXISTS l3_domain_desired\b/, 'a leftover from an earlier call in this transaction goes');
+  like($stmts[2][0], qr/^\s*CREATE TEMP TABLE l3_domain_desired ON COMMIT DROP AS\b/, 'evidence computed once');
+  like($stmts[3][0], qr/INSERT INTO l3_domain\b/, 'create domains for new names');
+  like($stmts[4][0], qr/^\s*DELETE FROM l3_domain_member/, 'delete members that no longer qualify');
+  like($stmts[5][0], qr/INSERT INTO l3_domain_member/, 'insert missing members');
+  like($stmts[6][0], qr/^\s*UPDATE l3_domain\b/, 'rename domains after their majority name');
+  like($stmts[7][0], qr/^\s*DELETE FROM l3_domain\b/, 'drop empty domains');
   is($txns, 1, 'one transaction');
+};
+
+# each statement that read the evidence used to compute the key of every
+# device_vrf row itself; at 10k rows that cost 722 ms on 9.6 under the global lock
+subtest 'recompute__evidence__computed_once_and_read_by_the_member_statements' => sub {
+  run_recompute();
+  my @computes = grep { $_->[0] =~ /FROM device_vrf/ } @ran;
+  is(scalar @computes, 1, 'device_vrf read by one statement');
+  like($computes[0][0], qr/^\s*CREATE TEMP TABLE/, 'the one that builds the temp table');
+  is(scalar @{ $computes[0] } - 1, 4, 'with the four manual arrays bound there');
+  for my $kind ([ 'domain create' => 3 ], [ 'stale delete' => 4 ], [ 'member insert' => 5 ]) {
+    my ($label, $at) = @$kind;
+    like($ran[$at][0], qr/FROM l3_domain_desired e\b/, "$label reads the temp table");
+    is(scalar @{ $ran[$at] }, 1, "$label binds nothing");
+    unlike($ran[$at][0], qr/rt_import|unnest|device_vrf/, "$label recomputes no evidence");
+  }
+};
+
+# the server's collation differs across glibc versions, so a tie or an
+# array element order must be decided by bytes
+subtest 'recompute__orderings__use_C_collation' => sub {
+  my (undef, undef, $domains) = run_recompute();
+  like($domains->[0], qr/ORDER BY e\.key, e\.display COLLATE "C"/, 'display tie on domain create');
+  my (undef, undef, undef, undef, undef, $rename) = run_recompute();
+  like($rename->[0], qr/count\(\*\) DESC, m\.vrf COLLATE "C" ASC/, 'display tie on rename');
 };
 
 subtest 'recompute__members_changed__returns_members_inserted_plus_deleted_plus_renamed' => sub {
@@ -80,11 +110,11 @@ subtest 'recompute__no_full_clear__deletes_only_members_that_no_longer_qualify' 
   unlike($stale->[0], qr/^\s*DELETE FROM l3_domain_member WHERE source = 'inferred'\s*$/,
     'not every inferred member');
   unlike($stale->[0], qr/source = 'inferred'/, 'manual rows are deleted when no entry wants them');
-  like($stale->[0], qr/NOT EXISTS \(SELECT 1 FROM \(.*\) e\s+JOIN l3_domain l ON l\.inferred_name = e\.key/s,
+  like($stale->[0], qr/NOT EXISTS \(SELECT 1 FROM l3_domain_desired e\s+JOIN l3_domain l ON l\.inferred_name = e\.key/s,
     'kept only while its evidence key has that domain');
   like($stale->[0], qr/e\.ip = \w+\.ip AND e\.vrf = \w+\.vrf/, 'matched on the pair');
   like($stale->[0], qr/l\.id = \w+\.domain_id/, 'a member in another domain is moved');
-  like($stale->[0], qr/d\.vrf <> ''/, 'default table never a member (in the evidence)');
+  like((grep { $_->[0] =~ /^\s*CREATE TEMP TABLE/ } @ran)[0][0], qr/d\.vrf <> ''/, 'default table never a member (in the evidence)');
 };
 
 subtest 'recompute__missing_members_only__any_member_of_the_pair_blocks_the_insert' => sub {
@@ -99,7 +129,7 @@ subtest 'recompute__missing_members_only__any_member_of_the_pair_blocks_the_inse
 # statement deletes, on every run
 subtest 'recompute__name_held_only_by_manual_pairs__no_domain_created' => sub {
   my (undef, undef, $domains) = run_recompute();
-  like($domains->[0], qr/WHERE NOT EXISTS \(SELECT 1 FROM man WHERE man\.ip = e\.ip AND man\.vrf = e\.vrf\)\) e\s+WHERE NOT EXISTS \(SELECT 1 FROM l3_domain x/s,
+  like((grep { $_->[0] =~ /^\s*CREATE TEMP TABLE/ } @ran)[0][0], qr/WHERE NOT EXISTS \(SELECT 1 FROM man WHERE man\.ip = e\.ip AND man\.vrf = e\.vrf\)/s,
     'a pair a manual entry claims is not also inferred, so its evidence key makes no domain');
 };
 
@@ -114,8 +144,8 @@ subtest 'recompute__default_domain__never_deleted' => sub {
 subtest 'recompute__reason__comes_from_the_evidence' => sub {
   my (undef, undef, undef, undef, $members) = run_recompute();
   like($members->[0], qr/SELECT e\.ip, e\.vrf, l\.id, e\.reason, e\.source/);
-  like($members->[0], qr/'same name ' \|\| d\.vrf/, 'evidence fragment embedded');
-  like($members->[0], qr/'inferred' AS source/, 'evidence rows are inferred members');
+  like((grep { $_->[0] =~ /^\s*CREATE TEMP TABLE/ } @ran)[0][0], qr/'same name ' \|\| d\.vrf/, 'evidence fragment embedded');
+  like((grep { $_->[0] =~ /^\s*CREATE TEMP TABLE/ } @ran)[0][0], qr/'inferred'::text AS source/, 'evidence rows are inferred members');
   like($members->[0], qr/JOIN l3_domain \w+ ON \w+\.inferred_name = e\.key/, 'domain by inferred name');
 };
 
