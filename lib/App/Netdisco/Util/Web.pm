@@ -692,20 +692,21 @@ changed in place.
 
 =cut
 
+# Compares a copy: reading a number as a string in place would make the JSON
+# encoder serialize it as a string.
+sub _is_empty { my $value = shift; return (not defined $value or "$value" eq '') }
+
 sub omit_empty_columns {
   my ($rows, $column_order, $column_config) = @_;
   my @kept;
   foreach my $col (@$column_order) {
     my $options = $column_config->{$col} || {};
-    my $has_value = grep { defined $_->{$col} and $_->{$col} ne '' } @$rows;
-    if ($options->{_omit_if_empty} and not $has_value) {
+    if ($options->{_omit_if_empty} and not grep { not _is_empty($_->{$col}) } @$rows) {
       delete $_->{$col} for @$rows;
       next;
     }
     if (defined $options->{_empty_as}) {
-      foreach my $row (grep { not defined $_->{$col} or $_->{$col} eq '' } @$rows) {
-        $row->{$col} = $options->{_empty_as};
-      }
+      $_->{$col} = $options->{_empty_as} for grep { _is_empty($_->{$col}) } @$rows;
     }
     push @kept, $col;
   }

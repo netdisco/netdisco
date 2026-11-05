@@ -18,6 +18,7 @@ use Test::Netdisco::Snapshot qw/render_template snapshot_path/;
 use App::Netdisco::Util::Web 'omit_empty_columns';
 use App::Netdisco::Util::L3Domain qw/results_span_domains label_rows_by_domain/;
 use JSON::PP ();
+use JSON ();
 use NetAddr::IP::Lite;
 use App::Netdisco::DB;
 
@@ -50,6 +51,17 @@ subtest 'omit_empty_columns__no_options__unchanged' => sub {
     { alias => { _searchable => 1 }, count => {} });
   is_deeply(\@kept, [qw/alias count/], 'columns without the options are kept');
   is_deeply(\@rows, [{ alias => '', count => 2 }], 'and their values untouched');
+};
+
+subtest 'omit_empty_columns__column_without_options__numbers_stay_numbers' => sub {
+  # the report API serializes these rows; reading a number as a string makes
+  # the JSON encoder emit "2" instead of 2 for every column of every report
+  my @rows = ({ alias => '10.0.0.1', count => 2, vrf => '' });
+  omit_empty_columns(\@rows, [qw/alias count vrf/],
+    { alias => {}, count => {}, vrf => { %vrf_options } });
+  # JSON is the encoder Dancer's to_json uses; JSON::PP does not show this
+  is(JSON->new->canonical->encode(\@rows), '[{"alias":"10.0.0.1","count":2}]',
+    'count is still a JSON number');
 };
 
 subtest 'shipped_reports__shared_and_duplicate__vrf_column_omitted_when_empty' => sub {
