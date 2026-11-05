@@ -17,9 +17,11 @@ use App::Netdisco::Util::L3Domain qw/l3_domain_evidence_sql recompute_l3_domains
 my $sql = l3_domain_evidence_sql();
 (my $flat = $sql) =~ s/\s+/ /g;
 
-my $sorted = sub {
+# each cleaned array is computed once per row, in a LATERAL fenced by OFFSET 0
+# so the planner cannot inline it back into every use
+my $cleaned = sub {
   my $column = shift;
-  return quotemeta("array_to_string(ARRAY(SELECT DISTINCT x COLLATE \"C\" FROM unnest($column) x WHERE x IS NOT NULL AND x <> '' ORDER BY x COLLATE \"C\"), ',')");
+  return quotemeta(qq{ARRAY(SELECT DISTINCT x COLLATE "C" FROM unnest($column) x WHERE x IS NOT NULL AND x <> '' ORDER BY x COLLATE "C")});
 };
 
 subtest 'evidence_key__isid_present__keyed_isid_before_rt' => sub {
@@ -30,18 +32,34 @@ subtest 'evidence_key__isid_present__keyed_isid_before_rt' => sub {
 };
 
 subtest 'evidence_key__rt_arrays_unordered_with_duplicates__same_key' => sub {
-  my ($imports, $exports) = ($sorted->('d.rt_import'), $sorted->('d.rt_export'));
-  like($flat, qr/THEN 'rt:' \|\| $imports \|\| '\/' \|\| $exports/, 'de-duplicated, sorted, joined');
-  like($flat, qr/> 0 THEN 'rt:'/, 'needs at least one non-empty set');
+  my ($imports, $exports) = ($cleaned->('d.rt_import'), $cleaned->('d.rt_export'));
+  like($flat, qr/LATERAL \(SELECT $imports AS imp, $exports AS exp OFFSET 0\) s/, 'de-duplicated and sorted bytewise, once');
+  like($flat, qr/array_to_string\(s\.imp, ','\) AS imports, array_to_string\(s\.exp, ','\) AS exports/, 'joined');
+  like($flat, qr/SELECT 'rt:' \|\| t\.imports \|\| '\/' \|\| t\.exports AS rtkey OFFSET 0/, 'imports then exports');
+  like($flat, qr/> 0 AS has_rt/, 'needs at least one non-empty set');
 };
 
 subtest 'evidence_key__rt_arrays_only_null_or_empty__falls_back_to_name' => sub {
   for my $column (qw/d.rt_import d.rt_export/) {
-    my $filtered = quotemeta("ARRAY(SELECT DISTINCT x COLLATE \"C\" FROM unnest($column) x WHERE x IS NOT NULL AND x <> '' ORDER BY x COLLATE \"C\")");
-    like($flat, qr/$filtered/, "$column drops NULL and empty elements");
-    like($flat, qr/array_length\($filtered, 1\)/, "$column has-route-targets test uses the filtered array");
+    like($flat, qr/@{[ $cleaned->($column) ]}/, "$column drops NULL and empty elements");
   }
+  like($flat, qr/coalesce\(array_length\(s\.imp, 1\), 0\) \+ coalesce\(array_length\(s\.exp, 1\), 0\) > 0 AS has_rt/, 'has-route-targets test uses the filtered arrays');
   unlike($flat, qr/array_length\(d\.rt_(?:import|export), 1\)/, 'never counts the raw arrays');
+};
+
+subtest 'evidence_key__cleaned_arrays__computed_once_per_row' => sub {
+  for my $column (qw/d.rt_import d.rt_export/) {
+    my $count = () = $flat =~ m/@{[ $cleaned->($column) ]}/g;
+    is($count, 1, "$column cleaned in one place");
+  }
+  my $fences = () = $flat =~ m/OFFSET 0\) \w/g;
+  is($fences, 3, 'three LATERAL steps, each fenced');
+};
+
+subtest 'evidence_key__rt_set_over_200_bytes__md5_key' => sub {
+  like($flat, qr/WHEN t\.has_rt THEN CASE WHEN octet_length\(k\.rtkey\) > 200 THEN 'rt:md5:' \|\| md5\(k\.rtkey\) ELSE k\.rtkey END/,
+    'a long key is replaced by a digest of the full text');
+  like($flat, qr/'same route targets import ' \|\| t\.imports \|\| ' export ' \|\| t\.exports/, 'the reason keeps the full sets');
 };
 
 subtest 'evidence_key__no_isid_no_rt__keyed_name' => sub {
@@ -49,14 +67,13 @@ subtest 'evidence_key__no_isid_no_rt__keyed_name' => sub {
 };
 
 subtest 'reason__each_evidence__exact_text' => sub {
-  my ($imports, $exports) = ($sorted->('d.rt_import'), $sorted->('d.rt_export'));
   like($flat, qr/'shared L3 I-SID ' \|\| d\.l3_isid/);
-  like($flat, qr/'same route targets import ' \|\| $imports \|\| ' export ' \|\| $exports/);
+  like($flat, qr/WHEN t\.has_rt THEN 'same route targets import ' \|\| t\.imports \|\| ' export ' \|\| t\.exports/);
   like($flat, qr/ELSE 'same name ' \|\| d\.vrf END AS reason/);
 };
 
 subtest 'evidence__default_table__excluded_and_display_is_vrf' => sub {
-  like($flat, qr/FROM device_vrf d WHERE d\.vrf <> ''/);
+  like($flat, qr/FROM device_vrf d CROSS JOIN LATERAL .* WHERE d\.vrf <> ''$/);
   like($flat, qr/d\.vrf AS display/);
   like($flat, qr/^SELECT d\.ip, d\.vrf,/, 'ip and vrf first');
 };

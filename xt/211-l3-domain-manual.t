@@ -157,6 +157,32 @@ subtest 'manual_entries__group_with_regex_rule__warned_and_skipped' => sub {
   is($hostname_lookups, 0, 'no reverse DNS lookup');
 };
 
+subtest 'manual_entries__group_with_hostname_rule__warned_and_refused' => sub {
+  reset_world();
+  my $forward_lookups = 0;
+  no warnings 'redefine';
+  local *NetAddr::IP::Lite::new = do { my $orig = \&NetAddr::IP::Lite::new; sub { ++$forward_lookups if defined $_[1] and $_[1] =~ m/[g-z]{2}/i; goto &$orig } };
+  $settings{host_groups} = {
+    names   => [ '10.0.0.0/8', 'ce1.example.net' ],
+    nested  => [ 'group:names' ],
+    plain   => [ 'localhost' ],
+    cron    => [ '* * * * *' ],
+    allowed => [ '10.0.0.1', '10.0.0.0/8', '10.1.2.3-9', '2001:db8::/32', '2001:db8::1-9', 'fe80::1',
+                 'prop:vendor:cisco', 'tag:edge', 'cf:site:north', '!tag:old', 'group:allowed2', 'op:and' ],
+    allowed2 => [ '192.0.2.0/24', '10.5', '!10.0.0.9' ],
+  };
+  my $entries = entries_for([ map { entry(domain => $_, device => "group:$_") } qw/names nested plain cron allowed/ ]);
+  is_deeply([ map { $_->{domain} } @$entries ], ['allowed'], 'only address, prefix, range, prop:, tag:, cf: and group: rules survive');
+  is(scalar @warnings, 4, 'one warning per refused entry');
+  like($warnings[0], qr/names.*ce1\.example\.net/s, 'names the group and the first offending rule');
+  like($warnings[1], qr/nested.*names.*ce1\.example\.net/s, 'a nested group is traced to the holder and the rule');
+  like($warnings[2], qr/localhost/, 'a bare hostname is refused');
+  like($warnings[3], qr/\* \* \* \* \*/, 'a cron rule is refused');
+  like($warnings[$_], qr/DNS|time of day/i, "warning $_ says why") for 0 .. 3;
+  is($hostname_lookups, 0, 'no reverse DNS lookup');
+  is($forward_lookups, 0, 'no hostname handed to the address parser');
+};
+
 subtest 'manual_entries__group_cycle__warned_and_refused' => sub {
   reset_world();
   $settings{host_groups} = {
@@ -273,7 +299,7 @@ subtest 'manual_entries__malformed__warned_and_skipped' => sub {
   reset_world();
   $settings{vrf_domains} = [ entry(domain => '') ];
   recompute_l3_domains(FakeSchema->new);
-  is(scalar @writes, 8, 'inference still runs (lock, two evidence statements, five writes)');
+  is(scalar @writes, 10, 'inference still runs (lock, four temp-table statements, five writes)');
 };
 
 subtest 'manual_entries__join_ref_or_object__warned_and_skipped_no_die' => sub {
@@ -381,10 +407,10 @@ subtest 'recompute__manual_vrf_gone_from_device_vrf__row_removed' => sub {
   recompute_l3_domains(FakeSchema->new);
   my ($delete) = grep { $_->[0] =~ /^\s*DELETE FROM l3_domain_member/ } @writes;
   unlike($delete->[0], qr/source = 'inferred'/, 'manual rows are covered');
-  my ($create) = grep { $_->[0] =~ /^\s*CREATE TEMP TABLE/ } @writes;
+  my ($create) = grep { $_->[0] =~ /^\s*CREATE TEMP TABLE l3_domain_desired/ } @writes;
   is_deeply([ @{$create}[1 .. 4] ], [ [], [], [], [] ], 'device_vrf has no such VRF, so the desired manual set is empty');
   like($create->[0], qr/unnest\(\?::inet\[\], \?::text\[\], \?::text\[\], \?::text\[\]\)/, 'manual set passed as arrays');
-  like($delete->[0], qr/FROM l3_domain_desired/, 'the delete reads that set');
+  like($delete->[0], qr/FROM pg_temp\.l3_domain_desired/, 'the delete reads that set');
 };
 
 subtest 'recompute__manual_vrf_present__desired_set_wins_over_evidence' => sub {
@@ -393,8 +419,8 @@ subtest 'recompute__manual_vrf_present__desired_set_wins_over_evidence' => sub {
   @candidate_rows = ({ ip => '10.0.0.1', vrf => 'blue', key => 'name:blue' });
   $settings{vrf_domains} = [ entry(domain => 'CUSTOMER-A', device => '10.0.0.1', vrf => 'blue') ];
   recompute_l3_domains(FakeSchema->new);
-  my ($create) = grep { $_->[0] =~ /^\s*CREATE TEMP TABLE/ } @writes;
-  my $insert = $writes[5];
+  my ($create) = grep { $_->[0] =~ /^\s*CREATE TEMP TABLE l3_domain_desired/ } @writes;
+  my $insert = $writes[7];
   is_deeply([ @{$create}[1 .. 4] ],
     [ ['10.0.0.1'], ['blue'], ['manual:CUSTOMER-A'], ['vrf_domains CUSTOMER-A'] ], 'desired arrays bound once');
   like($insert->[0], qr/e\.source/, 'source comes from the desired row');
@@ -418,7 +444,7 @@ subtest 'recompute__join_brought_rows__reason_names_the_domain' => sub {
   @join_rows = ({ ip => '10.0.0.1', vrf => 'RED', key => 'rt:x/x' }, { ip => '10.0.0.5', vrf => 'BLUE', key => 'rt:x/x' });
   $settings{vrf_domains} = [ entry(device => '10.0.0.1', vrf => 'RED', join => 1) ];
   recompute_l3_domains(FakeSchema->new);
-  is_deeply($writes[2][4], ['vrf_domains A', 'joined with A by vrf_domains'], 'direct then brought') or diag explain $writes[2];
+  is_deeply($writes[4][4], ['vrf_domains A', 'joined with A by vrf_domains'], 'direct then brought') or diag explain $writes[4];
 };
 
 done_testing;

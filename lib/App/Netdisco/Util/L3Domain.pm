@@ -112,7 +112,10 @@ VRF has: C<isid:E<lt>nE<gt>> for an L3 I-SID, then
 C<rt:E<lt>importsE<gt>/E<lt>exportsE<gt>> when it has any route targets (each
 set de-duplicated and sorted, ignoring NULL and empty elements, so order and
 repeats do not matter), then
-C<name:E<lt>vrfE<gt>>. C<reason> is the text stored on the member and
+C<name:E<lt>vrfE<gt>>. A route-target key longer than 200 bytes is replaced by
+C<rt:md5:E<lt>digestE<gt>> of its full text, because the key is in a unique
+btree index that a few hundred route targets would overflow; equal sets still
+give equal keys. C<reason> is the text stored on the member and
 C<display> is the VRF name, for naming the domain.
 
 =head2 manual_l3_entries( [$schema] )
@@ -136,15 +139,18 @@ of a manual-domain table, which is why the setting is a flat list:
 C<device> is one full IP address of any interface of a known device (short
 forms such as C<10.1> are refused), returned as the device's canonical IP (all
 addresses are resolved in one query, by the rule C<get_device> uses), or exactly
-one C<group:E<lt>nameE<gt>> from C<host_groups>, returned unchanged. C<domain>
-and C<vrf> may not be empty or C<default> in any case. C<join> is false unless
-set. An entry that is malformed, names an unknown device, or names a group
-holding a regular expression rule (directly, or through another C<group:>) or
-a cycle of C<group:> references is skipped with a warning that says what to
-change. Returns C<[]> without querying when the
-setting is empty.
+one C<group:E<lt>nameE<gt>> from C<host_groups>, returned unchanged. C<join> is false unless set. An entry that
+is malformed, names an unknown device, or names a group that is not cheap to
+match is skipped with a warning that says what to change. A group is matched
+against every candidate device on every recompute, so it (and every group it
+reaches through C<group:>, negated or not) may hold only these rules: an
+address, a prefix, a range, C<prop:>, C<tag:>, C<cf:>, C<group:> and
+C<op:and>. A hostname or regular expression rule would cost a DNS lookup per
+device, and a cron rule makes membership depend on the time of day, so a group
+holding one is refused. A group whose C<group:> references form any cycle is
+refused too. Returns C<[]> without querying when the setting is empty.
 
-=head2 manual_l3_members( $schema, \@entries )
+=head2 manual_l3_members( $schema, \@entries, [$evidence] )
 
 Returns the (ip, vrf) pairs the entries place, as an arrayref of
 C<< { ip, vrf, domain, level, direct } >>. An entry places the VRF on its
@@ -196,23 +202,31 @@ my $_clean_set = sub {
   return qq{ARRAY(SELECT DISTINCT x COLLATE "C" FROM unnest($column) x WHERE x IS NOT NULL AND x <> '' ORDER BY x COLLATE "C")};
 };
 
+# A long key would overflow the btree behind the unique index on
+# l3_domain.inferred_name (about 230 route targets), which would stop every
+# recompute, so a key over 200 bytes is replaced by a digest of its full text.
+# Each LATERAL step is fenced with OFFSET 0 so that its arrays are cleaned
+# once per row, not once per use.
 sub l3_domain_evidence_sql {
   my $imports = $_clean_set->('d.rt_import');
   my $exports = $_clean_set->('d.rt_export');
-  my $has_rt  = qq{coalesce(array_length($imports, 1), 0) + coalesce(array_length($exports, 1), 0) > 0};
-  my ($imports_text, $exports_text) = map { qq{array_to_string($_, ',')} } ($imports, $exports);
 
   return qq{SELECT d.ip, d.vrf,
     CASE WHEN d.l3_isid IS NOT NULL THEN 'isid:' || d.l3_isid
-         WHEN $has_rt THEN 'rt:' || $imports_text || '/' || $exports_text
+         WHEN t.has_rt THEN CASE WHEN octet_length(k.rtkey) > 200 THEN 'rt:md5:' || md5(k.rtkey) ELSE k.rtkey END
          ELSE 'name:' || d.vrf END AS key,
     CASE WHEN d.l3_isid IS NOT NULL THEN 'shared L3 I-SID ' || d.l3_isid
-         WHEN $has_rt THEN 'same route targets import ' || $imports_text || ' export ' || $exports_text
+         WHEN t.has_rt THEN 'same route targets import ' || t.imports || ' export ' || t.exports
          ELSE 'same name ' || d.vrf END AS reason,
     d.vrf AS display
   FROM device_vrf d
+  CROSS JOIN LATERAL (SELECT $imports AS imp, $exports AS exp OFFSET 0) s
+  CROSS JOIN LATERAL (SELECT array_to_string(s.imp, ',') AS imports, array_to_string(s.exp, ',') AS exports,
+    coalesce(array_length(s.imp, 1), 0) + coalesce(array_length(s.exp, 1), 0) > 0 AS has_rt OFFSET 0) t
+  CROSS JOIN LATERAL (SELECT 'rt:' || t.imports || '/' || t.exports AS rtkey OFFSET 0) k
   WHERE d.vrf <> ''};
 }
+
 
 sub _plain_text {
   my $value = shift;
@@ -253,19 +267,37 @@ sub _describe_entry {
   return 'vrf_domains entry (' . join(', ', @fields) . ')';
 }
 
-# the first group (named, or reached through group:) holding a regex rule
-sub _group_with_regex {
+# Rules a group may hold when vrf_domains uses it. The recompute matches the
+# group against every candidate device on every discover, so a rule that makes
+# check_acl resolve DNS (a hostname, or a regex) or read the clock (cron) is
+# refused. Mirrors the order of tests in Permission.pm's check_acl.
+sub _rule_is_cheap {
+  my $rule = shift;
+  return 0 if !defined $rule or ref $rule;
+  $rule =~ s/^!//;
+  return 1 if $rule eq 'op:and' or $rule =~ m/^(?:group|tag|cf):./;
+  return 1 if $rule =~ m/^([^:]+):/ and $1 !~ m/^[a-f0-9]+$/i;
+  return 1 if $rule =~ m/^\d{1,3}(?:\.\d{1,3}){3}-\d{1,3}$/;
+  return 1 if $rule =~ m/^[0-9a-f]*:[0-9a-f:]*:[0-9a-f]+-[0-9a-f]+$/i;
+  return 1 if $rule =~ m/^\d{1,3}(?:\.\d{1,3}){0,3}(?:\/\d{1,2})?$/;
+  return 1 if $rule =~ m/^[0-9a-f:.]*:[0-9a-f:.]*(?:\/\d{1,3})?$/i;
+  return 0;
+}
+
+# the first group (named, or reached through group:) holding a refused rule,
+# as (group, rule)
+sub _group_with_refused_rule {
   my ($name, $groups, $seen) = @_;
-  return undef if $seen->{$name}++;
+  return () if $seen->{$name}++;
   my $rules = $groups->{$name};
   for my $rule (ref $rules eq 'ARRAY' ? @$rules : ($rules)) {
     next unless defined $rule;
-    return $name if ref $rule eq ref qr//;
-    next if ref $rule or $rule !~ m/^!?group:(.+)$/;
-    my $found = _group_with_regex($1, $groups, $seen);
-    return $found if defined $found;
+    return ($name, $rule) unless _rule_is_cheap($rule);
+    next unless $rule =~ m/^!?group:(.+)$/;
+    my @found = _group_with_refused_rule($1, $groups, $seen);
+    return @found if @found;
   }
-  return undef;
+  return ();
 }
 
 # returns the normalized entry, or the reason it cannot be used
@@ -314,10 +346,11 @@ sub _entry_group_problem {
   return 'host_groups has a cycle (' . join(' -> ', map { "group:$_" } @$cycle)
        . '), which would make the ACL matcher recurse until the worker runs out of memory. Remove one of the group: references'
     if $cycle;
-  my $holder = _group_with_regex($name, $groups, {});
+  my ($holder, $rule) = _group_with_refused_rule($name, $groups, {});
   return undef unless defined $holder;
-  return "group:$holder has a regular expression rule, which makes every recompute look up reverse DNS per device. "
-       . "Rebuild that group from addresses, prefixes, prop: or tag: rules";
+  my $shown = ref $rule ? 'a regular expression' : "'$rule'";
+  return "group:$holder has the rule $shown, which would need a DNS lookup (or the clock) for every device on every recompute. "
+       . "Rebuild that group from addresses, prefixes, ranges, prop:, tag:, cf: or group: rules";
 }
 
 my $_resolve_sql = q{WITH req AS (SELECT r.input, r.input::inet AS addr FROM unnest(?::text[]) AS r(input))
@@ -388,10 +421,10 @@ sub _resolve_entry_devices {
 my %LEVEL_RANK = (ip => 0, group => 1, join => 2);
 
 sub _vrf_rows {
-  my ($dbh, $entries) = @_;
+  my ($dbh, $entries, $evidence) = @_;
   my %names = map { ($_->{vrf} => 1) } @$entries;
   my $rows = $dbh->selectall_arrayref(
-    q{SELECT host(e.ip) AS ip, e.vrf, e.key FROM (} . l3_domain_evidence_sql() . q{) e WHERE e.vrf = ANY(?)},
+    qq{SELECT host(e.ip) AS ip, e.vrf, e.key FROM $evidence e WHERE e.vrf = ANY(?)},
     { Slice => {} }, [ sort keys %names ]);
   my %by_vrf;
   push @{ $by_vrf{ $_->{vrf} } }, $_ for @$rows;
@@ -447,7 +480,7 @@ sub _direct_claims {
 }
 
 sub _join_claims {
-  my ($dbh, $direct_claims) = @_;
+  my ($dbh, $direct_claims, $evidence) = @_;
   my %keys_for_entry;
   for my $claim (grep { $_->{entry}{join} } @$direct_claims) {
     $keys_for_entry{ $claim->{entry}{domain} }{ $claim->{row}{key} } = $claim->{entry};
@@ -456,7 +489,7 @@ sub _join_claims {
 
   my %keys = map { ($_ => 1) } map { keys %$_ } values %keys_for_entry;
   my $rows = $dbh->selectall_arrayref(
-    q{SELECT host(e.ip) AS ip, e.vrf, e.key FROM (} . l3_domain_evidence_sql() . q{) e WHERE e.key = ANY(?)},
+    qq{SELECT host(e.ip) AS ip, e.vrf, e.key FROM $evidence e WHERE e.key = ANY(?)},
     { Slice => {} }, [ sort keys %keys ]);
 
   my @claims;
@@ -501,14 +534,15 @@ sub _warn_tied_domains {
 }
 
 sub manual_l3_members {
-  my ($schema, $entries) = @_;
+  my ($schema, $entries, $evidence) = @_;
   return [] unless $entries and @$entries;
+  $evidence ||= '(' . l3_domain_evidence_sql() . ')';
 
   my $members = [];
   $schema->storage->dbh_do(sub {
     my (undef, $dbh) = @_;
-    my $direct = _direct_claims($dbh, $entries, _vrf_rows($dbh, $entries));
-    $members = _pick_winners([ @$direct, @{ _join_claims($dbh, $direct) } ]);
+    my $direct = _direct_claims($dbh, $entries, _vrf_rows($dbh, $entries, $evidence));
+    $members = _pick_winners([ @$direct, @{ _join_claims($dbh, $direct, $evidence) } ]);
   });
   return $members;
 }
@@ -517,11 +551,10 @@ sub manual_l3_members {
 # first, then the evidence for every pair the manual set does not claim.
 # Four placeholders: ip, vrf, key and reason arrays of the manual set.
 sub _desired_sql {
-  my $evidence = l3_domain_evidence_sql();
   return qq{WITH man AS (SELECT * FROM unnest(?::inet[], ?::text[], ?::text[], ?::text[]) AS man(ip, vrf, key, reason))
     SELECT man.ip, man.vrf, man.key, man.reason, substr(man.key, 8) AS display, 'manual'::text AS source FROM man
     UNION ALL
-    SELECT e.ip, e.vrf, e.key, e.reason, e.display, 'inferred'::text AS source FROM ($evidence) e
+    SELECT e.ip, e.vrf, e.key, e.reason, e.display, 'inferred'::text AS source FROM pg_temp.l3_domain_evidence e
     WHERE NOT EXISTS (SELECT 1 FROM man WHERE man.ip = e.ip AND man.vrf = e.vrf)};
 }
 
@@ -535,7 +568,7 @@ sub _manual_arrays {
 sub _ensure_domains {
   my $dbh = shift;
   return $dbh->do(qq{INSERT INTO l3_domain (name, inferred_name)
-    SELECT DISTINCT ON (e.key) e.display, e.key FROM l3_domain_desired e
+    SELECT DISTINCT ON (e.key) e.display, e.key FROM pg_temp.l3_domain_desired e
     WHERE NOT EXISTS (SELECT 1 FROM l3_domain x WHERE x.inferred_name = e.key)
     ORDER BY e.key, e.display COLLATE "C"});
 }
@@ -543,7 +576,7 @@ sub _ensure_domains {
 sub _delete_stale_members {
   my $dbh = shift;
   return _rows($dbh->do(qq{DELETE FROM l3_domain_member m
-    WHERE NOT EXISTS (SELECT 1 FROM l3_domain_desired e
+    WHERE NOT EXISTS (SELECT 1 FROM pg_temp.l3_domain_desired e
         JOIN l3_domain l ON l.inferred_name = e.key
         WHERE e.ip = m.ip AND e.vrf = m.vrf AND l.id = m.domain_id)}));
 }
@@ -552,7 +585,7 @@ sub _insert_members {
   my $dbh = shift;
   return _rows($dbh->do(qq{INSERT INTO l3_domain_member (ip, vrf, domain_id, reason, source)
     SELECT e.ip, e.vrf, l.id, e.reason, e.source
-    FROM l3_domain_desired e
+    FROM pg_temp.l3_domain_desired e
     JOIN l3_domain l ON l.inferred_name = e.key
     WHERE NOT EXISTS (SELECT 1 FROM l3_domain_member m
       WHERE m.ip = e.ip AND m.vrf = e.vrf)}));
@@ -582,15 +615,18 @@ sub recompute_l3_domains {
   my $written = 0;
 
   with_l3_domain_lock($schema, sub {
-    my @manual = _manual_arrays(manual_l3_members($schema, manual_l3_entries($schema)));
     $schema->storage->dbh_do(sub {
       my (undef, $dbh) = @_;
-      my $desired = _desired_sql();
+      # the evidence keys cost far more than the writes, so compute them once.
+      # The quiet drop clears a leftover from an earlier call in the caller's
+      # transaction without a NOTICE on stderr (ON COMMIT DROP covers the rest)
+      $dbh->do('SET LOCAL client_min_messages = warning');
+      $dbh->do('DROP TABLE IF EXISTS pg_temp.l3_domain_evidence, pg_temp.l3_domain_desired');
+      $dbh->do('CREATE TEMP TABLE l3_domain_evidence ON COMMIT DROP AS ' . l3_domain_evidence_sql());
 
-      # the evidence keys cost far more than the writes, so compute them once;
-      # the DROP covers a second call inside the caller's transaction
-      $dbh->do('DROP TABLE IF EXISTS l3_domain_desired');
-      $dbh->do("CREATE TEMP TABLE l3_domain_desired ON COMMIT DROP AS $desired", undef, @manual);
+      my $members = manual_l3_members($schema, manual_l3_entries($schema), 'pg_temp.l3_domain_evidence');
+      $dbh->do('CREATE TEMP TABLE l3_domain_desired ON COMMIT DROP AS ' . _desired_sql(), undef, _manual_arrays($members));
+
       _ensure_domains($dbh);
       $written += _delete_stale_members($dbh);
       $written += _insert_members($dbh);
