@@ -386,7 +386,7 @@ my @FILE_RULES = (
   },
   {
     name     => 'ports-neighbor-mac',
-    release  => '2.117001',
+    release  => '2.117003',
     paths    => ['ajax/device/ports.tt'],
     requires => qr/\bneighbor_net_mac\b/,
     advice   => 'this copy looks for the neighbor\'s MAC among the port\'s '
