@@ -6,6 +6,8 @@ use Dancer::Plugin::DBIC 'schema';
 use NetAddr::MAC;
 use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use App::Netdisco::Util::VRF qw/vrf_collection_enabled vrf_skipped/;
+use App::Netdisco::Util::L3Domain 'recompute_l3_domains';
+use Try::Tiny;
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -15,6 +17,7 @@ our @EXPORT_OK = qw/
   memoize_arp
   store_arp
   retire_unvouched_arps
+  record_cli_vrfs
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -245,6 +248,44 @@ sub _arp_upsert_sql {
         END};
   my $path = "{$device_ip}";
   return ($sql, $device_ip, $device_ip, $device_ip, $path, $device_ip, $path);
+}
+
+=head2 record_cli_vrfs( $device, \%vrf_read, $list_complete, $now )
+
+Records in C<device_vrf> each named VRF a CLI collector read (the keys of
+C<\%vrf_read>, netdisco names, C<''> skipped), so that it gets an L3 domain
+when SNMP::Info does not list it. Rows are C<listed_by> C<cli> and written
+only when new, so a row discover wrote keeps its facts. When the collector's
+list was whole, the device's C<cli> rows for VRFs it no longer read are
+deleted; other rows never are. Domains are recomputed when anything changed.
+Returns the number of rows inserted or deleted.
+
+=cut
+
+my @cli_vrf_insert_only = qw/kind rd rt_import rt_export l3_isid listed_by complete last_discover/;
+
+sub record_cli_vrfs {
+  my ($device, $vrf_read, $list_complete, $now) = @_;
+  my @names = sort grep { length } keys %{ $vrf_read || {} };
+  my $rs = schema(vars->{'tenant'})->resultset('DeviceVrf');
+
+  my $changed = (not @names) ? 0 : $rs->upsert([ map {{
+    ip => $device->ip, vrf => $_, kind => 'vrf', rd => undef, rt_import => [], rt_export => [],
+    l3_isid => undef, listed_by => 'cli', complete => ($vrf_read->{$_} ? 1 : 0),
+    last_discover => \$now,
+  }} @names ], { insert_only => [@cli_vrf_insert_only] });
+
+  if ($list_complete) {
+    my $gone = $rs->search({ ip => $device->ip, listed_by => 'cli',
+                             vrf => { -not_in => \@names } })->delete;
+    $changed += ($gone eq '0E0' ? 0 : $gone);
+  }
+  return 0 unless $changed;
+
+  try { recompute_l3_domains(schema(vars->{'tenant'})) }
+  catch { warning sprintf ' [%s] arpnip - L3 domain recompute failed, the next arpnip retries: %s',
+    $device->ip, $_ };
+  return $changed;
 }
 
 =head2 retire_unvouched_arps( $device, $now, \%vrf_read?, $vrf_list_complete? )

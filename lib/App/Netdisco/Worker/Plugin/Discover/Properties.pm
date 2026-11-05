@@ -418,7 +418,7 @@ sub _store_aliases_per_vrf {
   my @seen = ((map {{ alias => $_->{alias}, vrf => $_->{vrf} }} @rows), @kept_rows);
   my @vrf_rows = map { _device_vrf_row($device, $_, $now) } @reads;
   my @vrf_seen = ((map {{ vrf => $_->{vrf} }} @vrf_rows),
-    map {{ vrf => $_ }} sort keys %stored_vrfs);
+    map {{ vrf => $_ }} sort keys %stored_vrfs, _cli_listed_vrfs($device));
 
   my $status = schema('netdisco')->txn_do(sub {
     my $rs = schema('netdisco')->resultset('DeviceIp');
@@ -443,6 +443,14 @@ sub _store_aliases_per_vrf {
 
 # outside the discover transaction: the recompute is network-wide and takes its
 # own lock; the rows are committed, so a failure waits for the next discover
+# VRFs a CLI collector recorded (record_cli_vrfs) are that collector's to retire
+sub _cli_listed_vrfs {
+  my $device = shift;
+  my %hri = (result_class => 'DBIx::Class::ResultClass::HashRefInflator');
+  return map { $_->{vrf} } grep { ($_->{listed_by} // '') eq 'cli' }
+    $device->vrfs(undef, { columns => [qw/vrf listed_by/], %hri })->all;
+}
+
 sub _recompute_l3_domains_after {
   my $device = shift;
   try { recompute_l3_domains(schema('netdisco')) }

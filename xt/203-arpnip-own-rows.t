@@ -224,6 +224,8 @@ sub run_store {
     fake_identity(macs => ['00:aa:bb:cc:dd:01'], port_macs => ['00:aa:bb:cc:dd:01', '00:11:22:33:44:01', '00:11:22:33:44:02'],
       addresses => [ ['red', '10.40.0.1'], ['', '172.20.20.14'] ]);
   local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::store_arp = sub { push @stored, { %{ $_[0] } } };
+  # device_vrf writes need a database; xt/209 covers record_cli_vrfs
+  local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::record_cli_vrfs = sub { 0 };
   local *App::Netdisco::Worker::Plugin::Arpnip::Nodes::retire_unvouched_arps = sub { 0 };
   local *App::Netdisco::DB::Result::Device::update = sub { return $_[0] };
   local *App::Netdisco::Transport::SSH::session_for = sub { return MySession->new(platform => $platform_class->new, host => '192.0.2.1', ssh => 'SSH', auth => { platform => 'Stub' }) };

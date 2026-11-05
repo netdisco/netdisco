@@ -9,7 +9,7 @@ use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::Transport::SSH ();
 use App::Netdisco::Transport::SNMP ();
 
-use App::Netdisco::Util::Node qw/check_mac memoize_arp store_arp retire_unvouched_arps/;
+use App::Netdisco::Util::Node qw/check_mac memoize_arp store_arp retire_unvouched_arps record_cli_vrfs/;
 use App::Netdisco::Util::VRF
   qw/vrf_collection_enabled vrf_skipped netdisco_vrf vrf_instances_for each_vrf_instance/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
@@ -39,7 +39,7 @@ register_worker({ phase => 'early',
   # initialise the cache
   vars->{'arps'} = {};
   # netdisco-do runs every job in one process, so no job sees another's VRF reads
-  delete @{ vars() }{qw/vrf_read vrf_read_families vrf_list_complete/};
+  delete @{ vars() }{qw/vrf_read vrf_read_families vrf_list_complete cli_vrf_list/};
 });
 
 register_worker({ phase => 'store', title => 'store ARP cache' }, sub {
@@ -75,6 +75,8 @@ register_worker({ phase => 'store', title => 'store ARP cache' }, sub {
 
   my $now = vars->{'timestamp'};
   store_arp(\%$_, $now, $device->ip) for @{ vars->{'arps'} };
+  record_cli_vrfs($device, vars->{'cli_vrf_list'}{read}, vars->{'cli_vrf_list'}{complete}, $now)
+    if vars->{'cli_vrf_list'} and vrf_collection_enabled($device);
 
   debug sprintf ' [%s] arpnip - processed %s ARP Cache entries',
     $device->ip, $v4;
@@ -317,6 +319,8 @@ sub gather_arps_by_vrf_cli {
   }
 
   delete @vrf_read{ grep { vrf_skipped($device, $_) } keys %vrf_read };
+  # stored in device_vrf by the store phase, so a VRF SNMP does not list gets a domain
+  vars->{'cli_vrf_list'} = { read => { %vrf_read }, complete => $list_complete };
   my @not_whole = sort grep { not $vrf_read{$_} } keys %vrf_read;
   info sprintf ' [%s] arpnip (cli) - VRFs not read whole, so their entries are kept: %s',
     $device->ip, join ', ', map { qq{"$_"} } @not_whole

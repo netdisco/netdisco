@@ -487,6 +487,16 @@ subtest 'discover__skipped_vrf__absent_from_device_ip_and_device_vrf' => sub {
   is_deeply [ nets_in('blue') ], [], 'no blue subnets';
 };
 
+subtest 'discover__vrf_recorded_by_the_cli__kept' => sub {
+  # SNMP::Info does not list it; CLI arpnip recorded it (record_cli_vrfs)
+  local $stored_vrfs = [ { vrf => 'management', listed_by => 'cli' }, { vrf => 'old', listed_by => 'snmp' },
+                         { vrf => 'red' }, { vrf => '' } ];
+  run_with_vrfs();
+  my @seen = map { $_->{vrf} } @{ (removals_of('DeviceVrf'))[0][2] };
+  ok((grep { $_ eq 'management' } @seen), 'the CLI-recorded VRF is seen, so kept');
+  ok(!(grep { $_ eq 'old' } @seen), 'a VRF SNMP no longer lists is not, so removed');
+};
+
 subtest 'discover__short_instance_list__unlisted_vrf_rows_kept' => sub {
   local $stored_rows = [
     { alias => '10.77.0.1', vrf => 'green' }, { alias => '10.40.0.1', vrf => 'blue' },
