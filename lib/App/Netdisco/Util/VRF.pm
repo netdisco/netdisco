@@ -131,6 +131,14 @@ A read is complete only when C<< $snmp->vrf_read_complete($name) >> is 1 and
 no walk since the read began came back short (C<incomplete_walks_for>, with
 the C<walk_methods> option naming any further methods to check).
 
+Where the default read is partial only because other instances leak into it
+(C<< $snmp->vrf_read_leaked('default') >>, SNMP::Info 3.985001, so far only
+Juniper's virtual routers), each of those instances' ports are read with
+C<i_vrf()> in its own context. Once every one of them was read whole, the
+session returns to the default context, hands the ports to
+C<vrf_exclude_ports()> and reads C<default> a second time, which replaces the
+first read. Otherwise the first, partial read stands.
+
 Returns a hashref keyed by L</netdisco_vrf> of each name, of
 C<< { complete => 0|1, data => <reader result or undef> } >>. Read anything
 needed from the default context before calling this.
@@ -162,6 +170,8 @@ sub each_vrf_instance {
   my %reads = map {
     (netdisco_vrf($_) => _read_instance($device, $snmp, $_, $instances->{$_}, $reader, 0, \%options))
   } @in_place;
+  my $leaked = _leaked_instances($snmp, $reads{''});
+  my %leaked_ports;
 
   foreach my $name (@unserved) {
     debug sprintf ' [%s] %s - VRF %s has no context serving its rows', $device->ip, $log_as, $name;
@@ -183,8 +193,56 @@ sub each_vrf_instance {
     }
     $reads{ netdisco_vrf($name) }
       = _read_instance($device, $snmp, $name, $instances->{$name}, $reader, 1, \%options);
+    $leaked_ports{$name} = _leaked_ports($device, $snmp)
+      if $leaked and $reads{ netdisco_vrf($name) }{complete} and grep { $_ eq $name } @$leaked;
   }
+  _complete_default_read($device, $snmp, $instances, $reader, \%reads, $leaked,
+    \%leaked_ports, $guard, \%options) if $leaked;
   return \%reads;
+}
+
+# the instances SNMP::Info names as mixed into a partial default read; asked
+# in the default context, after its readers, as vrf_read_leaked requires
+sub _leaked_instances {
+  my ($snmp, $default_read) = @_;
+  return undef if not $default_read or $default_read->{complete};
+  return undef unless $snmp->can('vrf_read_leaked') and $snmp->can('vrf_exclude_ports');
+  my $leaked = $snmp->vrf_read_leaked('default');
+  return (ref [] eq ref $leaked and scalar @$leaked) ? $leaked : undef;
+}
+
+# the whole port set of the instance whose context the session is in, or undef
+# when the walk was short: a partial set would let its rows back into default
+sub _leaked_ports {
+  my ($device, $snmp) = @_;
+  my $walk_mark = walk_mark($snmp);
+  my $i_vrf = $snmp->i_vrf;
+  return undef if scalar incomplete_walks_for($device, $snmp, $walk_mark, 'i_vrf');
+  return undef unless ref {} eq ref $i_vrf and scalar keys %$i_vrf;
+  return [ sort { $a <=> $b } keys %$i_vrf ];
+}
+
+# exclusions are recorded after the return to default because update() clears
+# SNMP::Info's cache, exclusions included
+sub _complete_default_read {
+  my ($device, $snmp, $instances, $reader, $reads, $leaked, $ports, $guard, $options) = @_;
+  my $log_as = $options->{log_as} || 'device';
+  my @unread = grep { not $ports->{$_} } @$leaked;
+  if (@unread) {
+    debug sprintf ' [%s] %s - default read stays partial: %s not read whole in their own context',
+      $device->ip, $log_as, join(', ', @unread);
+    return;
+  }
+  return unless snmp_vrf_context($snmp, $device, undef);
+  $guard->dismiss if $guard;
+
+  foreach my $name (@$leaked) {
+    next if $snmp->vrf_exclude_ports($name, $ports->{$name});
+    debug sprintf ' [%s] %s - default read stays partial: SNMP::Info refused the ports of %s%s',
+      $device->ip, $log_as, $name, _error_suffix($snmp);
+    return;
+  }
+  $reads->{''} = _read_instance($device, $snmp, 'default', $instances->{default}, $reader, 0, $options);
 }
 
 # the reader is cached for the job, so a session stuck in a VRF context would
