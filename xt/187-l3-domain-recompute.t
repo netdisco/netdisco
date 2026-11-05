@@ -3,7 +3,8 @@
 use strict;
 use warnings;
 
-# recompute_l3_domains infers domains from VRF names alone. It must never
+# recompute_l3_domains infers domains from evidence keys (I-SID, route targets,
+# else the VRF name). It must never
 # touch a manual member, never delete domain 0, and keep domain ids stable by
 # reusing a domain that already has the name. It runs on every discover with
 # store_vrfs on, so it writes only what changed: an unchanged network deletes
@@ -23,6 +24,7 @@ sub statement_kind {
   my $sql = shift;
   return 'member_delete' if $sql =~ /^\s*DELETE FROM l3_domain_member/;
   return 'member_insert' if $sql =~ /INSERT INTO l3_domain_member/;
+  return 'domain_rename' if $sql =~ /^\s*UPDATE l3_domain\b/;
   return 'domain_insert' if $sql =~ /INSERT INTO l3_domain\b/;
   return 'domain_delete' if $sql =~ /^\s*DELETE FROM l3_domain\b/;
   return 'other';
@@ -52,19 +54,20 @@ sub run_recompute {
 
 subtest 'recompute__statements__run_in_order_inside_one_locked_transaction' => sub {
   my ($count, @stmts) = run_recompute();
-  is(scalar @stmts, 5, 'lock plus four statements');
+  is(scalar @stmts, 6, 'lock plus five statements');
   like($stmts[0][0], qr/pg_advisory_xact_lock\(\?, \?\)/, 'lock first');
   is_deeply([@{$stmts[0]}[1 .. 2]], [1729, 0], 'one global key');
   like($stmts[1][0], qr/INSERT INTO l3_domain\b/, 'create domains for new names');
   like($stmts[2][0], qr/^\s*DELETE FROM l3_domain_member/, 'delete members that no longer qualify');
   like($stmts[3][0], qr/INSERT INTO l3_domain_member/, 'insert missing members');
-  like($stmts[4][0], qr/^\s*DELETE FROM l3_domain\b/, 'drop empty domains');
+  like($stmts[4][0], qr/^\s*UPDATE l3_domain\b/, 'rename domains after their majority name');
+  like($stmts[5][0], qr/^\s*DELETE FROM l3_domain\b/, 'drop empty domains');
   is($txns, 1, 'one transaction');
 };
 
-subtest 'recompute__members_changed__returns_members_inserted_plus_deleted' => sub {
-  my ($count) = run_recompute(member_delete => 2, member_insert => 3, domain_insert => 1, domain_delete => 1);
-  is($count, 5, 'member rows inserted plus deleted');
+subtest 'recompute__members_changed__returns_members_inserted_plus_deleted_plus_renamed' => sub {
+  my ($count) = run_recompute(member_delete => 2, member_insert => 3, domain_rename => 4, domain_insert => 1, domain_delete => 1);
+  is($count, 9, 'member rows inserted plus deleted plus domains renamed');
 };
 
 subtest 'recompute__no_rows_written__returns_zero' => sub {
@@ -77,18 +80,18 @@ subtest 'recompute__no_full_clear__deletes_only_members_that_no_longer_qualify' 
   unlike($stale->[0], qr/^\s*DELETE FROM l3_domain_member WHERE source = 'inferred'\s*$/,
     'not every inferred member');
   like($stale->[0], qr/source = 'inferred'/, 'inferred members only, so manual rows are never deleted');
-  like($stale->[0], qr/NOT EXISTS \(SELECT 1 FROM device_vrf d\s+JOIN l3_domain l ON l\.inferred_name = d\.vrf/,
-    'kept only while its VRF is in device_vrf with a domain of that name');
-  like($stale->[0], qr/d\.ip = \w+\.ip AND d\.vrf = \w+\.vrf/, 'matched on the pair');
+  like($stale->[0], qr/NOT EXISTS \(SELECT 1 FROM \(.*\) e\s+JOIN l3_domain l ON l\.inferred_name = e\.key/s,
+    'kept only while its evidence key has that domain');
+  like($stale->[0], qr/e\.ip = \w+\.ip AND e\.vrf = \w+\.vrf/, 'matched on the pair');
   like($stale->[0], qr/l\.id = \w+\.domain_id/, 'a member in another domain is moved');
-  like($stale->[0], qr/d\.vrf <> ''/, 'default table never a member');
+  like($stale->[0], qr/d\.vrf <> ''/, 'default table never a member (in the evidence)');
 };
 
 subtest 'recompute__missing_members_only__any_member_of_the_pair_blocks_the_insert' => sub {
   my (undef, undef, $domains, undef, $members) = run_recompute();
-  like($members->[0], qr/NOT EXISTS \(SELECT 1 FROM l3_domain_member m\s+WHERE m\.ip = d\.ip AND m\.vrf = d\.vrf\)/,
+  like($members->[0], qr/NOT EXISTS \(SELECT 1 FROM l3_domain_member m\s+WHERE m\.ip = e\.ip AND m\.vrf = e\.vrf\)/,
     'skips a pair with a member of either source');
-  like($domains->[0], qr/NOT EXISTS \(SELECT 1 FROM l3_domain x WHERE x\.inferred_name = d\.vrf\)/,
+  like($domains->[0], qr/NOT EXISTS \(SELECT 1 FROM l3_domain x WHERE x\.inferred_name = e\.key\)/,
     'a name with a domain is reused');
 };
 
@@ -96,28 +99,29 @@ subtest 'recompute__missing_members_only__any_member_of_the_pair_blocks_the_inse
 # statement deletes, on every run
 subtest 'recompute__name_held_only_by_manual_members__no_domain_created' => sub {
   my (undef, undef, $domains) = run_recompute();
-  like($domains->[0], qr/NOT EXISTS \(SELECT 1 FROM l3_domain_member m\s+WHERE m\.ip = d\.ip AND m\.vrf = d\.vrf AND m\.source = 'manual'\)/,
+  like($domains->[0], qr/NOT EXISTS \(SELECT 1 FROM l3_domain_member m\s+WHERE m\.ip = e\.ip AND m\.vrf = e\.vrf AND m\.source = 'manual'\)/,
     'only a name with a pair left to infer');
 };
 
 subtest 'recompute__default_domain__never_deleted' => sub {
-  my (undef, undef, undef, undef, undef, $cleanup) = run_recompute();
+  my (undef, undef, undef, undef, undef, undef, $cleanup) = run_recompute();
   like($cleanup->[0], qr/WHERE id <> 0\b/);
   like($cleanup->[0], qr/NOT EXISTS \(SELECT 1 FROM l3_domain_member/, 'any member keeps it');
   like($_->[0], qr/vrf <> ''/, 'default table skipped')
     for (grep { $_->[0] =~ /FROM device_vrf/ } @ran);
 };
 
-subtest 'recompute__reason__names_the_shared_name' => sub {
+subtest 'recompute__reason__comes_from_the_evidence' => sub {
   my (undef, undef, undef, undef, $members) = run_recompute();
-  like($members->[0], qr/'same name ' \|\| d\.vrf/);
+  like($members->[0], qr/SELECT e\.ip, e\.vrf, l\.id, e\.reason, 'inferred'/);
+  like($members->[0], qr/'same name ' \|\| d\.vrf/, 'evidence fragment embedded');
   like($members->[0], qr/'inferred'/);
-  like($members->[0], qr/JOIN l3_domain \w+ ON \w+\.inferred_name = d\.vrf/, 'domain by inferred name');
+  like($members->[0], qr/JOIN l3_domain \w+ ON \w+\.inferred_name = e\.key/, 'domain by inferred name');
 };
 
 subtest 'recompute__duplicate_display_names__join_on_unique_inferred_name' => sub {
   my (undef, undef, $domains, $stale, $members) = run_recompute();
-  like($domains->[0], qr/\(name, inferred_name\)\s+SELECT DISTINCT d\.vrf, d\.vrf\b/, 'both set from the VRF name');
+  like($domains->[0], qr/\(name, inferred_name\)\s+SELECT DISTINCT ON \(e\.key\) e\.display, e\.key\b/, 'name from a member, key from the evidence');
   unlike($_->[0], qr/\bl\.name\b/, 'display name never joined') for ($stale, $members);
 };
 
