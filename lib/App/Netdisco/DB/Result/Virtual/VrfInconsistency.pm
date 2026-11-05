@@ -74,7 +74,7 @@ SELECT 'linked, one subnet' AS finding,
              WHERE dp.ip <> r.ip
           ) pr
           JOIN device_ip ia ON ia.ip = pr.a_ip AND ia.vrf <> '' AND ia.subnet IS NOT NULL
-          JOIN device_ip ib ON ib.ip = pr.b_ip AND ib.vrf <> '' AND ib.subnet = ia.subnet
+          JOIN device_ip ib ON ib.ip = pr.b_ip AND ib.vrf <> '' AND ib.subnet = ia.subnet AND ia.alias <> ib.alias
           LEFT JOIN l3_domain_member ma ON ma.ip = ia.ip AND ma.vrf = ia.vrf
           LEFT JOIN l3_domain_member mb ON mb.ip = ib.ip AND mb.vrf = ib.vrf
          WHERE ma.domain_id IS DISTINCT FROM mb.domain_id

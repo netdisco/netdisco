@@ -119,4 +119,9 @@ subtest 'virtual__similar_names__empty_normalized_excluded' => sub {
     'names that normalize to nothing are left out';
 };
 
+subtest 'virtual__linked_same_address_both_sides__not_reported' => sub {
+  my ($branch) = grep { /'linked, one subnet'/ } @branches;
+  like $branch, qr/ia\.alias\s*<>\s*ib\.alias/, 'the two sides must hold different addresses';
+};
+
 done_testing;
