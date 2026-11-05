@@ -18,6 +18,8 @@ use Test::Netdisco::Snapshot qw/render_template snapshot_path/;
 use App::Netdisco::Util::Web 'omit_empty_columns';
 use App::Netdisco::Util::L3Domain qw/results_span_domains label_rows_by_domain/;
 use JSON::PP ();
+use NetAddr::IP::Lite;
+use App::Netdisco::DB;
 
 my %report = map { ($_->{tag} => $_) }
   @{ YAML::XS::LoadFile('share/config.yml')->{system_reports} };
@@ -159,6 +161,83 @@ subtest 'addresses_controller__shapes_rows_by_vrf' => sub {
   like($src, qr/label_rows_by_domain\(\\\@results, \$multi_domain\)/, 'labels or drops vrf');
   my $passes = () = $src =~ /multi_domain => \$multi_domain/g;
   is($passes, 2, 'both templates get the flag');
+};
+
+# Node search: each node_ip row is one router's record, so it is labeled with
+# the local VRF name beside "via <router>". The API serializes search result
+# sets with hri, so the domain travels as two flat SQL columns.
+my $DEFAULT_ROW_GUARD = qr/CASE WHEN (\w+)\.vrf = '' THEN 0 ELSE l3_domain_of\(\1\.\w+, \1\.vrf\) END/;
+
+sub iterator { my @rows = @_; return { next => sub { shift @rows } } }
+
+sub node_ip_row {
+  my %args = @_;
+  my %row = (ip => $args{ip} || '10.250.1.50', active => 1, dns => 'host50',
+             router_ip => '10.0.0.11', router_name => 'leaf01', nbname => '',
+             net_mac => { as_ieee => '00:1c:73:aa:00:01' }, manufacturer => {},
+             ip_aliases => sub { $args{aliases} || [] }, node_sightings => sub { [] },
+             netbios => [], nodeips => []);
+  $row{vrf} = $args{vrf} if exists $args{vrf};
+  return \%row;
+}
+
+sub node_search_html {
+  my ($view, @rows) = @_;
+  my %stash = (mac_format_call => 'as_ieee', params => {}, settings => {},
+               archive_filter => {}, search_node => '/search?tab=node',
+               search_device => '/search?tab=device');
+  if ($view =~ /by_ip/) { $stash{macs} = iterator(@rows) }
+  else { $stash{ips} = iterator(@rows); $stash{$_} = iterator() for qw/sightings ports wireless netbios/ }
+  my ($html, $error) = render_template("ajax/search/$view.tt", \%stash);
+  is($error, undef, "$view renders");
+  return $html // '';
+}
+
+subtest 'node_ip_with_l3_domain__sql__guarded_and_named' => sub {
+  my $schema = App::Netdisco::DB->connect('dbi:Pg:dbname=netdisco_xt_offline;host=127.0.0.1;port=1');
+  my $rs = $schema->resultset('NodeIp')
+    ->search_by_ip({ ip => NetAddr::IP::Lite->new('10.0.0.1') })
+    ->with_router->with_l3_domain;
+  my ($sql) = @{ ${ $rs->as_query } };
+  like($sql, qr/CASE WHEN me\.vrf = '' THEN 0 ELSE l3_domain_of\(me\.router_last, me\.vrf\) END,/,
+    'domain id, without a function call for default rows');
+  like($sql, qr/\(SELECT ld\.name FROM l3_domain ld WHERE ld\.id = CASE WHEN me\.vrf = '' THEN 0 ELSE l3_domain_of\(me\.router_last, me\.vrf\) END\)/,
+    'domain name looked up by that id');
+  # hri names its keys from the resolved "as" list, not from SQL aliases
+  my @as = @{ $rs->_resolved_attrs->{as} };
+  is_deeply([ @as[-2, -1] ], [qw/l3_domain_id l3_domain_name/], 'serialized as l3_domain_id and l3_domain_name');
+  my $calls = () = $sql =~ /l3_domain_of\(/g;
+  my $guarded = () = $sql =~ /$DEFAULT_ROW_GUARD/g;
+  is($guarded, $calls, 'every call is in the ELSE of vrf = \'\'');
+};
+
+subtest 'node_search__every_node_ip_set__has_l3_domain' => sub {
+  my $src = do { local (@ARGV, $/) = 'lib/App/Netdisco/Web/Plugin/Search/Node.pm'; <> };
+  my $router = () = $src =~ /->with_router\b/g;
+  my $domain = () = $src =~ /->with_router->with_l3_domain\b/g;
+  cmp_ok($router, '>', 0, 'node search reads node_ip with its router');
+  is($domain, $router, 'and every such set carries its domain');
+};
+
+subtest 'node_search_templates__default_rows__render_as_before' => sub {
+  foreach my $view (qw/node_by_ip node_by_mac/) {
+    my $with = node_search_html($view, node_ip_row(vrf => '', aliases => [node_ip_row(ip => '10.250.1.51', vrf => '')]));
+    my $without = node_search_html($view, node_ip_row(aliases => [node_ip_row(ip => '10.250.1.51')]));
+    is($with, $without, "$view: a default-table row renders as a row without vrf");
+    unlike($with, qr/in VRF/, "$view: no VRF label");
+  }
+};
+
+subtest 'node_search_templates__named_vrf__labels_local_vrf' => sub {
+  foreach my $view (qw/node_by_ip node_by_mac/) {
+    my $html = node_search_html($view, node_ip_row(vrf => 'blue'));
+    like($html, qr/\(host50\)\s*in VRF blue\s*via/, "$view: label after the name, before via");
+    my $escaped = node_search_html($view, node_ip_row(vrf => '<b>R&D</b>'));
+    like($escaped, qr/in VRF &lt;b&gt;R&amp;D&lt;\/b&gt;/, "$view: the VRF name is escaped");
+  }
+  my $alias = node_search_html('node_by_ip',
+    node_ip_row(vrf => '', aliases => [node_ip_row(ip => '10.250.1.51', vrf => 'red')]));
+  like($alias, qr/10\.250\.1\.51<\/a>.*?in VRF red/s, 'node_by_ip labels a MAC\'s other addresses too');
 };
 
 done_testing;

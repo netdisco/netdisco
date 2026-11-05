@@ -161,7 +161,7 @@ get '/ajax/content/search/node' => require_login sub {
             { time_last_stamp =>  \"to_char(time_last, 'YYYY-MM-DD HH24:MI')" },
           ],
           join => 'manufacturer'
-      })->with_router;
+      })->with_router->with_l3_domain;
 
     my $netbios = schema(vars->{'tenant'})->resultset('NodeNbt')
       ->search({-and => [@where_mac, @active, @times]}, {
@@ -227,7 +227,7 @@ get '/ajax/content/search/node' => require_login sub {
 
             # search_by_ip() will extract cidr notation if necessary
             $set = schema(vars->{'tenant'})->resultset('NodeIp')
-              ->search_by_ip({ip => $ip, @active, @times})->with_router;
+              ->search_by_ip({ip => $ip, @active, @times})->with_router->with_l3_domain;
             ++$have_rows if $set->has_rows;
         }
         else {
@@ -237,7 +237,7 @@ get '/ajax/content/search/node' => require_login sub {
                                       (dns => "${likeval}.\%", suffix => setting('domain_suffix'))),
                   @active,
                   @times,
-                })->with_router;
+                })->with_router->with_l3_domain;
             ++$have_rows if $set->has_rows;
 
             # try DNS lookup as fallback
@@ -246,7 +246,7 @@ get '/ajax/content/search/node' => require_login sub {
 
                 if ($resolved_ip) {
                     $set = schema(vars->{'tenant'})->resultset('NodeIp')
-                      ->search_by_ip({ip => $resolved_ip, @active, @times})->with_router;
+                      ->search_by_ip({ip => $resolved_ip, @active, @times})->with_router->with_l3_domain;
                     ++$have_rows if $set->has_rows;
                 }
             }
@@ -260,7 +260,7 @@ get '/ajax/content/search/node' => require_login sub {
                   ->search(
                     {'manufacturer.company' => { -ilike => ''.sql_match($node)}, @times},
                     {'prefetch' => 'manufacturer'},
-                  )->with_router;
+                  )->with_router->with_l3_domain;
                 ++$have_rows if $set->has_rows;
             }
         }

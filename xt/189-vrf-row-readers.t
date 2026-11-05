@@ -115,8 +115,6 @@ subtest 'audit__left_as_they_are__unchanged' => sub {
       [ 'AND ((p.remote_ip NOT IN (SELECT alias FROM device_ip))' ],
     'lib/App/Netdisco/Web/Plugin/Device/Details.pm' =>
       [ 'my @interfaces = $device->device_ips->hri->all;' ],
-    'lib/App/Netdisco/Web/Plugin/Search/Node.pm' =>
-      [ "my \$ips = schema(vars->{'tenant'})->resultset('NodeIp')" ],
     'lib/App/Netdisco/Worker/Plugin/Expire.pm' =>
       [ "schema('netdisco')->resultset('NodeIp')->search({",
         "mac => { -in => schema('netdisco')->resultset('NodeIp')->search(" ],

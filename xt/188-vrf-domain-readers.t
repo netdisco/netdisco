@@ -128,6 +128,7 @@ subtest 'readers__switch_off_form__no_function_call_for_default_rows' => sub {
   my %sources = (
     'Subnet Utilization' => $subnet_sql,
     'IP Inventory' => $inventory_sql,
+    'Node search domain' => slurp('lib/App/Netdisco/DB/ResultSet/NodeIp.pm'),
     map { ($_ => $report{$_}{query}) }
       qw/devicesharedaddresses duplicateprivatenetworks/,
   );
