@@ -298,6 +298,7 @@ subtest 'iosxr_parse_vrf_list__default_and_repeated_rows__listed_once' => sub {
     . "default              not set\nred                  64512:10\nred                  64512:10\n";
   my ($names, $names_whole, $whole) = $IOSXR->can('_parse_vrf_list')->($text);
   is_deeply $names, [ 'red' ], 'default left out, red once';
+  is $names_whole, 1, 'a repeated row does not spoil the names';
   is $whole, 1, 'still a whole list';
   ($names, $names_whole, $whole) = $IOSXR->can('_parse_vrf_list')->("% Invalid input detected\n");
   is $whole, 0, 'an error and no header is not a list';
@@ -377,9 +378,11 @@ subtest 'voss_parse_blocks__global_router_bad_address_and_orphan_mac__handled' =
 };
 
 subtest 'voss_vrf_result__no_instance_id_not_listed__ignored' => sub {
-  my $result = $VOSS->can('_vrf_result')->([ 'red' ], { 1 => 'red' },
-    { entries => [], read => { red => 1 } }, { entries => [], read => {}, no_instance => [ 1, 7 ] }, 1);
-  is_deeply $result->{vrf_read}, { red => 1 }, 'red has no IPv6 instance; id 7 names no VRF';
+  # the global table is read for ARP but not for IPv6, so an unmapped id
+  # wrongly taken as the empty name would mark it whole
+  my $result = $VOSS->can('_vrf_result')->([ '', 'red' ], { 1 => 'red' },
+    { entries => [], read => { '' => 1, red => 1 } }, { entries => [], read => {}, no_instance => [ 1, 7 ] }, 1);
+  is_deeply $result->{vrf_read}, { '' => 0, red => 1 }, 'red has no IPv6 instance; id 7 names no VRF';
 };
 
 subtest 'voss_read_blocks__error_line__nothing_read' => sub {
@@ -479,7 +482,7 @@ my $SUBNETS = 'App::Netdisco::Worker::Plugin::Arpnip::Subnets';
 subtest 'vrf_subnet_cidr__unparsable_unspecified_and_private_v6__undef' => sub {
   my $cidr = $SUBNETS->can('vrf_subnet_cidr');
   with_settings(sub {
-    is $cidr->({ prefix => 'not-an-address', len => 24 }), undef, 'unparsable prefix';
+    is $cidr->({ prefix => '10.0.0.256', len => 24 }), undef, 'unparsable prefix';
     is $cidr->({ len => 24 }), undef, 'no prefix';
     is $cidr->({ prefix => '0.0.0.0', len => 8 }), undef, 'unspecified';
     is $cidr->({ prefix => '10.0.0.0', len => 33 }), undef, 'a length past the family';

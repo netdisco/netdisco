@@ -683,7 +683,7 @@ subtest 'discover__vrf_path_unusable_and_ignored_entries__left_out' => sub {
     address(7, '0:0:0:0:0:0:0:0', 64),
     address(7, '127.0.0.5', 8),
     address(7, 'fe80:0000:0000:0000:0000:0000:0000:0001', 64),
-    'x.bogus'  => { ifindex => 7, ip => 'not-an-address', prefix_len => 24, family => 'ipv4' },
+    'x.bogus'  => { ifindex => 7, ip => '10.0.0.256', prefix_len => 24, family => 'ipv4' },
     'x.noip'   => { ifindex => 7, ip => undef, family => 'ipv4' },
     'x.noport' => { ip => '10.43.0.1', family => 'ipv4' },
   };
@@ -693,7 +693,7 @@ subtest 'discover__vrf_path_unusable_and_ignored_entries__left_out' => sub {
     subnet('fe80:0000:0000:0000:0000:0000:0000:0000', 64, 7),
     'x.nolen'  => { prefix => '10.44.0.0' },
     'x.noprefix' => { len => 24 },
-    'x.bogus'  => { prefix => 'not-a-prefix', len => 24 },
+    'x.bogus'  => { prefix => 'zz::zz::zz', len => 24 },
   };
   my ($job) = with_settings(sub { run_discover(%fixture, interfaces => undef) },
     store_vrfs => 1, ignore_private_nets => 0);
@@ -712,9 +712,11 @@ subtest 'discover__vrf_path_unusable_and_ignored_entries__left_out' => sub {
   my ($red_vrf) = grep { $_->{vrf} eq 'red' } upserted('DeviceVrf');
   is_deeply [ @$red_vrf{qw/rd rt_import rt_export/} ], [ undef, [], [] ], 'absent RD and RT lists stored empty';
 
-  with_settings(sub { run_discover(%fixture) }, store_vrfs => 1, ignore_private_nets => 1);
-  is_deeply [ map { $_->{alias} } grep { $_->{vrf} eq 'red' } upserted('DeviceIp') ], [],
-    'ignore_private_nets drops the RFC 1918 aliases';
+  %{ $fixture{vrf}{red}{addresses} } = (%{ $fixture{vrf}{red}{addresses} }, address(7, '203.0.113.1', 24));
+  ($job) = with_settings(sub { run_discover(%fixture) }, store_vrfs => 1, ignore_private_nets => 1);
+  is $job->status, 'done', 'discover with ignore_private_nets finished';
+  is_deeply [ map { $_->{alias} } grep { $_->{vrf} eq 'red' } upserted('DeviceIp') ], [ '203.0.113.1' ],
+    'ignore_private_nets drops the RFC 1918 aliases, keeps the public one';
   is_deeply [ nets_in('red') ], [], 'and the RFC 1918 subnet';
 };
 
