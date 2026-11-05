@@ -35,6 +35,70 @@ App::Netdisco::Util::L3Domain
 
 Helper subroutines for grouping VRFs into layer 3 domains.
 
+A domain is a set of VRF instances (one per device) that form one routing
+network. Each VRF is keyed by the first evidence it has, in this order:
+
+=over 4
+
+=item 1. manual
+
+A C<vrf_domains> entry places it. Key C<manual:E<lt>domainE<gt>>.
+
+=item 2. L3 I-SID
+
+Key C<isid:E<lt>nE<gt>>. VRFs with the same L3 I-SID share a domain.
+
+=item 3. route targets
+
+Key C<rt:E<lt>importsE<gt>/E<lt>exportsE<gt>>. VRFs join only when their
+de-duplicated, sorted import and export sets are identical and at least one is
+non-empty. Hub, shared-services and extranet VRFs have different sets, so they
+never bridge customers. An identical route distinguisher is not evidence: the
+VRF Naming Inconsistencies report lists it as a hint.
+
+=item 4. name
+
+Key C<name:E<lt>vrfE<gt>>. The same name joins only VRFs that have neither an
+I-SID nor route targets.
+
+=back
+
+The key is stored in C<l3_domain.inferred_name>. A domain's display C<name> is
+its most common member VRF name (ties go to the alphabetically first), or the
+configured name for a manual domain. The default table (C<vrf = ''>) is domain
+0 and never has a key or member rows.
+
+The C<vrf_domains> setting is a flat list of entries, each C<< { domain,
+device, vrf, join } >>:
+
+  vrf_domains:
+    - domain: CUSTOMER-A
+      device: 192.0.2.1
+      vrf: blue
+      join: true                # brings in every VRF sharing blue's key
+    - domain: CUSTOMER-A
+      device: 192.0.2.10
+      vrf: RED-LITE             # a plain entry moves just this VRF
+    - domain: CUSTOMER-A
+      device: group:branch-ces  # every router in a host_groups group
+      vrf: RED-LITE
+
+When entries place one VRF more than once, the most specific wins: an IP
+entry, then a C<group:> entry, then a VRF brought in by another entry's
+C<join: true>. So a VRF can be split out even from inside a joined domain or a
+group. Within one level the alphabetically first domain name wins, with a
+warning.
+
+A C<group:> device is matched live with C<acl_matches_only> at every
+recompute. A group that holds a regular expression rule, directly or through
+another C<group:>, is refused with a warning: the ACL matcher answers such a
+rule with an uncached reverse DNS lookup per device, and the recompute runs on
+every discover, so a large group with slow DNS would add minutes to each one.
+IP, prefix, range, C<prop:> and C<tag:> rules are allowed.
+
+The entries are read through one function, C<manual_l3_entries>, so a table
+could supply them later without any other change to the recompute.
+
 There are no default exports, however the C<:all> tag will export all
 subroutines.
 
@@ -46,7 +110,8 @@ Returns a SQL SELECT over C<device_vrf> (named VRFs only) yielding C<ip>,
 C<vrf>, C<key>, C<reason> and C<display>. The C<key> is the first evidence the
 VRF has: C<isid:E<lt>nE<gt>> for an L3 I-SID, then
 C<rt:E<lt>importsE<gt>/E<lt>exportsE<gt>> when it has any route targets (each
-set de-duplicated and sorted, ignoring NULL and empty elements, so order and repeats do not matter), then
+set de-duplicated and sorted, ignoring NULL and empty elements, so order and
+repeats do not matter), then
 C<name:E<lt>vrfE<gt>>. C<reason> is the text stored on the member and
 C<display> is the VRF name, for naming the domain.
 
@@ -58,7 +123,7 @@ of a manual-domain table, which is why the setting is a flat list:
 
   vrf_domains:
     - domain: CUSTOMER-A
-      device: 10.0.0.1          # a PE: bring its whole L3VPN domain
+      device: 192.0.2.1         # a PE: bring its whole L3VPN domain
       vrf: blue
       join: true
     - domain: CUSTOMER-A
@@ -68,13 +133,15 @@ of a manual-domain table, which is why the setting is a flat list:
       device: group:branch-ces  # every CE in a named group
       vrf: RED-LITE
 
-C<device> is the address of any interface of a known device, returned as the
-device's canonical IP (all addresses are resolved in one query, by the rule
-C<get_device> uses), or exactly one C<group:E<lt>nameE<gt>> from
-C<host_groups>, returned unchanged. C<join> is false unless set. An entry that
-is malformed, names an unknown device, or names a group holding a regular
-expression rule (directly, or through another C<group:>) is skipped with a
-warning that says what to change. Returns C<[]> without querying when the
+C<device> is one full IP address of any interface of a known device (short
+forms such as C<10.1> are refused), returned as the device's canonical IP (all
+addresses are resolved in one query, by the rule C<get_device> uses), or exactly
+one C<group:E<lt>nameE<gt>> from C<host_groups>, returned unchanged. C<domain>
+and C<vrf> may not be empty or C<default> in any case. C<join> is false unless
+set. An entry that is malformed, names an unknown device, or names a group
+holding a regular expression rule (directly, or through another C<group:>) or
+a cycle of C<group:> references is skipped with a warning that says what to
+change. Returns C<[]> without querying when the
 setting is empty.
 
 =head2 manual_l3_members( $schema, \@entries )
@@ -86,16 +153,17 @@ and a C<join> entry also places every VRF sharing the evidence key of the VRF
 it placed, with C<direct> false. C<level> is C<ip>, C<group> or C<join>, the
 order that decides a pair claimed twice (an IP entry, then a group entry, then
 a joined VRF); within a level the alphabetically first domain wins, with a
-warning. An entry whose VRF is not in C<device_vrf> places nothing.
+warning. An entry whose VRF is not in C<device_vrf> places nothing and logs
+nothing; it takes effect once the device reports that VRF.
 
 =head2 recompute_l3_domains( $schema )
 
 Brings the members of C<l3_domain_member> into line with C<device_vrf> and the
 C<vrf_domains> setting. A VRF placed by a manual entry (see
-L</manual_l3_members>) is a C<manual> member of the domain keyed
+C<manual_l3_members>) is a C<manual> member of the domain keyed
 C<manual:E<lt>domainE<gt>>, named as configured. Every other VRF other than
 the default table joins the domain of its evidence key (see
-L</l3_domain_evidence_sql>), as an C<inferred> member. Domains are matched on
+C<l3_domain_evidence_sql>), as an C<inferred> member. Domains are matched on
 C<inferred_name>, which is unique; C<name> is for display and may repeat. An
 inferred domain is named after its most common member VRF name, ties going to
 the alphabetically first. The recompute owns the manual rows: it writes them to
@@ -104,9 +172,13 @@ returns the VRF to inference at the next recompute. Domains other than 0 left
 with no members are deleted. A domain keeps its id across recomputes while its
 key is in use.
 
-Only what changed is written. An unchanged network and setting write nothing.
+The evidence query is the expensive part, so it is materialized once per
+recompute, into a temporary table (C<l3_domain_desired>) that the insert,
+delete and rename steps all read. (Placing manual entries runs the same query
+filtered to the VRF names or keys they name.) Only what changed is written.
+An unchanged network and setting write nothing.
 
-Runs in one transaction under L</with_l3_domain_lock>. Returns the number of
+Runs in one transaction under C<with_l3_domain_lock>. Returns the number of
 member rows inserted plus deleted plus domains renamed, so 0 means everything
 was already right. Discover calls it once per device, after the transaction
 that refreshes C<device_vrf> commits.
