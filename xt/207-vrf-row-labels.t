@@ -76,6 +76,16 @@ subtest 'shipped_reports__shared_and_duplicate__vrf_column_omitted_when_empty' =
   }
 };
 
+subtest 'generic_report_controller__applies_column_options_to_every_output' => sub {
+  # without this call a shipped report's VRF column shows, empty, on every site
+  my $src = do { local (@ARGV, $/) = 'lib/App/Netdisco/Web/GenericReport.pm'; <> };
+  my $munger = index($src, 'my @results = ((-f $munger)');
+  my $omit = index($src, '@column_order = omit_empty_columns(\@results, \@column_order, \%column_config);');
+  my $branch = index($src, 'if (request->is_ajax) {');
+  cmp_ok($omit, '>', $munger, 'applied after the site munger');
+  cmp_ok($omit, '<', $branch, 'and before the HTML, CSV and API outputs split');
+};
+
 subtest 'generic_report_template__vrf_named__escaped' => sub {
   my ($html, $error) = render_template('ajax/report/generic_report.tt', {
     results => [{ alias => '10.0.0.1', vrf => '<b>R&D</b>', count => 2 }],
