@@ -418,6 +418,52 @@ subtest 'merge__switch_on__flattened_copy_of_named_entry_dropped' => sub {
   is scalar(grep { m/dropped 1 flattened/ } @logged), 1, 'one debug line with the count';
 };
 
+# A whole SNMP default read is the device's own word that the host is in the
+# default table, so a twin there is a genuine second binding (M-1). Only a
+# flattening collector or a default read that stayed partial (on Juniper, rows
+# of virtual routers mixed in) is untrusted.
+sub snmp_with_default_twin {
+  my ($default_complete) = @_;
+  my %snmp = snmp_fixture();
+  $snmp{vrf}{default} = { complete => $default_complete,
+    neighbors => { '7.10.40.0.5' => { ip => '10.40.0.5', mac => '00:11:22:33:44:07' } } };
+  return \%snmp;
+}
+
+subtest 'merge__whole_snmp_default_read__genuine_twin_kept' => sub {
+  run_arpnip(snmp => snmp_with_default_twin(1));
+  is entries(), join(' ', sort '10.40.0.5|00:11:22:33:44:07|red', '10.40.0.5|00:11:22:33:44:07|'),
+    'the default-table entry and the red entry are both stored';
+  is scalar(grep { m/dropped \d+ flattened/ } @logged), 0, 'no drop line';
+};
+
+subtest 'merge__partial_snmp_default_read__twin_dropped' => sub {
+  run_arpnip(snmp => snmp_with_default_twin(0));
+  is entries(), '10.40.0.5|00:11:22:33:44:07|red', 'only the red entry remains';
+  is scalar(grep { m/dropped 1 flattened/ } @logged), 1, 'one debug line with the count';
+};
+
+subtest 'merge__whole_snmp_default_entry_and_cli_flat_copy__snmp_entry_wins' => sub {
+  # the CLI driver runs after SNMP and its flat copy has the same cache key
+  run_arpnip(platform => FlatPlatform->new(flat => [ { ip => '10.40.0.5', mac => '00:11:22:33:44:07' } ]),
+    snmp => snmp_with_default_twin(1));
+  is entries(), join(' ', sort '10.40.0.5|00:11:22:33:44:07|red', '10.40.0.5|00:11:22:33:44:07|'),
+    'the default-table entry from the whole SNMP read is kept beside red';
+};
+
+subtest 'merge__flattened_tag__not_passed_to_store_arp' => sub {
+  my $snmp = snmp_with_default_twin(0);
+  $snmp->{vrf}{default}{neighbors}{'7.10.40.0.9'} = { ip => '10.40.0.9', mac => '00:11:22:33:44:09' };
+  run_arpnip(snmp => $snmp);
+  my ($partial) = grep { $_->{ip} eq '10.40.0.9' } @stored;
+  ok $partial, 'an untwinned entry of a partial default read is stored';
+  ok !exists $partial->{flattened}, 'without the tag';
+  merge_run([ { ip => '192.0.2.10', mac => '00:11:22:33:44:01' } ]);
+  my ($flat) = grep { $_->{ip} eq '192.0.2.10' } @stored;
+  ok $flat, 'an untwinned CLI flat entry is stored';
+  ok !exists $flat->{flattened}, 'without the tag';
+};
+
 subtest 'merge__switch_off__nothing_dropped' => sub {
   # a flat-path platform may hand back vrf keys; the switch alone decides
   my @pair = ({ ip => '10.40.0.5', mac => '00:11:22:33:44:07', vrf => 'red' },
@@ -473,7 +519,7 @@ subtest 'merge__unparsable_named_entry_before_valid_one__valid_twin_still_droppe
   vars->{'arps'} = [
     { ip => '10.40.0.9', mac => 'not-a-mac', vrf => 'red' },
     { ip => '10.40.0.5', mac => '00:11:22:33:44:07', vrf => 'red' },
-    { ip => '10.40.0.5', mac => '00:11:22:33:44:07' },
+    { ip => '10.40.0.5', mac => '00:11:22:33:44:07', flattened => 1 },
   ];
   $drop->($device);
   is scalar(@{ vars->{'arps'} }), 2, 'the flat twin of the valid named entry is dropped';

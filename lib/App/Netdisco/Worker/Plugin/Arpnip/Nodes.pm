@@ -54,6 +54,7 @@ register_worker({ phase => 'store', title => 'store ARP cache' }, sub {
     drop_flattened_twins($device);
     drop_own_entries($device);
   }
+  delete $_->{flattened} for @{ vars->{'arps'} };
 
   vars->{'arps'} = [ grep { check_mac(($_->{node} || $_->{mac}), $device) }
                           @{ vars->{'arps'} } ];
@@ -106,20 +107,19 @@ register_worker({ phase => 'main', driver => 'snmp' }, sub {
     return Status->done("Gathered arp caches from $device");
   }
 
-  # cache v4 arp table
-  map { vars->{'arps'}->{ memoize_arp($_) } = $_ }
-      get_arps_snmp($device, $snmp->at_paddr, $snmp->at_netaddr);
-
-  # cache v6 neighbor cache
-  map { vars->{'arps'}->{ memoize_arp($_) } = $_ }
-      get_arps_snmp($device, $snmp->ipv6_n2p_mac, $snmp->ipv6_n2p_addr);
+  # cache v4 arp table, then the v6 neighbor cache; with no VRF support these
+  # tables may hold any VRF's hosts, so they count as flattened
+  cache_arp($_, 1) for get_arps_snmp($device, $snmp->at_paddr, $snmp->at_netaddr);
+  cache_arp($_, 1) for get_arps_snmp($device, $snmp->ipv6_n2p_mac, $snmp->ipv6_n2p_addr);
 
   return Status->done("Gathered arp caches from $device");
 });
 
-# a flattening CLI collector reports a host with no VRF that a VRF-aware driver
-# reported under its VRF in the same job; keep only the named one. Accepted
-# edge: a host really in both '' and a named VRF keeps only the named row.
+# a flattening collector, or a default read left partial because other
+# instances' rows are mixed into it, reports a host with no VRF that a
+# VRF-aware driver reported under its VRF in the same job; keep only the named
+# one. An entry from a whole default read is the device's own word, so a host
+# in both '' and a named VRF there keeps both rows.
 sub drop_flattened_twins {
   my ($device) = @_;
   my $key_of = sub {
@@ -133,7 +133,7 @@ sub drop_flattened_twins {
               grep { length($_->{vrf} // '') } @{ vars->{'arps'} };
   return unless %named;
 
-  my @kept = grep { my $key = (length($_->{vrf} // '') ? undef : $key_of->($_));
+  my @kept = grep { my $key = (($_->{flattened} and not length($_->{vrf} // '')) ? $key_of->($_) : undef);
                     not (defined $key and $named{$key}) } @{ vars->{'arps'} };
   my $dropped = scalar(@{ vars->{'arps'} }) - scalar(@kept);
   vars->{'arps'} = \@kept;
@@ -224,12 +224,27 @@ sub gather_arps_per_vrf {
 
   foreach my $vrf (sort keys %$reads) {
     my $neighbors = $reads->{$vrf}->{data} || {};
+    # a partial default read may hold rows of instances mixed into it
+    my $flattened = ($vrf eq '' and not $reads->{$vrf}->{complete});
     foreach my $key (sort keys %$neighbors) {
-      my $arp = { mac => $neighbors->{$key}->{mac}, ip => $neighbors->{$key}->{ip},
-                  dns => undef, vrf => $vrf };
-      vars->{'arps'}->{ memoize_arp($arp) } = $arp;
+      cache_arp({ mac => $neighbors->{$key}->{mac}, ip => $neighbors->{$key}->{ip},
+                  dns => undef, vrf => $vrf }, $flattened);
     }
   }
+}
+
+# Caches one ARP entry. A flattened entry is tagged for drop_flattened_twins
+# and never replaces an untagged entry for the same host, whichever driver ran
+# first.
+sub cache_arp {
+  my ($arp, $flattened) = @_;
+  my $key = memoize_arp($arp) // return;
+  if ($flattened) {
+    my $cached = vars->{'arps'}->{$key};
+    return if $cached and not $cached->{flattened};
+    $arp->{flattened} = 1;
+  }
+  vars->{'arps'}->{$key} = $arp;
 }
 
 # get an arp table (v4 or v6)
@@ -264,8 +279,7 @@ register_worker({ phase => 'main', driver => 'cli' }, sub {
   }
 
   # should be both v4 and v6
-  map { vars->{'arps'}->{ memoize_arp($_) } = $_ }
-      $cli->arpnip;
+  cache_arp($_, 1) for $cli->arpnip;
 
   return Status->done("Gathered arp caches from $device");
 });

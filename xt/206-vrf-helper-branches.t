@@ -407,10 +407,10 @@ my $NODES = 'App::Netdisco::Worker::Plugin::Arpnip::Nodes';
 subtest 'drop_flattened_twins__entries_without_mac_or_ip__kept' => sub {
   vars->{'arps'} = [
     { mac => '02:00:00:00:00:01', ip => '10.0.0.1', vrf => 'red' },
-    { mac => '02:00:00:00:00:01', ip => '10.0.0.1', vrf => '' },
-    { node => '02:00:00:00:00:02', ip => '10.0.0.2' },
+    { mac => '02:00:00:00:00:01', ip => '10.0.0.1', vrf => '', flattened => 1 },
+    { node => '02:00:00:00:00:02', ip => '10.0.0.2', flattened => 1 },
     { ip => '10.0.0.3', vrf => 'red' },
-    { mac => '02:00:00:00:00:04', vrf => '' },
+    { mac => '02:00:00:00:00:04', vrf => '', flattened => 1 },
   ];
   $NODES->can('drop_flattened_twins')->($device);
   is_deeply [ map { join '|', $_->{ip} // '-', $_->{vrf} // '-' } @{ vars->{'arps'} } ],
