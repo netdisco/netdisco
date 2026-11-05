@@ -3,10 +3,10 @@
 use strict;
 use warnings;
 
-# recompute_l3_domains infers domains from evidence keys (I-SID, route targets,
-# else the VRF name). It must never
-# touch a manual member, never delete domain 0, and keep domain ids stable by
-# reusing a domain that already has the name. It runs on every discover with
+# recompute_l3_domains puts each VRF in the domain of its evidence key (I-SID,
+# route targets, else the VRF name) unless a vrf_domains entry places it. It
+# owns the manual member rows too (xt/211), never deletes domain 0, and keeps
+# domain ids stable by reusing a domain that already has the key. It runs on every discover with
 # store_vrfs on, so it writes only what changed: an unchanged network deletes
 # and inserts nothing. Only the database handle is faked; these check the SQL
 # and binds sent.
@@ -79,7 +79,7 @@ subtest 'recompute__no_full_clear__deletes_only_members_that_no_longer_qualify' 
   my (undef, undef, undef, $stale) = run_recompute();
   unlike($stale->[0], qr/^\s*DELETE FROM l3_domain_member WHERE source = 'inferred'\s*$/,
     'not every inferred member');
-  like($stale->[0], qr/source = 'inferred'/, 'inferred members only, so manual rows are never deleted');
+  unlike($stale->[0], qr/source = 'inferred'/, 'manual rows are deleted when no entry wants them');
   like($stale->[0], qr/NOT EXISTS \(SELECT 1 FROM \(.*\) e\s+JOIN l3_domain l ON l\.inferred_name = e\.key/s,
     'kept only while its evidence key has that domain');
   like($stale->[0], qr/e\.ip = \w+\.ip AND e\.vrf = \w+\.vrf/, 'matched on the pair');
@@ -95,12 +95,12 @@ subtest 'recompute__missing_members_only__any_member_of_the_pair_blocks_the_inse
     'a name with a domain is reused');
 };
 
-# otherwise a name held only by manual members gets a domain that the last
+# otherwise a name held only by manual pairs gets a domain that the last
 # statement deletes, on every run
-subtest 'recompute__name_held_only_by_manual_members__no_domain_created' => sub {
+subtest 'recompute__name_held_only_by_manual_pairs__no_domain_created' => sub {
   my (undef, undef, $domains) = run_recompute();
-  like($domains->[0], qr/NOT EXISTS \(SELECT 1 FROM l3_domain_member m\s+WHERE m\.ip = e\.ip AND m\.vrf = e\.vrf AND m\.source = 'manual'\)/,
-    'only a name with a pair left to infer');
+  like($domains->[0], qr/WHERE NOT EXISTS \(SELECT 1 FROM man WHERE man\.ip = e\.ip AND man\.vrf = e\.vrf\)\) e\s+WHERE NOT EXISTS \(SELECT 1 FROM l3_domain x/s,
+    'a pair a manual entry claims is not also inferred, so its evidence key makes no domain');
 };
 
 subtest 'recompute__default_domain__never_deleted' => sub {
@@ -113,9 +113,9 @@ subtest 'recompute__default_domain__never_deleted' => sub {
 
 subtest 'recompute__reason__comes_from_the_evidence' => sub {
   my (undef, undef, undef, undef, $members) = run_recompute();
-  like($members->[0], qr/SELECT e\.ip, e\.vrf, l\.id, e\.reason, 'inferred'/);
+  like($members->[0], qr/SELECT e\.ip, e\.vrf, l\.id, e\.reason, e\.source/);
   like($members->[0], qr/'same name ' \|\| d\.vrf/, 'evidence fragment embedded');
-  like($members->[0], qr/'inferred'/);
+  like($members->[0], qr/'inferred' AS source/, 'evidence rows are inferred members');
   like($members->[0], qr/JOIN l3_domain \w+ ON \w+\.inferred_name = e\.key/, 'domain by inferred name');
 };
 

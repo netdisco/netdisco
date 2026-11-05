@@ -769,6 +769,7 @@ store_vrfs: false
 skip_vrf_devices: []
 vrf_no_name: []
 vrf_no_devicevrf: []
+vrf_domains: []
 snmp_charset:
   'group:__ANY__': []
 ignore_deviceports:
