@@ -59,7 +59,7 @@ subtest 'step_104_105__vrf_function__one_parallel_safe_statement_costed_as_cheap
 subtest 'step_104_105__view__one_scan_of_device_ip_with_no_set_operation' => sub {
   my @views = grep { /^CREATE OR REPLACE VIEW device_ip_resolved AS/ } @statements;
   is(scalar @views, 1, 'one view statement');
-  like($views[0], qr/^CREATE OR REPLACE VIEW device_ip_resolved AS\s+SELECT d\.ip, d\.alias FROM device_ip d\s+WHERE d\.vrf = '' OR device_ip_vrf_row_resolves\(d\.ip, d\.alias, d\.vrf\)$/,
+  like($views[0], qr/^CREATE OR REPLACE VIEW device_ip_resolved AS\s+SELECT d\.ip, d\.alias, d\.dns FROM device_ip d\s+WHERE d\.vrf = '' OR device_ip_vrf_row_resolves\(d\.ip, d\.alias, d\.vrf\)$/,
     'default rows as recorded, named-VRF rows through the function');
   unlike($views[0], qr/\b(?:UNION|GROUP BY|DISTINCT|HAVING|EXISTS)\b|\b(?:min|max|count|array_agg)\(/i,
     'no set operation, grouping, aggregate or inline subquery');
@@ -97,7 +97,7 @@ subtest 'result_class__device_ip_resolved__is_a_view_on_device_ip_resolved' => s
   my $source = $package->result_source_instance;
   is($source->name, 'device_ip_resolved', 'view name');
   ok(!$source->is_virtual, 'a real database view');
-  is_deeply([ $source->columns ], [qw(ip alias)], 'columns');
+  is_deeply([ $source->columns ], [qw(ip alias)], 'columns: dns stays out, so resolve_alias stays index-only');
 };
 
 subtest 'schema_version__is_105' => sub {

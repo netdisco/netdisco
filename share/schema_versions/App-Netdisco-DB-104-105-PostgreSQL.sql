@@ -18,6 +18,8 @@ ALTER TABLE subnets ADD CONSTRAINT subnets_pkey PRIMARY KEY (net, vrf);
 -- table, and either it is the device's own address or no other device holds
 -- it in any VRF. A device listing it in several VRFs gives one row.
 -- With every vrf = '' the view returns device_ip's (ip, alias) pairs exactly.
+-- The row kept is the pair's lowest VRF, the row ORDER BY vrf LIMIT 1 would
+-- pick, so its dns matches that lookup.
 --
 -- One scan of device_ip keeps its statistics and lets alias = ? reach its
 -- indexes. A UNION ALL view loses the statistics and inline NOT EXISTS is
@@ -34,7 +36,7 @@ CREATE OR REPLACE FUNCTION device_ip_vrf_row_resolves(row_ip inet, row_alias ine
   $$;
 
 CREATE OR REPLACE VIEW device_ip_resolved AS
-  SELECT d.ip, d.alias FROM device_ip d
+  SELECT d.ip, d.alias, d.dns FROM device_ip d
     WHERE d.vrf = '' OR device_ip_vrf_row_resolves(d.ip, d.alias, d.vrf);
 
 -- Lets alias lookups through the view stay index-only. idx_device_ip_alias

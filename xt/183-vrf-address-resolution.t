@@ -84,6 +84,12 @@ subtest 'address_to_device_joins__use_device_ip_resolved' => sub {
     'DeviceLinks keeps its one-device condition against the view';
 };
 
+subtest 'acl_entries_with_dns__dns_read_from_the_view__no_per_row_subquery' => sub {
+  my $src = Path::Tiny::path("$virtual/ACLEntriesWithDNS.pm")->slurp_utf8;
+  like $src, qr/COALESCE\(device_ip\.dns,d1\.dns,d1\.name\)/, 'dns comes from the resolved row';
+  unlike $src, qr/SELECT dip\.dns/, 'no correlated dns subquery, which pushed the view into JIT';
+};
+
 subtest 'existence_checks__still_read_device_ip' => sub {
   like Path::Tiny::path("$virtual/UndiscoveredNeighbors.pm")->slurp_utf8, qr/device_ip\b(?!_resolved)/;
   unlike Path::Tiny::path("$virtual/UndiscoveredNeighbors.pm")->slurp_utf8, qr/device_ip_resolved/;

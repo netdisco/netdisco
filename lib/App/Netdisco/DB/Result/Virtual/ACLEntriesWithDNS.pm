@@ -20,8 +20,7 @@ SELECT id,
           WHEN d3.ip IS NOT NULL
             THEN host(d3.ip)
           ELSE
-            COALESCE((SELECT dip.dns FROM device_ip dip WHERE dip.ip = device_ip.ip
-                       AND dip.alias = device_ip.alias ORDER BY dip.vrf LIMIT 1),d1.dns,d1.name)
+            COALESCE(device_ip.dns,d1.dns,d1.name)
           END
       ]) AS ruleset
   FROM (SELECT id,
