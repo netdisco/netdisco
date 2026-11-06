@@ -15,7 +15,9 @@ SELECT 'different names' AS finding,
        d.name AS domain,
        array_agg(DISTINCT m.vrf ORDER BY m.vrf) AS vrfs,
        count(DISTINCT m.ip)::integer AS devices,
-       'domain holds ' || array_to_string(array_agg(DISTINCT m.vrf ORDER BY m.vrf), ', ') AS detail
+       'domain holds ' || array_to_string(array_agg(DISTINCT m.vrf ORDER BY m.vrf), ', ') AS detail,
+       NULL::text AS subnet, NULL::text AS lo_ip, NULL::text AS hi_ip,
+       NULL::text AS lo_dns, NULL::text AS lo_name, NULL::text AS hi_dns, NULL::text AS hi_name
   FROM l3_domain_member m
   JOIN l3_domain d ON d.id = m.domain_id
  WHERE m.vrf <> ''
@@ -27,7 +29,9 @@ SELECT 'similar names' AS finding,
        (array_agg(d.name ORDER BY m.vrf, m.domain_id))[1] AS domain,
        array_agg(DISTINCT m.vrf ORDER BY m.vrf) AS vrfs,
        count(DISTINCT m.ip)::integer AS devices,
-       'case or punctuation' AS detail
+       'case or punctuation' AS detail,
+       NULL::text AS subnet, NULL::text AS lo_ip, NULL::text AS hi_ip,
+       NULL::text AS lo_dns, NULL::text AS lo_name, NULL::text AS hi_dns, NULL::text AS hi_name
   FROM l3_domain_member m
   JOIN l3_domain d ON d.id = m.domain_id
  WHERE m.vrf <> ''
@@ -41,7 +45,9 @@ SELECT 'shared RD' AS finding,
        (array_agg(d.name ORDER BY v.vrf, m.domain_id))[1] AS domain,
        array_agg(DISTINCT v.vrf ORDER BY v.vrf) AS vrfs,
        count(DISTINCT v.ip)::integer AS devices,
-       'RD ' || v.rd AS detail
+       'RD ' || v.rd AS detail,
+       NULL::text AS subnet, NULL::text AS lo_ip, NULL::text AS hi_ip,
+       NULL::text AS lo_dns, NULL::text AS lo_name, NULL::text AS hi_dns, NULL::text AS hi_name
   FROM device_vrf v
   JOIN l3_domain_member m ON m.ip = v.ip AND m.vrf = v.vrf
   JOIN l3_domain d ON d.id = m.domain_id
@@ -54,7 +60,9 @@ SELECT 'linked, one subnet' AS finding,
        COALESCE(d.name, '') AS domain,
        ARRAY[p.lo_vrf, p.hi_vrf] AS vrfs,
        2 AS devices,
-       'subnet ' || p.subnet || ' between ' || host(p.lo_ip) || ' and ' || host(p.hi_ip) AS detail
+       'subnet ' || p.subnet || ' between ' || host(p.lo_ip) || ' and ' || host(p.hi_ip) AS detail,
+       p.subnet::text AS subnet, host(p.lo_ip) AS lo_ip, host(p.hi_ip) AS hi_ip,
+       dl.dns AS lo_dns, dl.name AS lo_name, dh.dns AS hi_dns, dh.name AS hi_name
   FROM (
     SELECT DISTINCT
            CASE WHEN l.a_ip < l.b_ip THEN l.a_ip ELSE l.b_ip END AS lo_ip,
@@ -81,6 +89,8 @@ SELECT 'linked, one subnet' AS finding,
       ) l
   ) p
   LEFT JOIN l3_domain d ON d.id = p.lo_domain
+  LEFT JOIN device dl ON dl.ip = p.lo_ip
+  LEFT JOIN device dh ON dh.ip = p.hi_ip
 ENDSQL
 
 __PACKAGE__->add_columns(
@@ -94,6 +104,20 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 0 },
   "detail",
   { data_type => "text", is_nullable => 0 },
+  "subnet",
+  { data_type => "text", is_nullable => 1 },
+  "lo_ip",
+  { data_type => "text", is_nullable => 1 },
+  "hi_ip",
+  { data_type => "text", is_nullable => 1 },
+  "lo_dns",
+  { data_type => "text", is_nullable => 1 },
+  "lo_name",
+  { data_type => "text", is_nullable => 1 },
+  "hi_dns",
+  { data_type => "text", is_nullable => 1 },
+  "hi_name",
+  { data_type => "text", is_nullable => 1 },
 );
 
 1;

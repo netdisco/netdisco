@@ -15,7 +15,7 @@ use Test::More 0.88;
 use App::Netdisco;
 use Dancer ':syntax';
 use App::Netdisco::Web::Plugin::Report::VrfInconsistency;
-use JSON::PP ();
+use App::Netdisco::DB::Result::Virtual::VrfInconsistency;
 use lib 'xt/lib';
 use Test::Netdisco::Snapshot qw/render_template/;
 
@@ -77,16 +77,22 @@ my @rows = (
   { finding => 'shared RD', domain => 'BLUE', vrfs => ['BLUE', 'GREEN'], devices => 2, detail => 'RD 65000:1' },
 );
 
+# the stash the route's template sees, as Web.pm fills it for every render
+sub report_html {
+  my @results = @_;
+  return render_template('ajax/report/vrfinconsistency.tt',
+    { results => \@results, uri_for => sub { $_[0] }, search_device => '/search?tab=device' });
+}
+
 subtest 'templates__results_empty_and_filled__render' => sub {
-  my $json = JSON::PP->new->canonical->encode(\@rows);
-  foreach my $case (['empty', '[]', []], ['filled', $json, \@rows]) {
-    my ($label, $html_results, $csv_results) = @$case;
-    my ($html, $error) = render_template('ajax/report/vrfinconsistency.tt', { results => $html_results });
+  foreach my $case (['empty', []], ['filled', \@rows]) {
+    my ($label, $results) = @$case;
+    my ($html, $error) = report_html(@$results);
     is $error, undef, "html renders ($label)";
     like $html, qr/VRF Naming|<th>Finding<\/th>/, 'has the Finding column';
     like $html, qr/RED/, 'carries the rows' if $label eq 'filled';
 
-    my ($csv, $csv_error) = render_template('ajax/report/vrfinconsistency_csv.tt', { results => $csv_results, headings => [] });
+    my ($csv, $csv_error) = render_template('ajax/report/vrfinconsistency_csv.tt', { results => $results, headings => [] });
     is $csv_error, undef, "csv renders ($label)";
     like $csv, qr/^Finding,Domain,VRFs,Devices,Detail/, 'csv header';
     like $csv, qr/^"different names",RED,"RED,Red",2,"domain holds RED, Red"$/m, 'csv row joins the names'
@@ -94,15 +100,13 @@ subtest 'templates__results_empty_and_filled__render' => sub {
   }
 };
 
-subtest 'template__vrf_name_with_markup__escaped_in_data_block' => sub {
+subtest 'template__vrf_name_with_markup__escaped_in_the_cells' => sub {
   my $hostile = '</script><b>R&D</b>';
-  my $json = JSON::PP->new->canonical->encode([
-    { finding => 'shared RD', domain => 'X', vrfs => [$hostile], devices => 1, detail => $hostile },
-  ]);
-  my ($html, $error) = render_template('ajax/report/vrfinconsistency.tt', { results => $json });
+  my ($html, $error) = report_html(
+    { finding => 'shared RD', domain => $hostile, vrfs => [$hostile], devices => 1, detail => $hostile });
   is $error, undef, 'renders';
-  unlike $html, qr{</script><b>}, 'no raw script terminator from device data';
-  like $html, qr/\\u003c\/script>\\u003cb>R&D/, 'the data block escapes <';
+  unlike $html, qr{<b>R&D</b>}, 'no raw markup from device data';
+  like $html, qr{&lt;/script&gt;&lt;b&gt;R&amp;D&lt;/b&gt;}, 'escaped';
 };
 
 subtest 'virtual__linked_branch__pairs_reduced_before_device_ip_join' => sub {
@@ -122,6 +126,54 @@ subtest 'virtual__similar_names__empty_normalized_excluded' => sub {
 subtest 'virtual__linked_same_address_both_sides__not_reported' => sub {
   my ($branch) = grep { /'linked, one subnet'/ } @branches;
   like $branch, qr/ia\.alias\s*<>\s*ib\.alias/, 'the two sides must hold different addresses';
+};
+
+# The detail sentence of a linked finding names a subnet and two devices; the
+# report links each, so the view returns them as their own columns rather than
+# leaving the renderer to read them back out of the text.
+subtest 'virtual__linked_branch__subnet_and_both_ends_as_columns' => sub {
+  my ($branch) = grep { /'linked, one subnet'/ } @branches;
+  like $branch, qr/p\.subnet::text AS subnet,\s*host\(p\.lo_ip\) AS lo_ip,\s*host\(p\.hi_ip\) AS hi_ip,\s*dl\.dns AS lo_dns,\s*dl\.name AS lo_name,\s*dh\.dns AS hi_dns,\s*dh\.name AS hi_name/,
+    'subnet, and the address, stored DNS name and name of each device';
+  like $branch, qr/LEFT JOIN device dl ON dl\.ip = p\.lo_ip\s+LEFT JOIN device dh ON dh\.ip = p\.hi_ip/, 'each end joined to its device';
+  foreach my $other (grep { !/'linked, one subnet'/ } @branches) {
+    my ($finding) = $other =~ /'([^']+)' AS finding/;
+    like $other, qr/NULL::text AS subnet,\s*NULL::text AS lo_ip,\s*NULL::text AS hi_ip,\s*NULL::text AS lo_dns,\s*NULL::text AS lo_name,\s*NULL::text AS hi_dns,\s*NULL::text AS hi_name/, "$finding has none";
+  }
+  my $source = App::Netdisco::DB::Result::Virtual::VrfInconsistency->result_source_instance;
+  foreach my $column (qw/subnet lo_ip hi_ip lo_dns lo_name hi_dns hi_name/) {
+    ok $source->has_column($column), "$column is a column";
+    ok $source->column_info($column)->{is_nullable}, "$column is nullable";
+  }
+};
+
+subtest 'template__linked_row__links_the_subnet_and_both_devices' => sub {
+  my ($html, $error) = report_html({ finding => 'linked, one subnet', domain => 'RED', vrfs => ['RED', 'Red'],
+    devices => 2, detail => 'subnet 10.110.23.0/30 between 172.20.20.62 and 172.20.20.63',
+    subnet => '10.110.23.0/30', lo_ip => '172.20.20.62', hi_ip => '172.20.20.63',
+    lo_dns => 'r2.lab.example', lo_name => 'r2', hi_dns => undef, hi_name => 'r3' });
+  is $error, undef, 'renders';
+  (my $flat = $html) =~ s/\s+/ /g;
+  like $flat, qr{subnet <a href="/search\?tab=device&q=10\.110\.23\.0%2F30&ip=10\.110\.23\.0%2F30">10\.110\.23\.0/30</a>},
+    'the subnet links to the devices in it';
+  like $flat, qr{between <a href="/device\?q=172\.20\.20\.62">r2\.lab\.example</a> and <a href="/device\?q=172\.20\.20\.63">r3</a>},
+    'each end links to its device, labelled DNS name, else name';
+};
+
+subtest 'template__other_findings__detail_as_text' => sub {
+  my ($html, $error) = report_html(@rows);
+  is $error, undef, 'renders';
+  like $html, qr{domain holds RED, Red}, 'detail shown';
+  unlike $html, qr{<a href}, 'nothing to link';
+};
+
+subtest 'template__linked_row_device_unnamed__labelled_by_address' => sub {
+  my ($html, $error) = report_html({ finding => 'linked, one subnet', domain => '', vrfs => ['A', 'B'], devices => 2,
+    detail => 'subnet 10.0.0.0/30 between 10.0.0.1 and 10.0.0.2', subnet => '10.0.0.0/30',
+    lo_ip => '10.0.0.1', hi_ip => '10.0.0.2', lo_dns => '', lo_name => undef, hi_dns => undef, hi_name => '' });
+  is $error, undef, 'renders';
+  like $html, qr{<a href="/device\?q=10\.0\.0\.1">10\.0\.0\.1</a>}, 'no DNS name or name: the address';
+  like $html, qr{<a href="/device\?q=10\.0\.0\.2">10\.0\.0\.2</a>}, 'empty strings count as unset';
 };
 
 done_testing;

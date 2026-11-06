@@ -22,8 +22,7 @@ get '/ajax/content/report/vrfinconsistency' => require_login sub {
     return unless scalar @results;
 
     if ( request->is_ajax ) {
-        my $json = to_json (\@results);
-        template 'ajax/report/vrfinconsistency.tt', { results => $json }, { layout => 'noop' };
+        template 'ajax/report/vrfinconsistency.tt', { results => \@results }, { layout => 'noop' };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
