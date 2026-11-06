@@ -281,7 +281,7 @@ sub record_cli_vrfs {
     $changed += ($gone eq '0E0' ? 0 : $gone);
   }
   my $schema = schema(vars->{'tenant'});
-  try { recompute_l3_domains($schema) if l3_domain_recompute_needed($schema, $changed) }
+  try { recompute_l3_domains($schema) if l3_domain_recompute_needed($schema, $changed, 'by arpnip') }
   catch { warning sprintf ' [%s] arpnip - L3 domain recompute failed, the next discover that finds a change retries: %s',
     $device->ip, $_ };
   return $changed;

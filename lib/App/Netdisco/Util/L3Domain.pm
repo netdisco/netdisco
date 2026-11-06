@@ -623,7 +623,7 @@ sub recompute_l3_domains {
   return $written;
 }
 
-=head2 l3_domain_recompute_needed( $schema, $device_changed )
+=head2 l3_domain_recompute_needed( $schema, $device_changed, $by_arpnip? )
 
 True when a caller that has just refreshed one device's C<device_vrf> rows
 should run C<recompute_l3_domains>, false when the recompute would find
@@ -636,13 +636,13 @@ nothing to change. It is true when any of these holds:
 The caller found that the device's evidence changed (VRFs added or removed
 count). No SQL runs.
 
-=item 2. C<vrf_domains> is set
+=item 2. C<vrf_domains> is set (not for arpnip)
 
 Any non-empty value, a malformed one included, so that the recompute warns
 about it. Group membership can change with no device change, so a configured
 site recomputes every time.
 
-=item 3. C<l3_domain_member> holds a C<manual> row
+=item 3. C<l3_domain_member> holds a C<manual> row (not for arpnip)
 
 This covers removing the last C<vrf_domains> entry.
 
@@ -665,6 +665,10 @@ domain. It is checked last, as the most expensive.
 
 =back
 
+Arpnip passes C<$by_arpnip>. It runs hourly, so it leaves 2 and 3 to the
+device's daily discover, which picks up a C<vrf_domains> or group membership
+change.
+
 An evidence change on another device is recomputed by that device's own
 discover. A failed recompute after a pure route-target or I-SID change (no VRF
 added or removed) stays stale until the next change. So does the display name of a domain that
@@ -683,21 +687,22 @@ sub _vrf_domains_is_set {
 }
 
 sub l3_domain_recompute_needed {
-  my ($schema, $device_changed) = @_;
+  my ($schema, $device_changed, $by_arpnip) = @_;
   return 1 if $device_changed;
-  return 1 if _vrf_domains_is_set(setting('vrf_domains'));
+  return 1 if not $by_arpnip and _vrf_domains_is_set(setting('vrf_domains'));
 
   return $schema->storage->dbh_do(sub {
     my (undef, $dbh) = @_;
-    $dbh->selectrow_array($_) and return 1 for _recompute_needed_sql();
+    $dbh->selectrow_array($_) and return 1 for _recompute_needed_sql($by_arpnip);
     return 0;
   });
 }
 
 # cheapest first, and the caller stops at the first true
 sub _recompute_needed_sql {
+  my $by_arpnip = shift;
   return (
-    q{SELECT EXISTS (SELECT 1 FROM l3_domain_member WHERE source = 'manual')},
+    ($by_arpnip ? () : q{SELECT EXISTS (SELECT 1 FROM l3_domain_member WHERE source = 'manual')}),
     q{SELECT EXISTS (SELECT 1 FROM l3_domain
       WHERE id <> 0 AND (inferred_name IS NULL OR position(':' IN inferred_name) = 0))},
     q{SELECT EXISTS (SELECT 1 FROM device_vrf d WHERE d.vrf <> ''

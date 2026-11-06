@@ -6,7 +6,8 @@ use warnings;
 # Discover and CLI arpnip recompute L3 domains only when something the
 # recompute reads may have changed: the device's own evidence (decided by the
 # caller), a configured vrf_domains, a manual member row left behind, or a
-# domain key from before evidence keys. The recompute holds a network-wide lock
+# domain key from before evidence keys. Arpnip runs hourly, so it leaves the
+# configured reasons to the daily discover and recomputes only on its own change or a repair. The recompute holds a network-wide lock
 # for 0.3-0.7 s at 10k named VRF rows, and a poller recycles after every job,
 # so nothing can be remembered between runs. Only the database handle is
 # faked; the SQL itself is run against PostgreSQL by hand (see the task report).
@@ -45,7 +46,7 @@ sub needed {
   @queries = ();
   my $saved = setting('vrf_domains');
   set(vrf_domains => $settings{vrf_domains} // []);
-  my $result = l3_domain_recompute_needed(FakeSchema->new, $changed);
+  my $result = l3_domain_recompute_needed(FakeSchema->new, $changed, $settings{arpnip});
   set(vrf_domains => $saved);
   return $result;
 }
@@ -106,6 +107,30 @@ subtest 'recompute_needed__all_placed__false' => sub {
   %answers = ();
   ok !needed(0), 'false, the legacy check included';
   ok scalar(grep { /position/ } @queries), 'legacy key check ran';
+};
+
+subtest 'recompute_needed__arpnip_vrf_domains_set__false' => sub {
+  %answers = ();
+  ok !needed(0, arpnip => 1, vrf_domains => [ { domain => 'core', device => '192.0.2.1', vrf => 'red' } ]),
+    'the setting is left to discover';
+  is scalar(@queries), 4, 'the repair checks ran';
+};
+
+subtest 'recompute_needed__arpnip_manual_rows_left__false' => sub {
+  %answers = ("source = 'manual'" => 1);
+  ok !needed(0, arpnip => 1), 'manual rows are left to discover';
+  ok !scalar(grep { /source = 'manual'/ } @queries), 'not even checked';
+};
+
+subtest 'recompute_needed__arpnip_device_changed__true_without_sql' => sub {
+  %answers = ();
+  ok needed(1, arpnip => 1), 'true';
+  is scalar(@queries), 0, 'no SQL ran';
+};
+
+subtest 'recompute_needed__arpnip_vrf_without_member__true' => sub {
+  %answers = ('FROM device_vrf d' => 1);
+  ok needed(0, arpnip => 1), 'a repair still runs';
 };
 
 done_testing;
