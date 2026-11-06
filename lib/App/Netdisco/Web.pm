@@ -146,6 +146,9 @@ BEGIN {
   };
 }
 
+# before AuthN, because hooks run in the order their modules load and a token
+# ACL's rules can contain group:<name>, which resolves through host_groups
+use App::Netdisco::Web::ManagedConfig;
 use App::Netdisco::Web::AuthN;
 use App::Netdisco::Web::Static;
 use App::Netdisco::Web::Theme;

@@ -6,6 +6,7 @@ use Dancer::Plugin::Auth::Extensible;
 use Dancer::Plugin::Ajax;
 
 use App::Netdisco::Web::Plugin;
+use App::Netdisco::Util::ManagedConfig qw/acl_txn_do yaml_setting/;
 
 register_admin_task({
     tag => "aclmanager",
@@ -31,7 +32,7 @@ ajax '/ajax/control/admin/aclmanager/add' => require_role setting('defanged_admi
       if schema(vars->{'tenant'})->resultset('AccessControlListName')
                                  ->search({acl_name => $acl})->count();
 
-    schema(vars->{'tenant'})->txn_do(sub {
+    acl_txn_do(sub {
       schema(vars->{'tenant'})->resultset('AccessControlListName')
         ->create({
           acl_name => $acl,
@@ -59,7 +60,7 @@ ajax '/ajax/control/admin/aclmanager/delete' => require_role setting('defanged_a
     schema('netdisco')->resultset('User')
       ->search({portctl_role => $acl})
       ->update({
-        ((exists config->{'portctl_by_role_shadow'}->{$acl})
+        ((exists +(yaml_setting('portctl_by_role') || {})->{$acl})
           ? () : (portctl_role => undef, port_control => \'false')),
       });
 
@@ -67,7 +68,7 @@ ajax '/ajax/control/admin/aclmanager/delete' => require_role setting('defanged_a
       ->search({token_acl => $acl})
       ->update({token_acl => undef});
 
-    schema(vars->{'tenant'})->txn_do(sub {
+    acl_txn_do(sub {
       schema(vars->{'tenant'})->resultset('AccessControlListName')
                               ->find({ acl_name => $acl })->delete;
 
@@ -98,7 +99,7 @@ ajax '/ajax/control/admin/aclmanager/update' => require_role setting('defanged_a
       ->search({ portctl_role => $old_acl })
       ->update({ portctl_role => $acl });
 
-    schema(vars->{'tenant'})->txn_do(sub {
+    acl_txn_do(sub {
       schema(vars->{'tenant'})->resultset('AccessControlListName')
         ->search({ acl_name => $old_acl })
         ->update({ acl_name => $acl, acl_type => $type });
