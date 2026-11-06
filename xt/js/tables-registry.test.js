@@ -812,3 +812,46 @@ test('fragments__every_table__supplies_the_url_keys_its_renderers_need', () => {
     });
   });
 });
+
+// The Ports tab's row-group filter goes into DataTable.ext.search, which
+// DataTables runs for every table it draws, not only the one that pushed it.
+// Switching from Ports to Addresses drew the Addresses table through it; the
+// filter looked each Addresses row index up in the Ports table, found none,
+// and threw, leaving the Addresses pane empty under "Processing...".
+function loadWithPortsTable(portsRows) {
+  const DataTable = function () {
+    return { row: (i) => ({ node: () => (i < portsRows.length ? portsRows[i] : null) }) };
+  };
+  DataTable.util = { escapeHtml: (v) => v };
+  DataTable.ext = { search: [] };
+  DataTable.render = { text: () => ({}), number: () => ({}) };
+  const document = { body: { dataset: {} }, querySelectorAll: () => [], getElementById: () => null };
+  const fn = new Function('DataTable', 'document', 'window', source + '\nreturn ndTables;');
+  const ndTables = fn(DataTable, document, {});
+  ndTables.collapse.pushFilter();
+  return DataTable.ext.search[DataTable.ext.search.length - 1];
+}
+
+// a filter gets the table's settings object; the vendored 3.1.4 keeps the
+// table element's id there as tableId (dataTables.min.js builds the wrapper
+// id from r.tableId)
+const portsRow = (group, collapsed) => ({
+  dataset: group ? { collapsedGroup: group } : {},
+  getAttribute: (name) => (name === 'data-is-collapsed' ? String(collapsed) : null),
+});
+
+test('collapseFilter__drawing_another_table__passes_its_rows_without_reading_the_ports_table', () => {
+  const filter = loadWithPortsTable([portsRow('Po1', true)]);
+  const addresses = { tableId: 'da-data-table' };
+  assert.doesNotThrow(() => filter(addresses, [], 5));
+  assert.strictEqual(filter(addresses, [], 5), true, 'a row of another table is never filtered');
+  assert.strictEqual(filter(addresses, [], 0), true, 'even where the index exists in the Ports table');
+});
+
+test('collapseFilter__ports_table__hides_only_collapsed_group_rows', () => {
+  const filter = loadWithPortsTable([portsRow(null, false), portsRow('Po1', true), portsRow('Po1', false)]);
+  const ports = { tableId: 'dp-data-table' };
+  assert.strictEqual(filter(ports, [], 0), true, 'a row outside any group shows');
+  assert.strictEqual(filter(ports, [], 1), false, 'a collapsed group member hides');
+  assert.strictEqual(filter(ports, [], 2), true, 'an expanded group member shows');
+});

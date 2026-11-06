@@ -1,3 +1,9 @@
+2.117003 - tbd
+
+  [BUG FIXES]
+
+  * #1808 apply the Ports tab's row-group filter to the Ports table only
+
 2.117002 - 2026-11-04
 
   [ENHANCEMENTS]
