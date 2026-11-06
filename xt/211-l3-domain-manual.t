@@ -47,6 +47,7 @@ sub selectall_arrayref {
   die "unexpected query: $statement";
 }
 sub do { my ($self, $statement, undef, @binds) = @_; push @writes, [$statement, @binds]; return '0E0' }
+sub selectrow_array { my ($self, $statement, undef, @binds) = @_; push @writes, [$statement, @binds]; return 0 }
 
 package FakeSchema;
 sub new     { return bless { dbh => FakeDbh->new }, $_[0] }
@@ -55,6 +56,13 @@ sub storage { return $_[0] }
 sub dbh_do  { my ($self, $code) = @_; return $code->($self, $self->{dbh}) }
 
 package main;
+
+# the one recompute statement, as sent, and its text with whitespace folded
+sub recompute_statement {
+  my ($statement) = grep { $_->[0] =~ /^WITH man AS/ } @writes;
+  (my $flat = $statement->[0]) =~ s/\s+/ /g;
+  return ($statement, $flat);
+}
 
 sub reset_world {
   %settings = (host_groups => {});
@@ -299,7 +307,7 @@ subtest 'manual_entries__malformed__warned_and_skipped' => sub {
   reset_world();
   $settings{vrf_domains} = [ entry(domain => '') ];
   recompute_l3_domains(FakeSchema->new);
-  is(scalar @writes, 10, 'inference still runs (lock, four temp-table statements, five writes)');
+  is(scalar @writes, 2, 'inference still runs (the lock and the recompute statement)');
 };
 
 subtest 'manual_entries__join_ref_or_object__warned_and_skipped_no_die' => sub {
@@ -405,12 +413,11 @@ subtest 'recompute__manual_vrf_gone_from_device_vrf__row_removed' => sub {
   @resolve_rows = ({ input => '10.0.0.1', ip => '10.0.0.1' });
   $settings{vrf_domains} = [ entry(device => '10.0.0.1', vrf => 'gone') ];
   recompute_l3_domains(FakeSchema->new);
-  my ($delete) = grep { $_->[0] =~ /^\s*DELETE FROM l3_domain_member/ } @writes;
-  unlike($delete->[0], qr/source = 'inferred'/, 'manual rows are covered');
-  my ($create) = grep { $_->[0] =~ /^\s*CREATE TEMP TABLE l3_domain_desired/ } @writes;
-  is_deeply([ @{$create}[1 .. 4] ], [ [], [], [], [] ], 'device_vrf has no such VRF, so the desired manual set is empty');
-  like($create->[0], qr/unnest\(\?::inet\[\], \?::text\[\], \?::text\[\], \?::text\[\]\)/, 'manual set passed as arrays');
-  like($delete->[0], qr/FROM pg_temp\.l3_domain_desired/, 'the delete reads that set');
+  my ($statement, $flat) = recompute_statement();
+  unlike($flat, qr/source = 'inferred'/, 'manual rows are covered');
+  is_deeply([ @{$statement}[1 .. 4] ], [ [], [], [], [] ], 'device_vrf has no such VRF, so the desired manual set is empty');
+  like($flat, qr/unnest\(\?::inet\[\], \?::text\[\], \?::text\[\], \?::text\[\]\)/, 'manual set passed as arrays');
+  like($flat, qr/gone AS \( DELETE FROM l3_domain_member m WHERE NOT EXISTS \(SELECT 1 FROM desired d\b/, 'the delete reads that set');
 };
 
 subtest 'recompute__manual_vrf_present__desired_set_wins_over_evidence' => sub {
@@ -419,21 +426,20 @@ subtest 'recompute__manual_vrf_present__desired_set_wins_over_evidence' => sub {
   @candidate_rows = ({ ip => '10.0.0.1', vrf => 'blue', key => 'name:blue' });
   $settings{vrf_domains} = [ entry(domain => 'CUSTOMER-A', device => '10.0.0.1', vrf => 'blue') ];
   recompute_l3_domains(FakeSchema->new);
-  my ($create) = grep { $_->[0] =~ /^\s*CREATE TEMP TABLE l3_domain_desired/ } @writes;
-  my $insert = $writes[7];
-  is_deeply([ @{$create}[1 .. 4] ],
+  my ($statement, $flat) = recompute_statement();
+  is_deeply([ @{$statement}[1 .. 4] ],
     [ ['10.0.0.1'], ['blue'], ['manual:CUSTOMER-A'], ['vrf_domains CUSTOMER-A'] ], 'desired arrays bound once');
-  like($insert->[0], qr/e\.source/, 'source comes from the desired row');
-  like($create->[0], qr/substr\(man\.key, 8\) AS display/, 'manual domain is named after the setting');
-  like($create->[0], qr/NOT EXISTS \(SELECT 1 FROM man WHERE man\.ip = e\.ip AND man\.vrf = e\.vrf\)/, 'a manual pair is not also inferred');
+  like($flat, qr/SELECT d\.ip, d\.vrf, m\.id AS domain_id, d\.reason, d\.source FROM desired d/, 'source comes from the desired row');
+  like($flat, qr/substr\(man\.key, 8\) AS display/, 'manual domain is named after the setting');
+  like($flat, qr/NOT EXISTS \(SELECT 1 FROM man WHERE man\.ip = e\.ip AND man\.vrf = e\.vrf\)/, 'a manual pair is not also inferred');
 };
 
 subtest 'recompute__config_entry_removed__vrf_back_to_inference' => sub {
   reset_world();
   recompute_l3_domains(FakeSchema->new);
-  my ($delete) = grep { $_->[0] =~ /^\s*DELETE FROM l3_domain_member/ } @writes;
-  unlike($delete->[0], qr/source = 'inferred'/, 'a manual row with no entry is deleted too');
-  like($delete->[0], qr/l\.id = \w+\.domain_id/, 'kept only while the desired domain is its domain');
+  my (undef, $flat) = recompute_statement();
+  unlike($flat, qr/source = 'inferred'/, 'a manual row with no entry is deleted too');
+  like($flat, qr/t\.domain_id <> m\.domain_id/, 'moved when the desired domain is not its domain');
   is(scalar(grep { $_->[0] =~ /FROM device_vrf/ } @sql), 0, 'no manual reads');
 };
 
@@ -444,7 +450,8 @@ subtest 'recompute__join_brought_rows__reason_names_the_domain' => sub {
   @join_rows = ({ ip => '10.0.0.1', vrf => 'RED', key => 'rt:x/x' }, { ip => '10.0.0.5', vrf => 'BLUE', key => 'rt:x/x' });
   $settings{vrf_domains} = [ entry(device => '10.0.0.1', vrf => 'RED', join => 1) ];
   recompute_l3_domains(FakeSchema->new);
-  is_deeply($writes[4][4], ['vrf_domains A', 'joined with A by vrf_domains'], 'direct then brought') or diag explain $writes[4];
+  my ($statement) = recompute_statement();
+  is_deeply($statement->[4], ['vrf_domains A', 'joined with A by vrf_domains'], 'direct then brought') or diag explain $statement;
 };
 
 done_testing;

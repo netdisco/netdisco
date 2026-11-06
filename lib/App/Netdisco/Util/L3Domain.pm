@@ -179,11 +179,10 @@ returns the VRF to inference at the next recompute. Domains other than 0 left
 with no members are deleted. A domain keeps its id across recomputes while its
 key is in use.
 
-The evidence query is the expensive part, so it is materialized once per
-recompute, into a temporary table (C<l3_domain_desired>) that the insert,
-delete and rename steps all read. (Placing manual entries runs the same query
-filtered to the VRF names or keys they name.) Only what changed is written.
-An unchanged network and setting write nothing.
+The recompute is one SQL statement, so the evidence query, the expensive
+part, runs once and no temporary table is made. (Placing manual entries runs
+the same query filtered to the VRF names or keys they name.) Only what changed
+is written. An unchanged network and setting write nothing.
 
 Runs in one transaction under C<with_l3_domain_lock>. Returns the number of
 member rows inserted plus deleted plus domains renamed, so 0 means everything
@@ -548,15 +547,57 @@ sub manual_l3_members {
   return $members;
 }
 
-# The desired (ip, vrf, key, reason, display, source) rows: the manual set
-# first, then the evidence for every pair the manual set does not claim.
+# One statement, not temporary tables plus separate writes: the temporary
+# tables cost catalog rows and WAL on every recompute, unchanged ones included.
+# That version (commit bb754463) was somewhat faster on fresh planner
+# statistics; revisit it if the time this holds the lock becomes a bottleneck.
+# Every CTE reads the snapshot taken before any of them writes, so a member is
+# deleted, moved or added, never two of them, and a domain made here is named
+# on insert, since no other CTE can see it through l3_domain. desired is read
+# by several CTEs, so the server computes it, and the evidence, once.
 # Four placeholders: ip, vrf, key and reason arrays of the manual set.
-sub _desired_sql {
-  return qq{WITH man AS (SELECT * FROM unnest(?::inet[], ?::text[], ?::text[], ?::text[]) AS man(ip, vrf, key, reason))
+sub _sync_sql {
+  my $evidence = l3_domain_evidence_sql();
+  return qq{WITH man AS (SELECT * FROM unnest(?::inet[], ?::text[], ?::text[], ?::text[]) AS man(ip, vrf, key, reason)),
+  desired AS (
     SELECT man.ip, man.vrf, man.key, man.reason, substr(man.key, 8) AS display, 'manual'::text AS source FROM man
     UNION ALL
-    SELECT e.ip, e.vrf, e.key, e.reason, e.display, 'inferred'::text AS source FROM pg_temp.l3_domain_evidence e
-    WHERE NOT EXISTS (SELECT 1 FROM man WHERE man.ip = e.ip AND man.vrf = e.vrf)};
+    SELECT e.ip, e.vrf, e.key, e.reason, e.display, 'inferred'::text AS source FROM ($evidence) e
+    WHERE NOT EXISTS (SELECT 1 FROM man WHERE man.ip = e.ip AND man.vrf = e.vrf)),
+  named AS (
+    SELECT DISTINCT ON (d.key) d.key, CASE WHEN d.key LIKE 'manual:%' THEN min(d.display) ELSE d.vrf END AS name
+    FROM desired d GROUP BY d.key, d.vrf
+    ORDER BY d.key, count(*) DESC, d.vrf COLLATE "C"),
+  new_dom AS (
+    INSERT INTO l3_domain (name, inferred_name)
+    SELECT n.name, n.key FROM named n WHERE NOT EXISTS (SELECT 1 FROM l3_domain x WHERE x.inferred_name = n.key)
+    RETURNING id, inferred_name),
+  dom AS (
+    SELECT id, inferred_name FROM l3_domain WHERE inferred_name IS NOT NULL
+    UNION ALL SELECT id, inferred_name FROM new_dom),
+  target AS (
+    SELECT d.ip, d.vrf, m.id AS domain_id, d.reason, d.source FROM desired d JOIN dom m ON m.inferred_name = d.key),
+  gone AS (
+    DELETE FROM l3_domain_member m WHERE NOT EXISTS (SELECT 1 FROM desired d WHERE d.ip = m.ip AND d.vrf = m.vrf)
+    RETURNING 1),
+  moved AS (
+    UPDATE l3_domain_member m SET domain_id = t.domain_id, reason = t.reason, source = t.source
+    FROM target t WHERE t.ip = m.ip AND t.vrf = m.vrf AND t.domain_id <> m.domain_id
+    RETURNING 1),
+  added AS (
+    INSERT INTO l3_domain_member (ip, vrf, domain_id, reason, source)
+    SELECT t.ip, t.vrf, t.domain_id, t.reason, t.source FROM target t
+    WHERE NOT EXISTS (SELECT 1 FROM l3_domain_member m WHERE m.ip = t.ip AND m.vrf = t.vrf)
+    RETURNING 1),
+  renamed AS (
+    UPDATE l3_domain l SET name = n.name FROM named n
+    WHERE l.inferred_name = n.key AND l.name IS DISTINCT FROM n.name AND l.inferred_name NOT LIKE 'manual:%'
+    RETURNING 1),
+  emptied AS (
+    DELETE FROM l3_domain l WHERE l.id <> 0 AND NOT EXISTS (SELECT 1 FROM desired d WHERE d.key = l.inferred_name)
+    RETURNING 1)
+  SELECT (SELECT count(*) FROM gone) + 2 * (SELECT count(*) FROM moved)
+       + (SELECT count(*) FROM added) + (SELECT count(*) FROM renamed)};
 }
 
 sub _manual_arrays {
@@ -566,51 +607,7 @@ sub _manual_arrays {
   return ([ map { $_->{ip} } @$members ], [ map { $_->{vrf} } @$members ], \@keys, \@reasons);
 }
 
-sub _ensure_domains {
-  my $dbh = shift;
-  return $dbh->do(qq{INSERT INTO l3_domain (name, inferred_name)
-    SELECT DISTINCT ON (e.key) e.display, e.key FROM pg_temp.l3_domain_desired e
-    WHERE NOT EXISTS (SELECT 1 FROM l3_domain x WHERE x.inferred_name = e.key)
-    ORDER BY e.key, e.display COLLATE "C"});
-}
-
-sub _delete_stale_members {
-  my $dbh = shift;
-  return _rows($dbh->do(qq{DELETE FROM l3_domain_member m
-    WHERE NOT EXISTS (SELECT 1 FROM pg_temp.l3_domain_desired e
-        JOIN l3_domain l ON l.inferred_name = e.key
-        WHERE e.ip = m.ip AND e.vrf = m.vrf AND l.id = m.domain_id)}));
-}
-
-sub _insert_members {
-  my $dbh = shift;
-  return _rows($dbh->do(qq{INSERT INTO l3_domain_member (ip, vrf, domain_id, reason, source)
-    SELECT e.ip, e.vrf, l.id, e.reason, e.source
-    FROM pg_temp.l3_domain_desired e
-    JOIN l3_domain l ON l.inferred_name = e.key
-    WHERE NOT EXISTS (SELECT 1 FROM l3_domain_member m
-      WHERE m.ip = e.ip AND m.vrf = e.vrf)}));
-}
-
-sub _rename_domains {
-  my $dbh = shift;
-  return _rows($dbh->do(q{UPDATE l3_domain l SET name = top.vrf
-    FROM (SELECT DISTINCT ON (m.domain_id) m.domain_id, m.vrf
-      FROM l3_domain_member m
-      GROUP BY m.domain_id, m.vrf
-      ORDER BY m.domain_id, count(*) DESC, m.vrf COLLATE "C" ASC) top
-    WHERE top.domain_id = l.id
-      AND l.name IS DISTINCT FROM top.vrf
-      AND l.inferred_name NOT LIKE 'manual:%'}));
-}
-
-sub _delete_empty_domains {
-  my $dbh = shift;
-  return $dbh->do(q{DELETE FROM l3_domain
-    WHERE id <> 0
-      AND NOT EXISTS (SELECT 1 FROM l3_domain_member m WHERE m.domain_id = l3_domain.id)});
-}
-
+# a moved member counts twice, as the delete and insert it replaces
 sub recompute_l3_domains {
   my $schema = shift;
   my $written = 0;
@@ -618,21 +615,8 @@ sub recompute_l3_domains {
   with_l3_domain_lock($schema, sub {
     $schema->storage->dbh_do(sub {
       my (undef, $dbh) = @_;
-      # the evidence keys cost far more than the writes, so compute them once.
-      # The quiet drop clears a leftover from an earlier call in the caller's
-      # transaction without a NOTICE on stderr (ON COMMIT DROP covers the rest)
-      $dbh->do('SET LOCAL client_min_messages = warning');
-      $dbh->do('DROP TABLE IF EXISTS pg_temp.l3_domain_evidence, pg_temp.l3_domain_desired');
-      $dbh->do('CREATE TEMP TABLE l3_domain_evidence ON COMMIT DROP AS ' . l3_domain_evidence_sql());
-
-      my $members = manual_l3_members($schema, manual_l3_entries($schema), 'pg_temp.l3_domain_evidence');
-      $dbh->do('CREATE TEMP TABLE l3_domain_desired ON COMMIT DROP AS ' . _desired_sql(), undef, _manual_arrays($members));
-
-      _ensure_domains($dbh);
-      $written += _delete_stale_members($dbh);
-      $written += _insert_members($dbh);
-      $written += _rename_domains($dbh);
-      _delete_empty_domains($dbh);
+      my $members = manual_l3_members($schema, manual_l3_entries($schema));
+      ($written) = $dbh->selectrow_array(_sync_sql(), undef, _manual_arrays($members));
     });
   });
 

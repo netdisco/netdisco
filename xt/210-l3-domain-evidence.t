@@ -82,6 +82,7 @@ my @ran;
 package FakeDbh;
 sub new { return bless {}, $_[0] }
 sub do  { my ($self, $sql) = @_; push @ran, $sql; return '0E0' }
+sub selectrow_array { my ($self, $sql) = @_; push @ran, $sql; return 0 }
 package FakeSchema;
 sub new     { return bless { dbh => FakeDbh->new }, $_[0] }
 sub txn_do  { return $_[1]->() }
@@ -92,13 +93,13 @@ package main;
 subtest 'display_name__tie__alphabetically_first' => sub {
   @ran = ();
   recompute_l3_domains(FakeSchema->new);
-  my ($rename) = grep { /^\s*UPDATE l3_domain\b/ } @ran;
-  ok($rename, 'a rename statement runs');
-  (my $flat_rename = $rename) =~ s/\s+/ /g;
-  like($flat_rename, qr/SELECT DISTINCT ON \(m\.domain_id\) m\.domain_id, m\.vrf/, 'one name per domain');
-  like($flat_rename, qr/ORDER BY m\.domain_id, count\(\*\) DESC, m\.vrf COLLATE "C" ASC/, 'most common, then alphabetical');
-  like($flat_rename, qr/l\.name IS DISTINCT FROM top\.vrf/, 'writes only a changed name');
-  like($flat_rename, qr/l\.inferred_name NOT LIKE 'manual:%'/, 'manual domains keep their configured name');
+  my ($statement) = grep { /^WITH man AS/ } @ran;
+  ok($statement, 'the recompute statement runs');
+  (my $flat_statement = $statement) =~ s/\s+/ /g;
+  like($flat_statement, qr/named AS \( SELECT DISTINCT ON \(d\.key\) d\.key,/, 'one name per domain key');
+  like($flat_statement, qr/ORDER BY d\.key, count\(\*\) DESC, d\.vrf COLLATE "C"\)/, 'most common, then alphabetical');
+  like($flat_statement, qr/l\.name IS DISTINCT FROM n\.name/, 'writes only a changed name');
+  like($flat_statement, qr/l\.inferred_name NOT LIKE 'manual:%'/, 'manual domains keep their configured name');
 };
 
 subtest 'recompute__unchanged__returns_0' => sub {
