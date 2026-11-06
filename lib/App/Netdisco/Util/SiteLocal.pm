@@ -385,6 +385,23 @@ my @FILE_RULES = (
               . 'from the shipped device.tt.',
   },
   {
+    name     => 'ports-row-keys',
+    release  => '2.117003',
+    paths    => ['ajax/device/ports.tt'],
+    requires => qr/\bneighbor_net_mac\b/,
+    advice   => 'this copy predates the keys the Ports tab now attaches to '
+              . 'each row, and keeps working without them, at a cost. It '
+              . 'looks for the neighbor\'s MAC among the port\'s nodes, so '
+              . 'when Connected Devices is shown and Connected Nodes is not, '
+              . 'the nodes of every port with a neighbor are still fetched '
+              . 'for it. And row.power, row.ssid and row.last_comment each '
+              . 'run one query per port now that the page no longer '
+              . 'prefetches them. To avoid both, read row.neighbor_net_mac, '
+              . 'row.port_power, row.port_ssids (a list of SSID names, not '
+              . 'rows) and row.port_comment as the shipped template does. '
+              . 'A copy that shows none of those columns can ignore this.',
+  },
+  {
     name     => 'tab-sync-attribute',
     release  => '2.109000',
     paths    => [qw/ device.tt search.tt report.tt admintask.tt /],
