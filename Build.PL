@@ -103,6 +103,7 @@ App::Netdisco::Builder->new(
     'Plack::Middleware::Expires' => '0.03',
     'Plack::Middleware::Headers' => '0',
     'Plack::Middleware::ReverseProxy' => '0.15',
+    'Pod::Text' => 'v6.1.1',
     'Pod::Usage' => 0,
     'Proc::ProcessTable' => '0.636',
     'Regexp::Common' => 2017060201,
