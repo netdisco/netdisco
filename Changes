@@ -11,7 +11,7 @@
     site-local ports.tt from before this release keeps working, and
     checksitelocal reports what it costs (rule ports-row-keys)
 
-  * #NNNN document that a new installation needs Perl 5.24, and that an older
+  * #1815 document that a new installation needs Perl 5.24, and that an older
     installation can still be upgraded
 
   [BUG FIXES]
