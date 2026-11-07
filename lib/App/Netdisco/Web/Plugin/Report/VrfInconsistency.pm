@@ -22,7 +22,7 @@ get '/ajax/content/report/vrfinconsistency' => require_login sub {
     return unless scalar @results;
 
     if ( request->is_ajax ) {
-        template 'ajax/report/vrfinconsistency.tt', { results => \@results }, { layout => 'noop' };
+        template 'ajax/report/vrfinconsistency.tt', { results => to_json(\@results) }, { layout => 'noop' };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );

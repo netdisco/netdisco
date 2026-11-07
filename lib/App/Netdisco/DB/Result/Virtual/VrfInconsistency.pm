@@ -16,8 +16,8 @@ SELECT 'different names' AS finding,
        array_agg(DISTINCT m.vrf ORDER BY m.vrf) AS vrfs,
        count(DISTINCT m.ip)::integer AS devices,
        'domain holds ' || array_to_string(array_agg(DISTINCT m.vrf ORDER BY m.vrf), ', ') AS detail,
-       NULL::text AS subnet, NULL::text AS lo_ip, NULL::text AS hi_ip,
-       NULL::text AS lo_dns, NULL::text AS lo_name, NULL::text AS hi_dns, NULL::text AS hi_name
+       ARRAY[d.id] AS domain_ids,
+       (SELECT string_agg(x.name || ' (#' || x.id || ')', ', ' ORDER BY x.id) FROM l3_domain x WHERE x.id = ANY(ARRAY[d.id])) AS domains
   FROM l3_domain_member m
   JOIN l3_domain d ON d.id = m.domain_id
  WHERE m.vrf <> ''
@@ -30,8 +30,8 @@ SELECT 'similar names' AS finding,
        array_agg(DISTINCT m.vrf ORDER BY m.vrf) AS vrfs,
        count(DISTINCT m.ip)::integer AS devices,
        'case or punctuation' AS detail,
-       NULL::text AS subnet, NULL::text AS lo_ip, NULL::text AS hi_ip,
-       NULL::text AS lo_dns, NULL::text AS lo_name, NULL::text AS hi_dns, NULL::text AS hi_name
+       array_agg(DISTINCT m.domain_id ORDER BY m.domain_id) AS domain_ids,
+       (SELECT string_agg(x.name || ' (#' || x.id || ')', ', ' ORDER BY x.id) FROM l3_domain x WHERE x.id = ANY(array_agg(DISTINCT m.domain_id ORDER BY m.domain_id))) AS domains
   FROM l3_domain_member m
   JOIN l3_domain d ON d.id = m.domain_id
  WHERE m.vrf <> ''
@@ -46,8 +46,8 @@ SELECT 'shared RD' AS finding,
        array_agg(DISTINCT v.vrf ORDER BY v.vrf) AS vrfs,
        count(DISTINCT v.ip)::integer AS devices,
        'RD ' || v.rd AS detail,
-       NULL::text AS subnet, NULL::text AS lo_ip, NULL::text AS hi_ip,
-       NULL::text AS lo_dns, NULL::text AS lo_name, NULL::text AS hi_dns, NULL::text AS hi_name
+       array_agg(DISTINCT m.domain_id ORDER BY m.domain_id) AS domain_ids,
+       (SELECT string_agg(x.name || ' (#' || x.id || ')', ', ' ORDER BY x.id) FROM l3_domain x WHERE x.id = ANY(array_agg(DISTINCT m.domain_id ORDER BY m.domain_id))) AS domains
   FROM device_vrf v
   JOIN l3_domain_member m ON m.ip = v.ip AND m.vrf = v.vrf
   JOIN l3_domain d ON d.id = m.domain_id
@@ -61,8 +61,8 @@ SELECT 'linked, one subnet' AS finding,
        ARRAY[p.lo_vrf, p.hi_vrf] AS vrfs,
        2 AS devices,
        'subnet ' || p.subnet || ' between ' || host(p.lo_ip) || ' and ' || host(p.hi_ip) AS detail,
-       p.subnet::text AS subnet, host(p.lo_ip) AS lo_ip, host(p.hi_ip) AS hi_ip,
-       dl.dns AS lo_dns, dl.name AS lo_name, dh.dns AS hi_dns, dh.name AS hi_name
+       NULLIF(array_remove(ARRAY[p.lo_domain, p.hi_domain], NULL), '{}') AS domain_ids,
+       (SELECT string_agg(x.name || ' (#' || x.id || ')', ', ' ORDER BY x.id) FROM l3_domain x WHERE x.id = ANY(NULLIF(array_remove(ARRAY[p.lo_domain, p.hi_domain], NULL), '{}'))) AS domains
   FROM (
     SELECT DISTINCT
            CASE WHEN l.a_ip < l.b_ip THEN l.a_ip ELSE l.b_ip END AS lo_ip,
@@ -70,6 +70,7 @@ SELECT 'linked, one subnet' AS finding,
            CASE WHEN l.a_ip < l.b_ip THEN l.a_domain ELSE l.b_domain END AS lo_domain,
            CASE WHEN l.a_ip < l.b_ip THEN l.b_ip ELSE l.a_ip END AS hi_ip,
            CASE WHEN l.a_ip < l.b_ip THEN l.b_vrf ELSE l.a_vrf END AS hi_vrf,
+           CASE WHEN l.a_ip < l.b_ip THEN l.b_domain ELSE l.a_domain END AS hi_domain,
            l.subnet
       FROM (
         SELECT pr.a_ip, ia.vrf AS a_vrf, ma.domain_id AS a_domain,
@@ -89,8 +90,6 @@ SELECT 'linked, one subnet' AS finding,
       ) l
   ) p
   LEFT JOIN l3_domain d ON d.id = p.lo_domain
-  LEFT JOIN device dl ON dl.ip = p.lo_ip
-  LEFT JOIN device dh ON dh.ip = p.hi_ip
 ENDSQL
 
 __PACKAGE__->add_columns(
@@ -104,19 +103,9 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 0 },
   "detail",
   { data_type => "text", is_nullable => 0 },
-  "subnet",
-  { data_type => "text", is_nullable => 1 },
-  "lo_ip",
-  { data_type => "text", is_nullable => 1 },
-  "hi_ip",
-  { data_type => "text", is_nullable => 1 },
-  "lo_dns",
-  { data_type => "text", is_nullable => 1 },
-  "lo_name",
-  { data_type => "text", is_nullable => 1 },
-  "hi_dns",
-  { data_type => "text", is_nullable => 1 },
-  "hi_name",
+  "domain_ids",
+  { data_type => "integer[]", is_nullable => 1 },
+  "domains",
   { data_type => "text", is_nullable => 1 },
 );
 

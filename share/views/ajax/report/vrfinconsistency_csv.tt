@@ -1,10 +1,10 @@
 [% USE CSV -%]
-[% CSV.dump([ 'Finding' 'Domain' 'VRFs' 'Devices' 'Detail' ]) %]
+[% CSV.dump([ 'Finding' 'Domains' 'VRFs' 'Devices' 'Detail' ]) %]
 
 [% FOREACH row IN results %]
   [% mylist = [] %]
   [% mylist.push(row.finding) %]
-  [% mylist.push(row.domain) %]
+  [% mylist.push(row.domains) %]
   [% mylist.push(row.vrfs.join(',')) %]
   [% mylist.push(row.devices) %]
   [% mylist.push(row.detail) %]
