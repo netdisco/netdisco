@@ -1,15 +1,20 @@
 # Advisories cpan-audit should not fail on, one id per line. Each entry says
 # either "Does not apply", with why Netdisco is not affected, or "No fix to
-# require", where no release fixes it. Remove an entry once a fixed release
-# exists and Build.PL requires it.
+# require", where no release fixes it. Every entry also says why a minimum in
+# Build.PL cannot clear it: no release is outside the affected range, or the
+# database marks versions the advisory itself does not name. Remove an entry
+# once a fixed release exists and Build.PL requires it.
 
 # Does not apply: predictable session ids. Netdisco uses Dancer's cookie
 # sessions, where the cookie carries the session encrypted and signed with
 # the site's random key, so a guessed id cannot be used to forge a session.
+# No fixed release: the advisory covers every version through 1.3522, the
+# latest.
 CPANSA-Dancer-2026-5080
 
 # Does not apply: shell metacharacters in host names. PingSweep only pings
-# addresses it generates from the IP prefix it is given.
+# addresses it generates from the IP prefix it is given. No fixed release:
+# 0.15, the latest, is affected.
 CPANSA-Net-Ping-External-2008-7319
 
 # Does not apply: Plack::Middleware::XSendfile, which Netdisco does not use.
@@ -22,7 +27,8 @@ CPANSA-Plack-2026-7381
 CPANSA-App-cpanminus-2024-45321
 
 # Does not apply: symlink checks in File::Temp's MEDIUM and HIGH safe levels.
-# Netdisco uses the default level, which does not run them.
+# Netdisco uses the default level, which does not run them. No fixed release:
+# the advisory is disputed and covers every version.
 CPANSA-File-Temp-2011-4116
 
 # No fix to require: the advisory is LemonLDAP::NG relying on Net::LDAPS's
@@ -36,11 +42,12 @@ CPANSA-DBD-Pg-2026-78183
 
 # Does not apply: an infinite loop decompressing crafted data. Netdisco
 # decodes Sereal only inside session cookies, after Session::Storage::Secure
-# has checked their signature.
+# has checked their signature. No fixed release: the database marks every
+# version from 5.002_001 on, including 7.001, the latest.
 CPANSA-Sereal-Decoder-2018-12913-miniz
 CPANSA-Sereal-Encoder-2018-12913-miniz
 
 # Does not apply: comparing strings of different lengths leaks the length.
 # Session::Storage::Secure compares fixed-length signatures, whose length is
-# public.
+# public. No fixed release: 0.321, the latest, is affected.
 CPANSA-String-Compare-ConstantTime-2024-13939
