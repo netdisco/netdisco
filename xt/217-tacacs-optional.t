@@ -86,6 +86,15 @@ subtest 'matchWithTacacs__module_hidden__refuses_and_logs_advice_each_time' => s
   }
 };
 
+subtest 'webStartup__tacacs_configured_module_hidden__logs_warning' => sub {
+  set tacacs => $servers;
+  Dancer::Logger::Capture->trap->read;
+  require App::Netdisco::Web;
+  ok((grep { $_->{message} =~ /TACACS\+ is configured, but Authen::TacacsPlus is not installed/ }
+        logged_at('warning')),
+    'the startup warning names the problem');
+};
+
 # the stand-in replaces the real module from here on
 $hide_tacacs = 0;
 delete $INC{'Authen/TacacsPlus.pm'};
