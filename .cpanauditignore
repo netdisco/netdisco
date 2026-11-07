@@ -1,39 +1,46 @@
-# Advisories cpan-audit should not fail on, one id per line. Each needs a
-# reason. Remove an entry once a fixed release exists and Build.PL requires it.
+# Advisories cpan-audit should not fail on, one id per line. Each entry says
+# either "Does not apply", with why Netdisco is not affected, or "No fix to
+# require", where no release fixes it. Remove an entry once a fixed release
+# exists and Build.PL requires it.
 
-# Dancer::Session::Abstract session ids: no fixed release. Netdisco uses
-# cookie sessions, where the cookie's encrypted contents are the session.
+# Does not apply: predictable session ids. Netdisco uses Dancer's cookie
+# sessions, where the cookie carries the session encrypted and signed with
+# the site's random key, so a guessed id cannot be used to forge a session.
 CPANSA-Dancer-2026-5080
 
-# Net::Ping::External shell metacharacters: no fixed release. PingSweep
-# passes only addresses it generated itself.
+# Does not apply: shell metacharacters in host names. PingSweep only pings
+# addresses it generates from the IP prefix it is given.
 CPANSA-Net-Ping-External-2008-7319
 
-# Plack::Middleware::XSendfile: the database marks every version, but the
-# advisory names 1.0053 and earlier, and Build.PL requires 1.0057.
+# Does not apply: Plack::Middleware::XSendfile, which Netdisco does not use.
+# The database also marks every Plack version, but the advisory names 1.0053
+# and earlier, and Build.PL requires 1.0057.
 CPANSA-Plack-2026-7381
 
-# App::cpanminus plain HTTP: the database marks every version, but the
-# advisory names 1.7047 and earlier, and Build.PL requires 1.7049.
+# Does not apply: plain HTTP downloads. The database marks every version, but
+# the advisory names 1.7047 and earlier, and Build.PL requires 1.7049.
 CPANSA-App-cpanminus-2024-45321
 
-# File::Temp symlink handling: disputed, with no fixed release.
+# Does not apply: symlink checks in File::Temp's MEDIUM and HIGH safe levels.
+# Netdisco uses the default level, which does not run them.
 CPANSA-File-Temp-2011-4116
 
-# Net::LDAPS: the advisory is about LemonLDAP::NG's use of Net::LDAP, not
-# Net::LDAP itself, and there is no release to require.
+# No fix to require: the advisory is LemonLDAP::NG relying on Net::LDAPS's
+# default certificate checking, and no Net::LDAP release changes it.
 CPANSA-Net-LDAPS-2020-16093
 
-# DBD::Pg 3.21.0 only. Most installs use the OS package, which is not
-# 3.21.0; requiring a later version would rebuild DBD::Pg from source,
-# which needs the PostgreSQL client headers those installs do not have.
+# Does not apply: DBD::Pg 3.21.0 only, through quoting NaN or Infinity as a
+# number. Netdisco quotes only strings. Requiring 3.21.1 would rebuild the OS
+# package's DBD::Pg from source, which needs the PostgreSQL client headers.
 CPANSA-DBD-Pg-2026-78183
 
-# Sereal's bundled miniz: no fixed range. Netdisco decodes Sereal only from
-# session cookies that Session::Storage::Secure has already authenticated.
+# Does not apply: an infinite loop decompressing crafted data. Netdisco
+# decodes Sereal only inside session cookies, after Session::Storage::Secure
+# has checked their signature.
 CPANSA-Sereal-Decoder-2018-12913-miniz
 CPANSA-Sereal-Encoder-2018-12913-miniz
 
-# String::Compare::ConstantTime leaks only the length of the secret: no
-# fixed release.
+# Does not apply: comparing strings of different lengths leaks the length.
+# Session::Storage::Secure compares fixed-length signatures, whose length is
+# public.
 CPANSA-String-Compare-ConstantTime-2024-13939
