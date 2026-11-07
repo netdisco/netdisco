@@ -1,5 +1,10 @@
 2.117003 - tbd
 
+  [ENHANCEMENTS]
+
+  * the Access Point Clients report shows AP names, interfaces, SSIDs, and
+    per-SSID client counts
+
   [BUG FIXES]
 
   * #1808 apply the Ports tab's row-group filter to the Ports table only
