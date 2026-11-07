@@ -33,6 +33,7 @@ use App::Netdisco::Util::Web qw/
   request_is_api
   request_is_api_report
   request_is_api_search
+  tacacs_startup_warning
 /;
 use App::Netdisco::Util::Permission 'permitted_by_acl';
 use App::Netdisco::Util::Port 'device_acl_by_role_check';
@@ -258,6 +259,10 @@ warn_postgres_floor_all_tenants(sub { warning shift });
 
 warning 'Your configuration contains text that looks garbled. Run "netdisco-do checkencoding" for details.'
   if scan_config_encoding(config());
+
+if (my $tacacs_warning = tacacs_startup_warning()) {
+    warning $tacacs_warning;
+}
 
 # after template_paths, which decides where site-local themes can live
 App::Netdisco::Web::Theme::resolve_configured_theme();
