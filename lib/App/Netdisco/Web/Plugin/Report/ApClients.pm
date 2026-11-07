@@ -36,6 +36,12 @@ get '/ajax/content/report/apclients' => require_login sub {
 
     return unless scalar @results;
 
+    # clients with no SSID seen on the last macsuck are still counted, in
+    # their own row; a blank cell read as a missing row
+    for my $row (@results) {
+        $row->{ssid} = 'Unknown' unless defined $row->{ssid} and length $row->{ssid};
+    }
+
     if ( request->is_ajax ) {
         my $json = to_json( \@results );
         template 'ajax/report/apclients.tt', { results => $json }, { layout => 'noop' };
