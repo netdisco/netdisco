@@ -13,6 +13,7 @@ use Time::Seconds;
 use HTML::Entities ();
 use URI ();
 use URI::QueryParam ();
+use Try::Tiny;
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -32,6 +33,8 @@ our @EXPORT_OK = qw/
   pane_history_header
   escape_for_script_context
   escape_results_token
+  tacacs_configured
+  tacacs_unavailable
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -679,6 +682,37 @@ sub escape_results_token {
 
   $tokens->{results} = escape_for_script_context( $tokens->{results} );
   return $tokens;
+}
+
+=head2 tacacs_configured
+
+Returns true when the C<tacacs> setting lists at least one server. The shipped
+default C<{}>, and an empty list, are not a configuration.
+
+=cut
+
+sub tacacs_configured {
+  my $tacacs = setting('tacacs');
+  return (ref [] eq ref $tacacs and scalar @$tacacs) ? 1 : 0;
+}
+
+=head2 tacacs_unavailable
+
+Returns undef when Authen::TacacsPlus loads, otherwise advice naming the
+commands that install it.
+
+Loaded here, not with C<use>, because Netdisco no longer installs it: it does
+not compile under GCC 15, and only sites using TACACS+ need it.
+
+=cut
+
+sub tacacs_unavailable {
+  return try { require Authen::TacacsPlus; undef }
+    catch {
+      'Authen::TacacsPlus is not installed. Install it with: '
+      .'~/bin/localenv cpanm --notest Authen::TacacsPlus '
+      .'(with GCC 15 or newer: CFLAGS="-std=gnu17" ~/bin/localenv cpanm --notest Authen::TacacsPlus)';
+    };
 }
 
 1;
