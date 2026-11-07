@@ -14,7 +14,7 @@
   * #1815 document that a new installation needs Perl 5.24, and that an older
     installation can still be upgraded
 
-  * #NNNN make Authen::TacacsPlus optional, so installs on GCC 15 no longer
+  * #1807 make Authen::TacacsPlus optional, so installs on GCC 15 no longer
     fail
 
   [BUG FIXES]
