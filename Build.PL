@@ -38,7 +38,6 @@ App::Netdisco::Builder->new(
     'App::local::lib::helper' => '0.07',
     'Archive::Extract' => '0',
     'Authen::Radius' => '0',
-    'Authen::TacacsPlus' => '0',
     'CGI::Expand' => '2.05',
     'Command::Runner' => 0,
     'Crypt::URandom' => '0.36',
@@ -131,6 +130,7 @@ App::Netdisco::Builder->new(
   recommends => {
     'Graph' => '0',
     'GraphViz' => '0',
+    'Authen::TacacsPlus' => '0',
     'Alien::SNMP' => '3.0509030000',
   },
   test_requires => {

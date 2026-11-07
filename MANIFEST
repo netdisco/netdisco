@@ -761,6 +761,7 @@ xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/215-node-wireless-current.t
 xt/216-compile-shards.t
+xt/217-tacacs-optional.t
 xt/30-backend-workers.t
 xt/31-loadmibsfromoids-guard.t
 xt/32-swagger-ui-guard.t
