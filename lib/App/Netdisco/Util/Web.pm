@@ -13,6 +13,7 @@ use Time::Seconds;
 use HTML::Entities ();
 use URI ();
 use URI::QueryParam ();
+use Try::Tiny;
 
 use base 'Exporter';
 our @EXPORT = ();
@@ -32,6 +33,9 @@ our @EXPORT_OK = qw/
   pane_history_header
   escape_for_script_context
   escape_results_token
+  tacacs_configured
+  tacacs_unavailable
+  tacacs_startup_warning
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -679,6 +683,66 @@ sub escape_results_token {
 
   $tokens->{results} = escape_for_script_context( $tokens->{results} );
   return $tokens;
+}
+
+=head2 tacacs_configured
+
+Returns true when the C<tacacs> setting lists at least one server. The shipped
+default C<{}>, and an empty list, are not a configuration.
+
+=cut
+
+sub tacacs_configured {
+  my $tacacs = setting('tacacs');
+  return (ref [] eq ref $tacacs and scalar @$tacacs) ? 1 : 0;
+}
+
+=head2 tacacs_unavailable
+
+Returns undef when Authen::TacacsPlus loads, otherwise advice naming the
+commands that install it, or that rebuild it when it is installed but will not
+load.
+
+Loaded here, not with C<use>, because Netdisco no longer installs it: it does
+not compile under GCC 15, and only sites using TACACS+ need it.
+
+A copy that is found but will not load is told apart from a missing one,
+because an OS upgrade leaves exactly that behind, and the plain install
+command then answers "up to date" and changes nothing.
+
+=cut
+
+sub tacacs_unavailable {
+  return try { require Authen::TacacsPlus; undef }
+    catch {
+      my $error = $_;
+      return 'Authen::TacacsPlus is not installed. Install it with: '
+        . _tacacs_install_commands('')
+        if $error =~ m{^Can't locate Authen/TacacsPlus\.pm};
+
+      my ($first_line) = split /\n/, $error;
+      return "Authen::TacacsPlus is installed but cannot be loaded ($first_line). Rebuild it with: "
+        . _tacacs_install_commands('--reinstall ');
+    };
+}
+
+sub _tacacs_install_commands {
+  my $flags = shift;
+  return "~/bin/localenv cpanm --notest ${flags}Authen::TacacsPlus "
+    ."(with GCC 15 or newer: CFLAGS=\"-std=gnu17\" ~/bin/localenv cpanm --notest ${flags}Authen::TacacsPlus)";
+}
+
+=head2 tacacs_startup_warning
+
+Returns the warning the web application logs at startup when TACACS+ is
+configured but Authen::TacacsPlus cannot be loaded, otherwise undef.
+
+=cut
+
+sub tacacs_startup_warning {
+  return undef unless tacacs_configured();
+  my $advice = tacacs_unavailable() or return undef;
+  return "TACACS+ is configured, but $advice";
 }
 
 1;

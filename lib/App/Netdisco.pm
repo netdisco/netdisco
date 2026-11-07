@@ -151,6 +151,15 @@ Link some of the newly installed apps into a handy location:
  mkdir ~/bin
  ln -s ~/perl5/bin/{localenv,netdisco-*} ~/bin/
 
+If you will authenticate users with TACACS+, also install the
+Authen::TacacsPlus module, which Netdisco does not install for you:
+
+ ~/bin/localenv cpanm --notest Authen::TacacsPlus
+
+On systems with GCC 15 or newer, such as Ubuntu 26.04, build it in C17 mode:
+
+ CFLAGS="-std=gnu17" ~/bin/localenv cpanm --notest Authen::TacacsPlus
+
 Test the installation by running the following command, which should only
 produce a status message (it's just a test - you'll start the daemons
 properly, later on):
