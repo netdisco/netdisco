@@ -4,6 +4,8 @@
 
   * #1785 record addresses, subnets and ARP entries per VRF, with L3 domains,
     behind the new store_vrfs setting (database schema 105: run netdisco-deploy)
+  * #1811 group VRFs into L3 domains by router configuration, with
+    vrf_domains and two reports
 
   [BUG FIXES]
 
