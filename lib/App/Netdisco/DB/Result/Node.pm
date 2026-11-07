@@ -160,7 +160,7 @@ __PACKAGE__->has_many( wireless_current => 'App::Netdisco::DB::Result::NodeWirel
       my $args = shift;
       return {
           "$args->{foreign_alias}.mac"       => { -ident => "$args->{self_alias}.mac" },
-          "$args->{foreign_alias}.time_last" => { '>=' => \ 'device.last_macsuck' },
+          "$args->{foreign_alias}.time_last" => { '>=' => \ "(SELECT last_macsuck FROM device WHERE device.ip = $args->{self_alias}.switch)" },
       };
   },
   { join_type => 'LEFT' }
