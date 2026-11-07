@@ -1,5 +1,10 @@
 2.117003 - tbd
 
+  [ENHANCEMENTS]
+
+  * #1813 require current releases of Starman, HTTP::Body, Net::DNS and other
+    dependencies
+
   [BUG FIXES]
 
   * #1808 apply the Ports tab's row-group filter to the Ports table only
