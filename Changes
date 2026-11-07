@@ -17,7 +17,7 @@
   [BUG FIXES]
 
   * #1808 apply the Ports tab's row-group filter to the Ports table only
-  * #NNNN install instructions: drop curl from the Red Hat list, where it
+  * #1816 install instructions: drop curl from the Red Hat list, where it
     conflicts with curl-minimal, and add the OpenSSL headers on openSUSE
 
 2.117002 - 2026-11-04
