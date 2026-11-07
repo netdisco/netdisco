@@ -28,7 +28,9 @@ jobs:
 
       - name: Install CPAN::Audit
         run: |
-          curl -fsSL https://cpanmin.us/ | perl - --notest --local-lib ~/audit App::cpanminus Module::Build CPAN::Audit
+          # Build.PL loads App::Netdisco::Builder, which needs the last three
+          curl -fsSL https://cpanmin.us/ | perl - --notest --local-lib ~/audit \
+            App::cpanminus CPAN::Audit Module::Build CPAN::Changes Perl::Version Module::Metadata
           echo "PERL5LIB=$HOME/audit/lib/perl5" >> "$GITHUB_ENV"
           echo "$HOME/audit/bin" >> "$GITHUB_PATH"
 
@@ -51,7 +53,7 @@ jobs:
         - '/home/runner/work:/github/workspace'
     steps:
       - name: Install packages
-        run: apk add bash curl sudo gcc make musl-dev perl-dev
+        run: apk add bash curl sudo gcc make musl-dev perl-dev zlib-dev
 
       - name: Check out latest code
         uses: actions/checkout@v7

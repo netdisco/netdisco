@@ -136,6 +136,7 @@ jobs:
       - name: Audit the upgraded install with cpan-audit
         if: always() && github.event_name == 'pull_request'
         run: |
+          apk add zlib-dev
           sudo -u netdisco /home/netdisco/bin/localenv cpanm --notest CPAN::Audit
           sudo -u netdisco /home/netdisco/bin/localenv cpan-audit installed /home/netdisco/perl5/lib/perl5 \
             --no-color --no-corelist --quiet --exclude-file ${GITHUB_WORKSPACE}/netdisco/.cpanauditignore
