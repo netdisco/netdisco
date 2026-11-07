@@ -9,14 +9,21 @@
 use strict;
 use warnings;
 
-our $hide_tacacs;
+our ($hide_tacacs, $broken_tacacs);
 
+# "broken" stands for a copy built against an older perl or libc, which an OS
+# upgrade leaves behind: found, but dies while loading
 BEGIN {
   $ENV{DANCER_ENVDIR} = '/dev/null';
   $hide_tacacs = 1;
   unshift @INC, sub {
-    die "Can't locate Authen/TacacsPlus.pm in \@INC (hidden by this test)\n"
-      if $hide_tacacs and $_[1] eq 'Authen/TacacsPlus.pm';
+    return unless $_[1] eq 'Authen/TacacsPlus.pm';
+    if ($broken_tacacs) {
+      my $source = qq{die "TacacsPlus.so: undefined symbol: Perl_xs_handshake\\n";\n};
+      open my $fh, '<', \$source or die $!;
+      return $fh;
+    }
+    die "Can't locate Authen/TacacsPlus.pm in \@INC (hidden by this test)\n" if $hide_tacacs;
     return;
   };
 }
@@ -25,7 +32,7 @@ use Test::More 0.88;
 use App::Netdisco;
 use Dancer qw/:syntax !pass/;
 use Dancer::Logger::Capture ();
-use App::Netdisco::Util::Web qw/tacacs_configured tacacs_unavailable/;
+use App::Netdisco::Util::Web qw/tacacs_configured tacacs_unavailable tacacs_startup_warning/;
 
 config->{logger} = 'capture';
 config->{log} = 'debug';
@@ -57,6 +64,19 @@ subtest 'tacacsConfigured__shipped_default_hash__is_false' => sub {
   ok(!tacacs_configured(), 'an empty list is not a configuration');
   set tacacs => $servers;
   ok(tacacs_configured(), 'a server list is');
+};
+
+subtest 'tacacsStartupWarning__not_configured_module_hidden__returns_nothing' => sub {
+  for my $unset ({}, []) {
+    set tacacs => $unset;
+    is(tacacs_startup_warning(), undef, 'a site without TACACS+ is not warned');
+  }
+};
+
+subtest 'tacacsStartupWarning__configured_module_hidden__names_the_problem' => sub {
+  set tacacs => $servers;
+  like(tacacs_startup_warning(), qr/^TACACS\+ is configured, but Authen::TacacsPlus is not installed\./,
+    'the warning says what is missing');
 };
 
 subtest 'providerLoad__module_hidden__loads' => sub {
@@ -93,6 +113,19 @@ subtest 'webStartup__tacacs_configured_module_hidden__logs_warning' => sub {
   ok((grep { $_->{message} =~ /TACACS\+ is configured, but Authen::TacacsPlus is not installed/ }
         logged_at('warning')),
     'the startup warning names the problem');
+};
+
+subtest 'tacacsUnavailable__installed_but_broken__says_so_and_advises_reinstall' => sub {
+  local $broken_tacacs = 1;
+  delete $INC{'Authen/TacacsPlus.pm'};
+  my $first = tacacs_unavailable();
+  like($first, qr/^Authen::TacacsPlus is installed but cannot be loaded/, 'does not claim it is missing');
+  like($first, qr/undefined symbol: Perl_xs_handshake/, 'carries the load error');
+  like($first, qr{~/bin/localenv cpanm --notest --reinstall Authen::TacacsPlus}, 'advises a rebuild');
+  like($first, qr{CFLAGS="-std=gnu17" ~/bin/localenv cpanm --notest --reinstall Authen::TacacsPlus},
+    'gives the GCC 15 form of the rebuild');
+  like(tacacs_unavailable(), qr/^Authen::TacacsPlus is installed but cannot be loaded/,
+    'a retry, which perl answers with "Attempt to reload", still says so');
 };
 
 # the stand-in replaces the real module from here on
