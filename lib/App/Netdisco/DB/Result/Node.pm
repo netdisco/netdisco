@@ -147,6 +147,25 @@ at the time of discovery.
 __PACKAGE__->has_many( wireless => 'App::Netdisco::DB::Result::NodeWireless',
   { 'foreign.mac' => 'self.mac' } );
 
+=head2 wireless_current
+
+Returns wireless client data observed during the associated device's most
+recent macsuck. Older SSID rows are excluded in the JOIN so nodes without a
+current wireless row remain available to reports.
+
+=cut
+
+__PACKAGE__->has_many( wireless_current => 'App::Netdisco::DB::Result::NodeWireless',
+  sub {
+      my $args = shift;
+      return {
+          "$args->{foreign_alias}.mac"       => { -ident => "$args->{self_alias}.mac" },
+          "$args->{foreign_alias}.time_last" => { '>=' => \ "(SELECT last_macsuck FROM device WHERE device.ip = $args->{self_alias}.switch)" },
+      };
+  },
+  { join_type => 'LEFT' }
+);
+
 =head2 oui
 
 DEPRECATED: USE MANUFACTURER INSTEAD
