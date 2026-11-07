@@ -39,8 +39,8 @@ my $row = {
   pae_authconfig_port_control => '', pae_authconfig_state => '',
   pae_authconfig_port_status => '', pae_authsession_user => '',
   pae_authsession_mab => '', pae_last_eapol_frame_source => '',
-  ssid => [ { ssid => 'CORP' }, { ssid => 'GUEST' } ],
-  power => undef,
+  port_ssids => [ 'CORP', 'GUEST' ],
+  port_power => undef,
 };
 
 my %params = map {; $_ => 'on' } @COLUMNS;

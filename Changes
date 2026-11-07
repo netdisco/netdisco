@@ -1,5 +1,13 @@
 2.117003 - tbd
 
+  [ENHANCEMENTS]
+
+  * #1794 Ports tab: read PoE, SSIDs, the last comment and the neighbor MAC
+    with one query each instead of one per port, and build the rows for the
+    HTML and CSV output in one function. SSIDs are now listed sorted. A
+    site-local ports.tt from before this release keeps working, and
+    checksitelocal reports what it costs (rule ports-row-keys)
+
   [BUG FIXES]
 
   * #1808 apply the Ports tab's row-group filter to the Ports table only
