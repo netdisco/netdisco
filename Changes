@@ -7,6 +7,10 @@
   * #1811 group VRFs into L3 domains by router configuration, with
     vrf_domains and two reports
 
+  [BUG FIXES]
+
+  * #1808 apply the Ports tab's row-group filter to the Ports table only
+
 2.117002 - 2026-11-04
 
   [ENHANCEMENTS]
