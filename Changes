@@ -11,6 +11,9 @@
     site-local ports.tt from before this release keeps working, and
     checksitelocal reports what it costs (rule ports-row-keys)
 
+  * #1815 document that a new installation needs Perl 5.24, and that an older
+    installation can still be upgraded
+
   [BUG FIXES]
 
   * #1808 apply the Ports tab's row-group filter to the Ports table only

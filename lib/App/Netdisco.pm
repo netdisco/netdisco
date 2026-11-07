@@ -69,7 +69,8 @@ L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
 
 =head1 Dependencies
 
-Netdisco requires Perl (5.10+) and PostgreSQL (9.6+).
+Netdisco requires Perl 5.24 or newer and PostgreSQL 9.6 or newer. Some of
+the libraries a new installation downloads need Perl 5.24.
 
 Most other dependencies will be automatically installed, but we require that
 the following items are installed using your own operating system, to get the
@@ -233,7 +234,10 @@ L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
 
 =head1 Upgrading from 2.x
 
-Netdisco requires Perl (5.10+) and PostgreSQL (9.6+).
+Netdisco requires PostgreSQL 9.6 or newer. An installation on a Perl older
+than 5.24 can still be upgraded, because the libraries it already has are
+kept, until a release requires a newer version of one of them. A new
+installation needs Perl 5.24 or newer.
 
 Always review the latest L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
 Then the process below should be run for each installation:
