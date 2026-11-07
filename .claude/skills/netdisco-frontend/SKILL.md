@@ -50,6 +50,11 @@ the header of any test your change touches before changing the test.
   htmx 4 does not send it on its own. In markup use
   `hx-headers='{"X-Requested-With": "XMLHttpRequest"}'`; in script use the
   helpers in `netdisco-request.js`.
+- **A report page loads its content by submitting its sidebar form,** so a
+  query parameter on `/report/<tag>` reaches the content route only if the
+  sidebar has a field of that name. To link into a report filtered by
+  something, give its sidebar that field and select it from the parameter
+  in a `before_template` hook.
 - **Routes answer pane requests with `HX-Push-Url` or `HX-Replace-Url`**, so
   htmx owns browser history. Do not call `history.pushState` yourself
   (`xt/js/history-ownership.test.js`).
@@ -154,10 +159,39 @@ the header of any test your change touches before changing the test.
   (`xt/js/tables-registry.test.js`). The header comment in that file is the
   contract for the attribute and its siblings (`data-nd-data`,
   `data-nd-urls`).
-- **Rows come from a JSON data block** named by `data-nd-data`, or from the
-  rendered table body. Escape `<` as `\u003c` when writing JSON into a
-  block (`results.replace('<', '\u003c')`, as the report templates do),
-  or a value containing `</script>` ends the block.
+- **Use a renderer that exists before adding one.** The registry already
+  covers most cells: `escape`, `number`, `join` (`key`, `with`),
+  `deviceLink` (`tab`, `label: {dns, name, ip}`), `searchDeviceLink`,
+  `searchLink` (`tab`), `subnetLink`, `reportLink` (`report`, `param`,
+  `key`, `show`, `blankText`), `devicePortsLink` and others; each one's
+  JSDoc lists its arguments. A column names its renderer with the field it
+  renders: `{"data":"subnet","render":"subnetLink"}`. Add a renderer only
+  for a cell no combination of these can draw, with a test in
+  `xt/js/tables-registry.test.js`.
+- **One value or one link per cell.** When a cell would need several links,
+  or a sentence with links inside it, change what a row is (one row per
+  device, VRF or port) rather than build a composite cell, in a template or
+  in a new renderer. Every column then maps to an existing renderer, and
+  sorting and searching work per value.
+- **Empty values:** `deviceLink` and `subnetLink` always draw a link, so an
+  empty cell becomes a link to `q=null`. Use them only on columns that are
+  never empty, or use `searchDeviceLink` with `notSet`. `reportLink` sends
+  `blank` for an empty key and shows `blankText`; given an array key it
+  sends the values comma-joined (`%2C`), so the receiving route must split
+  on commas.
+- **Labels and URLs:** label a device by its DNS name, then its name, then
+  its IP (`deviceLink`'s `label`), not by its address alone. URLs reach
+  renderers only through `data-nd-urls`, built with `uri_for` so tenant
+  paths work.
+- **New tables take their rows from a JSON data block.** The route sends
+  `to_json(\@results)` to the HTML template and the plain `\@results` to
+  the CSV template. The template writes
+  `<script type="application/json" id="nd-results-<area>-<tag>">[% results.replace('<', '\u003c') | none %]</script>`
+  and names it in `data-nd-data`. Escaping `<` as `\u003c` matters: a
+  value containing `</script>` would otherwise end the block. About 18
+  older templates still render `<tbody>` rows in Template Toolkit; move one
+  to JSON when you change it substantially. Use rendered rows only where a
+  cell's markup has no renderer and cannot be split into columns.
 - **DataTables reads `data-search` from the first body row only.** A
   per-cell search value has to be on that row too, or the column searches
   the cell's display text (`xt/55-ports-search-shadow.t`).
@@ -165,9 +199,10 @@ the header of any test your change touches before changing the test.
   (`column().visible()`) but cannot gain one.** Showing a column the
   server did not send means fetching the pane again.
 - **Two ways a table gets its rows.** Most tables arrive whole with the
-  pane's HTML, either as a JSON data block (`data-nd-data`) or as rendered
-  `<tbody>` rows, and DataTables sorts, pages and searches in the browser,
-  with `deferRender` so only the visible page is drawn. A few reports that
+  pane's HTML, as a JSON data block (`data-nd-data`) or, in older
+  templates, as rendered `<tbody>` rows, and DataTables sorts, pages and
+  searches in the browser, with `deferRender` so only the visible page is
+  drawn. A few reports that
   can return a whole table (Node Vendor, NetBIOS, Module Inventory, PoE
   Status, AP Radio Channel Power, User Log) use server-side mode instead:
   `"serverSide": true` and an `ajax` URL in `data-nd-table`, and a `/data`
@@ -238,6 +273,12 @@ the header of any test your change touches before changing the test.
   before committing. A snapshot diff you did not expect is a finding.
 - JavaScript change: run the `xt/js` files for the script you touched, by
   name. A new test file goes into `.github/workflows/frontend-tests.yml`.
+- **JSON table:** test what the template emits by decoding the data block
+  and the `data-nd-table` columns, and assert renderer names and arguments,
+  not regexes over the HTML. Include a value containing `</script>` to show
+  it cannot close the block.
+- **Report:** check it through its page (`/report/<tag>?...`), not only its
+  `/ajax/content/` route, which answers a parameter the page never forwards.
 - **Source assertions are not behavior.** Many `xt/js` tests check source
   text. A claim that something works in the browser needs a browser: load
   the page and use it, and say in the PR which browser and what you did.
