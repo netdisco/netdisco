@@ -1,0 +1,29 @@
+#!/usr/bin/env perl
+
+# Prints one "Module;>=version" argument per runtime requirement in
+# MYMETA.json, for `cpan-audit modules`. Auditing the range each minimum
+# allows, rather than what CI happens to install, finds a minimum that still
+# lets an existing install keep a version with a known advisory: an upgrade
+# with cpanm only raises a dependency that is below its minimum.
+#
+# Usage: perl Build.PL && perl xt/bin/cpan-audit-minimums [MYMETA.json]
+
+use strict;
+use warnings;
+
+use CPAN::Meta;
+
+my $file = shift // 'MYMETA.json';
+-e $file or die "$file not found: run `perl Build.PL` first, which writes it\n";
+
+my $requires = CPAN::Meta->load_file($file)
+  ->effective_prereqs->requirements_for('runtime', 'requires')->as_string_hash;
+
+# these ship only inside perl, so cpan-audit reports every advisory against
+# the interpreter for them, and no minimum here can upgrade a site's perl
+my %perl_only = map { $_ => 1 } qw/perl Opcode/;
+
+foreach my $module (sort keys %$requires) {
+    next if $perl_only{$module};
+    print "$module;>=", ($requires->{$module} || 0), "\n";
+}
