@@ -669,7 +669,10 @@ share/views/sidebar/search/device.tt
 share/views/sidebar/search/node.tt
 share/views/sidebar/search/port.tt
 share/views/swagger-ui.tt
-xt/00-compile.t
+xt/00-compile-1.t
+xt/00-compile-2.t
+xt/00-compile-3.t
+xt/00-compile-4.t
 xt/01-local-pod.t
 xt/10-sort_port.t
 xt/100-expire-node-wireless.t
@@ -757,6 +760,8 @@ xt/185-nxos-cli-macsuck.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/215-node-wireless-current.t
+xt/216-compile-shards.t
+xt/217-tacacs-optional.t
 xt/30-backend-workers.t
 xt/31-loadmibsfromoids-guard.t
 xt/32-swagger-ui-guard.t
@@ -875,6 +880,7 @@ xt/lib/App/NetdiscoX/Worker/Plugin/TestSeven.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestSix.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestThree.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestTwo.pm
+xt/lib/Test/Netdisco/Compile.pm
 xt/lib/Test/Netdisco/CssRules.pm
 xt/lib/Test/Netdisco/MungerProbe.pm
 xt/lib/Test/Netdisco/Snapshot.pm

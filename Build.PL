@@ -39,7 +39,6 @@ App::Netdisco::Builder->new(
     'Archive::Extract' => '0',
     'Archive::Tar' => '3.10',
     'Authen::Radius' => '0',
-    'Authen::TacacsPlus' => '0',
     'CGI::Expand' => '2.05',
     'Command::Runner' => 0,
     'Compress::Raw::Zlib' => '2.220',
@@ -142,6 +141,7 @@ App::Netdisco::Builder->new(
   recommends => {
     'Graph' => '0',
     'GraphViz' => '0',
+    'Authen::TacacsPlus' => '0',
     'Alien::SNMP' => '3.0509030000',
   },
   test_requires => {
