@@ -5,6 +5,10 @@
   * #1785 record addresses, subnets and ARP entries per VRF, with L3 domains,
     behind the new store_vrfs setting (database schema 105: run netdisco-deploy)
 
+  [BUG FIXES]
+
+  * #1808 apply the Ports tab's row-group filter to the Ports table only
+
 2.117002 - 2026-11-04
 
   [ENHANCEMENTS]

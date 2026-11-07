@@ -518,7 +518,11 @@ const ndTables = (function () {
 
     // install our row filter for datatables row group toggle
     pushFilter: function () {
-      DataTable.ext.search.push(function (_settings, _data, dataIndex) {
+      // ext.search is global: DataTables runs this for every table it draws
+      DataTable.ext.search.push(function (settings, _data, dataIndex) {
+        if (settings.tableId !== 'dp-data-table') {
+          return true;
+        }
         const row = new DataTable('#dp-data-table').row(dataIndex).node();
         if (!row.dataset.collapsedGroup) {
           return true;
