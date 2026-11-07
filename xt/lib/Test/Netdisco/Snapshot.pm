@@ -127,9 +127,9 @@ there along with them.
 C<params.n_ip4> and C<params.n_ip6> are both enabled, as they ship in
 F<share/config.yml>, so Gi1/3's stitched node's C<stitched_ips> renders.
 
-C<params.c_ssid> is enabled and one row carries two C<ssid> entries: with one
-each, the SSID cell would pass just as well on a template that reads
-C<row.ssid.ssid> directly instead of looping.
+C<params.c_ssid> is enabled and one row carries two C<port_ssids> entries:
+with one each, the SSID cell would pass just as well on a template that reads
+a single value instead of looping.
 
 =item C<ajax/device/port_nodes.tt>
 
@@ -289,7 +289,7 @@ sub stash_for {
                 { ip => '192.0.2.13', active => 1,
                   dns => 'host13.example.com' } ] } ],
           nodes_search => 'aa:bb:cc:00:01:01 192.0.2.10 host.example.com',
-          ssid => [ { ssid => 'CORP' }, { ssid => 'GUEST' } ] },
+          port_ssids => [ 'CORP', 'GUEST' ] },
         # administratively disabled port
         { port => 'Gi1/2', up_admin => 'down', port_acl_service => 1 },
         # one stitched_node keeps this at, not over, the threshold, so its
@@ -312,7 +312,7 @@ sub stash_for {
         { port => 'Gi1/6', up_admin => 'up', up => 'down' },
         # up port with PoE and enough VLANs to need the "show more" toggle
         { port => 'Gi1/9', up_admin => 'up', up => 'up',
-          power => { admin => 'true', power => 5 } },
+          port_power => { admin => 'true', power => 5 } },
         # up port whose only subinterface is the dot-zero one
         { port => 'Gi1/10', up_admin => 'up', up => 'up',
           has_subinterface_group => 1, has_only_dot_zero_subinterface => 1 },
