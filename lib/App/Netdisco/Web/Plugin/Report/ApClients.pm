@@ -19,19 +19,18 @@ get '/ajax/content/report/apclients' => require_login sub {
     my @results = schema(vars->{'tenant'})->resultset('Node')->search(
         { 'wireless_port.port' => { '!=', undef },
           'me.time_last' => { '>=', \'device.last_macsuck' },
-          'wireless.time_last' => { '>=', \'device.last_macsuck' },
         },
-        {   select => [qw/device.ip device.dns device.name device.model device_port.port device_port.name device_port.type wireless.ssid/],
+        {   select => [qw/device.ip device.dns device.name device.model device_port.port device_port.name device_port.type wireless_current.ssid/],
             as => [qw/ip dns name model port port_name port_type ssid/],
-            join       => [qw/device device_port wireless_port wireless/],
+            join       => [qw/device device_port wireless_port wireless_current/],
             '+columns' => [
                 { 'mac_count' => { count => 'me.mac' } },
             ],
             group_by => [
                 'device.ip', 'device.dns', 'device.name', 'device.model',
-                'device_port.port', 'device_port.name', 'device_port.type', 'wireless.ssid',
+                'device_port.port', 'device_port.name', 'device_port.type', 'wireless_current.ssid',
             ],
-            order_by => { -asc => [qw/device.name device_port.name wireless.ssid/] },
+            order_by => { -asc => [qw/device.name device_port.name wireless_current.ssid/] },
         }
     )->hri->all;
 
