@@ -58,6 +58,7 @@
         <a href="[% search_node | none %]&q=[% row.ip | uri %]">[% row.ip | html_entity %]</a>
         [% '&nbsp;<i class="fas fa-book nd_icon-archived"></i>&nbsp;' IF NOT row.active %]
         [% ' (' _ row.dns.remove(settings.domain_suffix) _ ')' | html_entity IF row.dns %]
+        [% ' in VRF ' _ row.vrf | html_entity IF row.vrf.length %]
         [% IF row.router_ip %]
         via <a href="[% search_device | none %]&q=[% row.router_ip | uri %]">[% row.router_name || row.router_ip | html_entity %]</a>
         [% END %]
@@ -105,6 +106,7 @@
         <a href="[% search_node | none %]&q=[% ni.ip | uri %]">[% ni.ip | html_entity %]</a>
         [% '&nbsp;<i class="fas fa-book nd_icon-archived"></i>&nbsp;' IF NOT ni.active %]
         [% ' (' _ ni.dns.remove(settings.domain_suffix) _ ')' | html_entity IF ni.dns %]
+        [% ' in VRF ' _ ni.vrf | html_entity IF ni.vrf.length %]
       </td>
       [% IF params.stamps %]
       <td>[% date.format(ni.time_first) | html_entity %]</td>
@@ -177,6 +179,7 @@
         <a href="[% search_node | none %]&q=[% nodeip.ip | uri %]">[% nodeip.ip | html_entity %]</a>
         [% '&nbsp;<i class="fas fa-book nd_icon-archived"></i>&nbsp;' IF NOT nodeip.active %]
         [% ' (' _ nodeip.dns.remove(settings.domain_suffix) _ ')' | html_entity IF nodeip.dns %]
+        [% ' in VRF ' _ nodeip.vrf | html_entity IF nodeip.vrf.length %]
         <br/>[% INCLUDE external_ip_links item = nodeip %]
       </td>
       [% IF params.stamps %]

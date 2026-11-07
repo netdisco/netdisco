@@ -1,0 +1,27 @@
+# NX-OS 9300v text replies for the commands arpnip sends (pty). The ARP rows
+# are the lab capture's "show ip arp vrf all" rows (header lines are removed by
+# the | inc filter). Synthetic: the IPv6 section, which joins the capture's
+# per-VRF "show ipv6 neighbor" tables, since "vrf all" was not captured.
+#prompt: switch# 
+#--- show ip arp vrf all | inc ^[1-9] | no-more
+172.20.20.1     00:00:04  92f9.ea9d.aeda  mgmt0                   
+10.10.10.2      00:00:57  0200.0000.0201  Ethernet1/1             
+10.10.10.2      00:00:52  0200.0000.0202  Ethernet1/2             
+10.11.0.2       00:00:45  0200.0000.0203  Ethernet1/3             
+10.12.0.2       00:00:45  0200.0000.0203  Ethernet1/4             
+#--- show ipv6 neighbor vrf all | exclude Flags: | no-more
+
+IPv6 Adjacency Table for VRF red
+Total number of entries: 3
+Address         Age       MAC Address     Pref Source     Interface         Mobility Flags
+2001:db8:10::2  00:06:06  0200.0000.0201  50   icmpv6     Ethernet1/1                      
+2001:db8:10::ff:fe00:201
+                00:06:05  0200.0000.0201  50   icmpv6     Ethernet1/1                      
+fe80::2         00:06:04  0200.0000.0201  50   icmpv6     Ethernet1/1                      
+
+IPv6 Adjacency Table for VRF green
+Total number of entries: 2
+Address         Age       MAC Address     Pref Source     Interface         Mobility Flags
+2001:db8:13::2  00:06:04  0200.0000.0204  50   icmpv6     Ethernet1/5                      
+2001:db8:13::ff:fe00:204
+                00:06:03  0200.0000.0204  50   icmpv6     Ethernet1/5                      

@@ -1,4 +1,9 @@
-2.117003 - tbd
+2.118000 - tbd
+
+  [ENHANCEMENTS]
+
+  * #1785 record addresses, subnets and ARP entries per VRF, with L3 domains,
+    behind the new store_vrfs setting (database schema 105: run netdisco-deploy)
 
   [BUG FIXES]
 

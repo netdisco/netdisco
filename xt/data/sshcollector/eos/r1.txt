@@ -1,0 +1,53 @@
+# Arista EOS (lab capture, cEOS 4.36.2F, r1), the JSON EOS.pm reads over capture with stdin_data
+#--- show ip arp vrf all | json | no-more
+{
+    "vrfs": {
+        "RED": {
+            "ipV4Neighbors": [
+                {
+                    "address": "10.111.1.2",
+                    "age": 16953140,
+                    "hwAddress": "0200.0000.1101",
+                    "interface": "Ethernet3"
+                }
+            ],
+            "totalEntries": 1,
+            "staticEntries": 0,
+            "dynamicEntries": 1,
+            "notLearnedEntries": 0
+        },
+        "default": {
+            "ipV4Neighbors": [
+                {
+                    "address": "172.20.20.1",
+                    "age": 0,
+                    "hwAddress": "be57.40b3.ef86",
+                    "interface": "Management0"
+                }
+            ],
+            "totalEntries": 1,
+            "staticEntries": 0,
+            "dynamicEntries": 1,
+            "notLearnedEntries": 0
+        }
+    }
+}
+#--- show ipv6 neighbor vrf all | json | no-more
+{
+    "vrfs": {
+        "RED": {
+            "ipV6Neighbors": [],
+            "totalEntries": 0,
+            "staticEntries": 0,
+            "dynamicEntries": 0,
+            "notLearnedEntries": 0
+        },
+        "default": {
+            "ipV6Neighbors": [],
+            "totalEntries": 0,
+            "staticEntries": 0,
+            "dynamicEntries": 0,
+            "notLearnedEntries": 0
+        }
+    }
+}

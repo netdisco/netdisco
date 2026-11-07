@@ -22,7 +22,7 @@ __PACKAGE__->result_source_instance->view_definition(<<'ENDSQL');
          WHERE device_port.remote_port IS NOT NULL
          GROUP BY device_port.ip,
                   device_port.remote_ip) dp
-      LEFT JOIN device_ip di ON dp.remote_ip = di.alias
+      LEFT JOIN device_ip_resolved di ON dp.remote_ip = di.alias
       WHERE di.ip IS NOT NULL
       UNION SELECT di.ip AS left_ip,
                    dp.ip AS right_ip
@@ -33,7 +33,7 @@ __PACKAGE__->result_source_instance->view_definition(<<'ENDSQL');
          WHERE device_port.remote_port IS NOT NULL
          GROUP BY device_port.ip,
                   device_port.remote_ip) dp
-      LEFT JOIN device_ip di ON dp.remote_ip = di.alias
+      LEFT JOIN device_ip_resolved di ON dp.remote_ip = di.alias
       WHERE di.ip IS NOT NULL ) AS foo
    GROUP BY left_ip
    ORDER BY left_ip

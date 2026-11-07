@@ -19,6 +19,7 @@ register_worker({ phase => 'main' }, sub {
     -bool => 'me.active',
     -bool => 'nodes.active',
     'nodes.switch' => $host,
+    'me.vrf' => '',
     'me.time_last' => \[ '>= LOCALTIMESTAMP - ?::interval', $interval ],
   },{
     join => 'nodes',
