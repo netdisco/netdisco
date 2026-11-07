@@ -750,6 +750,10 @@ xt/173-discover-port-properties-upsert.t
 xt/174-discover-wireless-upsert.t
 xt/175-discover-neighbor-columns.t
 xt/176-discover-port-tags-clear.t
+xt/177-search-mac-target.t
+xt/178-search-route-order.t
+xt/180-schema-deploy-version-check.t
+xt/185-nxos-cli-macsuck.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/30-backend-workers.t
