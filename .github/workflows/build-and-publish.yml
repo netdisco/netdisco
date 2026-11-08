@@ -79,8 +79,9 @@ jobs:
         id: build_and_run_tests
         run: |
           cd ${GITHUB_WORKSPACE}/netdisco
+          echo "runner cores: $(nproc)"
           sudo -u netdisco /home/netdisco/bin/localenv perl ./Build.PL
-          sudo -u netdisco /home/netdisco/bin/localenv ./Build test --test_files xt/
+          sudo -u netdisco /home/netdisco/bin/localenv env HARNESS_OPTIONS=j$(nproc) ./Build test --test_files xt/
 
       - name: Make release
         if: steps.build_and_run_tests.outcome == 'success'
