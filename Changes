@@ -15,7 +15,7 @@
     installation can still be upgraded
   * #1818 make Authen::TacacsPlus optional, so installs on GCC 15 no longer
     fail
-  * #NNNN require current releases of DBI and other indirect dependencies
+  * #1820 require current releases of DBI and other indirect dependencies
     with advisories
 
   [BUG FIXES]
