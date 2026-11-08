@@ -1,10 +1,11 @@
 [% PROCESS 'externallinks.tt' -%]
-[%# The prefixes the rows link to, worked out once: uri_for builds a URI object
-    on every call, and the rows asked for it about three times each. -%]
 [% SET uri_portlog = uri_for('/report/portlog') -%]
 [% SET uri_search = uri_for('/search') -%]
 [% SET uri_port_nodes = uri_for('/ajax/content/device/port/nodes') -%]
 [% SET uri_topology = uri_for('/admin/topology') -%]
+[% SET uri_portssid = uri_for('/report/portssid') -%]
+[% SET uri_nodevendor = uri_for('/report/nodevendor') -%]
+[% SET uri_netbios = uri_for('/report/netbios') -%]
 <table id="dp-data-table" class="table table-bordered table-striped" width="100%" cellspacing="0"
   data-nd-table='{
   "columnDefs": [

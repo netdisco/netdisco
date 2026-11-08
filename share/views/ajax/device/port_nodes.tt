@@ -6,18 +6,19 @@
   [% '<br/>' IF (row.remote_ip OR row.is_uplink) OR NOT loop.first %]
   [% '<i class="fas fa-book nd_icon-archived" title="Archived node (inactive)"></i>&nbsp; ' IF NOT node.active %]
   <i class="fas fa-laptop" title="Client"></i>&nbsp;
-  <a href="[% search_node | none %]&q=[% node.net_mac.$mac_format_call | uri %]">
-    [% node.net_mac.$mac_format_call | html_entity %]</a>
+  [% SET node_mac = node.net_mac.$mac_format_call %]
+  <a href="[% search_node | none %]&q=[% node_mac | uri %]">
+    [% node_mac | html_entity %]</a>
   [% IF (node.vlan > 0) && (node.vlan != row.vlan) %]
     (on vlan [% node.vlan | html_entity %])
   [% END %]            
   [% IF params.n_ssid AND node.wireless AND node.wireless.size %]
     (SSID: [% FOREACH wlan IN node.wireless %]
-      <a href="[%+ uri_for('/report/portssid') %]?ssid=[% wlan.ssid | uri %]">[% wlan.ssid | html_entity %]</a>
+      <a href="[%+ uri_portssid || uri_for('/report/portssid') %]?ssid=[% wlan.ssid | uri %]">[% wlan.ssid | html_entity %]</a>
     [% END %])
   [% END %]
   [% IF params.n_vendor AND node.manufacturer.defined %]
-    ([% FOREACH manufacturer IN node.manufacturer %]<a href="[%+ uri_for('/report/nodevendor') %]?vendor=[% manufacturer.abbrev | uri %]">[% manufacturer.abbrev | html_entity %]</a>[% END %])
+    ([% FOREACH manufacturer IN node.manufacturer %]<a href="[%+ uri_nodevendor || uri_for('/report/nodevendor') %]?vendor=[% manufacturer.abbrev | uri %]">[% manufacturer.abbrev | html_entity %]</a>[% END %])
   [% END %]
   [% ' (' _ node.time_last_age _ ')' | html_entity IF params.n_age %]
   [% IF params.n_ip4 OR params.n_ip6 %]
@@ -61,7 +62,7 @@
   [% IF params.n_netbios %]
     [% FOREACH nbt IN node.netbios %]
     [% '<br/>' IF NOT loop.first %]
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\<a href="[% uri_for('/report/netbios') | none %]?domain=[% nbt.domain | uri %]" title="Nodes in this Domain">[% nbt.domain | html_entity %]</a>\<a href="[% search_node | none %]&q=[% nbt.nbname | uri %]">[% nbt.nbname | html_entity %]</a>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\<a href="[% uri_netbios || uri_for('/report/netbios') | none %]?domain=[% nbt.domain | uri %]" title="Nodes in this Domain">[% nbt.domain | html_entity %]</a>\<a href="[% search_node | none %]&q=[% nbt.nbname | uri %]">[% nbt.nbname | html_entity %]</a>
     <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[% nbt.nbuser || '[No User]' | html_entity %]@<a href="[% search_node | none %]&q=[% nbt.ip | uri %]">[% nbt.ip | html_entity %]</a>
     [% END %]
   [% END %]
