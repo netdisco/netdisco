@@ -37,8 +37,15 @@ jobs:
       - name: Audit the minimums
         run: |
           perl Build.PL > /dev/null
-          perl xt/bin/cpan-audit-minimums | tr '\n' '\0' \
-            | xargs -0 cpan-audit modules --no-color --no-corelist --quiet --exclude-file .cpanauditignore
+          perl xt/bin/cpan-audit-minimums > "$RUNNER_TEMP/minimums.txt"
+          audit() {
+            tr '\n' '\0' < "$RUNNER_TEMP/minimums.txt" \
+              | xargs -0 cpan-audit modules --no-corelist --quiet --exclude-file .cpanauditignore "$@"
+          }
+          if audit --no-color; then exit 0; fi
+          # cpan-audit's report says what is affected; this says what to change
+          audit --json | perl -Ixt/lib xt/bin/cpan-audit-fix-hints || true
+          exit 1
 
   installed:
     # an install upgraded from the last release, indirect dependencies
@@ -71,3 +78,11 @@ jobs:
           sudo -u netdisco /home/netdisco/bin/localenv cpanm --notest CPAN::Audit
           sudo -u netdisco /home/netdisco/bin/localenv cpan-audit installed /home/netdisco/perl5/lib/perl5 \
             --no-color --no-corelist --quiet --exclude-file ${GITHUB_WORKSPACE}/netdisco/.cpanauditignore
+
+      # loads Netdisco, so it runs here, where its dependencies are installed
+      - name: Check that Build.PL names every dist with advisories that Netdisco loads
+        if: always()
+        run: |
+          cd ${GITHUB_WORKSPACE}/netdisco
+          sudo -u netdisco /home/netdisco/bin/localenv perl Build.PL > /dev/null
+          sudo -u netdisco /home/netdisco/bin/localenv perl -Ixt/lib xt/bin/cpan-audit-coverage

@@ -1,0 +1,16 @@
+#!/usr/bin/env perl
+
+# Reads a `cpan-audit modules --json` report on stdin and prints, for each dist
+# it flags, what to change: the minimum in Build.PL that clears its advisories,
+# or the ids that need a .cpanauditignore entry. cpan-audit-minimums' workflow
+# step runs it after a failing audit, under cpan-audit's own report.
+#
+# Usage: ... | cpan-audit modules --json ... | perl -Ixt/lib xt/bin/cpan-audit-fix-hints
+
+use strict;
+use warnings;
+
+use Test::Netdisco::CpanAudit qw(fix_hints read_report);
+
+my $report = read_report(do { local $/; <STDIN> });
+print "\n$_" for fix_hints($report);
