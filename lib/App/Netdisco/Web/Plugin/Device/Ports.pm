@@ -793,6 +793,13 @@ sub _legacy_ports_template {
     return $known->{legacy};
 }
 
+sub _port_column_templates {
+    my $engine = engine('template');
+    return { map {;
+        $_->{name} => ($engine->view("plugin/$_->{name}/device_port_column.tt") ? 1 : 0)
+    } @{ setting('_extra_device_port_cols') || [] } };
+}
+
 # device ports with a description (er, name) matching
 get '/ajax/content/device/ports' => require_login sub {
     # the CSV never reads the neighbor's MAC
@@ -811,6 +818,7 @@ get '/ajax/content/device/ports' => require_login sub {
           device => $data->{device},
           vlans  => $data->{vlans},
           deferred_node_params => $data->{deferred_node_params},
+          port_column_templates => _port_column_templates(),
         }, { layout => 'noop' };
     }
     else {
