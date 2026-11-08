@@ -20,6 +20,9 @@
   * #1818 make Authen::TacacsPlus optional, so installs on GCC 15 no longer
     fail
 
+  * #NNNN require current releases of DBI and other indirect dependencies
+    with advisories
+
   [BUG FIXES]
 
   * #1808 apply the Ports tab's row-group filter to the Ports table only
