@@ -760,6 +760,7 @@ xt/200-template-eval-cache.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/215-node-wireless-current.t
 xt/217-tacacs-optional.t
+xt/218-cpan-audit-helpers.t
 xt/30-backend-workers.t
 xt/31-loadmibsfromoids-guard.t
 xt/32-swagger-ui-guard.t
@@ -831,6 +832,9 @@ xt/96-worker-action-is-literal.t
 xt/97-api-auth-failure-status.t
 xt/98-api-delete-count.t
 xt/99-api-json-errors.t
+xt/bin/cpan-audit-coverage
+xt/bin/cpan-audit-fix-hints
+xt/bin/cpan-audit-minimums
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/admin-button-dispatch.test.js
@@ -879,7 +883,9 @@ xt/lib/App/NetdiscoX/Worker/Plugin/TestSeven.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestSix.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestThree.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestTwo.pm
+xt/lib/Test/Netdisco/CpanAudit.pm
 xt/lib/Test/Netdisco/CssRules.pm
+xt/lib/Test/Netdisco/LoadRecorder.pm
 xt/lib/Test/Netdisco/MungerProbe.pm
 xt/lib/Test/Netdisco/Snapshot.pm
 xt/portsort-corpus.json
