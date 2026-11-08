@@ -181,7 +181,7 @@ sub macsuck {
 
     foreach my $line (@data) {
         if ($line && $line =~ m/$re_mac_line/) {
-            my $port = sprintf '%s%s', ($if_name_map->{$5} || $4), ($6 || '');
+            my $port = exists $if_name_map->{$5} ? $if_name_map->{$5} . ($6 || '') : $4;
             my $vlan = ($1 ? ($1 eq '-' ? 0 : $1) : 0);
 
             ++$macentries->{$vlan}->{$port}->{mac_as_ieee($2)};

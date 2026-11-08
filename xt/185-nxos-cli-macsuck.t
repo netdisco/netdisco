@@ -45,4 +45,15 @@ subtest 'macsuck__port_channel_entry__uses_lowercase_port_channel_name' => sub {
   }, 'Po maps to port-channel as NX-OS names it in ifName');
 };
 
+subtest 'macsuck__full_word_vlan_port__names_the_svi_once' => sub {
+  # NX-OS prints SVI rows as Vlan3001, a full word the map has no key for;
+  # the digits were appended a second time, giving Vlan30013001.
+  my $entries = $nxos->macsuck('nxos-host', FakeSSH->new(
+    "*  3001     5290.faa8.1b08   static   -         F      F    Vlan3001\n",
+  ));
+  is_deeply($entries, {
+    3001 => { 'Vlan3001' => { '52:90:fa:a8:1b:08' => 1 } },
+  }, 'Vlan3001 stays Vlan3001');
+};
+
 done_testing;
