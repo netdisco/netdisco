@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use 5.010_000;
 
-our $VERSION = '2.117002';
+our $VERSION = '2.117003';
 use App::Netdisco::Configuration;
 
 =head1 NAME
@@ -69,7 +69,8 @@ L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
 
 =head1 Dependencies
 
-Netdisco requires Perl (5.10+) and PostgreSQL (9.6+).
+Netdisco requires Perl 5.24 or newer and PostgreSQL 9.6 or newer. Some of
+the libraries a new installation downloads need Perl 5.24.
 
 Most other dependencies will be automatically installed, but we require that
 the following items are installed using your own operating system, to get the
@@ -81,7 +82,7 @@ On Ubuntu/Debian:
 
 On Fedora/Red-Hat:
 
- root:~# yum install perl-core perl-DBD-Pg net-snmp-perl net-snmp-devel openssl-devel python3 curl postgresql-server postgresql-contrib make automake gcc
+ root:~# yum install perl-core perl-DBD-Pg net-snmp-perl net-snmp-devel openssl-devel python3 postgresql-server postgresql-contrib make automake gcc
  root:~# postgresql-setup initdb
  root:~# systemctl start postgresql
  root:~# systemctl enable postgresql
@@ -89,7 +90,7 @@ On Fedora/Red-Hat:
 On openSUSE:
 
  root:~# zypper refresh
- root:~# zypper install curl automake gcc make postgresql postgresql-server openssh openssl python3 net-snmp perl perl-DBD-Pg perl-SNMP
+ root:~# zypper install curl automake gcc make postgresql postgresql-server openssh openssl libopenssl-devel python3 net-snmp perl perl-DBD-Pg perl-SNMP
 
 On SUSE Linux Enterprise Server 15 and later:
 
@@ -149,6 +150,15 @@ Link some of the newly installed apps into a handy location:
 
  mkdir ~/bin
  ln -s ~/perl5/bin/{localenv,netdisco-*} ~/bin/
+
+If you will authenticate users with TACACS+, also install the
+Authen::TacacsPlus module, which Netdisco does not install for you:
+
+ ~/bin/localenv cpanm --notest Authen::TacacsPlus
+
+On systems with GCC 15 or newer, such as Ubuntu 26.04, build it in C17 mode:
+
+ CFLAGS="-std=gnu17" ~/bin/localenv cpanm --notest Authen::TacacsPlus
 
 Test the installation by running the following command, which should only
 produce a status message (it's just a test - you'll start the daemons
@@ -233,7 +243,10 @@ L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
 
 =head1 Upgrading from 2.x
 
-Netdisco requires Perl (5.10+) and PostgreSQL (9.6+).
+Netdisco requires PostgreSQL 9.6 or newer. An installation on a Perl older
+than 5.24 can still be upgraded, because the libraries it already has are
+kept, until a release requires a newer version of one of them. A new
+installation needs Perl 5.24 or newer.
 
 Always review the latest L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
 Then the process below should be run for each installation:

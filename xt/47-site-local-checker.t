@@ -502,7 +502,7 @@ subtest 'scan_site_local__path_does_not_exist__returns_nothing_and_lives' => sub
 subtest 'site_local_rules__called__describes_every_rule_the_scan_applies' => sub {
     my @rules = App::Netdisco::Util::SiteLocal::site_local_rules();
 
-    is scalar @rules, 29, 'twenty-nine rules ship in this release';
+    is scalar @rules, 30, 'thirty rules ship in this release';
     is_deeply [ sort map { $_->{name} } @rules ],
       [ 'csv-download-link', 'csv-download-target',
         'datatabledefaults-include', 'datatables-js-renamed',
@@ -512,7 +512,8 @@ subtest 'site_local_rules__called__describes_every_rule_the_scan_applies' => sub
         'jquery-removed', 'jquery-ui-autocomplete', 'jquery-ui-removed',
         'jstree-removed', 'layout-shadow', 'moment-removed', 'natural-js',
         'nd-submit', 'page-script-include', 'page-title-globals',
-        'portcontrol-js-renamed', 'sidebar-reset-target', 'tab-page-shadow',
+        'portcontrol-js-renamed', 'ports-row-keys', 'sidebar-reset-target',
+        'tab-page-shadow',
         'tab-sync-attribute', 'toastr-removed' ],
       'named as the report cites them, file rules included';
     ok !(grep { !length($_->{advice} || '') } @rules),
@@ -615,6 +616,33 @@ subtest 'scan_shadowed_files__page_copy_keeping_the_csv_id__reports_nothing' => 
     is scalar scan_shadowed_files(
       { paths => ["$tree"], rules => ['csv-download-target'] }), 0,
       'the anchor the response swaps into is there';
+};
+
+subtest 'scan_shadowed_files__ports_copy_without_neighbor_net_mac__reports_the_node_fetch' => sub {
+    my $tree = site_local_tree('ajax/device/ports.tt' =>
+      qq{[% FOREACH _n IN row.stitched_nodes %][% END %]\n});
+
+    my @findings = scan_shadowed_files(
+      { paths => ["$tree"], rules => ['ports-row-keys'] });
+
+    is scalar @findings, 1, 'one finding for the older ports.tt';
+    is $findings[0]{rule}, 'ports-row-keys', 'named the rule';
+    like $findings[0]{advice}, qr/neighbor_net_mac/,
+      'advice names the key to read';
+
+    # an older copy gets the per-port queries for all of these, not only the
+    # node fetch, so the advice has to name every key it should move to
+    like $findings[0]{advice}, qr/\b\Q$_\E\b/, "advice names $_"
+      for qw/ port_power port_ssids port_comment /;
+};
+
+subtest 'scan_shadowed_files__ports_copy_reading_neighbor_net_mac__reports_nothing' => sub {
+    my $tree = site_local_tree('ajax/device/ports.tt' =>
+      qq{[% SET neighbor_mac = row.neighbor_net_mac %]\n});
+
+    is scalar scan_shadowed_files(
+      { paths => ["$tree"], rules => ['ports-row-keys'] }), 0,
+      'a copy of the current template is not a finding';
 };
 
 subtest 'scan_shadowed_files__device_copy_without_the_reset_id__reports_the_lost_link' => sub {
