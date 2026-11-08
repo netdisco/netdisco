@@ -63,31 +63,72 @@ sub fix_hints {
     my $module = $entry->{queried_modules}->[0] // $dist;
     my (@fixed, @unfixed);
     foreach my $advisory (@{ $entry->{advisories} }) {
-      my $range = $advisory->{fixed_versions}->[0];
-      push @{ defined $range && length $range ? \@fixed : \@unfixed }, [ $advisory->{id}, $range ];
+      my $bound = _clearing_bound($advisory);
+      push @{ $bound ? \@fixed : \@unfixed }, [ $advisory->{id}, $bound ];
     }
     push @hints, _raise_hint($module, @fixed) . _unfixed_hint($module, @unfixed);
   }
   return @hints;
 }
 
-# ">=6.08" means "to 6.08" and ">3.11" means "above 3.11"; any other form
-# sends the reader to the range cpan-audit printed rather than guess.
+my $version_re = qr/v?[0-9][0-9._]*/;
+
+# What a minimum must reach to clear one advisory: [ 'to' or 'above', version ],
+# 'unknown' for a fixed range in a form this does not read, or undef when no
+# minimum clears it. The database often leaves fixed_versions empty when the
+# affected range has an upper bound, which a minimum past that bound clears.
+sub _clearing_bound {
+  my $advisory = shift;
+  my $fixed = $advisory->{fixed_versions}->[0];
+
+  if (defined $fixed and length $fixed) {
+    my ($op, $wanted) = $fixed =~ m/^\s*(>=?)\s*($version_re)\s*$/ or return 'unknown';
+    return [ ($op eq '>=' ? 'to' : 'above'), $wanted ];
+  }
+
+  my $best;
+  foreach my $range (@{ $advisory->{affected_versions} || [] }) {
+    my $bound = _upper_bound($range) or return undef;
+    $best = $bound if !$best or _beyond($bound, $best);
+  }
+  return $best;
+}
+
+# "<2.25" is cleared at 2.25, "<=5.001" and "==0.01" only above them
+sub _upper_bound {
+  my $range = shift;
+  foreach my $part (split m/\s*,\s*/, $range) {
+    my ($op, $version) = $part =~ m/^\s*(<=?|==)\s*($version_re)\s*$/ or next;
+    return [ ($op eq '<' ? 'to' : 'above'), $version ];
+  }
+  return undef;
+}
+
+# whether bound $a needs a higher minimum than bound $b; at the same version,
+# "above" is the stricter of the two
+sub _beyond {
+  my ($a, $b) = @_;
+  my $order = version->parse($a->[1]) <=> version->parse($b->[1]);
+  return $order > 0 || ($order == 0 && $a->[0] eq 'above' && $b->[0] eq 'to');
+}
+
+# "to 6.08" or "above 3.11"; a fixed range in any other form sends the reader
+# to the range cpan-audit printed rather than guess
 sub _raise_hint {
   my ($module, @fixed) = @_;
   return '' unless @fixed;
   my @ids = map { $_->[0] } @fixed;
-  my ($best, $how);
 
-  foreach my $range (map { $_->[1] } @fixed) {
-    my ($op, $wanted) = $range =~ m/^\s*(>=?)\s*v?([0-9][0-9._]*)\s*$/
-      or return "To clear this: raise $module in Build.PL past the Fixed range shown above for "
-        . _list(@ids) . ', or add ' . (@ids > 1 ? 'them' : 'it') . "\n$ignore_reason";
-    next if defined $best and version->parse($wanted) <= version->parse($best);
-    ($best, $how) = ($wanted, $op eq '>=' ? 'to' : 'above');
+  if (grep { !ref $_->[1] } @fixed) {
+    return "To clear this: raise $module in Build.PL past the Fixed range shown above for "
+      . _list(@ids) . ', or add ' . (@ids > 1 ? 'them' : 'it') . "\n$ignore_reason";
   }
 
-  return "To clear this: raise $module in Build.PL $how $best, or add " . _list(@ids) . "\n$ignore_reason";
+  my $best;
+  foreach my $bound (map { $_->[1] } @fixed) {
+    $best = $bound if !$best or _beyond($bound, $best);
+  }
+  return "To clear this: raise $module in Build.PL $best->[0] $best->[1], or add " . _list(@ids) . "\n$ignore_reason";
 }
 
 sub _unfixed_hint {

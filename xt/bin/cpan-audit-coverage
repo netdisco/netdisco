@@ -24,9 +24,17 @@ use Test::Netdisco::CpanAudit qw(unnamed_dists coverage_message);
 
 my $record = File::Temp->new;
 local $ENV{LOAD_RECORD} = $record->filename;
+# Web.pm sets a test session key under it rather than reading one from the database
 local $ENV{HARNESS_ACTIVE} = 1;
 # stops bin/ scripts re-executing themselves under ~/bin/localenv
 local $ENV{PERL_LOCAL_LIB_ROOT} = $ENV{PERL_LOCAL_LIB_ROOT} // 'cpan-audit-coverage';
+# Without these, a script run as `perl -e` takes uid 0's home, /root, whose
+# site_plugins then sits unreadable on @INC and fails every later require;
+# an empty home also keeps any deployment.yml, and its database, out of it.
+# The same settings as xt/00-compile-*.t.
+my $home = File::Temp->newdir;
+local $ENV{NETDISCO_HOME} = $home->dirname;
+local $ENV{DANCER_ENVDIR} = '/dev/null';
 
 my @recorder = ($^X, '-Ilib', '-Ixt/lib', '-MTest::Netdisco::LoadRecorder');
 
@@ -38,8 +46,25 @@ find(sub {
     if m/\.pm$/ and $File::Find::name !~ m{/Builder\.pm$} and $File::Find::name !~ m/graph/i;
 }, 'lib');
 
-system(@recorder, '-e', 'foreach (@ARGV) { s{^lib/}{}; eval { require $_ } }', sort @modules) == 0
-  or die "loading lib/ failed: $?\n";
+# A module that fails to load here hides what it would load, so the check
+# would pass without having looked; xt/00-compile-*.t shows each one loads.
+my $load_all = <<'PERL';
+use App::Netdisco;
+my $failed = 0;
+foreach my $file (@ARGV) {
+  (my $module = $file) =~ s{^lib/}{};
+  next if eval { require $module; 1 };
+  my ($reason) = split /\n/, $@;
+  print STDERR "cannot load $file: $reason\n";
+  $failed++;
+}
+exit($failed ? 1 : 0);
+PERL
+
+system(@recorder, '-e', $load_all, sort @modules) == 0
+  or die "Some lib/ modules did not load, so this check cannot see what they load. Install"
+    . " Netdisco's dependencies (`cpanm --installdeps .`) and run it from the checkout's top"
+    . " directory; xt/00-compile-*.t give the full error for each module.\n";
 
 foreach my $script (sort glob 'bin/*') {
   my $error = `@recorder -c $script 2>&1 1>/dev/null`;

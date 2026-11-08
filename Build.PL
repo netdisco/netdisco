@@ -143,7 +143,9 @@ App::Netdisco::Builder->new(
     # an old copy of an unnamed dependency (xt/bin/cpan-audit-coverage).
     'Capture::Tiny' => '0.24',
     'Compress::Raw::Bzip2' => '2.031',
+    'Convert::ASN1' => '0.28',
     'Crypt::CBC' => '3.07',
+    'Crypt::SaltedHash' => '0.10',
     'Data::Entropy' => '0.010',
     'DBI' => '1.656',
     'Digest::MD5' => '2.25',

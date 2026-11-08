@@ -83,7 +83,9 @@ sub report {
   return { dists => { $dist => {
     queried_modules => [$module],
     version         => '>=0',
-    advisories      => [ map { { id => $_->[0], fixed_versions => $_->[1] } } @advisories ],
+    advisories      => [ map {
+      { id => $_->[0], fixed_versions => $_->[1], affected_versions => $_->[2] || ['>0'] }
+    } @advisories ],
   } } };
 }
 
@@ -116,6 +118,29 @@ subtest 'fix_hints__fixed_and_unfixed_mixed__gives_highest_minimum_and_lists_unf
   is_deeply [ fix_hints(report('Sereal-Decoder', 'Sereal::Decoder',
       ['CPANSA-X-1', []], ['CPANSA-X-2', ['>=5.005']])) ],
     [ 'To clear this: raise Sereal::Decoder in Build.PL to 5.005, or add CPANSA-X-2' . $ignore_tail . $unfixed ];
+};
+
+# the database leaves fixed_versions empty on many advisories whose affected
+# range has an upper bound, and a minimum past that bound clears them
+subtest 'fix_hints__no_fixed_range_but_bounded_affected__raise_past_bound' => sub {
+  is_deeply [ fix_hints(report('Digest-MD5', 'Digest::MD5', ['CPANSA-Digest-MD5-2002-0703', [], ['<2.25']])) ],
+    [ 'To clear this: raise Digest::MD5 in Build.PL to 2.25, or add CPANSA-Digest-MD5-2002-0703' . $ignore_tail ];
+};
+
+subtest 'fix_hints__no_fixed_range_inclusive_bound__says_above' => sub {
+  is_deeply [ fix_hints(report('Sereal-Encoder', 'Sereal::Encoder',
+      ['CPANSA-Sereal-Encoder-2021-24032-zstd', [], ['>=4.019,<=5.001']])) ],
+    [ 'To clear this: raise Sereal::Encoder in Build.PL above 5.001, or add CPANSA-Sereal-Encoder-2021-24032-zstd' . $ignore_tail ];
+};
+
+subtest 'fix_hints__no_fixed_range_unbounded_affected__only_ignore_entry' => sub {
+  is_deeply [ fix_hints(report('Sereal-Decoder', 'Sereal::Decoder', ['CPANSA-X-1', [], ['>=5.002_001']])) ],
+    [ $unfixed ];
+};
+
+subtest 'fix_hints__same_version_at_and_above__says_above' => sub {
+  is_deeply [ fix_hints(report('D', 'D', ['CPANSA-D-1', ['>=1.0']], ['CPANSA-D-2', ['>1.0']])) ],
+    [ 'To clear this: raise D in Build.PL above 1.0, or add CPANSA-D-1 and CPANSA-D-2' . $ignore_tail ];
 };
 
 subtest 'fix_hints__unrecognized_range__points_at_fixed_range' => sub {
