@@ -142,6 +142,15 @@ jobs:
           sudo -u netdisco /home/netdisco/bin/localenv cpan-audit installed /home/netdisco/perl5/lib/perl5 \
             --no-color --no-corelist --quiet --exclude-file ${GITHUB_WORKSPACE}/netdisco/.cpanauditignore
 
+      # Runs here, not in cpan-audit.yml's minimums job, because it loads
+      # Netdisco, so Netdisco's dependencies must be installed.
+      - name: Check that Build.PL names every dist with advisories that Netdisco loads
+        if: always() && github.event_name == 'pull_request'
+        run: |
+          cd ${GITHUB_WORKSPACE}/netdisco
+          sudo -u netdisco /home/netdisco/bin/localenv perl Build.PL > /dev/null
+          sudo -u netdisco /home/netdisco/bin/localenv perl -Ixt/lib xt/bin/cpan-audit-coverage
+
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3.24
         if: always() && github.event.inputs.debug_tests == 'true'

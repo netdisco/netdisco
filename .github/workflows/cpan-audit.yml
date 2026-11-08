@@ -78,3 +78,11 @@ jobs:
           sudo -u netdisco /home/netdisco/bin/localenv cpanm --notest CPAN::Audit
           sudo -u netdisco /home/netdisco/bin/localenv cpan-audit installed /home/netdisco/perl5/lib/perl5 \
             --no-color --no-corelist --quiet --exclude-file ${GITHUB_WORKSPACE}/netdisco/.cpanauditignore
+
+      # loads Netdisco, so it runs here, where its dependencies are installed
+      - name: Check that Build.PL names every dist with advisories that Netdisco loads
+        if: always()
+        run: |
+          cd ${GITHUB_WORKSPACE}/netdisco
+          sudo -u netdisco /home/netdisco/bin/localenv perl Build.PL > /dev/null
+          sudo -u netdisco /home/netdisco/bin/localenv perl -Ixt/lib xt/bin/cpan-audit-coverage

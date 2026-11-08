@@ -1,0 +1,83 @@
+#!/usr/bin/env perl
+
+# Fails when Netdisco loads a dist that has a CPANSec advisory but Build.PL
+# does not name it. The minimums audit (cpan-audit-minimums) checks only what
+# Build.PL names, and an existing install keeps an old copy of anything else
+# until a named minimum forces an upgrade. Naming the dist, even at 0, puts it
+# in front of that audit.
+#
+# Netdisco's dependencies must be installed, since this loads every module
+# under lib/ and compiles every script under bin/, recording what each loads.
+#
+# Usage: perl Build.PL && perl -Ixt/lib xt/bin/cpan-audit-coverage
+
+use strict;
+use warnings;
+
+use CPAN::Audit::DB;
+use CPAN::Meta;
+use File::Find;
+use File::Temp;
+use Test::Netdisco::CpanAudit qw(unnamed_dists coverage_message);
+
+-e 'MYMETA.json' or die "MYMETA.json not found: run `perl Build.PL` first, which writes it\n";
+
+my $record = File::Temp->new;
+local $ENV{LOAD_RECORD} = $record->filename;
+local $ENV{HARNESS_ACTIVE} = 1;
+# stops bin/ scripts re-executing themselves under ~/bin/localenv
+local $ENV{PERL_LOCAL_LIB_ROOT} = $ENV{PERL_LOCAL_LIB_ROOT} // 'cpan-audit-coverage';
+
+my @recorder = ($^X, '-Ilib', '-Ixt/lib', '-MTest::Netdisco::LoadRecorder');
+
+# the same files the compile test skips: build-time code, and the Graph
+# modules, whose GraphViz dependency is optional
+my @modules;
+find(sub {
+  push @modules, $File::Find::name
+    if m/\.pm$/ and $File::Find::name !~ m{/Builder\.pm$} and $File::Find::name !~ m/graph/i;
+}, 'lib');
+
+system(@recorder, '-e', 'foreach (@ARGV) { s{^lib/}{}; eval { require $_ } }', sort @modules) == 0
+  or die "loading lib/ failed: $?\n";
+
+foreach my $script (sort glob 'bin/*') {
+  my $error = `@recorder -c $script 2>&1 1>/dev/null`;
+  next if $? == 0;
+  my ($first_line) = split /\n/, $error;
+  print "skipped $script: does not compile here ($first_line); lib/ covers its modules\n";
+}
+
+my %loaded;
+open my $lines, '<', $record->filename or die "cannot read the load record: $!\n";
+while (my $line = <$lines>) {
+  chomp $line;
+  my ($module, $loader) = split /\t/, $line, 2;
+  $loaded{$module} //= $loader;
+}
+
+my $db = CPAN::Audit::DB->db;
+my %advisories = map {
+  my $dist = $_;
+  ($dist => [ map { $_->{id} } @{ $db->{dists}->{$dist}->{advisories} || [] } ]);
+} keys %{ $db->{dists} };
+
+my %ignored;
+if (open my $ignore, '<', '.cpanauditignore') {
+  %ignored = map { m/^(CPANSA-\S+)/ ? ($1 => 1) : () } <$ignore>;
+}
+
+my $requires = CPAN::Meta->load_file('MYMETA.json')
+  ->effective_prereqs->requirements_for('runtime', 'requires')->as_string_hash;
+
+my @findings = unnamed_dists(
+  loaded      => \%loaded,
+  module2dist => $db->{module2dist},
+  advisories  => \%advisories,
+  ignored     => \%ignored,
+  requires    => $requires,
+);
+
+print "\n", coverage_message($_) for @findings;
+exit 1 if @findings;
+print "every dist with advisories that Netdisco loads is named in Build.PL\n";
