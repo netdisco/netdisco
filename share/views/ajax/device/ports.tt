@@ -6,6 +6,19 @@
 [% SET uri_portssid = uri_for('/report/portssid') -%]
 [% SET uri_nodevendor = uri_for('/report/nodevendor') -%]
 [% SET uri_netbios = uri_for('/report/netbios') -%]
+[% BLOCK plugin_column_value -%]
+          [% IF params.c_admin AND config.editable AND row.port_acl_name %]
+            <td nowrap class="nd_editable-cell" contenteditable="true"
+                data-field="[% config.field | html_entity %]" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
+            <i class="far fa-pen-to-square nd_edit-icon"></i>
+          [% ELSE %]
+            <td nowrap class="nd_editable-cell">
+          [% END %]
+            <div class="nd_editable-cell-content">
+              [% row.get_column(config.field) | html_entity %]
+            </div>
+            </td>
+[% END -%]
 <table id="dp-data-table" class="table table-bordered table-striped" width="100%" cellspacing="0"
   data-nd-table='{
   "columnDefs": [
@@ -199,23 +212,17 @@
         [% NEXT UNLESS permitted_by_acl(row, config) %]
         [% NEXT IF config.hidden %]
 
+        [% IF port_column_templates.exists(config.name) AND NOT port_column_templates.${config.name} %]
+          [% PROCESS plugin_column_value %]
+        [% ELSE %]
         [% TRY %]
           <td>
           [% INCLUDE "plugin/${config.name}/device_port_column.tt" %]
           </td>
         [% CATCH %]
           [% CLEAR %]
-          [% IF params.c_admin AND config.editable AND row.port_acl_name %]
-            <td nowrap class="nd_editable-cell" contenteditable="true"
-                data-field="[% config.field | html_entity %]" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
-            <i class="far fa-pen-to-square nd_edit-icon"></i>
-          [% ELSE %]
-            <td nowrap class="nd_editable-cell">
-          [% END %]
-            <div class="nd_editable-cell-content">
-              [% row.get_column(config.field) | html_entity %]
-            </div>
-            </td>
+          [% PROCESS plugin_column_value %]
+        [% END %]
         [% END %]
 
       [% END %]
@@ -377,23 +384,17 @@
         [% NEXT UNLESS permitted_by_acl(row, config) %]
         [% NEXT IF config.hidden %]
 
+        [% IF port_column_templates.exists(config.name) AND NOT port_column_templates.${config.name} %]
+          [% PROCESS plugin_column_value %]
+        [% ELSE %]
         [% TRY %]
           <td>
           [% INCLUDE "plugin/${config.name}/device_port_column.tt" %]
           </td>
         [% CATCH %]
           [% CLEAR %]
-          [% IF params.c_admin AND config.editable AND row.port_acl_name %]
-            <td nowrap class="nd_editable-cell" contenteditable="true"
-                data-field="[% config.field | html_entity %]" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
-            <i class="far fa-pen-to-square nd_edit-icon"></i>
-          [% ELSE %]
-            <td nowrap class="nd_editable-cell">
-          [% END %]
-            <div class="nd_editable-cell-content">
-              [% row.get_column(config.field) | html_entity %]
-            </div>
-            </td>
+          [% PROCESS plugin_column_value %]
+        [% END %]
         [% END %]
 
       [% END %]
@@ -506,23 +507,17 @@
         [% NEXT UNLESS permitted_by_acl(row, config) %]
         [% NEXT IF config.hidden %]
 
+        [% IF port_column_templates.exists(config.name) AND NOT port_column_templates.${config.name} %]
+          [% PROCESS plugin_column_value %]
+        [% ELSE %]
         [% TRY %]
           <td>
           [% INCLUDE "plugin/${config.name}/device_port_column.tt" %]
           </td>
         [% CATCH %]
           [% CLEAR %]
-          [% IF params.c_admin AND config.editable AND row.port_acl_name %]
-            <td nowrap class="nd_editable-cell" contenteditable="true"
-                data-field="[% config.field | html_entity %]" data-for-device="[% device.ip | html_entity %]" data-for-port="[% row.port | html_entity %]">
-            <i class="far fa-pen-to-square nd_edit-icon"></i>
-          [% ELSE %]
-            <td nowrap class="nd_editable-cell">
-          [% END %]
-            <div class="nd_editable-cell-content">
-              [% row.get_column(config.field) | html_entity %]
-            </div>
-            </td>
+          [% PROCESS plugin_column_value %]
+        [% END %]
         [% END %]
 
       [% END %]
