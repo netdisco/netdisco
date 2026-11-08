@@ -4,21 +4,19 @@
 
   * #1777 the Access Point Clients report shows AP names, interfaces, SSIDs,
     and per-SSID client counts
-
   * #1794 Ports tab: read PoE, SSIDs, the last comment and the neighbor MAC
     with one query each instead of one per port, and build the rows for the
     HTML and CSV output in one function. SSIDs are now listed sorted. A
     site-local ports.tt from before this release keeps working, and
     checksitelocal reports what it costs (rule ports-row-keys)
-
   * #1813 require current releases of Starman, HTTP::Body, Net::DNS and other
     dependencies
-
   * #1815 document that a new installation needs Perl 5.24, and that an older
     installation can still be upgraded
-
   * #1818 make Authen::TacacsPlus optional, so installs on GCC 15 no longer
     fail
+  * #1820 require current releases of DBI and other indirect dependencies
+    with advisories
 
   [BUG FIXES]
 
