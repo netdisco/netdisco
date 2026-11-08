@@ -7,8 +7,9 @@ use strict;
 use warnings;
 
 use Test::More 0.88;
+use File::Temp;
 use lib 'xt/lib';
-use Test::Netdisco::CpanAudit qw(unnamed_dists coverage_message fix_hints);
+use Test::Netdisco::CpanAudit qw(unnamed_dists coverage_message fix_hints ignored_ids read_report compile_error);
 
 my %module2dist = (
   'DBI'                       => 'DBI',
@@ -19,12 +20,13 @@ my %module2dist = (
   'Opcode'                    => 'perl',
 );
 
+# each advisory as its id and then its CVE ids
 my %advisories = (
-  'DBI'          => ['CPANSA-DBI-1'],
-  'HTTP-Date'    => ['CPANSA-HTTP-Date-1'],
-  'Dancer'       => ['CPANSA-Dancer-1'],
-  'App-Netdisco' => ['CPANSA-App-Netdisco-1'],
-  'perl'         => ['CPANSA-perl-1'],
+  'DBI'          => [['CPANSA-DBI-1']],
+  'HTTP-Date'    => [['CPANSA-HTTP-Date-1']],
+  'Dancer'       => [['CPANSA-Dancer-1', 'CVE-2012-5572']],
+  'App-Netdisco' => [['CPANSA-App-Netdisco-1']],
+  'perl'         => [['CPANSA-perl-1']],
 );
 
 sub unnamed {
@@ -54,8 +56,33 @@ subtest 'unnamed_dists__other_module_of_same_dist_required__not_reported' => sub
 subtest 'unnamed_dists__all_advisories_ignored__not_reported' => sub {
   is_deeply unnamed(
     loaded  => { 'Dancer::Session::Abstract' => 'Dancer' },
-    ignored => { 'CPANSA-Dancer-1' => 1 },
+    ignored => ignored_ids("CPANSA-Dancer-1\n"),
   ), [];
+};
+
+subtest 'unnamed_dists__advisory_ignored_by_its_cve__not_reported' => sub {
+  is_deeply unnamed(
+    loaded  => { 'Dancer::Session::Abstract' => 'Dancer' },
+    ignored => ignored_ids("CVE-2012-5572\n"),
+  ), [];
+};
+
+subtest 'unnamed_dists__ignore_entry_in_lower_case__not_reported' => sub {
+  is_deeply unnamed(
+    loaded  => { 'Dancer::Session::Abstract' => 'Dancer' },
+    ignored => ignored_ids("cpansa-dancer-1\n"),
+  ), [];
+};
+
+# the same reading as cpan-audit's --exclude-file (CPAN::Audit::_handle_exclude_file)
+subtest 'ignored_ids__comments_indentation_and_blank_lines__as_cpan_audit_reads_them' => sub {
+  is_deeply ignored_ids(
+    "# Does not apply: a comment line\n",
+    "  CPANSA-X-1  # indented, with a trailing comment\n",
+    "\n",
+    "   \n",
+    "cve-2020-1\n",
+  ), { 'CPANSA-X-1' => 1, 'CVE-2020-1' => 1 };
 };
 
 subtest 'unnamed_dists__module_without_advisories__not_reported' => sub {
@@ -90,6 +117,7 @@ sub report {
 }
 
 my $ignore_tail = "\nto .cpanauditignore with the reason it does not apply to Netdisco.\n";
+my $ignore_tail_several = "\nto .cpanauditignore with the reason they do not apply to Netdisco.\n";
 
 subtest 'fix_hints__one_fixed_advisory__raise_to_fixed_version' => sub {
   is_deeply [ fix_hints(report('HTTP-Date', 'HTTP::Date', ['CPANSA-HTTP-Date-2026-14741', ['>=6.08']])) ],
@@ -104,7 +132,7 @@ subtest 'fix_hints__greater_than_form__says_above' => sub {
 subtest 'fix_hints__several_fixed__gives_highest_and_lists_all_ids' => sub {
   is_deeply [ fix_hints(report('DBI', 'DBI',
       ['CPANSA-DBI-1', ['>=1.643']], ['CPANSA-DBI-2', ['>=1.656']])) ],
-    [ 'To clear this: raise DBI in Build.PL to 1.656, or add CPANSA-DBI-1 and CPANSA-DBI-2' . $ignore_tail ];
+    [ 'To clear this: raise DBI in Build.PL to 1.656, or add CPANSA-DBI-1 and CPANSA-DBI-2' . $ignore_tail_several ];
 };
 
 my $unfixed = "No release fixes CPANSA-X-1, so no minimum for Sereal::Decoder in Build.PL can clear it:\n"
@@ -140,12 +168,70 @@ subtest 'fix_hints__no_fixed_range_unbounded_affected__only_ignore_entry' => sub
 
 subtest 'fix_hints__same_version_at_and_above__says_above' => sub {
   is_deeply [ fix_hints(report('D', 'D', ['CPANSA-D-1', ['>=1.0']], ['CPANSA-D-2', ['>1.0']])) ],
-    [ 'To clear this: raise D in Build.PL above 1.0, or add CPANSA-D-1 and CPANSA-D-2' . $ignore_tail ];
+    [ 'To clear this: raise D in Build.PL above 1.0, or add CPANSA-D-1 and CPANSA-D-2' . $ignore_tail_several ];
 };
 
 subtest 'fix_hints__unrecognized_range__points_at_fixed_range' => sub {
   is_deeply [ fix_hints(report('M', 'M', ['CPANSA-M-1', ['>=1.0,<2.0']])) ],
     [ 'To clear this: raise M in Build.PL past the Fixed range shown above for CPANSA-M-1, or add it' . $ignore_tail ];
+};
+
+subtest 'fix_hints__several_unfixed__says_they' => sub {
+  is_deeply [ fix_hints(report('S', 'S', ['CPANSA-S-1', []], ['CPANSA-S-2', []])) ],
+    [ "No release fixes CPANSA-S-1 and CPANSA-S-2, so no minimum for S in Build.PL can clear them:\n"
+      . "add them to .cpanauditignore with the reason they do not apply to Netdisco.\n" ];
+};
+
+subtest 'read_report__json__decoded' => sub {
+  is_deeply read_report('{"dists":{}}'), { dists => {} };
+};
+
+# cpan-audit prints nothing on stdout when it fails, and its own error is
+# what the reader needs, not a JSON parser's complaint
+subtest 'read_report__empty_output__says_cpan_audit_failed' => sub {
+  eval { read_report("  \n") };
+  like $@, qr/^cpan-audit printed no report, so there are no hints: its own error is above\.$/;
+};
+
+subtest 'read_report__not_json__names_the_report_and_the_parse_error' => sub {
+  eval { read_report('Usage: cpan-audit') };
+  like $@, qr/^cpan-audit's --json report did not parse, so there are no hints: /;
+};
+
+my $scripts = File::Temp->newdir;
+my $spaced_dir = $scripts->dirname . '/with space';
+mkdir $spaced_dir or die "cannot make $spaced_dir: $!";
+
+sub script {
+  my ($name, $body) = @_;
+  my $path = "$spaced_dir/$name";
+  open my $out, '>', $path or die "cannot write $path: $!";
+  print {$out} $body;
+  close $out;
+  return $path;
+}
+
+subtest 'compile_error__compiles_in_a_path_with_a_space__undef' => sub {
+  is compile_error($^X, '-c', script('ok.pl', "print qq(at compile time\n) if 0;\n")), undef;
+};
+
+subtest 'compile_error__fails_to_compile__first_line_of_the_error' => sub {
+  like compile_error($^X, '-c', script('bad.pl', "use No::Such::Module::Here;\n")),
+    qr/^Can't locate No\/Such\/Module\/Here\.pm in \@INC/;
+};
+
+# a failed require leaves an undef entry in %INC; the recorder must neither
+# warn on it nor record the module as loaded
+subtest 'load_recorder__failed_require__not_recorded_and_no_warning' => sub {
+  my $record = File::Temp->new;
+  local $ENV{LOAD_RECORD} = $record->filename;
+  my $broken = script('Broken.pm', "package Broken; die qq(broken\n);\n");
+  my $output = `"$^X" -Ixt/lib "-I$spaced_dir" -MTest::Netdisco::LoadRecorder -e "eval { require Broken }; require Text::Wrap" 2>&1`;
+  is $output, '', 'nothing printed';
+  open my $lines, '<', $record->filename or die "cannot read the record: $!";
+  my %loaded = map { (split /\t/)[0] => 1 } <$lines>;
+  ok $loaded{'Text::Wrap'}, 'a module that loaded is recorded';
+  ok !$loaded{'Broken'}, 'the module that failed is not';
 };
 
 done_testing;

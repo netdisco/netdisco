@@ -18,7 +18,7 @@ use CPAN::Audit::DB;
 use CPAN::Meta;
 use File::Find;
 use File::Temp;
-use Test::Netdisco::CpanAudit qw(unnamed_dists coverage_message);
+use Test::Netdisco::CpanAudit qw(unnamed_dists coverage_message ignored_ids compile_error);
 
 -e 'MYMETA.json' or die "MYMETA.json not found: run `perl Build.PL` first, which writes it\n";
 
@@ -67,10 +67,8 @@ system(@recorder, '-e', $load_all, sort @modules) == 0
     . " directory; xt/00-compile-*.t give the full error for each module.\n";
 
 foreach my $script (sort glob 'bin/*') {
-  my $error = `@recorder -c $script 2>&1 1>/dev/null`;
-  next if $? == 0;
-  my ($first_line) = split /\n/, $error;
-  print "skipped $script: does not compile here ($first_line); lib/ covers its modules\n";
+  my $error = compile_error(@recorder, '-c', $script) // next;
+  print "skipped $script: does not compile here ($error); lib/ covers its modules\n";
 }
 
 my %loaded;
@@ -84,12 +82,12 @@ while (my $line = <$lines>) {
 my $db = CPAN::Audit::DB->db;
 my %advisories = map {
   my $dist = $_;
-  ($dist => [ map { $_->{id} } @{ $db->{dists}->{$dist}->{advisories} || [] } ]);
+  ($dist => [ map { [ $_->{id}, @{ $_->{cves} || [] } ] } @{ $db->{dists}->{$dist}->{advisories} || [] } ]);
 } keys %{ $db->{dists} };
 
-my %ignored;
+my $ignored = {};
 if (open my $ignore, '<', '.cpanauditignore') {
-  %ignored = map { m/^(CPANSA-\S+)/ ? ($1 => 1) : () } <$ignore>;
+  $ignored = ignored_ids(<$ignore>);
 }
 
 my $requires = CPAN::Meta->load_file('MYMETA.json')
@@ -99,7 +97,7 @@ my @findings = unnamed_dists(
   loaded      => \%loaded,
   module2dist => $db->{module2dist},
   advisories  => \%advisories,
-  ignored     => \%ignored,
+  ignored     => $ignored,
   requires    => $requires,
 );
 

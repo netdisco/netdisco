@@ -16,7 +16,8 @@ unshift @INC, sub {
   my (undef, $file) = @_;
   return if exists $loader_of{$file};
   my (undef, $caller_file) = caller(0);
-  my %module_at = reverse %INC;
+  # a failed require leaves its %INC entry undef
+  my %module_at = map { defined $INC{$_} ? ($INC{$_} => $_) : () } keys %INC;
   $loader_of{$file} = $module_at{$caller_file} // $caller_file;
   return;
 };
@@ -26,7 +27,7 @@ sub _module { (my $name = shift) =~ s{/}{::}g; $name =~ s{\.pm$}{}; return $name
 sub _write {
   my $record = $ENV{LOAD_RECORD} or return;
   open my $out, '>>', $record or die "cannot append to $record: $!\n";
-  foreach my $file (grep { m/\.pm$/ } keys %INC) {
+  foreach my $file (grep { m/\.pm$/ and defined $INC{$_} } keys %INC) {
     my $loader = $loader_of{$file} // 'perl, before the recorder';
     $loader = _module($loader) if $loader =~ m/\.pm$/;
     print {$out} _module($file), "\t$loader\n";
