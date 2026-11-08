@@ -1,0 +1,106 @@
+#!/usr/bin/env perl
+
+# Fails when Netdisco loads a dist that has a CPANSec advisory but Build.PL
+# does not name it. The minimums audit (cpan-audit-minimums) checks only what
+# Build.PL names, and an existing install keeps an old copy of anything else
+# until a named minimum forces an upgrade. Naming the dist, even at 0, puts it
+# in front of that audit.
+#
+# Netdisco's dependencies must be installed, since this loads every module
+# under lib/ and compiles every script under bin/, recording what each loads.
+#
+# Usage: perl Build.PL && perl -Ixt/lib xt/bin/cpan-audit-coverage
+
+use strict;
+use warnings;
+
+use CPAN::Audit::DB;
+use CPAN::Meta;
+use File::Find;
+use File::Temp;
+use Test::Netdisco::CpanAudit qw(unnamed_dists coverage_message ignored_ids compile_error);
+
+-e 'MYMETA.json' or die "MYMETA.json not found: run `perl Build.PL` first, which writes it\n";
+
+my $record = File::Temp->new;
+local $ENV{LOAD_RECORD} = $record->filename;
+# Web.pm sets a test session key under it rather than reading one from the database
+local $ENV{HARNESS_ACTIVE} = 1;
+# stops bin/ scripts re-executing themselves under ~/bin/localenv
+local $ENV{PERL_LOCAL_LIB_ROOT} = $ENV{PERL_LOCAL_LIB_ROOT} // 'cpan-audit-coverage';
+# Without these, a script run as `perl -e` takes uid 0's home, /root, whose
+# site_plugins then sits unreadable on @INC and fails every later require;
+# an empty home also keeps any deployment.yml, and its database, out of it.
+# The same settings as xt/00-compile-*.t.
+my $home = File::Temp->newdir;
+local $ENV{NETDISCO_HOME} = $home->dirname;
+local $ENV{DANCER_ENVDIR} = '/dev/null';
+
+my @recorder = ($^X, '-Ilib', '-Ixt/lib', '-MTest::Netdisco::LoadRecorder');
+
+# the same files the compile test skips: build-time code, and the Graph
+# modules, whose GraphViz dependency is optional
+my @modules;
+find(sub {
+  push @modules, $File::Find::name
+    if m/\.pm$/ and $File::Find::name !~ m{/Builder\.pm$} and $File::Find::name !~ m/graph/i;
+}, 'lib');
+
+# A module that fails to load here hides what it would load, so the check
+# would pass without having looked; xt/00-compile-*.t shows each one loads.
+my $load_all = <<'PERL';
+use App::Netdisco;
+my $failed = 0;
+foreach my $file (@ARGV) {
+  (my $module = $file) =~ s{^lib/}{};
+  next if eval { require $module; 1 };
+  my ($reason) = split /\n/, $@;
+  print STDERR "cannot load $file: $reason\n";
+  $failed++;
+}
+exit($failed ? 1 : 0);
+PERL
+
+system(@recorder, '-e', $load_all, sort @modules) == 0
+  or die "Some lib/ modules did not load, so this check cannot see what they load. Install"
+    . " Netdisco's dependencies (`cpanm --installdeps .`) and run it from the checkout's top"
+    . " directory; xt/00-compile-*.t give the full error for each module.\n";
+
+foreach my $script (sort glob 'bin/*') {
+  my $error = compile_error(@recorder, '-c', $script) // next;
+  print "skipped $script: does not compile here ($error); lib/ covers its modules\n";
+}
+
+my %loaded;
+open my $lines, '<', $record->filename or die "cannot read the load record: $!\n";
+while (my $line = <$lines>) {
+  chomp $line;
+  my ($module, $loader) = split /\t/, $line, 2;
+  $loaded{$module} //= $loader;
+}
+
+my $db = CPAN::Audit::DB->db;
+my %advisories = map {
+  my $dist = $_;
+  ($dist => [ map { [ $_->{id}, @{ $_->{cves} || [] } ] } @{ $db->{dists}->{$dist}->{advisories} || [] } ]);
+} keys %{ $db->{dists} };
+
+my $ignored = {};
+if (open my $ignore, '<', '.cpanauditignore') {
+  $ignored = ignored_ids(<$ignore>);
+}
+
+my $requires = CPAN::Meta->load_file('MYMETA.json')
+  ->effective_prereqs->requirements_for('runtime', 'requires')->as_string_hash;
+
+my @findings = unnamed_dists(
+  loaded      => \%loaded,
+  module2dist => $db->{module2dist},
+  advisories  => \%advisories,
+  ignored     => $ignored,
+  requires    => $requires,
+);
+
+print "\n", coverage_message($_) for @findings;
+exit 1 if @findings;
+print "every dist with advisories that Netdisco loads is named in Build.PL\n";

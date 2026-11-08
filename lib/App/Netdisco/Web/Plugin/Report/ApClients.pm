@@ -16,23 +16,31 @@ register_report(
 );
 
 get '/ajax/content/report/apclients' => require_login sub {
-    my @results = schema(vars->{'tenant'})->resultset('Device')->search(
-        { 'nodes.time_last' => { '>=', \'me.last_macsuck' },
-          'ports.port' => { '-in' => schema(vars->{'tenant'})->resultset('DevicePortWireless')->get_column('port')->as_query },
+    my @results = schema(vars->{'tenant'})->resultset('Node')->search(
+        { 'wireless_port.port' => { '!=', undef },
+          'me.time_last' => { '>=', \'device.last_macsuck' },
         },
-        {   select => [ 'ip', 'model', 'ports.port', 'ports.name', 'ports.type' ],
-            join       => { 'ports' =>  'nodes' },
+        {   select => [qw/device.ip device.dns device.name device.model device_port.port device_port.name device_port.type wireless_current.ssid/],
+            as => [qw/ip dns name model port port_name port_type ssid/],
+            join       => [qw/device device_port wireless_port wireless_current/],
             '+columns' => [
-                { 'mac_count' => { count => 'nodes.mac' } },
+                { 'mac_count' => { count => 'me.mac' } },
             ],
             group_by => [
-                'me.ip', 'me.model', 'ports.port', 'ports.name', 'ports.type',
+                'device.ip', 'device.dns', 'device.name', 'device.model',
+                'device_port.port', 'device_port.name', 'device_port.type', 'wireless_current.ssid',
             ],
-            order_by => { -asc => [qw/ports.name ports.type/] },
+            order_by => { -asc => [qw/device.name device_port.name wireless_current.ssid/] },
         }
     )->hri->all;
 
     return unless scalar @results;
+
+    # clients with no SSID seen on the last macsuck are still counted, in
+    # their own row; a blank cell read as a missing row
+    for my $row (@results) {
+        $row->{ssid} = 'Unknown' unless defined $row->{ssid} and length $row->{ssid};
+    }
 
     if ( request->is_ajax ) {
         my $json = to_json( \@results );

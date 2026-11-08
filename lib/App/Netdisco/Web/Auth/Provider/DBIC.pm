@@ -14,7 +14,6 @@ use Dancer::Plugin::Passphrase;
 use Digest::MD5;
 use Net::LDAP;
 use Authen::Radius;
-use Authen::TacacsPlus;
 use Path::Class;
 use File::ShareDir 'dist_dir';
 use Try::Tiny;
@@ -22,7 +21,8 @@ use NetAddr::IP::Lite ':lower';
 
 use App::Netdisco::Util::Permission 'acl_matches_only';
 use App::Netdisco::Util::Web
-  qw/trusted_client_address warn_forwarded_address_ignored/;
+  qw/trusted_client_address warn_forwarded_address_ignored
+     tacacs_configured tacacs_unavailable/;
 use App::Netdisco::Util::Configuration 'refresh_managed_acl';
 
 sub authenticate_user {
@@ -344,7 +344,12 @@ sub match_with_radius {
 
 sub match_with_tacacs {
   my($self, $pass, $user) = @_;
-  return unless setting('tacacs') and ref [] eq ref setting('tacacs');
+  return unless tacacs_configured();
+
+  if (my $advice = tacacs_unavailable()) {
+      error sprintf 'TACACS+ login for %s refused: %s', $user, $advice;
+      return undef;
+  }
 
   my $conf = setting('tacacs');
   my $tacacs = new Authen::TacacsPlus(@$conf);
