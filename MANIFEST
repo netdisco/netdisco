@@ -148,7 +148,6 @@ lib/App/Netdisco/SSHCollector/Platform/NXOS.pm
 lib/App/Netdisco/SSHCollector/Platform/OS10.pm
 lib/App/Netdisco/SSHCollector/Platform/PaloAlto.pm
 lib/App/Netdisco/SSHCollector/Platform/VOSS.pm
-lib/App/Netdisco/Template/Filter/EvalCache.pm
 lib/App/Netdisco/Template/Plugin/CSV.pm
 lib/App/Netdisco/Transport/Python.pm
 lib/App/Netdisco/Transport/SNMP.pm
@@ -759,7 +758,6 @@ xt/178-search-route-order.t
 xt/180-schema-deploy-version-check.t
 xt/185-nxos-cli-macsuck.t
 xt/20-checkacl.t
-xt/200-template-eval-cache.t
 xt/21-check_acl_no_ipaddr_only.t
 xt/215-node-wireless-current.t
 xt/216-compile-shards.t

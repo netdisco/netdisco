@@ -40,7 +40,6 @@ use App::Netdisco::Util::Port 'device_acl_by_role_check';
 use App::Netdisco::Util::PostgresFloor 'warn_postgres_floor_all_tenants';
 use App::Netdisco::Util::SiteLocal qw/scan_shadowed_files site_local_paths/;
 use App::Netdisco::Util::SNMPText 'scan_config_encoding';
-use App::Netdisco::Template::Filter::EvalCache ();
 
 BEGIN {
   no warnings 'redefine';
@@ -219,12 +218,6 @@ foreach my $tag (keys %{ setting('_admin_tasks') }) {
 # after plugins are loaded, add our own template path
 push @{ config->{engines}->{netdisco_template_toolkit}->{INCLUDE_PATH} },
      setting('views');
-
-# the external links evaluate their URL text for every port; see the module.
-# A filter of its own name, so a site's use of TT's eval and evaltt is left as is
-config->{engines}->{netdisco_template_toolkit}->{FILTERS} = {
-  evaltt_cached => [ \&App::Netdisco::Template::Filter::EvalCache::factory, 1 ],
-};
 
 # Confirms the CSV plugin mapping in share/config.yml is still in force.
 # Warns rather than dies: a misconfiguration should not become an outage.
