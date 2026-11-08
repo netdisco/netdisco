@@ -148,6 +148,7 @@ App::Netdisco::Builder->new(
     'Crypt::SaltedHash' => '0.10',
     'Data::Entropy' => '0.010',
     'DBI' => '1.656',
+    'Devel::StackTrace' => '1.19',
     'Digest::MD5' => '2.25',
     'Encode' => '3.12',
     'ExtUtils::MakeMaker' => '7.22',
