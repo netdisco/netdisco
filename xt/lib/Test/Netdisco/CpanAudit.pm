@@ -9,7 +9,9 @@ use warnings;
 
 use Exporter 'import';
 
-our @EXPORT_OK = qw(unnamed_dists coverage_message);
+use version;
+
+our @EXPORT_OK = qw(unnamed_dists coverage_message fix_hints);
 
 # Netdisco's own advisories are for its vendored javascript, which retire.js
 # checks, and no minimum in Build.PL can upgrade a site's perl
@@ -46,6 +48,61 @@ sub coverage_message {
     q{audit then reports the minimum that clears its advisories, or the advisory goes},
     q{in .cpanauditignore with the reason it does not apply.},
     '';
+}
+
+my $ignore_reason = "to .cpanauditignore with the reason it does not apply to Netdisco.\n";
+
+# One line of advice per failing dist in a cpan-audit --json report: the
+# minimum that clears its fixable advisories, and which need an ignore entry.
+sub fix_hints {
+  my $report = shift;
+  my @hints;
+
+  foreach my $dist (sort keys %{ $report->{dists} }) {
+    my $entry = $report->{dists}->{$dist};
+    my $module = $entry->{queried_modules}->[0] // $dist;
+    my (@fixed, @unfixed);
+    foreach my $advisory (@{ $entry->{advisories} }) {
+      my $range = $advisory->{fixed_versions}->[0];
+      push @{ defined $range && length $range ? \@fixed : \@unfixed }, [ $advisory->{id}, $range ];
+    }
+    push @hints, _raise_hint($module, @fixed) . _unfixed_hint($module, @unfixed);
+  }
+  return @hints;
+}
+
+# ">=6.08" means "to 6.08" and ">3.11" means "above 3.11"; any other form
+# sends the reader to the range cpan-audit printed rather than guess.
+sub _raise_hint {
+  my ($module, @fixed) = @_;
+  return '' unless @fixed;
+  my @ids = map { $_->[0] } @fixed;
+  my ($best, $how);
+
+  foreach my $range (map { $_->[1] } @fixed) {
+    my ($op, $wanted) = $range =~ m/^\s*(>=?)\s*v?([0-9][0-9._]*)\s*$/
+      or return "To clear this: raise $module in Build.PL past the Fixed range shown above for "
+        . _list(@ids) . ', or add ' . (@ids > 1 ? 'them' : 'it') . "\n$ignore_reason";
+    next if defined $best and version->parse($wanted) <= version->parse($best);
+    ($best, $how) = ($wanted, $op eq '>=' ? 'to' : 'above');
+  }
+
+  return "To clear this: raise $module in Build.PL $how $best, or add " . _list(@ids) . "\n$ignore_reason";
+}
+
+sub _unfixed_hint {
+  my ($module, @unfixed) = @_;
+  return '' unless @unfixed;
+  my $them = @unfixed > 1 ? 'them' : 'it';
+  return 'No release fixes ' . _list(map { $_->[0] } @unfixed)
+    . ", so no minimum for $module in Build.PL can clear $them:\n"
+    . "add $them $ignore_reason";
+}
+
+sub _list {
+  my @items = @_;
+  return $items[0] if @items == 1;
+  return join(', ', @items[0 .. $#items - 1]) . " and $items[-1]";
 }
 
 1;
