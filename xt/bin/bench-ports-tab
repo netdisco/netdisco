@@ -1,0 +1,1017 @@
+#!/usr/bin/env perl
+
+# Times the work behind the Ports tab with no database, comparing versions of
+# the code side by side. Every number but portsort is server side.
+#
+#   xt/bin/bench-ports-tab [--rows 3000 | --scale] [--iters 3] [--rounds 3]
+#                          [--versions master,HEAD,worktree] [--only a,b] [--list]
+#                          [--cols 6] [--links 3] [--nodes 3] [--dns-ms 1] [--json] [--no-color]
+#
+# Template scenarios render ajax/device/ports.tt from each of --versions: a git
+# ref gets its own copy of share/views, so the templates ports.tt includes come
+# from that same ref, and "worktree" is the checkout including uncommitted
+# changes. One warm engine per version is reused across runs, as Dancer keeps
+# its engine and the compiled templates across requests; "cold" builds a fresh
+# engine each run to time the first request after a restart. uri_for builds and
+# canonicalizes a URI on every call, as Web.pm's patched Dancer::Request does,
+# because an identity stub would hide what precomputing the link prefixes saves.
+#
+# Perl scenarios cannot be lifted out of _port_rows, so each shape timed is
+# written out below, next to the commit or code it mirrors; every group first
+# checks that its variants produce the same result. A regex rule in an ACL makes
+# check_acl reverse-resolve the device IP, so that lookup is stubbed to sleep
+# --dns-ms and counted: a real resolver's timing says more about the resolver.
+#
+# Each measurement runs in its own forked child, so one cannot warm or bloat
+# another, and reports the peak RSS the child reached on top of its setup.
+# Every variant is measured in --rounds children, --iters runs each, with the
+# variants interleaved and their order rotated each round. Runs within one
+# process agree closely, but timings drift from one process to the next by
+# more than that, and a variant that always ran first would carry the drift.
+# So the spread printed is the range of the per-process medians, and variants
+# whose spreads overlap are reported as the same.
+#
+# This is a benchmark, not a test: prove does not run xt/bin, and the numbers
+# vary with the machine. Compare variants within one run, not across runs.
+
+use strict;
+use warnings;
+
+use FindBin;
+use Path::Class 'dir';
+BEGIN {
+    # as in regenerate-snapshots, xt/bin is two levels below the root
+    unshift @INC, dir($FindBin::RealBin)->parent->parent->subdir('lib')->stringify;
+}
+use lib 'xt/lib';
+
+use Getopt::Long;
+use File::Temp 'tempdir';
+use File::Path 'make_path';
+use Digest::MD5 'md5_hex';
+use JSON::PP ();
+use POSIX ();
+use Time::HiRes qw/time sleep/;
+use URI;
+use NetAddr::MAC;
+use Template::AutoFilter;
+
+use Dancer qw/:script setting/;
+use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
+use App::Netdisco::Util::Port qw/port_acl_service port_acl_pvid port_acl_name
+  port_has_wap port_has_phone is_vlan_subinterface/;
+require App::Netdisco::Web::Plugin::Device::Ports;
+
+my @SCENARIOS = (
+  [ render        => 'ports.tt render, plain rows' ],
+  [ cold          => 'ports.tt first render on a fresh engine (compile + render)' ],
+  [ 'plugin-cols' => 'ports.tt render with --cols plugin columns' ],
+  [ links         => 'ports.tt render with --links external port links' ],
+  [ nodes         => 'ports.tt render with nodes, neighbors, PoE, tags' ],
+  [ acl           => 'port control ACL pass: before, now, and device checks hoisted' ],
+  [ roles         => 'ACL pass for users holding 1, 5 and 20 roles (multi-role branch)' ],
+  [ subinterfaces => 'subinterface grouping on a wireless controller shape' ],
+  [ hide          => 'hide_deviceports pass with the shipped default rules' ],
+  [ portsort      => 'portsort.js in node, client side: first and repeat sort' ],
+);
+my %KNOWN = map { $_->[0] => 1 } @SCENARIOS;
+
+my %opt = (rows => '3000', iters => 3, rounds => 3, versions => 'master,HEAD,worktree',
+           cols => 6, links => 3, nodes => 3, 'dns-ms' => 1);
+GetOptions(\%opt, 'rows=s', 'scale', 'iters=i', 'rounds=i', 'versions=s', 'only=s', 'list',
+                  'cols=i', 'links=i', 'nodes=i', 'dns-ms=f', 'json', 'no-color')
+  or die "usage: $0 [--rows N[,N..] | --scale] [--iters N] [--rounds N] [--versions REF,..,worktree]\n"
+       . "       [--only SCENARIO,..] [--list] [--cols N] [--links N] [--nodes N] [--dns-ms MS] [--json] [--no-color]\n";
+
+if ($opt{list}) {
+    printf "  %-14s %s\n", @$_ for @SCENARIOS;
+    exit 0;
+}
+die "run from the repository root\n" unless -d 'share/views/ajax/device';
+
+my @ROWS = $opt{scale} ? (500, 3000, 7300) : split /,/, $opt{rows};
+die "--rows wants numbers\n" if grep { !/^\d+$/ or $_ < 1 } @ROWS;
+my %ONLY = map { $_ => 1 } split /,/, ($opt{only} || join ',', keys %KNOWN);
+if (my @bad = grep { !$KNOWN{$_} } keys %ONLY) {
+    die "unknown scenario @bad, see --list\n";
+}
+
+# human output goes to stderr under --json, so stdout is the JSON alone
+my $OUT = $opt{json} ? \*STDERR : \*STDOUT;
+binmode $_, ':encoding(UTF-8)' for \*STDOUT, \*STDERR;
+$| = 1;
+sub say_ { print {$OUT} @_, "\n" }
+
+# colour only for a person at a terminal, and never against NO_COLOR
+my $COLOR = (-t $OUT and not $opt{'no-color'} and not exists $ENV{NO_COLOR});
+my %SGR = (bold => 1, dim => 2, green => 32, red => 31, yellow => 33);
+sub paint {
+    my ($style, $text) = @_;
+    return $text unless $COLOR and $style;
+    return join('', map { "\e[$SGR{$_}m" } split / /, $style) . $text . "\e[0m";
+}
+
+# pads to a width counted in characters as seen, ignoring colour codes
+sub pad {
+    my ($text, $width) = @_;
+    (my $plain = $text) =~ s/\e\[[\d;]*m//g;
+    return $text . (' ' x ($width - length $plain > 0 ? $width - length $plain : 0));
+}
+
+sub fmt_ms {
+    my $ms = shift;
+    return '-' unless defined $ms;
+    return sprintf '%.2f s', $ms / 1000 if abs($ms) >= 1000;
+    return sprintf '%.0f ms', $ms if abs($ms) >= 10;
+    return sprintf '%.1f ms', $ms;
+}
+
+sub fmt_rows { my $n = reverse shift; $n =~ s/(\d{3})(?=\d)/$1,/g; return scalar reverse $n }
+
+# the range of the per-process medians when there were several processes,
+# which is where the noise is; within one process, of its runs
+sub spread {
+    my $r = shift;
+    my $from = (ref $r->{round_ms} and @{ $r->{round_ms} } > 1) ? $r->{round_ms} : $r->{runs_ms};
+    my @t = sort { $a <=> $b } @{ $from || [] };
+    return ($t[0], $t[-1]);
+}
+
+# How one variant compares with the baseline, in words. Runs whose fastest to
+# slowest spans overlap are not told apart: on a noisy machine a percentage
+# between them is a coin toss, and printing it invites reading one into it.
+sub verdict {
+    my ($r, $base) = @_;
+    my ($lo, $hi) = spread($r);
+    my ($blo, $bhi) = spread($base);
+    return ('same', paint('dim', "\x{2248} same (within noise)"))
+      if defined $lo and defined $blo and not ($hi < $blo or $lo > $bhi);
+    my $ratio = $base->{ms} / ($r->{ms} || 1e-9);
+    return ('faster', paint('green', $ratio >= 2 ? sprintf('%.1f%s faster', $ratio, "\x{d7}")
+                                                 : sprintf('%.0f%% faster', 100 * (1 - 1 / $ratio))))
+      if $ratio > 1;
+    return ('slower', paint('red', $ratio <= 0.5 ? sprintf('%.1f%s slower', 1 / $ratio, "\x{d7}")
+                                                 : sprintf('%.0f%% slower', 100 * (1 / $ratio - 1))));
+}
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# harness
+
+sub median {
+    my @t = sort { $a <=> $b } @_;
+    return $t[ int(@t / 2) ];
+}
+
+sub proc_status_kb {
+    my $key = shift;
+    open my $fh, '<', '/proc/self/status' or return undef;
+    while (<$fh>) { return $1 if /^\Q$key\E:\s+(\d+)\s+kB/ }
+    return undef;
+}
+
+# Runs one measurement in a forked child. $setup runs in the child and returns
+# { run => sub, check => sub (optional), notes => sub (optional) }; run is
+# timed $iters times after one warm run, or cold, each run timed as it comes.
+sub measure {
+    my (%a) = @_;
+    pipe(my $reader, my $writer) or die "pipe: $!";
+    my $pid = fork // die "fork: $!";
+
+    if (not $pid) {
+        close $reader;
+        my $result = eval {
+            my $job = $a{setup}->();
+            # a fresh high-water mark, so the peak is this run's own and not
+            # what building the fixture took; older kernels keep the old peak
+            my $base = proc_status_kb('VmRSS') || 0;
+            if (open my $clear, '>', '/proc/self/clear_refs') { print $clear "5"; close $clear }
+            my @runs;
+            $job->{run}->() unless $a{cold};
+            foreach (1 .. $a{iters}) {
+                # a self-timed run returns its own ms, for when the run does
+                # more than the part being timed
+                if ($job->{self_timed}) { push @runs, $job->{run}->(); next }
+                my $t0 = time;
+                $job->{run}->();
+                push @runs, (time - $t0) * 1000;
+            }
+            my $peak = proc_status_kb('VmHWM') || 0;
+            +{
+              ms => median(@runs), runs_ms => \@runs,
+              rss_growth_kb => ($peak > $base ? $peak - $base : 0), peak_rss_kb => $peak,
+              check => ($job->{check} ? $job->{check}->() : undef),
+              notes => ($job->{notes} ? $job->{notes}->() : undef),
+              %{ $job->{extra} ? $job->{extra}->() : {} },
+            };
+        };
+        $result = { error => ($@ =~ s/\s+\z//r) } unless $result;
+        print $writer JSON::PP->new->canonical->encode($result);
+        close $writer;
+        POSIX::_exit(0); # skip destructors the parent still owns
+    }
+
+    close $writer;
+    my $json = do { local $/; <$reader> };
+    waitpid $pid, 0;
+    return $json ? JSON::PP->new->decode($json) : { error => 'child died without a result' };
+}
+
+# one round of a measurement, run when report_group gets to it
+sub rounds_of { my @args = @_; return sub { measure(@args) } }
+
+# One result from a variant's rounds: every run, the median of them all, each
+# process's own median for the spread, and the most memory any round used.
+sub merge_rounds {
+    my @r = @_;
+    if (my ($failed) = grep { $_->{error} } @r) { return $failed }
+    my %merged = %{ $r[0] };
+    $merged{runs_ms}  = [ map { @{ $_->{runs_ms} } } @r ];
+    $merged{ms}       = median(@{ $merged{runs_ms} });
+    $merged{round_ms} = [ map { $_->{ms} } @r ];
+    foreach my $key (qw/rss_growth_kb peak_rss_kb/) {
+        ($merged{$key}) = sort { $b <=> $a } map { $_->{$key} || 0 } @r;
+    }
+    my %checks = map { ($_->{check} // '') => 1 } @r;
+    $merged{notes} = [ @{ $merged{notes} || [] }, 'result varied between rounds' ]
+      if keys %checks > 1;
+    return \%merged;
+}
+
+my (@RESULTS, @SUMMARY);
+
+# What tells two rendered pages apart, from diff's own output: how many lines
+# each side has that the other lacks, and the first such line as a sample.
+sub html_diff {
+    my ($old, $new) = @_;
+    open my $fh, '-|', 'diff', $old, $new or return undef;
+    my ($added, $removed, $sample) = (0, 0, undef);
+    while (my $line = <$fh>) {
+        next unless $line =~ m/^([<>]) (.*)$/;
+        ++($1 eq '>' ? $added : $removed);
+        $sample //= ($1 eq '>' ? '+ ' : '- ') . ($2 =~ s/^\s+|\s+$//gr);
+    }
+    close $fh;
+    $sample = substr($sample, 0, 69) . "\x{2026}" if defined $sample and length $sample > 70;
+    return { added => $added, removed => $removed, sample => $sample };
+}
+
+# Prints and records one group of variants. Each variant is [ label, result ];
+# the first is the baseline the rest are compared with. A variant's check is
+# a fingerprint of what it produced: timing two variants is only fair when they
+# did the same work, so any that differ are named, and for rendered pages the
+# difference is shown.
+sub report_group {
+    my ($scenario, $title, $rows, @variants) = @_;
+
+    # a variant given as a code ref is one round of it: run --rounds of each,
+    # interleaved, starting each round one variant further along
+    if (grep { ref $_->[1] eq 'CODE' } @variants) {
+        my %rounds;
+        foreach my $round (0 .. $opt{rounds} - 1) {
+            foreach my $i (map { ($_ + $round) % @variants } 0 .. $#variants) {
+                my ($label, $run) = @{ $variants[$i] };
+                push @{ $rounds{$label} }, (ref $run eq 'CODE' ? $run->() : $run);
+            }
+        }
+        @variants = map { [ $_->[0], merge_rounds(@{ $rounds{ $_->[0] } }) ] } @variants;
+    }
+
+    my @ok = grep { not $_->[1]{error} } @variants;
+    my $base = $ok[0];
+
+    say_ "";
+    say_ paint('bold', $title) . paint('dim', " \x{b7} " . fmt_rows($rows) . ' rows');
+
+    my $width = 8;
+    $width = length $_->[0] > $width ? length $_->[0] : $width for @variants;
+    say_ paint('dim', '  ' . pad('variant', $width + 2) . pad('median', 11) . pad('spread', 21)
+                    . pad('vs ' . ($base ? $base->[0] : 'first'), 24) . 'memory');
+
+    foreach my $v (@variants) {
+        my ($label, $r) = @$v;
+        my %record = (scenario => $scenario, title => $title, rows => $rows, variant => $label, %$r);
+        delete $record{html_file};
+        if ($r->{error}) {
+            push @RESULTS, \%record;
+            say_ '  ' . pad($label, $width + 2) . paint('red', "failed: $r->{error}");
+            next;
+        }
+        my ($lo, $hi) = spread($r);
+        my ($kind, $words) = ($v == $base) ? ('baseline', paint('dim', 'baseline')) : verdict($r, $base->[1]);
+        @record{qw/min_ms max_ms verdict/} = ($lo, $hi, $kind);
+        push @RESULTS, \%record;
+
+        my $memory = sprintf '+%.1f MB', ($r->{rss_growth_kb} || 0) / 1024;
+        my @notes = @{ $r->{notes} || [] };
+        say_ '  ' . pad($label, $width + 2) . pad(fmt_ms($r->{ms}), 11)
+          . pad(fmt_ms($lo) . " \x{2013} " . fmt_ms($hi), 21) . pad($words, 24)
+          . pad($memory, 11) . paint('dim', join(" \x{b7} ", @notes));
+    }
+
+    # what each variant produced, against the baseline
+    my @differ = grep { $_ != $base and ($_->[1]{check} // '') ne ($base->[1]{check} // '') } @ok;
+    # variants that produced the same thing share one line
+    my (%same_output, @outputs);
+    foreach my $v (@differ) {
+        my $check = $v->[1]{check} // '';
+        push @outputs, $check unless $same_output{$check};
+        push @{ $same_output{$check} }, $v;
+    }
+    foreach my $check (@outputs) {
+        my @vs = @{ $same_output{$check} };
+        my $d = ($vs[0][1]{html_file} and $base->[1]{html_file})
+          ? html_diff($base->[1]{html_file}, $vs[0][1]{html_file}) : undef;
+        my $lines = $d ? $d->{added} + $d->{removed} : 0;
+        my $how = $d ? sprintf('%d line%s (+%d %s%d)', $lines, ($lines == 1 ? '' : 's'),
+                               $d->{added}, "\x{2212}", $d->{removed})
+                     : 'its result';
+        my $who = join(', ', map { $_->[0] } @vs) . (@vs > 1 ? ' differ' : ' differs');
+        say_ '  ' . paint('yellow', "\x{2022} $who from $base->[0] by $how")
+          . ($d && defined $d->{sample} ? paint('dim', ":  $d->{sample}") : '');
+        foreach my $v (@vs) {
+            $_->{output_diff} = $d for grep { $_->{variant} eq $v->[0] and $_->{title} eq $title
+                                              and $_->{rows} == $rows } @RESULTS;
+        }
+    }
+    say_ '  ' . paint('dim', "\x{2022} every variant produced the same result")
+      if @ok > 1 and not @differ;
+
+    push @SUMMARY, { title => $title, rows => $rows, base => $base, last => $ok[-1] }
+      if @ok > 1;
+    return @variants;
+}
+
+# What one option adds on top of the plain render, per variant. It is two
+# medians subtracted, each from its own process, so it carries both their noise.
+sub report_cost {
+    my ($title, $rows, $with, $without) = @_;
+    my @parts;
+    foreach my $label (map { $_->[0] } @$with) {
+        my ($w) = map { $_->[1] } grep { $_->[0] eq $label } @$with;
+        my ($o) = map { $_->[1] } grep { $_->[0] eq $label } @$without;
+        next unless $w and $o and defined $w->{ms} and defined $o->{ms};
+        my $cost = $w->{ms} - $o->{ms};
+        push @RESULTS, { scenario => 'derived', title => $title, rows => $rows,
+                         variant => $label, ms => $cost };
+        push @parts, "$label " . paint('bold', fmt_ms($cost));
+    }
+    return unless @parts;
+    say_ '  ' . paint('dim', "\x{2022} $title alone (this render minus plain rows, so noisier): ")
+      . join(paint('dim', " \x{b7} "), @parts);
+}
+
+# One line per group: its last variant against its first.
+sub report_summary {
+    return unless @SUMMARY;
+    say_ "";
+    say_ paint('bold', 'Summary') . paint('dim', ': the last variant of each group against its first');
+    my $width = 20;
+    $width = length $_->{title} > $width ? length $_->{title} : $width for @SUMMARY;
+    my @multi_rows = do { my %r = map { $_->{rows} => 1 } @SUMMARY; keys %r };
+    foreach my $s (@SUMMARY) {
+        my ($b, $l) = ($s->{base}, $s->{last});
+        my (undef, $words) = verdict($l->[1], $b->[1]);
+        say_ '  ' . pad($s->{title}, $width + 2)
+          . (@multi_rows > 1 ? pad(fmt_rows($s->{rows}) . ' rows', 12) : '')
+          . pad("$b->[0] \x{2192} $l->[0]", 34)
+          . pad(fmt_ms($b->[1]{ms}) . " \x{2192} " . fmt_ms($l->[1]{ms}), 22) . $words;
+    }
+}
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# versions
+
+my $tmp = tempdir(CLEANUP => 1);
+my @VERSIONS;
+foreach my $ref (split /,/, $opt{versions}) {
+    if ($ref eq 'worktree') {
+        push @VERSIONS, { label => 'worktree', root => '.', index => scalar @VERSIONS };
+        next;
+    }
+    chomp(my $sha = `git rev-parse --short '$ref^{commit}' 2>/dev/null`);
+    die "cannot resolve $ref\n" unless $sha;
+    my $root = "$tmp/$sha";
+    make_path($root);
+    system("git archive '$sha' share/views share/public/javascripts/portsort.js"
+         . " | tar -x -C '$root'") == 0 or die "cannot extract $ref\n";
+    push @VERSIONS, { label => "$ref ($sha)", root => $root, index => scalar @VERSIONS };
+}
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# template fixtures
+
+# the same options as Test::Netdisco::Snapshot's engine, which mirrors
+# share/config.yml
+sub engine {
+    my $root = shift;
+    return Template::AutoFilter->new({
+      INCLUDE_PATH => [ "$root/share/views" ],
+      START_TAG => quotemeta('[%'), END_TAG => quotemeta('%]'),
+      ANYCASE => 1, ABSOLUTE => 1, PRE_CHOMP => 1,
+      AUTO_FILTER => 'html_entity', ENCODING => 'utf8', RECURSION => 1,
+    });
+}
+
+sub render {
+    my ($engine, $stash) = @_;
+    no warnings 'once';
+    local $Template::Stash::PRIVATE = undef; # as Web.pm sets before each render
+    # empty stash values warn in numeric tests, as in production; noise here
+    local $SIG{__WARN__} = sub { };
+    my $out = '';
+    $engine->process('ajax/device/ports.tt', $stash, \$out) or die $engine->error . "\n";
+    return $out;
+}
+
+# Web.pm's patched Dancer::Request::uri_for, which the uri_for template token
+# calls before ->path_query: a fresh base URI per call, as request->base is
+my $BASE = 'http://netdisco.example.com:5000/';
+sub uri_for {
+    my ($part, $params) = @_;
+    my $uri = URI->new($BASE);
+    (my $base = $uri->path) =~ s|/$||;
+    $part =~ s|^/||;
+    $uri->path("$base/$part");
+    $uri->query_form($params) if $params;
+    return $uri->canonical->path_query;
+}
+
+my $DEVICE_IP = '192.0.2.1';
+
+sub plugin_columns {
+    my $count = shift;
+    my @positions = qw/left mid right/;
+    return [ map {{ name => "cf_col$_", field => "cf_col$_", editable => 1,
+                    position => $positions[ $_ % 3 ] }} 1 .. $count ];
+}
+
+sub external_links {
+    my $count = shift;
+    return [ map {{ displayname => "NMS $_",
+      url => "https://nms$_.example.com/port?d=[% device %]&h=[% hostname %]&p=[% port %]&i=[% ifindex %]" }}
+      1 .. $count ];
+}
+
+sub mac_for { NetAddr::MAC->new(mac => sprintf '00:50:56:%02x:%02x:%02x', @_) }
+
+sub plain_row {
+    my $n = shift;
+    return {
+      ip => $DEVICE_IP, port => "Gi1/0/$n", descr => "GigabitEthernet1/0/$n",
+      name => "desk $n", up_admin => 'up', up => ($n % 4 ? 'up' : 'down'),
+      vlan => 10, ifindex => 10000 + $n, type => 'ethernetCsmacd',
+      port_acl_service => 1, port_acl_name => 1, port_acl_pvid => 1,
+      get_column => sub { "value $_[0] $n" },
+    };
+}
+
+# A port with a neighbor every tenth port and client nodes on the rest, a few
+# of them over the collapse threshold so they render as deferred stubs
+sub node_row {
+    my ($n, $nodes) = @_;
+    my $row = plain_row($n);
+    $row->{filtered_tags} = ($n % 5 ? [] : ['access']);
+    $row->{port_power} = { admin => 'true', power => 4000 + $n, status => 'deliveringPower' }
+      if $n % 3;
+
+    if ($n % 10 == 0) {
+        my %column = (neighbor_ip => "198.51.100." . ($n % 250 + 1),
+                      neighbor_dns => "dist" . ($n % 250) . ".example.com");
+        @$row{qw/remote_ip remote_port remote_type is_uplink neighbor_net_mac/} =
+          ($column{neighbor_ip}, "Te1/1/" . ($n % 8 + 1), 'Cisco IOS Software', 1,
+           mac_for(0xff, $n >> 8 & 0xff, $n & 0xff));
+        $row->{get_column} = sub { $column{ $_[0] } // "value $_[0] $n" };
+        $row->{node_count} = 0;
+        return $row;
+    }
+
+    my $count = ($n % 7 == 0) ? 30 : $nodes;
+    $row->{node_count} = $count;
+    $row->{nodes_search} = "nodes of port $n";
+    $row->{stitched_nodes} = [ map {
+      my $k = $_;
+      { active => ($k % 9 ? 1 : 0), vlan => ($k % 4 ? 10 : 20), time_last_age => '2 hours',
+        net_mac => mac_for($n >> 8 & 0xff, $n & 0xff, $k),
+        stitched_ips => [ { ip => "10." . ($n >> 8 & 0xff) . "." . ($n & 0xff) . ".$k",
+                            dns => "host-$n-$k.example.com", active => 1 } ] }
+    } 1 .. $count ] if $count <= 10;
+    return $row;
+}
+
+my $BY_POSITION = \&App::Netdisco::Web::Plugin::Device::Ports::_port_columns_by_position;
+
+sub stash {
+    my (%a) = @_;
+    my $columns = plugin_columns($a{cols} || 0);
+    my %params = (c_admin => 1, c_port => 1, c_descr => 1, c_name => 1,
+      c_pvid => 1, c_vmember => 1, c_up => 1, map { $_->{name} => 1 } @$columns);
+    %params = (%params, c_links => 1) if $a{links};
+    %params = (%params, c_power => 1, c_tags => 1, c_nodes => 1, c_neighbors => 1,
+               n_ip4 => 1, n_dns => 1, n_age => 1) if $a{nodes};
+
+    return {
+      params => \%params,
+      settings => {
+        _extra_device_port_cols => $columns,
+        domain_suffix => '\.example\.com$',
+        devport_vlan_limit => 50, devport_vlans_collapse_threshold => 10,
+        devport_nodes_collapse_threshold => 10, devport_ips_collapse_threshold => 4,
+        external_links => { device_port => external_links($a{links} || 0) },
+      },
+      uri_for => \&uri_for,
+      # the sidebar links Web.pm hands every template, URI objects there too
+      search_node  => URI->new(uri_for('/search', { tab => 'node' })),
+      device_ports => URI->new(uri_for('/device', { tab => 'ports' })),
+      user_has_role => sub { 1 },
+      permitted_by_acl => sub { App::Netdisco::Util::Permission::permitted_by_acl(@_) },
+      device => { ip => $DEVICE_IP, dns => 'switch.example.com', name => 'switch' },
+      mac_format_call => 'as_ieee',
+      vlans => { map {( "Gi1/0/$_" => { vlan_count => 2, vlan_set => [10, 20],
+                                         vlan_name_set => ['ten', 'twenty'] } )} 1 .. $a{rows} },
+      port_column_templates => { map { $_->{name} => 0 } @$columns },
+      port_columns_by_position => $BY_POSITION->($columns, \%params),
+      results => [ map { $a{nodes} ? node_row($_, $opt{nodes}) : plain_row($_) } 1 .. $a{rows} ],
+    };
+}
+
+sub render_group {
+    my ($scenario, $title, $rows, %a) = @_;
+    my $cold = delete $a{cold};
+    my @variants = map {
+      my $version = $_;
+      [ $version->{label}, rounds_of(cold => $cold, iters => $opt{iters}, setup => sub {
+          my $stash = stash(rows => $rows, %a);
+          my $engine = engine($version->{root});
+          my ($html, @compile_ms);
+          # Cold times the first render on a fresh engine, then renders once
+          # more on that same engine: the difference is the compile, measured
+          # in one process. Subtracting the warm scenario's median instead
+          # compares two processes, and their noise is bigger than the compile.
+          my $cold_run = sub {
+              my $fresh = engine($version->{root});
+              my $t0 = time;
+              $html = render($fresh, $stash);
+              my $first = time - $t0;
+              $t0 = time;
+              render($fresh, $stash);
+              push @compile_ms, ($first - (time - $t0)) * 1000;
+              return $first * 1000;
+          };
+          return {
+            ($cold ? (self_timed => 1) : ()),
+            run => ($cold ? $cold_run : sub { $html = render($engine, $stash) }),
+            check => sub { md5_hex(Encode::encode_utf8($html)) },
+            notes => sub { [ sprintf('%s KB html', fmt_rows(int(length($html) / 1024))),
+              (@compile_ms ? sprintf('compile ~%.0f ms', median(@compile_ms)) : ()) ] },
+            # kept so the report can say what differs between versions, not
+            # only that something does
+            extra => sub {
+              my $file = sprintf '%s/html-%s-%d-%d.html', $tmp, $scenario, $rows, $version->{index};
+              open my $fh, '>', $file or return {};
+              print $fh Encode::encode_utf8($html);
+              close $fh;
+              return { html_file => $file };
+            },
+          };
+        }) ]
+    } @VERSIONS;
+    return [ report_group($scenario, $title, $rows, @variants) ];
+}
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Perl fixtures
+
+{ package Bench::Port;
+  sub new { my ($c, %a) = @_; bless { type => 'ethernetCsmacd', up => 'up', %a }, $c }
+  sub ip { $_[0]{ip} }  sub port { $_[0]{port} }  sub descr { $_[0]{descr} }
+  sub type { $_[0]{type} }  sub up { $_[0]{up} }
+  sub is_uplink { $_[0]{is_uplink} }  sub remote_type { $_[0]{remote_type} }
+  sub is_master { 0 }  sub has_subinterfaces { 0 }
+  sub remote_is_wap { $_[0]{remote_is_wap} }  sub remote_is_phone { $_[0]{remote_is_phone} }
+}
+{ package Bench::User;
+  sub new { my ($c, @roles) = @_; bless { roles => [ @roles ] }, $c }
+  sub admin { 0 }  sub port_control { 1 }
+  sub portctl_role { $_[0]{roles}[0] }       # this branch
+  sub portctl_roles { [ @{ $_[0]{roles} } ] } # jb-multi-portctl-roles
+}
+
+my $dns_calls = 0;
+{
+    no warnings 'redefine';
+    *App::Netdisco::Util::Permission::hostname_from_ip = sub {
+        ++$dns_calls;
+        sleep($opt{'dns-ms'} / 1000) if $opt{'dns-ms'};
+        return 'switch.example.com';
+    };
+}
+
+my $MULTI_ROLE = defined &App::Netdisco::Util::Port::_user_portctl_roles;
+
+# uplinks, an AP and a phone among the access ports, so the per-port checks
+# in port_acl_service take each of their branches
+sub acl_ports {
+    my $rows = shift;
+    return [ map { my $n = $_; Bench::Port->new(
+      ip => $DEVICE_IP, port => "Gi1/0/$n", descr => "GigabitEthernet1/0/$n",
+      ($n % 50 == 0 ? (is_uplink => 1, remote_type => 'Cisco IOS') : ()),
+      ($n % 40 == 0 ? (remote_type => 'AIR-AP', remote_is_wap => 1) : ()),
+      ($n % 30 == 0 ? (remote_type => 'IP Phone', remote_is_phone => 1) : ()),
+    ) } 1 .. $rows ];
+}
+
+sub acl_settings {
+    my (%a) = @_;
+    setting('portctl_native_vlan' => 1);
+    setting('portctl_nameonly' => 0);
+    setting('portctl_uplinks' => 0);
+    setting('portctl_nowaps' => 0);
+    setting('portctl_nophones' => 0);
+    setting('portctl_no' => ($a{regex} ? [ qr/^nosuchswitch/ ] : []));
+    setting('portctl_only' => []);
+    setting('host_groups' => { leafgroup => [$DEVICE_IP], %{ $a{groups} || {} } });
+    # a device and port role: the port rule picks some ports and not others
+    setting('portctl_by_role' => $a{roles}
+      || { leafonly => { 'group:leafgroup' => ['port:Gi1/0/[1-5]\d*'] } });
+}
+
+sub acl_flags {
+    my $ports = shift;
+    return md5_hex(join '', map { my $p = $_;
+      join(',', map { $p->{$_} ? 1 : 0 } qw/port_acl_service port_acl_pvid port_acl_name/) . ';'
+    } @$ports);
+}
+
+# _port_rows before this branch: port_acl_pvid runs all of port_acl_service
+sub acl_before {
+    my ($ports, $device, $user) = @_;
+    map {$_->{port_acl_pvid} = port_acl_pvid($_, $device, $user)} @$ports;
+    map {$_->{port_acl_service} = port_acl_service($_, $device, $user)} @$ports;
+    map {$_->{port_acl_name} = ($_->{port_acl_service} ||
+                                port_acl_name($_, $device, $user))} @$ports;
+}
+
+# _port_rows now
+sub acl_now {
+    my ($ports, $device, $user) = @_;
+    my $pvid_allowed = setting('portctl_native_vlan');
+    foreach my $row (@$ports) {
+        my $service = port_acl_service($row, $device, $user);
+        $row->{port_acl_service} = $service;
+        $row->{port_acl_pvid} = ($pvid_allowed ? $service : 0);
+        $row->{port_acl_name} = ($service || port_acl_name($row, $device, $user));
+    }
+}
+
+# A prototype, not shipped code: port_acl_service with what depends on the
+# device alone worked out once per page. Every row of the Ports tab is a port
+# of the one device, so portctl_no and portctl_only, and which of a role's
+# device rules match, cannot change from row to row. Follows whichever role
+# model Util::Port has, one role or several.
+sub acl_hoisted {
+    my ($ports, $device, $user) = @_;
+    my $ip = $ports->[0] ? $ports->[0]->ip : $device->{ip};
+    my $device_ok = (not acl_matches($ip, 'portctl_no')
+                     and acl_matches_only($ip, 'portctl_only'));
+
+    my ($any_port, @port_rules) = (0);
+    my @roles = $MULTI_ROLE
+      ? App::Netdisco::Util::Port::_user_portctl_roles($user)
+      : grep { $_ } ($user->portctl_role);
+    foreach my $role (@roles) {
+        my $acl = setting('portctl_by_role')->{$role} or next;
+        if (ref $acl eq q{} or ref $acl eq ref []) {
+            $any_port = 1 if acl_matches($device, $acl);
+        }
+        elsif (ref $acl eq ref {}) {
+            push @port_rules, map { $acl->{$_} }
+              grep { $_ and $acl->{$_} and acl_matches($device, $_) } keys %$acl;
+        }
+    }
+    my $role_ok = sub {
+        my $port = shift;
+        return 1 if $user->admin and $user->port_control;
+        return $user->port_control unless @roles;
+        return 1 if $any_port;
+        foreach my $rule (@port_rules) { return 1 if acl_matches_only($port, $rule) }
+        return 0;
+    };
+
+    my $pvid_allowed = setting('portctl_native_vlan');
+    my ($nameonly, $nowaps, $nophones, $uplinks) =
+      map { setting($_) } qw/portctl_nameonly portctl_nowaps portctl_nophones portctl_uplinks/;
+    foreach my $row (@$ports) {
+        my $role = $role_ok->($row);
+        my $service = (not $nameonly
+          and not ($nowaps and port_has_wap($row))
+          and not ($nophones and port_has_phone($row))
+          and not (not $uplinks
+            and ($row->is_uplink or $row->remote_type or $row->is_master
+                 or is_vlan_subinterface($row))
+            and not (port_has_wap($row) or port_has_phone($row)))
+          and $device_ok and $role) ? 1 : 0;
+        $row->{port_acl_service} = $service;
+        $row->{port_acl_pvid} = ($pvid_allowed ? $service : 0);
+        $row->{port_acl_name} = ($service || $role);
+    }
+}
+
+sub acl_job {
+    my ($pass, $rows, $user, %settings) = @_;
+    return sub {
+        acl_settings(%settings);
+        my $ports = acl_ports($rows);
+        my $device = { ip => $DEVICE_IP };
+        my $calls;
+        return {
+          run => sub { $dns_calls = 0; $pass->($ports, $device, $user); $calls = $dns_calls },
+          check => sub { acl_flags($ports) },
+          notes => sub { $settings{regex} ? [ "$calls DNS lookup" . ($calls == 1 ? "" : "s") ] : [] },
+        };
+    };
+}
+
+# Ports.pm's subinterface grouping. "now" is as shipped; "before" is the same
+# with the two grep lookups 3a075c45 (#1640) replaced by the port index.
+sub subinterface_pass {
+    my ($results, $indexed) = @_;
+    my %port_has_dot_zero = ();
+    my %port_subinterface_count = ();
+    my $subinterfaces_match = qr/(.+)\.\d+/;
+
+    foreach my $port (@$results) {
+        if ($port->port =~ m/^${subinterfaces_match}$/) {
+            my $parent = $1;
+            next unless defined $parent;
+            ++$port_subinterface_count{$parent};
+            ++$port_has_dot_zero{$parent}
+              if $port->port =~ m/\.0$/
+                and ($port->type and $port->type =~ m/^(?:propVirtual|ieee8023adLag)$/i);
+            $port->{subinterface_group} = $parent;
+        }
+    }
+
+    my %port_row = ();
+    if ($indexed) { $port_row{ $_->port } = $_ for @$results }
+    my $find = $indexed ? sub { $port_row{ $_[0] } }
+                        : sub { my $name = shift; [grep {$_->port eq $name} @$results]->[0] };
+
+    foreach my $parent (keys %port_subinterface_count) {
+        my $parent_port = $find->($parent) or next;
+        $parent_port->{has_subinterface_group} = 1;
+        $parent_port->{has_only_dot_zero_subinterface} = 1
+          if exists $port_has_dot_zero{$parent}
+            and $port_subinterface_count{$parent} == 1
+            and ($parent_port->type
+              and $parent_port->type =~ m/^(?:ethernetCsmacd|ieee8023adLag)$/i);
+        if ($parent_port->{has_only_dot_zero_subinterface}) {
+            $find->("${parent}.0")->{is_dot_zero_subinterface} = 1;
+        }
+    }
+}
+
+# A wireless controller lists two subinterfaces per AP and no AP parent port,
+# the case behind 1479 and #1640: every parent lookup misses. A few switch
+# ports with real parents keep the found-parent branch in the timing too.
+sub wireless_ports {
+    my $rows = shift;
+    return [ map { my $n = $_; ($n % 20 == 0)
+      ? Bench::Port->new(port => "Gi1/0/$n", type => 'ethernetCsmacd')
+      : Bench::Port->new(port => sprintf('ap%d.%d', $n >> 1, $n & 1), type => 'propVirtual')
+    } 1 .. $rows ];
+}
+
+sub subinterface_flags {
+    my $ports = shift;
+    return md5_hex(join ';', map { my $p = $_;
+      join ',', map { $p->{$_} // '' }
+        qw/subinterface_group has_subinterface_group has_only_dot_zero_subinterface
+           is_dot_zero_subinterface/ } @$ports);
+}
+
+# Ports.pm's hide_deviceports pass, as shipped
+sub hide_pass {
+    my ($results, $device, $device_ips) = @_;
+    my $port_map = {};
+    my %to_hide  = ();
+
+    map { push @{ $port_map->{$_->port} }, $_ } grep { $_->port } @$results;
+    map { push @{ $port_map->{$_->port} }, $_ } grep { $_->port } @$device_ips;
+
+    foreach my $map (@{ setting('hide_deviceports') }) {
+        next unless ref {} eq ref $map;
+        foreach my $key (sort keys %$map) {
+            next unless $key and $map->{$key};
+            next unless acl_matches($device, $key);
+            foreach my $port (sort keys %$port_map) {
+                next unless acl_matches($port_map->{$port}, $map->{$key});
+                ++$to_hide{$port};
+            }
+        }
+    }
+    return [ grep { ! exists $to_hide{$_->port} } @$results ];
+}
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# portsort.js, run in node
+
+my $PORTSORT_JS = <<'JS';
+'use strict';
+const fs = require('node:fs');
+const vm = require('node:vm');
+const crypto = require('node:crypto');
+const { performance } = require('node:perf_hooks');
+const [file, rowsArg, itersArg] = process.argv.slice(2);
+const rows = Number(rowsArg), iters = Number(itersArg);
+const src = fs.readFileSync(file, 'utf8');
+
+// a fresh context per load, so a cache kept by portsort.js starts empty
+function load() {
+  const registered = {};
+  const context = vm.createContext({ DataTable: { type(name, spec) { registered[name] = spec; } } });
+  vm.runInContext(src, context, { filename: file });
+  return registered.portsort.order.asc;
+}
+
+// the port name shapes the corpus tests cover, mixed
+const shapes = [
+  i => `GigabitEthernet1/0/${i}`, i => `Gi${1 + i % 4}/0/${i % 48 + 1}`,
+  i => `TenGigabitEthernet1/1/${i % 8 + 1}.${i}`, i => `Port-channel${i}`,
+  i => `Vlan${i}`, i => `ap${i >> 1}.${i & 1}`, i => `10GigabitEthernet${i % 3}/${i % 24}`,
+];
+const names = Array.from({ length: rows }, (_, i) => shapes[i % shapes.length](i));
+
+function shuffled(seed) {
+  const a = names.slice();
+  let s = seed >>> 0;
+  const rand = () => { s = (s + 0x6D2B79F5) >>> 0; let t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+
+function timeSort(asc, seed) {
+  const a = shuffled(seed);
+  const t0 = performance.now();
+  a.sort(asc);
+  return [performance.now() - t0, a];
+}
+
+// first sort on a fresh page, then the same names sorted again, as when the
+// user clicks a column header a second time
+const first = [], repeat = [];
+for (let k = 1; k <= iters; k++) first.push(timeSort(load(), k)[0]);
+const asc = load();
+const [, sorted] = timeSort(asc, 99);
+for (let k = 1; k <= iters; k++) repeat.push(timeSort(asc, k)[0]);
+
+process.stdout.write(JSON.stringify({
+  first, repeat,
+  check: crypto.createHash('md5').update(sorted.join('\n')).digest('hex'),
+  maxrss_kb: process.resourceUsage().maxRSS,
+}));
+JS
+
+my $portsort_script = "$tmp/portsort-bench.js";
+{ open my $fh, '>', $portsort_script or die $!; print $fh $PORTSORT_JS; close $fh }
+
+sub portsort_runs {
+    my ($version, $rows) = @_;
+    my $file = "$version->{root}/share/public/javascripts/portsort.js";
+    my $json = `node '$portsort_script' '$file' $rows $opt{iters} 2>&1`;
+    my $r = eval { JSON::PP->new->decode($json) } or return ({ error => $json }, { error => $json });
+    my %common = (check => $r->{check}, peak_rss_kb => $r->{maxrss_kb}, rss_growth_kb => $r->{maxrss_kb});
+    return ({ ms => median(@{ $r->{first} }), runs_ms => $r->{first}, %common },
+            { ms => median(@{ $r->{repeat} }), runs_ms => $r->{repeat}, %common });
+}
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# run
+
+say_ paint('bold', 'Ports tab benchmark');
+say_ paint('dim', '  versions  ') . join(', ', map { $_->{label} } @VERSIONS);
+say_ paint('dim', '  runs      ') . "$opt{rounds} process" . ($opt{rounds} == 1 ? '' : 'es')
+   . " per variant, interleaved, $opt{iters} run" . ($opt{iters} == 1 ? '' : 's')
+   . ' in each (1 for the slow "before" variants); median is of every run';
+say_ paint('dim', '  spread    ') . ($opt{rounds} > 1
+   ? 'lowest to highest per-process median, the noise between processes;'
+   : 'fastest to slowest run;')
+   . ' overlapping spreads are reported as the same';
+say_ paint('dim', '  memory    ') . "growth above the variant's fixture while it ran;"
+   . " for portsort, node's whole process";
+
+# a slow variant (every check reverse-resolving, or every lookup scanning
+# every row) is timed fewer times: its median settles fast and it is the
+# reason the other variant exists
+my $slow_iters = 1;
+
+foreach my $rows (@ROWS) {
+    my ($plain, $cols, $links, $cold);
+
+    $plain = render_group('render', 'render, plain rows', $rows, cols => 0)
+      if $ONLY{render} or $ONLY{'plugin-cols'} or $ONLY{links};
+
+    $cold = render_group('cold', 'first render on a fresh engine', $rows, cold => 1)
+      if $ONLY{cold};
+    if ($ONLY{'plugin-cols'}) {
+        $cols = render_group('plugin-cols', "render, $opt{cols} plugin columns", $rows,
+          cols => $opt{cols});
+        report_cost("cost of $opt{cols} plugin columns", $rows, $cols, $plain);
+    }
+    if ($ONLY{links}) {
+        $links = render_group('links', "render, $opt{links} external port links", $rows,
+          links => $opt{links});
+        report_cost("cost of $opt{links} external port links", $rows, $links, $plain);
+    }
+    render_group('nodes', "render, nodes ($opt{nodes} per port, some deferred) and neighbors",
+      $rows, nodes => 1) if $ONLY{nodes};
+
+    if ($ONLY{acl}) {
+        my $user = Bench::User->new('leafonly');
+        foreach my $regex (1, 0) {
+            report_group('acl', 'ACL pass (c_admin), ' . ($regex ? 'regex rule in portctl_no' : 'no regex rule'),
+              $rows,
+              [ before  => rounds_of(iters => ($regex ? $slow_iters : $opt{iters}),
+                  setup => acl_job(\&acl_before, $rows, $user, regex => $regex)) ],
+              [ now     => rounds_of(iters => ($regex ? $slow_iters : $opt{iters}),
+                  setup => acl_job(\&acl_now, $rows, $user, regex => $regex)) ],
+              [ hoisted => rounds_of(iters => $opt{iters},
+                  setup => acl_job(\&acl_hoisted, $rows, $user, regex => $regex)) ]);
+        }
+    }
+
+    if ($ONLY{roles}) {
+        if (not $MULTI_ROLE) {
+            say_ "";
+            say_ paint('bold', 'ACL pass by number of roles')
+              . paint('dim', " \x{b7} " . fmt_rows($rows) . ' rows');
+            say_ '  ' . paint('yellow', "\x{2022} skipped: Util::Port on this checkout holds one"
+              . ' role per user; run it on jb-multi-portctl-roles');
+        }
+        else {
+            foreach my $count (1, 5, 20) {
+                # every role but the last names other devices, so a user is
+                # allowed by their last role, after checking all the others
+                my %roles = map {( "role$_" => { "group:g$_" => ['port:Gi1/0/[1-5]\d*'] } )} 1 .. $count;
+                my %groups = map {( "g$_" => ($_ == $count ? [$DEVICE_IP] : ["198.51.100.$_"]) )} 1 .. $count;
+                my $user = Bench::User->new(map { "role$_" } 1 .. $count);
+                my @settings = (roles => \%roles, groups => \%groups);
+                report_group('roles', "ACL pass, user holding $count role" . ($count > 1 ? 's' : ''), $rows,
+                  [ now     => rounds_of(iters => $opt{iters}, setup => acl_job(\&acl_now, $rows, $user, @settings)) ],
+                  [ hoisted => rounds_of(iters => $opt{iters}, setup => acl_job(\&acl_hoisted, $rows, $user, @settings)) ]);
+            }
+        }
+    }
+
+    if ($ONLY{subinterfaces}) {
+        my $job = sub { my $indexed = shift; sub {
+            my $ports = wireless_ports($rows);
+            return { run => sub { delete @{$_}{qw/subinterface_group has_subinterface_group
+                                    has_only_dot_zero_subinterface is_dot_zero_subinterface/} for @$ports;
+                                  subinterface_pass($ports, $indexed) },
+                     check => sub { subinterface_flags($ports) } };
+        } };
+        report_group('subinterfaces', 'subinterface grouping, wireless controller shape', $rows,
+          [ 'before (#1640)' => rounds_of(iters => $slow_iters, setup => $job->(0)) ],
+          [ now              => rounds_of(iters => $opt{iters}, setup => $job->(1)) ]);
+    }
+
+    if ($ONLY{hide}) {
+        report_group('hide', 'hide_deviceports pass, shipped default rules', $rows,
+          [ now => rounds_of(iters => $opt{iters}, setup => sub {
+              setting('hide_deviceports' => [ { 'group:__ANY__' => ['group:__HIDE_NOTPRESENT_TYPES__'] } ]);
+              setting('host_groups' => { __ANY__ => ['0.0.0.0/0', '::/0'],
+                __HIDE_NOTPRESENT_TYPES__ => ['op:and', 'up:notPresent', 'type:ethernetCsmacd'] });
+              # one port in six is an empty slot the default rules hide
+              my $ports = [ map { Bench::Port->new(ip => $DEVICE_IP, port => "Gi1/0/$_",
+                ($_ % 6 ? () : (up => 'notPresent'))) } 1 .. $rows ];
+              my $ips = [ map { Bench::Port->new(ip => "10.0.$_.1", port => "Vlan$_", type => 'l3ipvlan') } 1 .. 20 ];
+              my $kept;
+              return { run => sub { $kept = hide_pass($ports, { ip => $DEVICE_IP }, $ips) },
+                       check => sub { scalar @$kept },
+                       notes => sub { [ sprintf '%d of %d ports hidden', $rows - @$kept, $rows ] } };
+            }) ]);
+    }
+
+    if ($ONLY{portsort}) {
+        # one node process times both, so each round of the first group
+        # leaves its repeat-sort result here for the same round of the second
+        my %repeat;
+        report_group('portsort', 'portsort.js (client side), first sort of a page', $rows,
+          map { my $v = $_; [ $v->{label}, sub {
+            my ($first, $again) = portsort_runs($v, $rows);
+            push @{ $repeat{ $v->{label} } }, $again;
+            return $first;
+          } ] } @VERSIONS);
+        report_group('portsort', 'portsort.js (client side), the same names sorted again', $rows,
+          map { my $v = $_; [ $v->{label}, sub { shift @{ $repeat{ $v->{label} } } } ] } @VERSIONS);
+    }
+}
+
+report_summary();
+
+print JSON::PP->new->canonical->pretty->encode({
+  options => { %opt, rows => \@ROWS, versions => [ map { $_->{label} } @VERSIONS ] },
+  results => \@RESULTS,
+}) if $opt{json};
