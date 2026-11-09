@@ -763,6 +763,7 @@ xt/215-node-wireless-current.t
 xt/216-compile-shards.t
 xt/217-tacacs-optional.t
 xt/218-cpan-audit-helpers.t
+xt/219-ports-plugin-columns.t
 xt/30-backend-workers.t
 xt/31-loadmibsfromoids-guard.t
 xt/32-swagger-ui-guard.t
@@ -834,6 +835,7 @@ xt/96-worker-action-is-literal.t
 xt/97-api-auth-failure-status.t
 xt/98-api-delete-count.t
 xt/99-api-json-errors.t
+xt/bin/bench-ports-tab
 xt/bin/cpan-audit-coverage
 xt/bin/cpan-audit-fix-hints
 xt/bin/cpan-audit-minimums
