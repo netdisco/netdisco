@@ -27,6 +27,7 @@ swagger_path {
     note            => $_->{note},
     admin           => $_->{admin}  ? \1 : \0,
     port_control    => $_->{port_control} ? \1 : \0,
+    portctl_roles   => $_->{portctl_roles} || [],
     ldap            => $_->{ldap}   ? \1 : \0,
     radius          => $_->{radius} ? \1 : \0,
     tacacs          => $_->{tacacs} ? \1 : \0,
