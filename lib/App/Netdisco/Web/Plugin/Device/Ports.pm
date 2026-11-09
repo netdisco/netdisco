@@ -5,7 +5,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Util::Permission 'acl_matches';
-use App::Netdisco::Util::Port qw/port_acl_service port_acl_pvid port_acl_name/;
+use App::Netdisco::Util::Port qw/port_acl_service port_acl_name/;
 use App::Netdisco::Web::Plugin;
 
 use List::MoreUtils 'singleton';
@@ -738,13 +738,21 @@ sub _port_rows {
     # add acl on port config
     # this has the merged yaml and database config
     if (param('c_admin') and user_has_role('port_control')) {
-      # for native vlan change
-      map {$_->{port_acl_pvid} = port_acl_pvid($_, $device, logged_in_user)} @results;
-      # for up/down and poe
-      map {$_->{port_acl_service} = port_acl_service($_, $device, logged_in_user)} @results;
-      # for name/descr change
-      map {$_->{port_acl_name} = ($_->{port_acl_service} || # if service true then this is OK
-                                  port_acl_name($_, $device, logged_in_user))} @results;
+      # port_acl_pvid is portctl_native_vlan in front of port_acl_service, so
+      # calling both ran the whole service check twice per port. each run
+      # matches portctl_no and portctl_only against the device, and a regex
+      # rule in either makes that a reverse DNS lookup of the device IP
+      my $user = logged_in_user;
+      my $pvid_allowed = setting('portctl_native_vlan');
+      foreach my $row (@results) {
+          # for up/down and poe
+          my $service = port_acl_service($row, $device, $user);
+          $row->{port_acl_service} = $service;
+          # for native vlan change
+          $row->{port_acl_pvid} = ($pvid_allowed ? $service : false);
+          # for name/descr change, which service already permits
+          $row->{port_acl_name} = ($service || port_acl_name($row, $device, $user));
+      }
     }
 
     # filter the tags by hide_tags setting
@@ -800,6 +808,19 @@ sub _port_column_templates {
     } @{ setting('_extra_device_port_cols') || [] } };
 }
 
+sub _port_columns_by_position {
+    my ($columns, $enabled) = @_;
+    my %by_position = map { $_ => [] } qw/left mid right/;
+    foreach my $config (@{ $columns || [] }) {
+        next if $config->{hidden};
+        next unless $config->{name} and $enabled->{ $config->{name} };
+        my $position = $config->{position};
+        next unless defined $position and exists $by_position{$position};
+        push @{ $by_position{$position} }, $config;
+    }
+    return \%by_position;
+}
+
 # device ports with a description (er, name) matching
 get '/ajax/content/device/ports' => require_login sub {
     # the CSV never reads the neighbor's MAC
@@ -819,6 +840,8 @@ get '/ajax/content/device/ports' => require_login sub {
           vlans  => $data->{vlans},
           deferred_node_params => $data->{deferred_node_params},
           port_column_templates => _port_column_templates(),
+          port_columns_by_position => _port_columns_by_position(
+            setting('_extra_device_port_cols'), scalar params),
         }, { layout => 'noop' };
     }
     else {

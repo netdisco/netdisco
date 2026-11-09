@@ -207,10 +207,8 @@
       </td>
       [% END %]
 
-      [% FOREACH config IN settings._extra_device_port_cols %]
-        [% NEXT UNLESS config.position == 'left' AND params.${config.name} %]
+      [% FOREACH config IN port_columns_by_position.left %]
         [% NEXT UNLESS permitted_by_acl(row, config) %]
-        [% NEXT IF config.hidden %]
 
         [% IF port_column_templates.exists(config.name) AND NOT port_column_templates.${config.name} %]
           [% PROCESS plugin_column_value %]
@@ -379,10 +377,8 @@
       </td>
       [% END %]
 
-      [% FOREACH config IN settings._extra_device_port_cols %]
-        [% NEXT UNLESS config.position == 'mid' AND params.${config.name} %]
+      [% FOREACH config IN port_columns_by_position.mid %]
         [% NEXT UNLESS permitted_by_acl(row, config) %]
-        [% NEXT IF config.hidden %]
 
         [% IF port_column_templates.exists(config.name) AND NOT port_column_templates.${config.name} %]
           [% PROCESS plugin_column_value %]
@@ -502,10 +498,8 @@
       </td>
       [% END %]
 
-      [% FOREACH config IN settings._extra_device_port_cols %]
-        [% NEXT UNLESS config.position == 'right' AND params.${config.name} %]
+      [% FOREACH config IN port_columns_by_position.right %]
         [% NEXT UNLESS permitted_by_acl(row, config) %]
-        [% NEXT IF config.hidden %]
 
         [% IF port_column_templates.exists(config.name) AND NOT port_column_templates.${config.name} %]
           [% PROCESS plugin_column_value %]
