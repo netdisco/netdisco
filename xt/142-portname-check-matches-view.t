@@ -24,10 +24,10 @@ use Dancer qw/:moose :script !pass/;
 config->{logger} = 'null';
 
 { package Test::FakeUser;
-  sub new { my ($c, %a) = @_; return bless { port_control => 1, admin => 0, portctl_role => '', %a }, $c }
+  sub new { my ($c, %a) = @_; return bless { port_control => 1, admin => 0, portctl_roles => [], %a }, $c }
   sub port_control { $_[0]->{port_control} }
   sub admin        { $_[0]->{admin} }
-  sub portctl_role { $_[0]->{portctl_role} }
+  sub portctl_roles { $_[0]->{portctl_roles} }
 }
 
 { package Test::FakeDevice;
@@ -103,7 +103,7 @@ subtest 'portnameCheck__on_a_portctl_no_device__allows_the_name' => sub {
 
 subtest 'portnameCheck__outside_the_users_role__still_refuses' => sub {
   $PORT = Test::FakePort->new(ip => $OUT->ip);
-  is check_status($OUT, Test::FakeUser->new(portctl_role => 'plainonly')), 'error',
+  is check_status($OUT, Test::FakeUser->new(portctl_roles => ['plainonly'])), 'error',
     'a role scoped to another device is refused';
   is check_status($OUT, Test::FakeUser->new(port_control => 0)), 'error',
     'a user without port_control is refused';

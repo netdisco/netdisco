@@ -11,10 +11,10 @@ use Dancer qw/setting/;
 use App::Netdisco::Util::Port 'port_acl_by_role_check';
 
 { package Test::FakeUser;
-  sub new { my ($c, %a) = @_; return bless { port_control => 1, admin => 0, portctl_role => '', %a }, $c }
+  sub new { my ($c, %a) = @_; return bless { port_control => 1, admin => 0, portctl_roles => [], %a }, $c }
   sub port_control { $_[0]->{port_control} }
   sub admin        { $_[0]->{admin} }
-  sub portctl_role { $_[0]->{portctl_role} }
+  sub portctl_roles { $_[0]->{portctl_roles} }
 }
 
 my $IN  = { ip => '192.168.0.11' };
@@ -28,9 +28,9 @@ setting('portctl_by_role' => {
 });
 
 subtest 'portAclByRoleCheck__a_role_with_no_ACL__is_refused' => sub {
-  ok !port_acl_by_role_check($PORT, $IN, Test::FakeUser->new(portctl_role => 'nosuchrole')),
+  ok !port_acl_by_role_check($PORT, $IN, Test::FakeUser->new(portctl_roles => ['nosuchrole'])),
     'covered device refused';
-  ok !port_acl_by_role_check($PORT, $OUT, Test::FakeUser->new(portctl_role => 'nosuchrole')),
+  ok !port_acl_by_role_check($PORT, $OUT, Test::FakeUser->new(portctl_roles => ['nosuchrole'])),
     'uncovered device refused';
 };
 
@@ -43,16 +43,16 @@ subtest 'portAclByRoleCheck__a_user_with_no_role__keeps_every_port' => sub {
 
 subtest 'portAclByRoleCheck__an_admin__keeps_every_port' => sub {
   ok port_acl_by_role_check($PORT, $OUT,
-       Test::FakeUser->new(admin => 1, portctl_role => 'nosuchrole')),
+       Test::FakeUser->new(admin => 1, portctl_roles => ['nosuchrole'])),
     'an admin is not scoped by a role';
 };
 
 subtest 'portAclByRoleCheck__a_known_role__is_matched_as_before' => sub {
-  my $hash = Test::FakeUser->new(portctl_role => 'leafonly');
+  my $hash = Test::FakeUser->new(portctl_roles => ['leafonly']);
   ok  port_acl_by_role_check($PORT, $IN,  $hash), 'device and port role allows its device';
   ok !port_acl_by_role_check($PORT, $OUT, $hash), 'device and port role refuses another';
 
-  my $list = Test::FakeUser->new(portctl_role => 'plainonly');
+  my $list = Test::FakeUser->new(portctl_roles => ['plainonly']);
   ok  port_acl_by_role_check($PORT, $IN,  $list), 'device list role allows its device';
   ok !port_acl_by_role_check($PORT, $OUT, $list), 'device list role refuses another';
 };
