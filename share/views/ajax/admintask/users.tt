@@ -33,8 +33,6 @@
     [% END %]
   </div>
 [% END %]
-
-
 [% IF settings.allow_permanent_tokens %]
 <div class="alert alert-info">
   Configured Token Lifetime: [% settings.api_token_lifetime | html_entity %]s
