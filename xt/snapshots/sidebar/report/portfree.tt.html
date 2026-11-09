@@ -1,0 +1,68 @@
+
+            <p class="nd_sidebar-title"><em>Free Ports</em></p>
+            <div class="clearfix">
+              <em class="text-muted">Free for at least:</em><br/>
+              <input id="nd_days-input" class="form-control d-inline-block" type="number" min="0"
+                name="age_num" value=""/>
+              <select id="nd_age-select" class="form-select d-inline-block" name="age_unit">
+                <option>days</option>
+                <option>weeks</option>
+                <option>months</option>
+                <option>years</option>
+              </select>
+            </div>
+            <div class="clearfix">
+              <em class="text-muted">Operational status:</em><br/>
+              <select class="form-select" name="up">
+                <option>down</option>
+                <option>up</option>
+                <option>any</option>
+              </select>
+            </div>
+            <div class="clearfix">
+              <em class="text-muted">Administrative status:</em><br/>
+              <select class="form-select" name="up_admin">
+                <option>any</option>
+                <option>up</option>
+                <option>down</option>
+              </select>
+            </div>
+            <div class="clearfix">
+              <em class="text-muted">Device:</em><br/>
+              <input class="form-control" type="text" name="device" placeholder="IP, prefix or name"
+                value=""
+                rel="tooltip" data-bs-placement="left" data-bs-title="IP, prefix, or start of DNS or SNMP name"/>
+            </div>
+
+            <div class="clearfix">
+              <em class="text-muted">Free since based on:</em><br/>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="nd_portfree-basis-mac"
+                  name="basis" value="mac" checked="checked"/>
+                <label class="form-check-label" for="nd_portfree-basis-mac">mac</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="nd_portfree-basis-lastchange"
+                  name="basis" value="lastchange" checked="checked"/>
+                <label class="form-check-label" for="nd_portfree-basis-lastchange">lastchange</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="nd_portfree-basis-boot"
+                  name="basis" value="boot" checked="checked"/>
+                <label class="form-check-label" for="nd_portfree-basis-boot">boot</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="nd_portfree-basis-unknown"
+                  name="basis" value="unknown" checked="checked"/>
+                <label class="form-check-label" for="nd_portfree-basis-unknown">unknown</label>
+              </div>
+            </div>
+            <div class="clearfix">
+              <em class="text-muted">Show at most (0 for all):</em><br/>
+              <input class="form-control" type="number" min="0" name="limit"
+                value=""/>
+            </div>
+
+            <button id="_submit" type="submit" class="btn btn-info">
+             <i class="fas fa-magnifying-glass fa-lg float-start nd_navbar-icon"></i> Run Report</button>
+

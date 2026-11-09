@@ -55,6 +55,7 @@ web_plugins:
   - Report::PortVLANMismatch
   - Report::PortAdminDown
   - Report::PortBlocking
+  - Report::PortFree
   - Report::PortMultiNodes
   - Report::PortSsid
   - Report::PortUtilization
@@ -184,6 +185,13 @@ sidebar_defaults:
   report_portutilization:
     age_num:      { default: 3 }
     age_unit:     { default: months }
+  report_portfree:
+    age_num:      { default: 30 }
+    age_unit:     { default: days }
+    up:           { default: down }
+    up_admin:     { default: any }
+    device:       { default: null }
+    limit:        { default: 100 }
   admintask_acleditor:
     aclhost:     { default: ip }
 health_path: ''
