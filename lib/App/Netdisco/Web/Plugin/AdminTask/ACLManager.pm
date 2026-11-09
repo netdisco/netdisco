@@ -56,12 +56,17 @@ ajax '/ajax/control/admin/aclmanager/delete' => require_role setting('defanged_a
     my $acl = param('acl_name');
     send_error('Bad Request', 400) unless $acl;
 
-    schema('netdisco')->resultset('User')
-      ->search({portctl_role => $acl})
-      ->update({
-        ((exists config->{'portctl_by_role_shadow'}->{$acl})
-          ? () : (portctl_role => undef, port_control => \'false')),
+    unless (exists config->{'portctl_by_role_shadow'}->{$acl}) {
+      schema('netdisco')->txn_do(sub {
+        my $users = schema('netdisco')->resultset('User');
+
+        $users->search(\[ 'portctl_roles = ARRAY[?]::text[]', $acl ])
+          ->update({ portctl_roles => undef, port_control => \'false' });
+
+        $users->search(\[ '? = ANY(portctl_roles)', $acl ])
+          ->update({ portctl_roles => \[ 'array_remove(portctl_roles, ?)', $acl ] });
       });
+    }
 
     schema('netdisco')->resultset('User')
       ->search({token_acl => $acl})
@@ -95,8 +100,8 @@ ajax '/ajax/control/admin/aclmanager/update' => require_role setting('defanged_a
       and $type =~ m/^(?:host|host_host|host_port)$/;
 
     schema('netdisco')->resultset('User')
-      ->search({ portctl_role => $old_acl })
-      ->update({ portctl_role => $acl });
+      ->search(\[ '? = ANY(portctl_roles)', $old_acl ])
+      ->update({ portctl_roles => \[ 'array_replace(portctl_roles, ?, ?)', $old_acl, $acl ] });
 
     schema(vars->{'tenant'})->txn_do(sub {
       schema(vars->{'tenant'})->resultset('AccessControlListName')
