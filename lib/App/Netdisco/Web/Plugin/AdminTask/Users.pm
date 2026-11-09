@@ -34,8 +34,24 @@ sub _make_password {
   }
 }
 
+sub _port_control_fields {
+  my $mode = param('port_control') || '';
+  return (port_control => \'false', portctl_roles => undef) unless $mode;
+  return (port_control => \'true',  portctl_roles => undef) if $mode eq '_global_';
+
+  send_error('Bad Request', 400) unless $mode eq '_roles_';
+
+  my $given = param('portctl_roles');
+  my @roles = uniq grep { defined and length }
+    (ref $given eq ref [] ? @$given : ($given));
+  send_error('Bad Request', 400) unless scalar @roles;
+
+  return (port_control => \'true', portctl_roles => \@roles);
+}
+
 ajax '/ajax/control/admin/users/add' => require_role setting('defanged_admin') => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
+    my %port_control = _port_control_fields();
 
     schema('netdisco')->txn_do(sub {
       schema('netdisco')->resultset('User')
@@ -65,10 +81,7 @@ ajax '/ajax/control/admin/users/add' => require_role setting('defanged_admin') =
             )),
           )),
 
-          port_control => (param('port_control') ? \'true' : \'false'),
-          portctl_role =>
-            ((param('port_control') and param('port_control') ne '_global_')
-              ? param('port_control') : ''),
+          %port_control,
 
           admin => (param('admin') ? \'true' : \'false'),
           note => param('note'),
@@ -91,6 +104,7 @@ ajax '/ajax/control/admin/users/del' => require_role setting('defanged_admin') =
 
 ajax '/ajax/control/admin/users/update' => require_role setting('defanged_admin') => sub {
     send_error('Bad Request', 400) unless _sanity_ok();
+    my %port_control = _port_control_fields();
 
     schema('netdisco')->txn_do(sub {
       my $user = schema('netdisco')->resultset('User')
@@ -124,10 +138,7 @@ ajax '/ajax/control/admin/users/update' => require_role setting('defanged_admin'
           )),
         )),
 
-        port_control => (param('port_control') ? \'true' : \'false'),
-        portctl_role =>
-          ((param('port_control') and param('port_control') ne '_global_')
-            ? param('port_control') : ''),
+        %port_control,
 
         admin => (param('admin') ? \'true' : \'false'),
         note => param('note'),
