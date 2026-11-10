@@ -201,7 +201,7 @@ sub store_arp {
   $now ||= 'LOCALTIMESTAMP';
   my $ip   = $hash_ref->{'ip'};
   my $mac  = NetAddr::MAC->new(mac => ($hash_ref->{'node'} || $hash_ref->{'mac'} || ''));
-  my $vrf  = $hash_ref->{'vrf'} || '';
+  my $vrf  = $hash_ref->{'vrf'} // '';
   my $name = $hash_ref->{'dns'};
 
   return if !defined $mac or $mac->errstr;

@@ -294,6 +294,8 @@ register_worker({ phase => 'main', driver => 'cli' }, sub {
 # families } with each entry's vrf named as netdisco stores it; families lists
 # the address families its vrf_read covers, [4], [6] or [4, 6], and absent or
 # malformed means [4], so a platform that does not say never vouches for IPv6.
+# A global-table entry carries mixed => 1 when that table also lists VRF hosts
+# (IOS XR's show ipv6 neighbors), even though the read itself was whole.
 # A platform subclass that overrides arpnip must also override arpnip_by_vrf,
 # or with store_vrfs on the inherited arpnip_by_vrf runs instead of its arpnip.
 sub gather_arps_by_vrf_cli {
@@ -319,8 +321,9 @@ sub gather_arps_by_vrf_cli {
     # entries from a VRF the platform did not report reading prove no read
     $vrf_read{$vrf} = 0 unless exists $vrf_read{$vrf};
     my $arp = { %$entry, vrf => $vrf };
-    # a global table may list VRF hosts too (IOS XR's show ipv6 neighbors)
-    cache_arp($arp, ($vrf eq ''));
+    my $mixed = delete $arp->{mixed};
+    # a whole global read is the device's own word, as on the SNMP path
+    cache_arp($arp, ($vrf eq '' and ($mixed or not $vrf_read{''})));
   }
 
   delete @vrf_read{ grep { vrf_skipped($device, $_) } keys %vrf_read };
