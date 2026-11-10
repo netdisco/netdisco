@@ -21,6 +21,8 @@ SELECT 'different names' AS finding,
   FROM l3_domain_member m
   JOIN l3_domain d ON d.id = m.domain_id
  WHERE m.vrf <> ''
+   -- vrf_domains groups different names on purpose
+   AND (d.inferred_name IS NULL OR d.inferred_name NOT LIKE 'manual:%')
  GROUP BY d.id, d.name
 HAVING count(DISTINCT m.vrf) > 1
 UNION ALL

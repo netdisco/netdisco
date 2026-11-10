@@ -52,6 +52,14 @@ subtest 'virtual__sql__four_findings_union' => sub {
   }
 };
 
+# a vrf_domains entry (and its join) groups differently named VRFs on purpose,
+# so a manual domain listed here on every load buried the real findings
+subtest 'virtual__different_names__manual_domains_excluded' => sub {
+  my ($branch) = grep { /'different names'/ } @branches;
+  like $branch, qr/AND \(d\.inferred_name IS NULL OR d\.inferred_name NOT LIKE 'manual:%'\)/,
+    'manual domains left out';
+};
+
 subtest 'virtual__similar_names__same_domain_excluded' => sub {
   my ($branch) = grep { /'similar names'/ } @branches;
   like $branch, qr/count\(DISTINCT\s+\w+\.domain_id\)\s*>\s*1/, 'needs more than one domain';
