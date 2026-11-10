@@ -8,6 +8,11 @@ Before changing anything under `share/views/`, `share/public/` or
 `lib/App/Netdisco/Web/`, read `.claude/skills/netdisco-frontend/SKILL.md`.
 Before changing the schema, a step file under `share/schema_versions/`, or
 how a worker writes rows, read `.claude/skills/netdisco-database/SKILL.md`.
+Before changing a worker, the job queue or a transport under
+`lib/App/Netdisco/Worker/`, `Backend/`, `JobQueue/` or `Transport/`, read
+`.claude/skills/netdisco-backend/SKILL.md`; before changing an SSH
+collector under `lib/App/Netdisco/SSHCollector/`, read
+`.claude/skills/netdisco-ssh-collector/SKILL.md`.
 
 ## How the code fits together
 
@@ -111,17 +116,18 @@ Configuration:
 
 ## Tests
 
-Locally, one file:
+Locally, one file, then the whole suite:
 
 ```sh
 prove -Ilib xt/NN-name.t
+prove -Ilib -j$(nproc) xt/
 ```
 
 CI (`.github/workflows/build-and-publish.yml`) runs the whole suite inside
 the `netdisco/netdisco:latest-backend` container:
 
 ```sh
-perl Build.PL && ./Build test --test_files xt/
+perl Build.PL && HARNESS_OPTIONS=j$(nproc) ./Build test --test_files xt/
 ```
 
 - **Run with `-Ilib` and without `-Ixt/lib`.** `./Build test` tests `blib/`,

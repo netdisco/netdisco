@@ -107,7 +107,8 @@ Then update the result class to match: columns, primary key, relations.
   `Discover/Neighbors.pm`); read those comments before changing that code.
 - **Advisory lock classes are unique numbers.** The first argument of
   `pg_advisory_xact_lock` names what is locked: `1728` is ARP entries by
-  address (`App::Netdisco::Util::Node`). Before taking a new class, search
+  address (`App::Netdisco::Util::Node`), `1729` the L3 domain recompute
+  (`App::Netdisco::Util::L3Domain`). Before taking a new class, search
   `lib/` and open pull requests for `pg_advisory`, keep the number in a
   named constant with a comment, and use the `_xact_` form so the lock ends
   with its transaction.
