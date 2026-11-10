@@ -88,7 +88,9 @@ When entries place one VRF more than once, the most specific wins: an IP
 entry, then a C<group:> entry, then a VRF brought in by another entry's
 C<join: true>. So a VRF can be split out even from inside a joined domain or a
 group. Within one level the alphabetically first domain name wins, with a
-warning.
+warning. A C<join: true> entry still brings in its VRF's partners when another
+entry takes that VRF itself, so splitting a joined VRF out leaves its partners
+where they were, unless entries place them too.
 
 A C<group:> device is matched live with C<acl_matches_only> at every
 recompute. A group that holds a hostname or regular expression rule, directly
