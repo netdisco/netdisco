@@ -1,5 +1,7 @@
 #!/usr/bin/env perl
 
+# compiles one quarter of the files; see Test::Netdisco::Compile
+
 use strict;
 use warnings;
 
@@ -19,14 +21,6 @@ BEGIN {
 
 # for netdisco app config
 use App::Netdisco;
-use Test::Compile::Internal;
+use Test::Netdisco::Compile qw(compile_shard);
 
-my $test = Test::Compile::Internal->new();
-
-my @plfiles = grep {$_ !~ m/(?:graph)/i} $test->all_pl_files();
-my @pmfiles = grep {$_ !~ m/(?:graph)/i} $test->all_pm_files();
-
-$test->ok($test->pl_file_compiles($_), "$_ compiles") for @plfiles;
-$test->ok($test->pm_file_compiles($_), "$_ compiles") for @pmfiles;
-
-$test->done_testing();
+compile_shard(1, 4);

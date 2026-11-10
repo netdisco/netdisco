@@ -71,6 +71,29 @@ sub with_router {
     ->search($cond, $attrs);
 }
 
+=head2 with_l3_domain
+
+Adds C<l3_domain_id> and C<l3_domain_name>, the L3 domain of each row's VRF.
+They are plain columns so that results serialized with C<hri>, as the search
+API does, carry the domain. A NULL id means the domain cannot be determined.
+
+=cut
+
+my $l3_domain_id = q{CASE WHEN me.vrf = '' THEN 0 ELSE l3_domain_of(me.router_last, me.vrf) END};
+
+sub with_l3_domain {
+  my ($rs, $cond, $attrs) = @_;
+
+  return $rs
+    ->search_rs({}, {
+        '+columns' => [
+          { l3_domain_id => \$l3_domain_id },
+          { l3_domain_name => \"(SELECT ld.name FROM l3_domain ld WHERE ld.id = $l3_domain_id)" },
+        ],
+      })
+    ->search($cond, $attrs);
+}
+
 =head1 search_by_ip( \%cond, \%attrs? )
 
  my $set = $rs->search_by_ip({ip => '192.0.2.1', active => 1});

@@ -1,0 +1,75 @@
+# IOS-XE (lab capture, IOL-XE 17.18), the sections IOSXE.pm reads
+#prompt: router#
+# The "terminal width 0" section is SYNTHETIC: it was not captured, it only mirrors the
+# captured "terminal length 0" shape
+#--- terminal length 0
+#--- terminal width 0
+#--- show vrf
+  Name                             Default RD            Protocols   Interfaces
+  blue                             <not set>             ipv4,ipv6   Et0/2
+                                                                     Et1/0
+  green                            <not set>             ipv4,ipv6   Et1/1
+  grey                             <not set>             ipv4,ipv6   Lo1
+  red                              <not set>             ipv4,ipv6   Et0/1
+                                                                     Et0/3
+#--- show ip arp
+Protocol  Address          Age (min)  Hardware Addr   Type   Interface
+Internet  172.20.20.1             0   92f9.ea9d.aeda  ARPA   Ethernet0/0
+Internet  172.20.20.14            -   aabb.cc00.0100  ARPA   Ethernet0/0
+#--- show ip arp vrf red
+Protocol  Address          Age (min)  Hardware Addr   Type   Interface
+Internet  10.40.0.1               -   aabb.cc00.0110  ARPA   Ethernet0/1
+Internet  10.40.0.2               0   0200.0000.0401  ARPA   Ethernet0/1
+Internet  10.41.0.1               -   aabb.cc00.0130  ARPA   Ethernet0/3
+Internet  10.41.0.2               0   0200.0000.0403  ARPA   Ethernet0/3
+#--- show ip arp vrf blue
+Protocol  Address          Age (min)  Hardware Addr   Type   Interface
+Internet  10.40.0.1               -   aabb.cc00.0120  ARPA   Ethernet0/2
+Internet  10.40.0.2               0   0200.0000.0402  ARPA   Ethernet0/2
+Internet  10.42.0.1               -   aabb.cc00.0101  ARPA   Ethernet1/0
+Internet  10.42.0.2               0   0200.0000.0403  ARPA   Ethernet1/0
+#--- show ip arp vrf green
+#--- show ip arp vrf grey
+#--- show ip arp vrf RED
+% VRF RED does not exist.
+#--- show ip arp vrf nosuchvrf
+% VRF nosuchvrf does not exist.
+#--- show ipv6 neighbors
+IPv6 Address                              Age Link-layer Addr State Interface
+
+#--- show ipv6 neighbors vrf red
+IPv6 Address                              Age Link-layer Addr State Interface
+2001:DB8:40::2                              0 0200.0000.0401  REACH Et0/1
+2001:DB8:40::FF:FE00:401                    0 0200.0000.0401  STALE Et0/1
+FE80::2                                     0 0200.0000.0401  REACH Et0/1
+FE80::FF:FE00:401                           1 0200.0000.0401  STALE Et0/1
+FE80::5054:FF:FE16:D3FD                     2 5254.0016.d3fd  STALE Et0/1
+2001:DB8:41::2                              0 0200.0000.0403  REACH Et0/3
+2001:DB8:41::FF:FE00:403                    0 0200.0000.0403  STALE Et0/3
+FE80::2                                     0 0200.0000.0403  REACH Et0/3
+FE80::5054:FF:FEBA:8B20                     1 5254.00ba.8b20  STALE Et0/3
+
+#--- show ipv6 neighbors vrf blue
+IPv6 Address                              Age Link-layer Addr State Interface
+2001:DB8:40::2                              0 0200.0000.0402  REACH Et0/2
+2001:DB8:40::FF:FE00:402                    0 0200.0000.0402  STALE Et0/2
+FE80::2                                     0 0200.0000.0402  REACH Et0/2
+FE80::5054:FF:FEBA:6A0F                     1 5254.00ba.6a0f  STALE Et0/2
+2001:DB8:42::2                              0 0200.0000.0403  REACH Et1/0
+2001:DB8:42::FF:FE00:403                    0 0200.0000.0403  STALE Et1/0
+FE80::2                                     0 0200.0000.0403  STALE Et1/0
+FE80::FF:FE00:403                           0 0200.0000.0403  REACH Et1/0
+
+#--- show ipv6 neighbors vrf green
+IPv6 Address                              Age Link-layer Addr State Interface
+2001:DB8:43::2                              0 0200.0000.0404  REACH Et1/1
+2001:DB8:43::FF:FE00:404                    0 0200.0000.0404  REACH Et1/1
+FE80::2                                     0 0200.0000.0404  REACH Et1/1
+FE80::5054:FF:FE7D:B87A                     1 5254.007d.b87a  STALE Et1/1
+
+#--- show ipv6 neighbors vrf grey
+IPv6 Address                              Age Link-layer Addr State Interface
+
+#--- show ipv6 neighbors vrf RED
+% IPv6 routing table RED does not exist
+#--- exit

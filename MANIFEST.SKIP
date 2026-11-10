@@ -74,6 +74,7 @@ logs/.*
 
 \.github
 \.retireignore\.json
+\.cpanauditignore
 \.travis\.yml
 \.docker
 \.circleci

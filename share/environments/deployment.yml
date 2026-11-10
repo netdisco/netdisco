@@ -105,6 +105,15 @@ device_auth:
 #  'vendor:huawei': ['gbk']
 #  '10.20.0.0/16': ['gbk']
 
+# record the VRF of device addresses, subnets and ARP entries, and the VRF
+# instances of each device. off by default. skip_vrf_devices is an ACL of
+# devices to leave alone; vrf_no_devicevrfs maps a device ACL to the VRFs to
+# ignore on those devices, e.g. 'group:__ANY__': ['vrf:(?i)mgmt'].
+# ````````````````````````````````````````````````````````````````````````
+#store_vrfs: false
+#skip_vrf_devices: []
+#vrf_no_devicevrfs: []
+
 # set to true to globally disable authentication/login.
 # create a user called "guest" if you want to assign port/admin rights.
 # `````````````````````````````````````````````````````````````````````

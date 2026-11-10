@@ -66,6 +66,7 @@ ajax '/ajax/control/admin/pseudodevice/add' => require_role admin => sub {
         ->create({
           ip => param('ip'),
           alias => param('ip'),
+          vrf => '',
         });
     });
 

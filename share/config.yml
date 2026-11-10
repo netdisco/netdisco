@@ -76,6 +76,8 @@ web_plugins:
   - Report::NodesDiscovered
   - Report::SsidInventory
   - Report::VlanInventory
+  - Report::VrfInconsistency
+  - Report::L3Domains
   - Report::SubnetUtilization
   - Report::PortLog
   - AdminTask::DuplicateDevices
@@ -365,24 +367,29 @@ system_reports:
       - { 'contact': 'Contact' }
       - { 'location': 'Location' }
     query: |
-      SELECT ip, COALESCE(NULLIF(device.dns,''), NULLIF(name,''), '(none)') AS devname, count(alias), contact, location
+      SELECT ip, COALESCE(NULLIF(device.dns,''), NULLIF(name,''), '(none)') AS devname, count(DISTINCT alias), contact, location
         FROM device_ip LEFT JOIN device USING (ip)
         GROUP BY ip, devname, contact, location
-        HAVING count(alias) > 1
-        ORDER BY count(alias) DESC, devname ASC
+        HAVING count(DISTINCT alias) > 1
+        ORDER BY count(DISTINCT alias) DESC, devname ASC
   - tag: devicesharedaddresses
     label: 'IPs on Multiple Devices'
     category: Device
     columns:
       - { 'alias': 'Interface IP', _searchable: true }
+      - { 'vrf': 'VRF', _omit_if_empty: true, _empty_as: 'default' }
       - { 'count': 'Instance Count' }
     query: |
-      SELECT alias, count(ip)
-        FROM device_ip
-        WHERE alias != '127.0.0.1'
-        GROUP BY alias
-        HAVING count(ip) > 1
-        ORDER BY count(ip) DESC, alias ASC
+      SELECT alias, ld.name AS vrf, count(DISTINCT ip)
+        FROM (SELECT di.ip, di.alias,
+                CASE WHEN di.vrf = '' THEN 0 ELSE l3_domain_of(di.ip, di.vrf) END AS domain
+              FROM device_ip di
+              WHERE di.alias != '127.0.0.1') AS di
+        JOIN l3_domain ld ON ld.id = di.domain
+        WHERE domain IS NOT NULL
+        GROUP BY domain, alias, ld.name
+        HAVING count(DISTINCT ip) > 1
+        ORDER BY count(DISTINCT ip) DESC, alias ASC, domain ASC
   - tag: recentlyaddeddevices
     category: Device
     label: 'Recently Added Devices'
@@ -425,21 +432,26 @@ system_reports:
     label: 'Duplicate Private Networks'
     columns:
       - { subnet: 'Subnet', _searchable: true }
+      - { vrf: 'VRF', _omit_if_empty: true, _empty_as: 'default' }
       - { count: 'Instances' }
       - { seen: 'Where Seen', _searchable: true }
     query: |
-      SELECT subnet, count(subnet), array_agg(host(alias)::text || ' on ' || host(ip)::text) AS seen
-        FROM device_ip
-        WHERE ip <> alias
-          AND (masklen(subnet) <> 32 AND masklen(subnet) <> 128)
-          AND (subnet << '10.0.0.0/8'
-          OR subnet << '172.16.0.0/12'
-          OR subnet << '192.168.0.0/16'
-          OR subnet << '100.64.0.0/10'
-          OR subnet << 'fd00::/8')
-        GROUP BY subnet
+      SELECT subnet, ld.name AS vrf, count(subnet), array_agg(host(alias)::text || ' on ' || host(ip)::text) AS seen
+        FROM (SELECT di.ip, di.alias, di.subnet,
+                CASE WHEN di.vrf = '' THEN 0 ELSE l3_domain_of(di.ip, di.vrf) END AS domain
+              FROM device_ip di
+              WHERE di.ip <> di.alias
+                AND (masklen(di.subnet) <> 32 AND masklen(di.subnet) <> 128)
+                AND (di.subnet << '10.0.0.0/8'
+                OR di.subnet << '172.16.0.0/12'
+                OR di.subnet << '192.168.0.0/16'
+                OR di.subnet << '100.64.0.0/10'
+                OR di.subnet << 'fd00::/8')) AS di
+        JOIN l3_domain ld ON ld.id = di.domain
+        WHERE domain IS NOT NULL
+        GROUP BY domain, subnet, ld.name
         HAVING count(subnet) > 1
-        ORDER BY subnet
+        ORDER BY subnet, domain
   - tag: vlansonlyuplinks
     category: VLAN
     label: 'VLANs Only On Uplinks'
@@ -755,6 +767,10 @@ discover_neighbors: true
 discover_routed_neighbors: true
 skip_modules: []
 store_modules: true
+store_vrfs: false
+skip_vrf_devices: []
+vrf_no_devicevrfs: []
+vrf_domains: []
 snmp_charset:
   'group:__ANY__': []
 ignore_deviceports:

@@ -1,0 +1,88 @@
+name: "Perl dependency scan"
+
+# Fails when a Perl dependency has a known advisory, the way retire.js does for
+# the vendored frontend libraries. Exceptions, each with its reason, are in
+# .cpanauditignore. CPAN::Audit carries its advisory database inside each
+# release, so it is installed fresh on every run rather than pinned.
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    types: [opened, synchronize, reopened]
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  minimums:
+    # an existing install upgrades a dependency only when it is below the
+    # minimum in Build.PL, so each minimum must exclude every affected version
+    name: cpan-audit of Build.PL minimums
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install CPAN::Audit
+        run: |
+          # Build.PL loads App::Netdisco::Builder, which needs the last three
+          curl -fsSL https://cpanmin.us/ | perl - --notest --local-lib ~/audit \
+            App::cpanminus CPAN::Audit Module::Build CPAN::Changes Perl::Version Module::Metadata
+          echo "PERL5LIB=$HOME/audit/lib/perl5" >> "$GITHUB_ENV"
+          echo "$HOME/audit/bin" >> "$GITHUB_PATH"
+
+      - name: Audit the minimums
+        run: |
+          perl Build.PL > /dev/null
+          perl xt/bin/cpan-audit-minimums > "$RUNNER_TEMP/minimums.txt"
+          audit() {
+            tr '\n' '\0' < "$RUNNER_TEMP/minimums.txt" \
+              | xargs -0 cpan-audit modules --no-corelist --quiet --exclude-file .cpanauditignore "$@"
+          }
+          if audit --no-color; then exit 0; fi
+          # cpan-audit's report says what is affected; this says what to change
+          audit --json | perl -Ixt/lib xt/bin/cpan-audit-fix-hints || true
+          exit 1
+
+  installed:
+    # an install upgraded from the last release, indirect dependencies
+    # included; pull requests run the same check in build-and-publish.yml
+    name: cpan-audit of an upgraded install
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    container:
+      image: 'netdisco/netdisco:latest-backend'
+      options: '--user root --entrypoint /bin/ash'
+      volumes:
+        - '/home/runner/work:/github/workspace'
+    steps:
+      - name: Install packages
+        run: apk add bash curl sudo gcc make musl-dev perl-dev zlib-dev
+
+      - name: Check out latest code
+        uses: actions/checkout@v7
+        with:
+          path: 'netdisco'
+
+      - name: Fix owner of checkout
+        run: chown -R netdisco:netdisco ${GITHUB_WORKSPACE}/netdisco
+
+      - name: Upgrade to this checkout's dependencies
+        run: sudo -u netdisco /home/netdisco/bin/localenv cpanm --notest --installdeps ${GITHUB_WORKSPACE}/netdisco
+
+      - name: Audit the upgraded install
+        run: |
+          sudo -u netdisco /home/netdisco/bin/localenv cpanm --notest CPAN::Audit
+          sudo -u netdisco /home/netdisco/bin/localenv cpan-audit installed /home/netdisco/perl5/lib/perl5 \
+            --no-color --no-corelist --quiet --exclude-file ${GITHUB_WORKSPACE}/netdisco/.cpanauditignore
+
+      # loads Netdisco, so it runs here, where its dependencies are installed
+      - name: Check that Build.PL names every dist with advisories that Netdisco loads
+        if: always()
+        run: |
+          cd ${GITHUB_WORKSPACE}/netdisco
+          sudo -u netdisco /home/netdisco/bin/localenv perl Build.PL > /dev/null
+          sudo -u netdisco /home/netdisco/bin/localenv perl -Ixt/lib xt/bin/cpan-audit-coverage

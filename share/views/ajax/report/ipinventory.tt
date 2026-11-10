@@ -6,6 +6,9 @@
   "deferRender": true,
   "columns": [
     {"data":"ip","render":"ipInventoryAddress"},
+    [% IF multi_domain %]
+    {"data":"vrf","render":"escape"},
+    [% END %]
     {"data":"mac","render":{"name":"searchNodeLink","archived":true,"onlyIf":"time_last"}},
     {"data":"vendor","className":"nd_nowrap nd_center-cell","render":"escape"},
     {"data":"dns","className":"nd_nowrap nd_center-cell","render":"escape"},
@@ -16,6 +19,9 @@
   <thead>
     <tr>
       <th>IP Address</th>
+      [% IF multi_domain %]
+      <th>VRF</th>
+      [% END %]
       <th>MAC Address</th>
       <th>Vendor</th>
       <th class="nd_center-cell">DNS</th>

@@ -1,0 +1,14 @@
+
+            <p class="nd_sidebar-title"><em>Members of L3 domains</em></p>
+            <div class="clearfix">
+              <select class="nd_side-select nd_colored-input form-select" size="[% l3domain_list.size > 8 ? 8 : l3domain_list.size %]"
+                multiple name="domain"
+                rel="tooltip" data-bs-placement="left" data-bs-title="L3 domain">
+                [% FOREACH opt IN l3domain_list %]
+                    <option value="[% opt.id | html_entity %]"[% ' selected="selected"' IF l3domain_lkp.exists(opt.id) %]>[% opt.name | html_entity %] ([% opt.evidence | html_entity %])</option>
+                [% END %]
+              </select>
+            </div>
+
+            <button id="[% report.tag | html_entity %]_submit" type="submit" class="btn btn-info">
+             <i class="fas fa-magnifying-glass fa-lg float-start nd_navbar-icon"></i> Show Members</button>

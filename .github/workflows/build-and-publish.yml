@@ -79,8 +79,9 @@ jobs:
         id: build_and_run_tests
         run: |
           cd ${GITHUB_WORKSPACE}/netdisco
+          echo "runner cores: $(nproc)"
           sudo -u netdisco /home/netdisco/bin/localenv perl ./Build.PL
-          sudo -u netdisco /home/netdisco/bin/localenv ./Build test --test_files xt/
+          sudo -u netdisco /home/netdisco/bin/localenv env HARNESS_OPTIONS=j$(nproc) ./Build test --test_files xt/
 
       - name: Make release
         if: steps.build_and_run_tests.outcome == 'success'
@@ -127,6 +128,28 @@ jobs:
         run: |
           cd ${GITHUB_WORKSPACE}/netdisco
           sudo -u netdisco /home/netdisco/bin/localenv cpan-upload -u '${{ env.PAUSE_USERNAME }}' -p '${{ env.PAUSE_PASSWORD }}' App-Netdisco-*.tar.gz
+
+      # The image holds what the last release installed, and --installdeps
+      # raised only what Build.PL requires, so this is an existing install
+      # after upgrading, indirect dependencies included. Pull requests only,
+      # so an advisory never blocks a release or the container builds; the
+      # daily run in cpan-audit.yml covers master.
+      - name: Audit the upgraded install with cpan-audit
+        if: always() && github.event_name == 'pull_request'
+        run: |
+          apk add zlib-dev
+          sudo -u netdisco /home/netdisco/bin/localenv cpanm --notest CPAN::Audit
+          sudo -u netdisco /home/netdisco/bin/localenv cpan-audit installed /home/netdisco/perl5/lib/perl5 \
+            --no-color --no-corelist --quiet --exclude-file ${GITHUB_WORKSPACE}/netdisco/.cpanauditignore
+
+      # Runs here, not in cpan-audit.yml's minimums job, because it loads
+      # Netdisco, so Netdisco's dependencies must be installed.
+      - name: Check that Build.PL names every dist with advisories that Netdisco loads
+        if: always() && github.event_name == 'pull_request'
+        run: |
+          cd ${GITHUB_WORKSPACE}/netdisco
+          sudo -u netdisco /home/netdisco/bin/localenv perl Build.PL > /dev/null
+          sudo -u netdisco /home/netdisco/bin/localenv perl -Ixt/lib xt/bin/cpan-audit-coverage
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3.24

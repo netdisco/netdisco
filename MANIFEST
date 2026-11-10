@@ -669,7 +669,10 @@ share/views/sidebar/search/device.tt
 share/views/sidebar/search/node.tt
 share/views/sidebar/search/port.tt
 share/views/swagger-ui.tt
-xt/00-compile.t
+xt/00-compile-1.t
+xt/00-compile-2.t
+xt/00-compile-3.t
+xt/00-compile-4.t
 xt/01-local-pod.t
 xt/10-sort_port.t
 xt/100-expire-node-wireless.t
@@ -756,6 +759,10 @@ xt/180-schema-deploy-version-check.t
 xt/185-nxos-cli-macsuck.t
 xt/20-checkacl.t
 xt/21-check_acl_no_ipaddr_only.t
+xt/215-node-wireless-current.t
+xt/216-compile-shards.t
+xt/217-tacacs-optional.t
+xt/218-cpan-audit-helpers.t
 xt/30-backend-workers.t
 xt/31-loadmibsfromoids-guard.t
 xt/32-swagger-ui-guard.t
@@ -827,6 +834,9 @@ xt/96-worker-action-is-literal.t
 xt/97-api-auth-failure-status.t
 xt/98-api-delete-count.t
 xt/99-api-json-errors.t
+xt/bin/cpan-audit-coverage
+xt/bin/cpan-audit-fix-hints
+xt/bin/cpan-audit-minimums
 xt/bin/regenerate-portsort-corpus
 xt/bin/regenerate-snapshots
 xt/js/admin-button-dispatch.test.js
@@ -874,7 +884,10 @@ xt/lib/App/NetdiscoX/Worker/Plugin/TestSeven.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestSix.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestThree.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestTwo.pm
+xt/lib/Test/Netdisco/Compile.pm
+xt/lib/Test/Netdisco/CpanAudit.pm
 xt/lib/Test/Netdisco/CssRules.pm
+xt/lib/Test/Netdisco/LoadRecorder.pm
 xt/lib/Test/Netdisco/MungerProbe.pm
 xt/lib/Test/Netdisco/Snapshot.pm
 xt/portsort-corpus.json

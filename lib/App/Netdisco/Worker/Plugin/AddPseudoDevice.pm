@@ -67,6 +67,7 @@ register_worker({ phase => 'main' }, sub {
         ->create({
           ip => $devip,
           alias => $devip,
+          vrf => '',
         });
     });
 

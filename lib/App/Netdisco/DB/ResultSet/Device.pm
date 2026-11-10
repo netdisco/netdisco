@@ -8,6 +8,7 @@ use Try::Tiny;
 use Regexp::Common 'net';
 use NetAddr::IP::Lite ':lower';
 use NetAddr::MAC ();
+use App::Netdisco::Util::L3Domain 'with_l3_domain_lock';
 
 # a device by its own address or an alias; the device half covers devices
 # with no row for their own address in device_ip
@@ -804,20 +805,27 @@ sub delete {
   $ip = ((ref {} eq ref $ip) ? [%$ip]->[1] : $ip);
   $ip ||= 'netdisco';
 
-  foreach my $set (qw/
-    Community
-    DeviceBrowser
-    DeviceIp
-    DeviceModule
-    DevicePower
-    DeviceVlan
-  /) {
-      my $gone = $schema->resultset($set)->search(
-        { ip => { '-in' => $devices->as_query } },
-      )->delete;
+  # an empty set must not queue behind a running recompute for nothing
+  if ($devices->search(undef, { rows => 1 })->count) {
+    with_l3_domain_lock($schema, sub {
+      foreach my $set (qw/
+        Community
+        DeviceBrowser
+        DeviceIp
+        DeviceModule
+        DevicePower
+        DeviceVlan
+        DeviceVrf
+        L3DomainMember
+      /) {
+          my $gone = $schema->resultset($set)->search(
+            { ip => { '-in' => $devices->as_query } },
+          )->delete;
 
-      Dancer::Logger::debug( sprintf( ' [%s] db/device - removed %d %s from %s',
-        $ip, $gone, _plural($gone), $set ) ) if defined Dancer::Logger::logger();
+          Dancer::Logger::debug( sprintf( ' [%s] db/device - removed %d %s from %s',
+            $ip, $gone, _plural($gone), $set ) ) if defined Dancer::Logger::logger();
+      }
+    });
   }
 
   $schema->resultset('Admin')->search({
@@ -858,6 +866,8 @@ device_ip
 device_module
 device_power
 device_vlan
+device_vrf
+l3_domain_member
 
 # use 'device' as PK
 admin
