@@ -94,13 +94,21 @@ subtest 'recompute__members__deleted_moved_or_added_never_two' => sub {
   like(cte($flat, 'gone'), qr/^DELETE FROM l3_domain_member m WHERE NOT EXISTS \(SELECT 1 FROM desired d WHERE d\.ip = m\.ip AND d\.vrf = m\.vrf\)/,
     'deleted: the pair is no longer wanted');
   unlike(cte($flat, 'gone'), qr/source = 'inferred'/, 'manual rows are deleted when no entry wants them');
-  like(cte($flat, 'moved'), qr/^UPDATE l3_domain_member m SET domain_id = t\.domain_id, reason = t\.reason, source = t\.source FROM target t WHERE t\.ip = m\.ip AND t\.vrf = m\.vrf AND t\.domain_id <> m\.domain_id/,
+  like(cte($flat, 'moved'), qr/^UPDATE l3_domain_member m SET domain_id = t\.domain_id, reason = t\.reason, source = t\.source FROM target t WHERE t\.ip = m\.ip AND t\.vrf = m\.vrf AND \(t\.domain_id <> m\.domain_id/,
     'moved: wanted, in another domain');
   like(cte($flat, 'added'), qr/WHERE NOT EXISTS \(SELECT 1 FROM l3_domain_member m WHERE m\.ip = t\.ip AND m\.vrf = t\.vrf\)/,
     'added: no member of either source for the pair');
 };
 
 # domains a CTE inserts are invisible to the others through l3_domain
+# a member that stayed in its domain kept its old reason, so a VRF placed by a
+# join and then named directly by vrf_domains still said it was joined
+subtest 'recompute__same_domain_new_reason__member_rewritten' => sub {
+  my (undef, $flat) = run_recompute();
+  like(cte($flat, 'moved'), qr/OR t\.reason IS DISTINCT FROM m\.reason OR t\.source <> m\.source\)/,
+    'a changed reason or source is written too');
+};
+
 subtest 'recompute__new_domains__ids_from_returning_and_named_on_insert' => sub {
   my (undef, $flat) = run_recompute();
   like(cte($flat, 'new_dom'), qr/^INSERT INTO l3_domain \(name, inferred_name\) SELECT n\.name, n\.key FROM named n WHERE NOT EXISTS \(SELECT 1 FROM l3_domain x WHERE x\.inferred_name = n\.key\) RETURNING id, inferred_name$/,

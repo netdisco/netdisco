@@ -582,7 +582,8 @@ sub _sync_sql {
     RETURNING 1),
   moved AS (
     UPDATE l3_domain_member m SET domain_id = t.domain_id, reason = t.reason, source = t.source
-    FROM target t WHERE t.ip = m.ip AND t.vrf = m.vrf AND t.domain_id <> m.domain_id
+    FROM target t WHERE t.ip = m.ip AND t.vrf = m.vrf
+      AND (t.domain_id <> m.domain_id OR t.reason IS DISTINCT FROM m.reason OR t.source <> m.source)
     RETURNING 1),
   added AS (
     INSERT INTO l3_domain_member (ip, vrf, domain_id, reason, source)

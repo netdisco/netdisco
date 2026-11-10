@@ -87,6 +87,12 @@ SELECT 'linked, one subnet' AS finding,
           LEFT JOIN l3_domain_member ma ON ma.ip = ia.ip AND ma.vrf = ia.vrf
           LEFT JOIN l3_domain_member mb ON mb.ip = ib.ip AND mb.vrf = ib.vrf
          WHERE ma.domain_id IS DISTINCT FROM mb.domain_id
+           -- a subnet a device holds in two named VRFs is reused space, so
+           -- which VRF faces the neighbor is unknown: pair only single holders
+           AND NOT EXISTS (SELECT 1 FROM device_ip xa WHERE xa.ip = ia.ip AND xa.subnet = ia.subnet
+                 AND xa.vrf <> '' AND xa.vrf <> ia.vrf)
+           AND NOT EXISTS (SELECT 1 FROM device_ip xb WHERE xb.ip = ib.ip AND xb.subnet = ib.subnet
+                 AND xb.vrf <> '' AND xb.vrf <> ib.vrf)
       ) l
   ) p
   LEFT JOIN l3_domain d ON d.id = p.lo_domain

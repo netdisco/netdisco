@@ -31,6 +31,14 @@ sub domain_ids {
              grep { /^\s*[1-9][0-9]{0,8}\s*$/ } @given ];
 }
 
+# the reportLink renderer sends "blank" for a row with no domain, so a "not
+# grouped" link asks for the VRFs that have no member row
+sub wants_ungrouped {
+    my $param = shift;
+    my @given = map { split /,/ } grep { defined } ( ref [] eq ref $param ? @$param : ($param) );
+    return scalar grep { /^\s*blank\s*$/ } @given;
+}
+
 sub domain_lookup {
     return { map { ($_ => 1) } @{ domain_ids(shift) } };
 }
@@ -69,9 +77,17 @@ sub _summary {
 # every named VRF, placed in a domain or not, so the report can show why a VRF
 # did not join the domain an operator expected
 sub vrf_search {
-    my $ids = shift;
+    my ($ids, $ungrouped) = @_;
     my $where = { 'me.vrf' => { '!=' => '' } };
-    $where->{'l3_member.domain_id'} = { -in => $ids } if scalar @$ids;
+    if ($ungrouped and scalar @$ids) {
+        $where->{-or} = [ { 'l3_member.domain_id' => { -in => $ids } }, { 'l3_member.domain_id' => undef } ];
+    }
+    elsif ($ungrouped) {
+        $where->{'l3_member.domain_id'} = undef;
+    }
+    elsif (scalar @$ids) {
+        $where->{'l3_member.domain_id'} = { -in => $ids };
+    }
     return ( $where, {
         join   => [ 'device', { l3_member => 'domain' } ],
         select => [
@@ -87,7 +103,7 @@ sub vrf_search {
 
 get '/ajax/content/report/l3domains' => require_login sub {
     my @results = schema(vars->{'tenant'})->resultset('DeviceVrf')
-        ->search( vrf_search( domain_ids( param('domain') ) ) )->hri->all;
+        ->search( vrf_search( domain_ids( param('domain') ), wants_ungrouped( param('domain') ) ) )->hri->all;
 
     return unless scalar @results;
 

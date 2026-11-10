@@ -114,6 +114,29 @@ subtest 'vrf_search__every_named_vrf__with_or_without_a_domain' => sub {
   is_deeply $only->{'l3_member.domain_id'}, { -in => [7, 16] }, 'filtered to the domains asked for';
 };
 
+# a "not grouped" link sends domain=blank, which domain_ids drops, so the link
+# opened every named VRF instead of the ungrouped ones
+subtest 'wants_ungrouped__blank_value__asks_for_vrfs_with_no_domain' => sub {
+  my $wants = \&App::Netdisco::Web::Plugin::Report::L3Domains::wants_ungrouped;
+  ok !$wants->(undef), 'none given';
+  ok !$wants->('8'), 'an id only';
+  ok $wants->('blank'), 'blank';
+  ok $wants->(' blank '), 'blank with spaces';
+  ok $wants->(['8', 'blank']), 'blank beside an id';
+  ok $wants->('8,blank'), 'blank in a comma list';
+};
+
+subtest 'vrf_search__ungrouped__filters_to_no_member_row' => sub {
+  my $search = \&App::Netdisco::Web::Plugin::Report::L3Domains::vrf_search;
+  my ($alone) = $search->([], 1);
+  ok exists $alone->{'l3_member.domain_id'}, 'domain_id filtered';
+  is $alone->{'l3_member.domain_id'}, undef, 'to VRFs with no domain';
+  my ($both) = $search->([7], 1);
+  is_deeply $both->{-or}, [ { 'l3_member.domain_id' => { -in => [7] } }, { 'l3_member.domain_id' => undef } ],
+    'with ids, either those domains or none';
+  ok !exists $both->{'l3_member.domain_id'}, 'and no separate id filter';
+};
+
 subtest 'csv__vrf_rows__render' => sub {
   my ($csv, $error) = render_template('ajax/report/l3domains_csv.tt', { results => \@vrf_rows });
   is $error, undef, 'renders';

@@ -129,6 +129,16 @@ subtest 'virtual__linked_same_address_both_sides__not_reported' => sub {
   like $branch, qr/ia\.alias\s*<>\s*ib\.alias/, 'the two sides must hold different addresses';
 };
 
+# two neighbors carrying one subnet in RED and again in BLUE paired RED with
+# BLUE, and reported two correctly separate domains as needing to be one
+subtest 'virtual__linked_subnet_in_two_vrfs_on_a_side__not_paired' => sub {
+  my ($branch) = grep { /'linked, one subnet'/ } @branches;
+  for my $side (qw/ia ib/) {
+    like $branch, qr/NOT EXISTS\s*\(\s*SELECT 1 FROM device_ip \w+\s+WHERE \w+\.ip = $side\.ip AND \w+\.subnet = $side\.subnet\s+AND \w+\.vrf <> '' AND \w+\.vrf <> $side\.vrf\s*\)/,
+      "$side: a subnet in another named VRF on the same device is not paired";
+  }
+};
+
 # domain names repeat, so a finding links to the L3 Domains report by id, with
 # every domain it involves; that report lists each device and VRF, so the
 # finding itself carries no per-device columns

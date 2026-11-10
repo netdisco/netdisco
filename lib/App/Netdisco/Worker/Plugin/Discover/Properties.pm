@@ -386,7 +386,8 @@ register_worker({ phase => 'early', driver => 'snmp',
       $device->ip, scalar @aliases, scalar @subnets);
   });
 
-  _recompute_l3_domains_after($device) if $vrfs_gone;
+  # removed VRFs are changed evidence, which the recompute gate must be told
+  _recompute_l3_domains_after($device, $vrfs_gone) if $vrfs_gone;
   return $status;
 });
 
