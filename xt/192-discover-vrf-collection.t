@@ -215,6 +215,7 @@ our $stored_rows = [];
 our $stored_vrfs = [];
 our @warnings;
 our $recompute_dies = 0;
+our %remove_returns;
 my $last_snmp;
 
 sub with_settings {
@@ -267,7 +268,7 @@ sub run_discover {
     my $name = $rs->result_source->source_name;
     push @removals, [ $name, $scope, $seen ];
     push @events, "remove $name";
-    return 0;
+    return $remove_returns{$name} // 0;
   };
   local *App::Netdisco::DB::ResultSet::DevicePort::retire_ports = sub { return 0 };
   local *App::Netdisco::DB::ResultSet::Device::search = sub {
@@ -318,8 +319,25 @@ subtest 'discover__switch_off__identical_rows_to_today' => sub {
   ok !$last_snmp->{reads}{vrf_instances}, 'vrf_instances not read';
   ok !$last_snmp->{reads}{vrf_instances_complete}, 'vrf_instances_complete not read';
   is scalar(upserted('DeviceVrf')), 0, 'no device_vrf rows';
-  is scalar(removals_of('DeviceVrf')), 0, 'no device_vrf removal';
-  ok !(grep { $_ eq 'recompute' } @events), 'no recompute';
+  # a device that stops being VRF-collected must not keep its VRFs and domains
+  is_deeply [ map { [ @$_[1, 2] ] } removals_of('DeviceVrf') ], [ [ { ip => '192.0.2.1' }, [] ] ],
+    'every device_vrf row of the device removed';
+  ok !(grep { $_ eq 'recompute' } @events), 'no recompute when there was none to remove';
+};
+
+subtest 'discover__switch_off_with_stored_vrfs__device_vrf_cleared_then_recompute' => sub {
+  local %remove_returns = (DeviceVrf => 2);
+  with_settings(sub { run_discover(vrf_fixture()) }, store_vrfs => 0);
+  is scalar(removals_of('DeviceVrf')), 1, 'device_vrf removed';
+  my @order = grep { $_ eq 'remove DeviceVrf' or $_ eq 'recompute' } @events;
+  is_deeply \@order, [ 'remove DeviceVrf', 'recompute' ], 'domains recomputed after the removal';
+};
+
+subtest 'discover__skip_vrf_devices__device_vrf_cleared' => sub {
+  local %remove_returns = (DeviceVrf => 1);
+  run_with_vrfs(settings => { skip_vrf_devices => ['192.0.2.1'] });
+  is_deeply [ map { $_->[2] } removals_of('DeviceVrf') ], [ [] ], 'every device_vrf row removed';
+  ok scalar(grep { $_ eq 'recompute' } @events), 'domains recomputed';
 };
 
 subtest 'discover__unsupported_class__identical_rows_to_today' => sub {
@@ -327,6 +345,8 @@ subtest 'discover__unsupported_class__identical_rows_to_today' => sub {
   is_deeply todays_writes(), $todays, 'rows, seen and subnets as with the switch off';
   ok !$last_snmp->{reads}{vrf_instances}, 'vrf_instances not read';
   is scalar(upserted('DeviceVrf')), 0, 'no device_vrf rows';
+  # collection is still on: rows a CLI collector recorded are its own to retire
+  is scalar(removals_of('DeviceVrf')), 0, 'no device_vrf removal';
   ok !(grep { $_ eq 'recompute' } @events), 'no recompute';
 };
 

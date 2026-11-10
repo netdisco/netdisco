@@ -11,7 +11,8 @@ use App::Netdisco::Util::Device qw/get_device is_discoverable/;
 use App::Netdisco::Util::DNS 'hostname_from_ip';
 use App::Netdisco::Util::SNMP qw/snmp_comm_reindex snmp_vrf_reindex get_mibdirs_shortnames walk_mark
   incomplete_walks incomplete_walks_for incomplete_walk_message incomplete_walk_level/;
-use App::Netdisco::Util::VRF qw/vrf_instances_for vrf_skipped netdisco_vrf each_vrf_instance/;
+use App::Netdisco::Util::VRF
+  qw/vrf_collection_enabled vrf_instances_for vrf_skipped netdisco_vrf each_vrf_instance/;
 use App::Netdisco::Util::L3Domain 'recompute_l3_domains';
 use App::Netdisco::Util::Web 'sort_port';
 use App::Netdisco::Util::SNMPText qw/decode_snmp_text decode_text_with/;
@@ -370,19 +371,38 @@ register_worker({ phase => 'early', driver => 'snmp',
     creation => \'LOCALTIMESTAMP',
   }} @$resolved_aliases;
 
-  schema('netdisco')->txn_do(sub {
+  my $vrfs_gone = 0;
+  my $status = schema('netdisco')->txn_do(sub {
     my $rs = schema('netdisco')->resultset('DeviceIp');
     $rs->upsert(\@rows);
     my $gone = $rs->remove_unseen({ ip => $device->ip },
       [ map {{ alias => $_->{alias}, vrf => '' }} @rows ]);
     debug sprintf ' [%s] device - removed %d aliases', $device->ip, $gone;
+    $vrfs_gone = _remove_vrfs_when_not_collected($device);
 
     schema('netdisco')->resultset('Subnet')->upsert_subnet($_, $now, '', $device->ip) for @subnets;
 
     return Status->info(sprintf ' [%s] aliases - added %d new aliases and %d subnets',
       $device->ip, scalar @aliases, scalar @subnets);
   });
+
+  _recompute_l3_domains_after($device) if $vrfs_gone;
+  return $status;
 });
+
+# A device no longer VRF-collected (store_vrfs off, skip_vrf_devices, pseudo)
+# has just lost its named-VRF addresses, so its VRFs go too, and the recompute
+# then drops its inferred domain members. Manual members are kept. A device
+# still collected but whose class lists no VRFs keeps the rows a CLI
+# collector recorded.
+sub _remove_vrfs_when_not_collected {
+  my $device = shift;
+  return 0 if vrf_collection_enabled($device);
+  my $gone = schema('netdisco')->resultset('DeviceVrf')->remove_unseen({ ip => $device->ip }, []);
+  debug sprintf ' [%s] device - removed %d VRFs, as VRFs are not collected for it', $device->ip, $gone
+    if $gone;
+  return $gone;
+}
 
 sub _canonical_addr {
   my $ip = NetAddr::IP::Lite->new($_[0]);

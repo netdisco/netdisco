@@ -122,6 +122,19 @@ subtest 'store_arp__with_vrf__binds_vrf_in_key_and_exclusion' => sub {
   ok(scalar(grep { defined and $_ eq 'blue' } @$upsert[1 .. $#$upsert]), 'upsert key');
 };
 
+# a VRF named "0" is false in Perl, so it must not fall back to the default table
+subtest 'store_arp__vrf_named_0__kept_as_0_not_default_table' => sub {
+  my (undef, $retire, $upsert) = run_store({%host, vrf => '0'}, $now, '198.51.100.1');
+  is($retire->[2], '0', 'retire scoped to VRF 0');
+  is($upsert->[3], '0', 'upsert key carries VRF 0');
+};
+
+subtest 'store_arp__no_vrf__default_table' => sub {
+  my (undef, $retire, $upsert) = run_store({%host}, $now, '198.51.100.1');
+  is($retire->[2], '', 'retire scoped to the default table');
+  is($upsert->[3], '', 'upsert key carries the default table');
+};
+
 subtest 'store_arp__bad_mac__writes_nothing' => sub {
   my @stmts = run_store({%host, node => 'zz'}, $now, '198.51.100.1');
   is(scalar @stmts, 0);

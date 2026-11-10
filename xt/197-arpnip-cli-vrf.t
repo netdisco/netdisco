@@ -462,16 +462,49 @@ subtest 'merge__partial_snmp_default_read__twin_dropped' => sub {
   is scalar(grep { m/dropped 1 flattened/ } @logged), 1, 'one debug line with the count';
 };
 
-# IOS XR's global show ipv6 neighbors also lists every VRF's neighbors
+# IOS XR's global show ipv6 neighbors also lists every VRF's neighbors, so
+# the platform tags those entries mixed though the read was whole
 subtest 'cli_arpnip__global_table_lists_a_vrf_host__default_copy_dropped' => sub {
   my $platform = ReportingPlatform->new(by_vrf => by_vrf(entries => [
-    { ip => '2001:db8:60::2', mac => '02:00:00:00:06:01', vrf => '' },
+    { ip => '2001:db8:60::2', mac => '02:00:00:00:06:01', vrf => '', mixed => 1 },
     { ip => '2001:db8:60::2', mac => '02:00:00:00:06:01', vrf => 'red' },
     { ip => '192.0.2.10', mac => '00:11:22:33:44:01', vrf => '' },
   ]));
   run_arpnip(platform => $platform);
   is entries(), join(' ', sort '2001:db8:60::2|02:00:00:00:06:01|red', '192.0.2.10|00:11:22:33:44:01|'),
     'the default-table copy of the red host is dropped, the default host kept';
+};
+
+# a whole, untagged global read is the device's own word, as on the SNMP path
+subtest 'cli_arpnip__whole_global_read_twin_untagged__both_kept' => sub {
+  my $platform = ReportingPlatform->new(by_vrf => by_vrf(entries => [
+    { ip => '10.40.0.5', mac => '00:11:22:33:44:07', vrf => '' },
+    { ip => '10.40.0.5', mac => '00:11:22:33:44:07', vrf => 'red' },
+  ]));
+  run_arpnip(platform => $platform);
+  is entries(), join(' ', sort '10.40.0.5|00:11:22:33:44:07|red', '10.40.0.5|00:11:22:33:44:07|'),
+    'the default-table entry and the red entry are both stored';
+  is scalar(grep { m/dropped \d+ flattened/ } @logged), 0, 'no drop line';
+};
+
+subtest 'cli_arpnip__partial_global_read_twin__default_copy_dropped' => sub {
+  my $platform = ReportingPlatform->new(by_vrf => by_vrf(
+    vrf_read => { '' => 0, red => 1, blue => 1 },
+    entries => [
+      { ip => '10.40.0.5', mac => '00:11:22:33:44:07', vrf => '' },
+      { ip => '10.40.0.5', mac => '00:11:22:33:44:07', vrf => 'red' },
+    ]));
+  run_arpnip(platform => $platform);
+  is entries(), '10.40.0.5|00:11:22:33:44:07|red', 'only the red entry remains';
+};
+
+subtest 'cli_arpnip__mixed_tag__not_passed_to_store_arp' => sub {
+  my $platform = ReportingPlatform->new(by_vrf => by_vrf(entries => [
+    { ip => '2001:db8::10', mac => '00:11:22:33:44:02', vrf => '', mixed => 1 },
+  ]));
+  run_arpnip(platform => $platform);
+  is scalar(@stored), 1, 'the entry is stored';
+  ok !exists $stored[0]{mixed}, 'without the mixed tag';
 };
 
 subtest 'cli_arpnip__whole_snmp_default_entry_and_cli_global_copy__snmp_entry_wins' => sub {

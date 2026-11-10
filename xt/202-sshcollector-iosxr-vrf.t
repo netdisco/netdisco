@@ -105,6 +105,17 @@ subtest 'arpnip_by_vrf__lab_capture__entries_under_their_vrf' => sub {
   is_deeply $result->{families}, [4, 6], 'both families read';
 };
 
+# the global show ipv6 neighbors also lists VRF neighbors, so only those
+# entries are tagged for the worker to treat as possibly another VRF's
+subtest 'arpnip_by_vrf__global_ipv6_entries__tagged_mixed_only' => sub {
+  my $result = by_vrf(fake_ssh());
+  my @global6 = grep { $_->{vrf} eq '' and $_->{ip} =~ /:/ } @{ $result->{entries} };
+  my @others = grep { not ($_->{vrf} eq '' and $_->{ip} =~ /:/) } @{ $result->{entries} };
+  ok scalar(@global6), 'the capture has global IPv6 entries';
+  is scalar(grep { not $_->{mixed} } @global6), 0, 'every global IPv6 entry is tagged mixed';
+  is scalar(grep { exists $_->{mixed} } @others), 0, 'no global IPv4 or VRF entry is tagged';
+};
+
 subtest 'arpnip_by_vrf__mcast_adjacency__skipped_vrf_whole' => sub {
   my $result = by_vrf(fake_ssh());
   is scalar(grep { $_->{ip} =~ /Mcast/ } @{ $result->{entries} }), 0, 'no multicast adjacency entry';

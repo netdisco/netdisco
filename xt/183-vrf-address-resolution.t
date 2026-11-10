@@ -90,6 +90,16 @@ subtest 'acl_entries_with_dns__dns_read_from_the_view__no_per_row_subquery' => s
   unlike $src, qr/SELECT dip\.dns/, 'no correlated dns subquery, which pushed the view into JIT';
 };
 
+# a default-table row on another device hid the polling device's own address
+# held in a named VRF, so the view named the other device while get_device
+# named the polled one
+subtest 'device_ip_vrf_row_resolves__own_address__not_hidden_by_default_table_row' => sub {
+  my $sql = Path::Tiny::path('share/schema_versions/App-Netdisco-DB-104-105-PostgreSQL.sql')->slurp_utf8;
+  my ($body) = $sql =~ m/FUNCTION device_ip_vrf_row_resolves\b.*?\$\$(.*?)\$\$/s;
+  ok defined $body, 'function body found';
+  like $body, qr/\(x\.vrf = '' AND row_alias <> row_ip\)/, 'a default-table row blocks only a non-own row';
+};
+
 subtest 'existence_checks__still_read_device_ip' => sub {
   like Path::Tiny::path("$virtual/UndiscoveredNeighbors.pm")->slurp_utf8, qr/device_ip\b(?!_resolved)/;
   unlike Path::Tiny::path("$virtual/UndiscoveredNeighbors.pm")->slurp_utf8, qr/device_ip_resolved/;

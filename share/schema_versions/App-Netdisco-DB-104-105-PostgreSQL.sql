@@ -12,11 +12,14 @@ ALTER TABLE subnets ADD COLUMN IF NOT EXISTS vrf text NOT NULL DEFAULT '';
 ALTER TABLE subnets DROP CONSTRAINT IF EXISTS subnets_pkey;
 ALTER TABLE subnets ADD CONSTRAINT subnets_pkey PRIMARY KEY (net, vrf);
 
--- device_ip_resolved maps each alias address to the one device that owns it.
+-- device_ip_resolved maps each alias address to the device that owns it.
 -- An address in the default table (vrf = '') always resolves as recorded.
--- An address in a named VRF resolves when no device holds it in the default
--- table, and either it is the device's own address or no other device holds
--- it in any VRF. A device listing it in several VRFs gives one row.
+-- A device's own address (alias = ip) in a named VRF always resolves, so
+-- another device listing it in the default table cannot hide the device
+-- polled on it: both rows resolve, as two default-table rows would.
+-- Any other address in a named VRF resolves when no device holds it in the
+-- default table and no other device holds it in any VRF.
+-- A device listing an address in several VRFs gives one row.
 -- With every vrf = '' the view returns device_ip's (ip, alias) pairs exactly.
 -- The row kept is the pair's lowest VRF, the row ORDER BY vrf LIMIT 1 would
 -- pick, so its dns matches that lookup.
@@ -30,7 +33,7 @@ CREATE OR REPLACE FUNCTION device_ip_vrf_row_resolves(row_ip inet, row_alias ine
   RETURNS boolean LANGUAGE sql STABLE PARALLEL SAFE COST 1 AS $$
     SELECT NOT EXISTS (SELECT 1 FROM device_ip x
       WHERE x.alias = row_alias
-        AND (x.vrf = ''
+        AND ((x.vrf = '' AND row_alias <> row_ip)
           OR (x.ip = row_ip AND x.vrf < row_vrf)
           OR (x.ip <> row_ip AND row_alias <> row_ip)))
   $$;

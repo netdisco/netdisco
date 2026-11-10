@@ -37,8 +37,9 @@ As C<arpnip>, used when C<store_vrfs> is on. Reads C<show vrf all>, then the
 global C<show arp> and C<show ipv6 neighbors> and, for each listed VRF,
 C<show arp vrf NAME> and, when the global C<show ipv6 neighbors> answered,
 C<show ipv6 neighbors vrf NAME>. Each entry's VRF is the one it was read from
-(the global table is C<''>). The router's own addresses (state C<Interface>)
-are kept, as C<arpnip> keeps them.
+(the global table is C<''>). The global C<show ipv6 neighbors> also lists
+VRF neighbors, so its entries carry C<< mixed => 1 >>. The router's own
+addresses (state C<Interface>) are kept, as C<arpnip> keeps them.
 
 Returns C<{ entries =E<gt> [ { ip, mac, vrf } ], vrf_read =E<gt> { VRF =E<gt> 0|1 },
 vrf_list_complete =E<gt> 0|1, families =E<gt> [4, 6] }>, or undef when the
@@ -267,7 +268,9 @@ sub _read_table {
     foreach my $entry (@$entries) {
         my $key = lc join '|', $vrf, @$entry{qw/ip mac/};
         next if $state->{seen}->{$key}++;
-        push @{ $state->{entries} }, { %$entry, vrf => $vrf };
+        # the global show ipv6 neighbors also lists VRF neighbors
+        my @mixed = (($vrf eq '' and $family == 6) ? (mixed => 1) : ());
+        push @{ $state->{entries} }, { %$entry, vrf => $vrf, @mixed };
     }
     $state->{whole}->{$vrf}->{$family} = $whole;
     return $errored;
