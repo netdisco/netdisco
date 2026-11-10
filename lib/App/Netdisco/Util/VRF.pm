@@ -56,19 +56,19 @@ sub vrf_collection_enabled {
 
 =head2 vrf_skip_test( $device )
 
-Returns a test, C<< $skipped->($local_name) >>, true when C<vrf_no_devicevrf>
+Returns a test, C<< $skipped->($local_name) >>, true when C<vrf_no_devicevrfs>
 skips that VRF on C<$device>. Build it once, before a loop: the device is
 matched against the setting's keys here, and each name's answer is kept, so
 the test costs one ACL check per distinct name however often it is asked.
 Never true for the default table, whichever of C<default> or the empty string
 names it.
 
-C<vrf_no_devicevrf> is a dictionary, or a list of them, as
+C<vrf_no_devicevrfs> is a dictionary, or a list of them, as
 C<macsuck_no_deviceports>: each key is an ACL matching devices, its value an
 ACL matching the VRFs to skip on them. A VRF is matched as C<vrf:E<lt>regexE<gt>>,
 anchored at both ends, so C<.>, C<+> and C<(> are live; C<(?i)> ignores case.
 
-  vrf_no_devicevrf:
+  vrf_no_devicevrfs:
     'group:__ANY__': ['vrf:(?i)mgmt', 'vrf:lab-.*']
     '192.0.2.1': 'vrf:cust:a'
 
@@ -108,12 +108,12 @@ sub _vrf_acls_for {
 my %warned;
 
 sub _skip_maps {
-  my $setting = setting('vrf_no_devicevrf');
+  my $setting = setting('vrf_no_devicevrfs');
   return ($setting) if ref {} eq ref $setting;
   return () unless ref [] eq ref $setting;
   foreach my $entry (grep { ref {} ne ref $_ } @$setting) {
     next if $warned{"entry:" . ($entry // '')}++;
-    warning sprintf 'vrf_no_devicevrf entry "%s" is ignored: each entry maps a device ACL to VRF rules. Write it as \'<device>\': \'vrf:<name>\'', $entry // '';
+    warning sprintf 'vrf_no_devicevrfs entry "%s" is ignored: each entry maps a device ACL to VRF rules. Write it as \'<device>\': \'vrf:<name>\'', $entry // '';
   }
   return grep { ref {} eq ref $_ } @$setting;
 }
@@ -128,7 +128,7 @@ sub _warn_unmatchable_rules {
     $plain =~ s/^!//;
     next if $plain eq 'op:and' or ($plain =~ m/^([^:]+):/ and $1 !~ m/^[a-f0-9]+$/i);
     $warned{"rule:$rule"}++;
-    warning sprintf 'vrf_no_devicevrf rule "%s" matches no VRF. Write a VRF as vrf:<name> or vrf:<regex>', $rule;
+    warning sprintf 'vrf_no_devicevrfs rule "%s" matches no VRF. Write a VRF as vrf:<name> or vrf:<regex>', $rule;
   }
 }
 
@@ -289,7 +289,7 @@ sub _complete_default_read {
   my $log_as = $options->{log_as} || 'device';
   my @skipped = grep { not $instances->{$_} } @$leaked;
   if (@skipped) {
-    debug sprintf ' [%s] %s - default read stays partial: %s is not collected (vrf_no_devicevrf)',
+    debug sprintf ' [%s] %s - default read stays partial: %s is not collected (vrf_no_devicevrfs)',
       $device->ip, $log_as, join(', ', @skipped);
     return;
   }
