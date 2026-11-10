@@ -236,16 +236,16 @@ subtest 'cli_arpnip__default_named_default__stored_as_empty_vrf' => sub {
 
 subtest 'cli_arpnip__skipped_vrf__entries_dropped' => sub {
   my $platform = ReportingPlatform->new(by_vrf => by_vrf());
-  run_arpnip(platform => $platform, settings => { vrf_no_name => ['blue'] });
+  run_arpnip(platform => $platform, settings => { vrf_no_devicevrf => { 'group:__ANY__' => 'vrf:blue' } });
   is scalar(grep { $_->{vrf} eq 'blue' } @stored), 0, 'no blue entries';
   ok scalar(grep { $_->{vrf} eq 'red' } @stored), 'red entries stored';
   ok !exists vars->{'vrf_read'}{blue}, 'blue absent from vrf_read, so it retires as skipped';
-  run_arpnip(platform => $platform, settings => { vrf_no_devicevrf => ['192.0.2.1:red'] });
+  run_arpnip(platform => $platform, settings => { vrf_no_devicevrf => { '192.0.2.1' => 'vrf:red' } });
   is scalar(grep { $_->{vrf} eq 'red' } @stored), 0, 'vrf_no_devicevrf drops red';
 };
 
 subtest 'cli_arpnip__vrfs_read__recorded_once_without_skipped' => sub {
-  run_arpnip(platform => ReportingPlatform->new(by_vrf => by_vrf()), settings => { vrf_no_name => ['blue'] });
+  run_arpnip(platform => ReportingPlatform->new(by_vrf => by_vrf()), settings => { vrf_no_devicevrf => { 'group:__ANY__' => 'vrf:blue' } });
   is_deeply \@cli_vrfs, [ [ { '' => 1, red => 1 }, 1 ] ], 'what was read, skipped blue left out, with the list state';
   run_arpnip(platform => ReportingPlatform->new(by_vrf => by_vrf()), settings => { store_vrfs => 0 });
   is_deeply \@cli_vrfs, [], 'nothing recorded with the switch off';
@@ -273,7 +273,7 @@ sub not_whole_lines { return grep { m/not read whole/ } @informed }
 
 subtest 'cli_arpnip__partial_read__info_line_names_vrfs_not_read_whole' => sub {
   my $platform = ReportingPlatform->new(by_vrf => by_vrf(vrf_read => { '' => 0, red => 0, blue => 1, gone => 1 }));
-  run_arpnip(platform => $platform, settings => { vrf_no_name => ['gone'] });
+  run_arpnip(platform => $platform, settings => { vrf_no_devicevrf => { 'group:__ANY__' => 'vrf:gone' } });
   is_deeply [ not_whole_lines() ],
     [ ' [192.0.2.1] arpnip (cli) - VRFs not read whole, so their entries are kept: "", "red"' ],
     'one info line naming the unread VRFs, the skipped VRF left out';
@@ -283,7 +283,7 @@ subtest 'cli_arpnip__whole_read__no_not_read_whole_line' => sub {
   run_arpnip(platform => ReportingPlatform->new(by_vrf => by_vrf()));
   is scalar(not_whole_lines()), 0, 'no line';
   run_arpnip(platform => ReportingPlatform->new(by_vrf => by_vrf(vrf_read => { '' => 1, red => 1, blue => 1, gone => 0 })),
-    settings => { vrf_no_name => ['gone'] });
+    settings => { vrf_no_devicevrf => { 'group:__ANY__' => 'vrf:gone' } });
   is scalar(not_whole_lines()), 0, 'no line when only a skipped VRF was read short';
 };
 

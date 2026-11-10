@@ -12,7 +12,7 @@ use lib 'xt/lib';
 
 use App::Netdisco;
 use App::Netdisco::DB;
-use App::Netdisco::Util::VRF qw/vrf_skipped netdisco_vrf vrf_instances_for/;
+use App::Netdisco::Util::VRF qw/vrf_skip_test netdisco_vrf vrf_instances_for/;
 use App::Netdisco::Util::SNMP 'snmp_vrf_context';
 use App::Netdisco::Util::L3Domain 'label_rows_by_domain';
 use App::Netdisco::Util::PostgresFloor ();
@@ -62,13 +62,14 @@ sub fake_expect {
   return ($exp, $ssh);
 }
 
-subtest 'vrf_skipped__default_table_names_and_non_list_settings__not_skipped' => sub {
+subtest 'vrf_skip_test__default_table_names_and_scalar_setting__not_skipped' => sub {
   with_settings(sub {
-    is vrf_skipped($device, undef), 0, 'undef name';
-    is vrf_skipped($device, ''), 0, 'empty name';
-    is vrf_skipped($device, 'default'), 0, 'default';
-    is vrf_skipped($device, 'red'), 0, 'scalar settings never match';
-  }, vrf_no_name => 'red', vrf_no_devicevrf => '192.0.2.1:red');
+    my $skipped = vrf_skip_test($device);
+    is $skipped->(undef), 0, 'undef name';
+    is $skipped->(''), 0, 'empty name';
+    is $skipped->('default'), 0, 'default';
+    is $skipped->('red'), 0, 'scalar setting never matches';
+  }, vrf_no_devicevrf => '192.0.2.1:red');
 };
 
 subtest 'netdisco_vrf__undef__undef' => sub {

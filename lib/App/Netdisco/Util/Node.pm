@@ -5,7 +5,7 @@ use Dancer::Plugin::DBIC 'schema';
 
 use NetAddr::MAC;
 use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
-use App::Netdisco::Util::VRF qw/vrf_collection_enabled vrf_skipped/;
+use App::Netdisco::Util::VRF qw/vrf_collection_enabled vrf_skip_test/;
 use App::Netdisco::Util::L3Domain 'recompute_l3_domains';
 use Try::Tiny;
 
@@ -300,7 +300,7 @@ With VRF collection off for the device (C<vrf_collection_enabled> in
 L<App::Netdisco::Util::VRF>), only rows in named VRFs are retired, never the
 default table. With it on and C<%vrf_read> (VRF name to 1 for a complete
 read, 0 for an incomplete one), the VRFs retired are those read whole, those
-skipped (C<vrf_skipped>), and, only when C<$vrf_list_complete> is 1, those the
+skipped (C<vrf_no_devicevrf>), and, only when C<$vrf_list_complete> is 1, those the
 run did not read at all; a VRF read short is never retired. With it on but no
 C<%vrf_read> (an SSH or offline job, or a class without VRF support) nothing
 is retired.
@@ -353,13 +353,14 @@ sub _retire_read_vrfs {
 
   my $stored = $dbh->selectcol_arrayref(
     "SELECT DISTINCT vrf FROM node_ip $where AND vrf <> ''", undef, $router);
-  my @named = grep { _vrf_unvouched($device, $_, $vrf_read, $vrf_list_complete) }
+  my $skipped = vrf_skip_test($device);
+  my @named = grep { _vrf_unvouched($skipped, $_, $vrf_read, $vrf_list_complete) }
               sort @$stored;
   $retired += $dbh->do("UPDATE node_ip SET active = false $where"
     ." AND vrf <> '' AND vrf = ANY(?::text[])", undef, $router, \@named)
     if scalar @named;
 
-  my $default = _vrf_unvouched($device, '', $vrf_read, $vrf_list_complete);
+  my $default = _vrf_unvouched($skipped, '', $vrf_read, $vrf_list_complete);
   $retired += $dbh->do("UPDATE node_ip SET active = false $where AND vrf = ''",
     undef, $router) if $default;
 
@@ -367,9 +368,9 @@ sub _retire_read_vrfs {
 }
 
 sub _vrf_unvouched {
-  my ($device, $vrf, $vrf_read, $vrf_list_complete) = @_;
+  my ($skipped, $vrf, $vrf_read, $vrf_list_complete) = @_;
   return $vrf_read->{$vrf} if exists $vrf_read->{$vrf};
-  return 1 if vrf_skipped($device, $vrf);
+  return 1 if $skipped->($vrf);
   return ($vrf_list_complete ? 1 : 0);
 }
 

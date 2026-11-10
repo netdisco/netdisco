@@ -107,12 +107,11 @@ device_auth:
 
 # record the VRF of device addresses, subnets and ARP entries, and the VRF
 # instances of each device. off by default. skip_vrf_devices is an ACL of
-# devices to leave alone; vrf_no_name lists VRF names to ignore everywhere;
-# vrf_no_devicevrf lists "<device ip>:<vrf name>" pairs to ignore.
+# devices to leave alone; vrf_no_devicevrf maps a device ACL to the VRFs to
+# ignore on those devices, e.g. 'group:__ANY__': ['vrf:(?i)mgmt'].
 # ````````````````````````````````````````````````````````````````````````
 #store_vrfs: false
 #skip_vrf_devices: []
-#vrf_no_name: []
 #vrf_no_devicevrf: []
 
 # set to true to globally disable authentication/login.
