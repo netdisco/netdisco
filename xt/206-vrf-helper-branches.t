@@ -69,7 +69,7 @@ subtest 'vrf_skip_test__default_table_names_and_scalar_setting__not_skipped' => 
     is $skipped->(''), 0, 'empty name';
     is $skipped->('default'), 0, 'default';
     is $skipped->('red'), 0, 'scalar setting never matches';
-  }, vrf_no_devicevrf => '192.0.2.1:red');
+  }, vrf_no_devicevrfs => '192.0.2.1:red');
 };
 
 subtest 'netdisco_vrf__undef__undef' => sub {

@@ -54,7 +54,7 @@ subtest 'store_vrfs__default__off' => sub {
   ok(!setting('store_vrfs'), 'store_vrfs is off');
   is_deeply(setting('skip_vrf_devices'), [], 'skip_vrf_devices is empty');
   ok(!defined setting('vrf_no_name'), 'vrf_no_name is gone');
-  is_deeply(setting('vrf_no_devicevrf'), [], 'vrf_no_devicevrf is empty');
+  is_deeply(setting('vrf_no_devicevrfs'), [], 'vrf_no_devicevrfs is empty');
   ok(!vrf_collection_enabled($device), 'collection disabled by default');
 };
 
@@ -109,27 +109,27 @@ my @names = ('red', 'blue', 'MGMT', 'mgmt', 'lab-1', 'prelab-1', 'cust:a');
 subtest 'vrf_skip_test__every_device__name_skipped' => sub {
   with_settings(sub {
     is_deeply(skipped_names($device, @names), ['MGMT'], 'exact and case sensitive');
-  }, vrf_no_devicevrf => { 'group:__ANY__' => 'vrf:MGMT' });
+  }, vrf_no_devicevrfs => { 'group:__ANY__' => 'vrf:MGMT' });
 };
 
 subtest 'vrf_skip_test__regex_and_case_flag__anchored_match' => sub {
   with_settings(sub {
     is_deeply(skipped_names($device, @names), ['MGMT', 'mgmt', 'lab-1'],
       'lab-.* does not match prelab-1');
-  }, vrf_no_devicevrf => { 'group:__ANY__' => ['vrf:(?i)mgmt', 'vrf:lab-.*'] });
+  }, vrf_no_devicevrfs => { 'group:__ANY__' => ['vrf:(?i)mgmt', 'vrf:lab-.*'] });
 };
 
 subtest 'vrf_skip_test__device_key__other_device_untouched' => sub {
   with_settings(sub {
     is_deeply(skipped_names($device, @names), ['red'], 'listed device');
     is_deeply(skipped_names(FakeDevice->new('198.51.100.9'), @names), [], 'other device');
-  }, vrf_no_devicevrf => { '192.0.2.1' => 'vrf:red' });
+  }, vrf_no_devicevrfs => { '192.0.2.1' => 'vrf:red' });
 };
 
 subtest 'vrf_skip_test__colon_in_name__matched_whole' => sub {
   with_settings(sub {
     is_deeply(skipped_names($device, @names), ['cust:a'], 'cust:a');
-  }, vrf_no_devicevrf => { '192.0.2.1' => 'vrf:cust:a' });
+  }, vrf_no_devicevrfs => { '192.0.2.1' => 'vrf:cust:a' });
 };
 
 subtest 'vrf_skip_test__ipv6_device_key__matched_as_address' => sub {
@@ -138,16 +138,16 @@ subtest 'vrf_skip_test__ipv6_device_key__matched_as_address' => sub {
     is_deeply(skipped_names($v6, @names), ['red'], 'key written long form');
     is_deeply(skipped_names(FakeDevice->new('2001:db8::'), 'red', '1:red'), [],
       'no collision with a VRF name starting with hex digits');
-  }, vrf_no_devicevrf => { '2001:0db8:0:0::1' => 'vrf:red' });
+  }, vrf_no_devicevrfs => { '2001:0db8:0:0::1' => 'vrf:red' });
 };
 
 subtest 'vrf_skip_test__negation_and_op_and__every_vrf_but_listed' => sub {
   with_settings(sub {
     is_deeply(skipped_names($device, 'CORE', 'INTERNET', 'red'), ['red'], 'negated rule');
-  }, vrf_no_devicevrf => { '192.0.2.0/24' => '!vrf:(CORE|INTERNET)' });
+  }, vrf_no_devicevrfs => { '192.0.2.0/24' => '!vrf:(CORE|INTERNET)' });
   with_settings(sub {
     is_deeply(skipped_names($device, 'cust-1', 'cust-test', 'red'), ['cust-1'], 'op:and');
-  }, vrf_no_devicevrf => { '192.0.2.1' => ['op:and', 'vrf:cust-.*', '!vrf:.*-test'] });
+  }, vrf_no_devicevrfs => { '192.0.2.1' => ['op:and', 'vrf:cust-.*', '!vrf:.*-test'] });
 };
 
 subtest 'vrf_skip_test__property_and_group_keys__matched' => sub {
@@ -159,19 +159,19 @@ subtest 'vrf_skip_test__property_and_group_keys__matched' => sub {
     is_deeply(skipped_names($cisco, @names), ['blue'], 'vendor key');
     is_deeply(skipped_names($device, @names), ['red'], 'group key');
   }, host_groups => { %{ setting('host_groups') }, pe => ['192.0.2.1'] },
-     vrf_no_devicevrf => { 'vendor:cisco' => 'vrf:blue', 'group:pe' => 'vrf:red' });
+     vrf_no_devicevrfs => { 'vendor:cisco' => 'vrf:blue', 'group:pe' => 'vrf:red' });
 };
 
 subtest 'vrf_skip_test__list_of_maps__each_applies' => sub {
   with_settings(sub {
     is_deeply(skipped_names($device, @names), ['red', 'blue'], 'both maps');
-  }, vrf_no_devicevrf => [ { '192.0.2.1' => 'vrf:red' }, { 'group:__ANY__' => 'vrf:blue' } ]);
+  }, vrf_no_devicevrfs => [ { '192.0.2.1' => 'vrf:red' }, { 'group:__ANY__' => 'vrf:blue' } ]);
 };
 
 subtest 'vrf_skip_test__default_table__never' => sub {
   with_settings(sub {
     is_deeply(skipped_names($device, 'default', '', 'red'), ['red'], 'only the named VRF');
-  }, vrf_no_devicevrf => { 'group:__ANY__' => ['vrf:.*', 'vrf:default', 'vrf:'] });
+  }, vrf_no_devicevrfs => { 'group:__ANY__' => ['vrf:.*', 'vrf:default', 'vrf:'] });
 };
 
 subtest 'vrf_skip_test__device_keys__matched_once_per_test' => sub {
@@ -186,7 +186,7 @@ subtest 'vrf_skip_test__device_keys__matched_once_per_test' => sub {
     my $skipped = vrf_skip_test($device);
     $skipped->("vrf$_") for (1 .. 50, 1 .. 50);
     is($device_checks, 2, 'one check per key, not per name');
-  }, vrf_no_devicevrf => { 'group:__ANY__' => 'vrf:vrf1.*', '192.0.2.1' => 'vrf:vrf2.*' });
+  }, vrf_no_devicevrfs => { 'group:__ANY__' => 'vrf:vrf1.*', '192.0.2.1' => 'vrf:vrf2.*' });
 };
 
 subtest 'vrf_skip_test__bare_name_or_old_string__warns_once_and_skips_nothing' => sub {
@@ -198,14 +198,14 @@ subtest 'vrf_skip_test__bare_name_or_old_string__warns_once_and_skips_nothing' =
     is(scalar @warnings, 2, 'one warning each, not repeated');
     like($warnings[0], qr/"192\.0\.2\.1:red" is ignored/, 'old string entry');
     like($warnings[1], qr/rule "red" matches no VRF\. Write a VRF as vrf:<name>/, 'bare name');
-  }, vrf_no_devicevrf => [ '192.0.2.1:red', { 'group:__ANY__' => 'red' } ]);
+  }, vrf_no_devicevrfs => [ '192.0.2.1:red', { 'group:__ANY__' => 'red' } ]);
 };
 
 subtest 'vrf_skip_test__empty_or_scalar_setting__nothing_skipped' => sub {
   for my $value ([], {}, undef, 'red') {
     with_settings(sub {
       is_deeply(skipped_names($device, @names), [], 'nothing skipped');
-    }, vrf_no_devicevrf => $value);
+    }, vrf_no_devicevrfs => $value);
   }
 };
 
@@ -235,7 +235,7 @@ subtest 'vrf_instances_for__skipped_names__removed_default_kept' => sub {
       instances => { default => 'default', MGMT => 'MGMT', red => 'red' });
     is_deeply(vrf_instances_for($device, $snmp),
       { default => 'default', red => 'red' }, 'MGMT removed');
-  }, store_vrfs => 1, vrf_no_devicevrf => { 'group:__ANY__' => ['vrf:MGMT', 'vrf:default'] });
+  }, store_vrfs => 1, vrf_no_devicevrfs => { 'group:__ANY__' => ['vrf:MGMT', 'vrf:default'] });
 };
 
 subtest 'vrf_instances_for__incomplete_walk__still_returns_names' => sub {

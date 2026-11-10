@@ -300,7 +300,7 @@ With VRF collection off for the device (C<vrf_collection_enabled> in
 L<App::Netdisco::Util::VRF>), only rows in named VRFs are retired, never the
 default table. With it on and C<%vrf_read> (VRF name to 1 for a complete
 read, 0 for an incomplete one), the VRFs retired are those read whole, those
-skipped (C<vrf_no_devicevrf>), and, only when C<$vrf_list_complete> is 1, those the
+skipped (C<vrf_no_devicevrfs>), and, only when C<$vrf_list_complete> is 1, those the
 run did not read at all; a VRF read short is never retired. With it on but no
 C<%vrf_read> (an SSH or offline job, or a class without VRF support) nothing
 is retired.
