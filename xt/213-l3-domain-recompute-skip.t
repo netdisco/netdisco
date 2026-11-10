@@ -82,9 +82,18 @@ subtest 'recompute_needed__manual_rows_left__true' => sub {
 };
 
 subtest 'recompute_needed__legacy_key__true' => sub {
-  %answers = ('position' => 1);
+  %answers = ('inferred_name !~' => 1);
   ok needed(0), 'true';
   like $queries[-1], qr/id <> 0/, 'domain 0 is excluded';
+};
+
+# a legacy key is the bare VRF name, which may itself hold a colon, so the
+# test is for the evidence prefixes rather than for any colon
+subtest 'recompute_needed__legacy_key_with_colon__detected_by_prefix' => sub {
+  %answers = ('inferred_name !~' => 1);
+  needed(0);
+  like $queries[-1], qr/inferred_name !~ '\^\(isid\|rt\|name\|manual\):'/, 'every key prefix listed';
+  unlike $queries[-1], qr/position\(/, 'not a test for any colon';
 };
 
 subtest 'recompute_needed__vrf_without_member__true' => sub {
@@ -106,7 +115,7 @@ subtest 'recompute_needed__empty_domain__true' => sub {
 subtest 'recompute_needed__all_placed__false' => sub {
   %answers = ();
   ok !needed(0), 'false, the legacy check included';
-  ok scalar(grep { /position/ } @queries), 'legacy key check ran';
+  ok scalar(grep { /inferred_name !~/ } @queries), 'legacy key check ran';
 };
 
 subtest 'recompute_needed__arpnip_vrf_domains_set__false' => sub {

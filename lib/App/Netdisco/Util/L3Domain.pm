@@ -91,11 +91,13 @@ group. Within one level the alphabetically first domain name wins, with a
 warning.
 
 A C<group:> device is matched live with C<acl_matches_only> at every
-recompute. A group that holds a regular expression rule, directly or through
-another C<group:>, is refused with a warning: the ACL matcher answers such a
-rule with an uncached reverse DNS lookup per device, and the recompute runs on
-every discover, so a large group with slow DNS would add minutes to each one.
-IP, prefix, range, C<prop:> and C<tag:> rules are allowed.
+recompute. A group that holds a hostname or regular expression rule, directly
+or through another C<group:>, is refused with a warning: the ACL matcher
+answers such a rule with an uncached DNS lookup per device, and the recompute
+runs on every discover, so a large group with slow DNS would add minutes to
+each one. A cron rule is refused too, as it makes membership depend on the time
+of day. Address, prefix, range, C<prop:>, C<tag:>, C<cf:>, C<group:> and
+C<op:and> rules are allowed.
 
 The entries are read through one function, C<manual_l3_entries>, so a table
 could supply them later without any other change to the recompute.
@@ -185,13 +187,11 @@ the same query filtered to the VRF names or keys they name.) Only what changed
 is written. An unchanged network and setting write nothing.
 
 Runs in one transaction under C<with_l3_domain_lock>. Returns the number of
-member rows inserted plus deleted plus domains renamed, so 0 means everything
+member rows inserted plus deleted plus domains renamed or deleted, so 0 means everything
 was already right. Discover calls it once per device, after the transaction
 that refreshes C<device_vrf> commits, when C<l3_domain_recompute_needed> says so.
 
 =cut
-
-sub _rows { my $rows = shift; return ($rows eq '0E0' ? 0 : $rows) }
 
 # COLLATE "C": byte order decides the key on every server, whatever its
 # locale or glibc version
@@ -598,7 +598,8 @@ sub _sync_sql {
     DELETE FROM l3_domain l WHERE l.id <> 0 AND NOT EXISTS (SELECT 1 FROM desired d WHERE d.key = l.inferred_name)
     RETURNING 1)
   SELECT (SELECT count(*) FROM gone) + 2 * (SELECT count(*) FROM moved)
-       + (SELECT count(*) FROM added) + (SELECT count(*) FROM renamed)};
+       + (SELECT count(*) FROM added) + (SELECT count(*) FROM renamed)
+       + (SELECT count(*) FROM emptied)};
 }
 
 sub _manual_arrays {
@@ -647,9 +648,10 @@ site recomputes every time.
 
 This covers removing the last C<vrf_domains> entry.
 
-=item 4. a domain other than 0 has an C<inferred_name> with no C<:>, or none
+=item 4. a domain other than 0 has an C<inferred_name> with none of the key prefixes, or none
 
-A key from before the evidence keys. One cheap query re-keys it.
+A key from before the evidence keys, which was the bare VRF name, and a VRF
+name may hold a C<:>. One cheap query re-keys it.
 
 =item 5. a named C<device_vrf> row has no C<l3_domain_member> row
 
@@ -705,7 +707,7 @@ sub _recompute_needed_sql {
   return (
     ($by_arpnip ? () : q{SELECT EXISTS (SELECT 1 FROM l3_domain_member WHERE source = 'manual')}),
     q{SELECT EXISTS (SELECT 1 FROM l3_domain
-      WHERE id <> 0 AND (inferred_name IS NULL OR position(':' IN inferred_name) = 0))},
+      WHERE id <> 0 AND (inferred_name IS NULL OR inferred_name !~ '^(isid|rt|name|manual):'))},
     q{SELECT EXISTS (SELECT 1 FROM device_vrf d WHERE d.vrf <> ''
       AND NOT EXISTS (SELECT 1 FROM l3_domain_member m WHERE m.ip = d.ip AND m.vrf = d.vrf))},
     q{SELECT EXISTS (SELECT 1 FROM l3_domain_member m WHERE NOT EXISTS

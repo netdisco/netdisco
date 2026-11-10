@@ -77,12 +77,15 @@ SELECT 'linked, one subnet' AS finding,
                pr.b_ip, ib.vrf AS b_vrf, mb.domain_id AS b_domain,
                ia.subnet AS subnet
           FROM (
-            SELECT DISTINCT dp.ip AS a_ip, r.ip AS b_ip
+            SELECT DISTINCT dp.ip AS a_ip, dp.port AS a_port, r.ip AS b_ip
               FROM device_port dp
               JOIN device_ip_resolved r ON r.alias = dp.remote_ip
              WHERE dp.ip <> r.ip
           ) pr
+          -- the subnet must be on the neighbor's port (or a subinterface of
+          -- it): equal private space elsewhere on two neighbors is reuse
           JOIN device_ip ia ON ia.ip = pr.a_ip AND ia.vrf <> '' AND ia.subnet IS NOT NULL
+               AND (ia.port = pr.a_port OR left(ia.port, length(pr.a_port) + 1) = pr.a_port || '.')
           JOIN device_ip ib ON ib.ip = pr.b_ip AND ib.vrf <> '' AND ib.subnet = ia.subnet AND ia.alias <> ib.alias
           LEFT JOIN l3_domain_member ma ON ma.ip = ia.ip AND ma.vrf = ia.vrf
           LEFT JOIN l3_domain_member mb ON mb.ip = ib.ip AND mb.vrf = ib.vrf

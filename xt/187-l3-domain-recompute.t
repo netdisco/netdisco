@@ -78,8 +78,8 @@ subtest 'recompute__orderings__use_C_collation' => sub {
 subtest 'recompute__returns__the_statement_count' => sub {
   my ($count, $flat) = run_recompute(9);
   is($count, 9, 'what the statement returns');
-  like($flat, qr/SELECT \(SELECT count\(\*\) FROM gone\) \+ 2 \* \(SELECT count\(\*\) FROM moved\) \+ \(SELECT count\(\*\) FROM added\) \+ \(SELECT count\(\*\) FROM renamed\)$/,
-    'members deleted, moved (counted as the delete and insert they replace), inserted, plus domains renamed');
+  like($flat, qr/SELECT \(SELECT count\(\*\) FROM gone\) \+ 2 \* \(SELECT count\(\*\) FROM moved\) \+ \(SELECT count\(\*\) FROM added\) \+ \(SELECT count\(\*\) FROM renamed\) \+ \(SELECT count\(\*\) FROM emptied\)$/,
+    'members deleted, moved (counted as the delete and insert they replace), inserted, plus domains renamed or deleted');
 };
 
 subtest 'recompute__no_rows_written__returns_zero' => sub {

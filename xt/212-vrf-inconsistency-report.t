@@ -115,7 +115,16 @@ subtest 'virtual__linked_branch__pairs_reduced_before_device_ip_join' => sub {
   my $pairs = index $branch, 'FROM device_port';
   my $join  = index $branch, 'JOIN device_ip ia';
   ok $pairs >= 0 && $join > $pairs, 'device_port pairs come before the device_ip join';
-  like $branch, qr/SELECT DISTINCT\s+dp\.ip\s+AS\s+a_ip,\s*r\.ip\s+AS\s+b_ip/, 'distinct device pairs first';
+  like $branch, qr/SELECT DISTINCT\s+dp\.ip\s+AS\s+a_ip,\s*dp\.port\s+AS\s+a_port,\s*r\.ip\s+AS\s+b_ip/,
+    'distinct device and port pairs first';
+};
+
+# two neighbors linked in the default table, each reusing 192.168.77.0/24 in
+# its own customer VRF, were reported as one subnet split across two domains
+subtest 'virtual__linked_subnet_off_the_neighbor_port__not_paired' => sub {
+  my ($branch) = grep { /'linked, one subnet'/ } @branches;
+  like $branch, qr/JOIN device_ip ia ON ia\.ip = pr\.a_ip[^\n]*\n\s*AND \(ia\.port = pr\.a_port OR left\(ia\.port, length\(pr\.a_port\) \+ 1\) = pr\.a_port \|\| '\.'\)/,
+    'the subnet is on the neighbor port or one of its subinterfaces';
 };
 
 subtest 'virtual__similar_names__empty_normalized_excluded' => sub {
