@@ -379,7 +379,7 @@ sub make_graph {
         ->search({remote_ip => { -not => undef }},
                  { columns => [qw/ip remote_ip speed remote_type/]});
     my %aliases = map {$_->alias => $_->ip}
-        schema(vars->{'tenant'})->resultset('DeviceIp')
+        schema(vars->{'tenant'})->resultset('DeviceIpResolved')
           ->search({}, { columns => [qw/ip alias/] })->all;
 
     my %devs = ( map {($_->ip => $_->dns)}      $devices->all );

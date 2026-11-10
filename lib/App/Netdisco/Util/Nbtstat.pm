@@ -121,7 +121,8 @@ sub _filter_nbname {
 
         # Just assume it's the last MAC we saw this IP at.
         my $node_ip = schema(vars->{'tenant'})->resultset('NodeIp')
-            ->single( { ip => $ip, -bool => 'active' } );
+            ->search( { ip => $ip, vrf => '', -bool => 'active' },
+                      { rows => 1 } )->first;
 
         if ( !defined $node_ip ) {
             debug sprintf ' no MAC for %s returned by nbtstat or in DB', $ip;

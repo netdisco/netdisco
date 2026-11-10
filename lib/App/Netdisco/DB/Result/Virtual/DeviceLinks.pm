@@ -42,8 +42,8 @@ __PACKAGE__->result_source_instance->view_definition(<<ENDSQL
 
      INNER JOIN device ld ON ldp.ip = ld.ip
      INNER JOIN
-      (SELECT ip, alias FROM device_ip WHERE alias IN
-        (SELECT alias FROM device_ip GROUP BY alias HAVING count(alias) = 1)) di
+      (SELECT ip, alias FROM device_ip_resolved WHERE alias IN
+        (SELECT alias FROM device_ip_resolved GROUP BY alias HAVING count(alias) = 1)) di
         ON ldp.remote_ip = di.alias
      INNER JOIN device rd ON di.ip = rd.ip
 

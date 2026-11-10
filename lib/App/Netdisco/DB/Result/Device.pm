@@ -6,6 +6,7 @@ use warnings;
 
 use NetAddr::IP::Lite ':lower';
 use App::Netdisco::Util::DNS 'hostname_from_ip';
+use App::Netdisco::Util::L3Domain 'with_l3_domain_lock';
 
 use overload '""' => sub { shift->ip }, fallback => 1;
 
@@ -112,6 +113,22 @@ all the interface IP aliases configured on the Device.
 =cut
 
 __PACKAGE__->has_many( device_ips => 'App::Netdisco::DB::Result::DeviceIp', 'ip' );
+
+=head2 vrfs
+
+Returns the C<device_vrf> rows: the VRF instances this Device reports.
+
+=cut
+
+__PACKAGE__->has_many( vrfs => 'App::Netdisco::DB::Result::DeviceVrf', 'ip' );
+
+=head2 l3_domain_members
+
+Returns the C<l3_domain_member> rows placing this Device's VRF instances in L3 domains.
+
+=cut
+
+__PACKAGE__->has_many( l3_domain_members => 'App::Netdisco::DB::Result::L3DomainMember', 'ip' );
 
 =head2 device_ips_by_address_or_name
 
@@ -371,24 +388,28 @@ sub renumber {
     ->search({ip => $old_ip, alias => $new_ip})->delete();
 
   # Community is not included as SNMP::test_connection will take care of it
-  foreach my $set (qw/
-    DeviceBrowser
-    DeviceIp
-    DeviceModule
-    DevicePower
-    DeviceVlan
-    DevicePort
-    DevicePortLog
-    DevicePortPower
-    DevicePortProperties
-    DevicePortSsid
-    DevicePortVlan
-    DevicePortWireless
-  /) {
-    $schema->resultset($set)
-      ->search({ip => $old_ip})
-      ->update({ip => $new_ip});
-  }
+  with_l3_domain_lock($schema, sub {
+    foreach my $set (qw/
+      DeviceBrowser
+      DeviceIp
+      DeviceModule
+      DevicePower
+      DeviceVlan
+      DeviceVrf
+      L3DomainMember
+      DevicePort
+      DevicePortLog
+      DevicePortPower
+      DevicePortProperties
+      DevicePortSsid
+      DevicePortVlan
+      DevicePortWireless
+    /) {
+      $schema->resultset($set)
+        ->search({ip => $old_ip})
+        ->update({ip => $new_ip});
+    }
+  });
 
   $schema->resultset('DeviceSkip')
     ->search({device => $new_ip})->delete;
@@ -424,6 +445,11 @@ sub renumber {
         WHERE seen_on_router_last \? ?::text
     };
     $dbh->do($router_last_sql, undef, $old_ip, $new_ip, $old_ip, $old_ip);
+
+    $dbh->do($_, undef, $new_ip, $old_ip) for (
+      'UPDATE node_ip SET router_last = ? WHERE router_last = ?',
+      'UPDATE subnets SET router_last = ? WHERE router_last = ?',
+    );
   });
 
   $schema->resultset('Topology')
@@ -447,7 +473,7 @@ sub renumber {
   $device->update({
     ip  => $new_ip,
     dns => (hostname_from_ip($new_ip)
-      || eval { $schema->resultset('DeviceIp')->find($new_ip,$new_ip)->dns } || undef),
+      || eval { $schema->resultset('DeviceIp')->search({ ip => $new_ip, alias => $new_ip })->first->dns } || undef),
   });
 
   return $device;

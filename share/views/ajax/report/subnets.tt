@@ -1,9 +1,12 @@
 [% USE Number.Format(THOUSANDS_SEP = settings.thousands_separator) %]
 <table id="data-table" class="table table-bordered table-sm table-hover" width="100%" cellspacing="0"
-  data-nd-table='{"order":[[3,"desc"]],"columnDefs":[{"type":"portsort","targets":["portsort"]}]}'>
+  data-nd-table='{"order":[[[% multi_domain ? 4 : 3 %],"desc"]],"columnDefs":[{"type":"portsort","targets":["portsort"]}]}'>
   <thead>
     <tr>
       <th class="nd_center-cell portsort">Subnet</th>
+      [% IF multi_domain %]
+      <th class="nd_center-cell">VRF</th>
+      [% END %]
       <th class="nd_center-cell">Size</th>
       <th class="nd_center-cell">Number of Active Nodes</th>
       <th class="nd_center-cell">Percent Utilization</th>
@@ -14,6 +17,9 @@
     <tr>
       <td class="nd_center-cell"><a href="[% uri_for('/report/ipinventory') | none %]?subnet=[% row.subnet | uri %]&daterange=[% params.daterange | uri %]&age_invert=[% params.age_invert | uri %]&limit=[% row.subnet_size | uri %]">
                [% row.subnet | html_entity %]</a></td>
+      [% IF multi_domain %]
+      <td class="nd_center-cell">[% (row.vrf == '' ? 'default' : row.vrf) | html_entity %]</td>
+      [% END %]
       <td class="nd_center-cell">[% IF row.subnet.match(':') %]2<sup>[% 128 - row.subnet.split('/').last %]</sup>[% ELSE %][% row.subnet_size | format_number %][% END %]</td>
       <td class="nd_center-cell">[% row.active | format_number %]</td>
       <td class="nd_center-cell">[% row.percent | html_entity %]</td>

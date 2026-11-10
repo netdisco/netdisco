@@ -112,7 +112,7 @@ App::Netdisco::Builder->new(
     'Scope::Guard' => 0,
     'Sereal' => '0',
     'Session::Storage::Secure' => '1.000',
-    'SNMP::Info' => '3.985001',
+    'SNMP::Info' => '3.985002',
     'Socket' => '2.041',
     'Socket6' => '0.23',
     'SQL::Abstract' => '2.000003',

@@ -28,7 +28,7 @@ SELECT id,
               generate_subscripts(rules, 1) AS idx
           FROM access_control_list
           ORDER BY id, idx ASC) acl
-  LEFT JOIN device_ip
+  LEFT JOIN device_ip_resolved device_ip
     ON acl.rule = host(device_ip.alias)
   LEFT JOIN device d1
     ON device_ip.ip = d1.ip

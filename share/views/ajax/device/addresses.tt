@@ -13,6 +13,9 @@
   "deferRender": true,
   "columns": [
     {"data":"alias","render":"escape"},
+    [% IF multi_domain %]
+    {"data":"vrf","render":"escape"},
+    [% END %]
     {"data":"dns","render":"escape"},
     {"data":"port","type":"portsort","render":{"name":"devicePortsLink","q":"ip","f":"data"}},
     {"data":"device_port.name","render":"escape"},
@@ -22,6 +25,9 @@
   <thead>
     <tr>
       <th>Address</th>
+      [% IF multi_domain %]
+      <th>VRF</th>
+      [% END %]
       <th>DNS</th>
 [%# This header alone asked to be centered while its own column's data is left
     aligned, so it sat out of line with both its data and its neighbors. The

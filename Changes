@@ -1,3 +1,14 @@
+2.118000 - tbd
+
+  [ENHANCEMENTS]
+
+  * upgrade SNMP::Info dependency to 3.985002
+  * #1785 record the VRF of device addresses and subnets, and resolve
+    addresses to devices through one rule (database schema 105: run
+    netdisco-deploy)
+  * #1811 group VRFs into L3 domains by router configuration, with
+    vrf_domains and two reports
+
 2.117003 - 2026-11-07
 
   [ENHANCEMENTS]

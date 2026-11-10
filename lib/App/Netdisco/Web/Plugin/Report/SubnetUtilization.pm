@@ -5,6 +5,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
+use App::Netdisco::Util::L3Domain 'results_span_domains';
 use POSIX qw/strftime/;
 
 register_report({
@@ -46,13 +47,16 @@ get '/ajax/content/report/subnets' => require_login sub {
       })->hri->all;
 
     return unless scalar @results;
+    my $multi_domain = results_span_domains(\@results);
 
     if ( request->is_ajax ) {
-        template 'ajax/report/subnets.tt', { results => \@results }, { layout => 'noop' };
+        template 'ajax/report/subnets.tt',
+          { results => \@results, multi_domain => $multi_domain }, { layout => 'noop' };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/report/subnets_csv.tt', { results => \@results }, { layout => 'noop' };
+        template 'ajax/report/subnets_csv.tt',
+          { results => \@results, multi_domain => $multi_domain }, { layout => 'noop' };
     }
 };
 

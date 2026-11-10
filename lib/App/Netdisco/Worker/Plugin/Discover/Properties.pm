@@ -9,13 +9,17 @@ use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 use App::Netdisco::Util::Device qw/get_device is_discoverable/;
 use App::Netdisco::Util::DNS 'hostname_from_ip';
-use App::Netdisco::Util::SNMP qw/snmp_comm_reindex snmp_vrf_reindex get_mibdirs_shortnames walk_mark incomplete_walks
-  incomplete_walks_for incomplete_walk_message incomplete_walk_level/;
+use App::Netdisco::Util::SNMP qw/snmp_comm_reindex snmp_vrf_reindex get_mibdirs_shortnames walk_mark
+  incomplete_walks incomplete_walks_for incomplete_walk_message incomplete_walk_level/;
+use App::Netdisco::Util::VRF
+  qw/vrf_collection_enabled vrf_instances_for vrf_skip_test netdisco_vrf each_vrf_instance/;
+use App::Netdisco::Util::L3Domain qw/recompute_l3_domains l3_domain_recompute_needed/;
 use App::Netdisco::Util::Web 'sort_port';
 use App::Netdisco::Util::SNMPText qw/decode_snmp_text decode_text_with/;
 
 use Dancer::Plugin::DBIC 'schema';
 use Scope::Guard 'guard';
+use Try::Tiny;
 use NetAddr::IP::Lite ':lower';
 use Storable 'dclone';
 use List::MoreUtils ();
@@ -327,6 +331,9 @@ register_worker({ phase => 'early', driver => 'snmp',
 
   my $now = vars->{'timestamp'};
 
+  my $instances = vrf_instances_for($device, $snmp);
+  return _store_aliases_per_vrf($device, $snmp, $instances, $now) if $instances;
+
   my $walk_mark = walk_mark($snmp);
   # one read of the VRF list, so the guard exempts the contexts that were walked
   my @vrf_list = _get_vrf_list($device, $snmp);
@@ -357,25 +364,46 @@ register_worker({ phase => 'early', driver => 'snmp',
   my @rows = map {{
     ip       => $device->ip,
     alias    => $_->{alias},
+    vrf      => '',
     subnet   => $_->{subnet},
     port     => $_->{port},
     dns      => $_->{dns},
     creation => \'LOCALTIMESTAMP',
   }} @$resolved_aliases;
 
-  schema('netdisco')->txn_do(sub {
+  my $vrfs_gone = 0;
+  my $status = schema('netdisco')->txn_do(sub {
     my $rs = schema('netdisco')->resultset('DeviceIp');
     $rs->upsert(\@rows);
     my $gone = $rs->remove_unseen({ ip => $device->ip },
-      [ map {{ alias => $_->{alias} }} @rows ]);
+      [ map {{ alias => $_->{alias}, vrf => '' }} @rows ]);
     debug sprintf ' [%s] device - removed %d aliases', $device->ip, $gone;
+    $vrfs_gone = _remove_vrfs_when_not_collected($device);
 
-    schema('netdisco')->resultset('Subnet')->upsert_subnet($_, $now) for @subnets;
+    schema('netdisco')->resultset('Subnet')->upsert_subnet($_, $now, '', $device->ip) for @subnets;
 
     return Status->info(sprintf ' [%s] aliases - added %d new aliases and %d subnets',
       $device->ip, scalar @aliases, scalar @subnets);
   });
+
+  # removed VRFs are changed evidence, which the recompute gate must be told
+  _recompute_l3_domains_after($device, $vrfs_gone) if $vrfs_gone;
+  return $status;
 });
+
+# A device no longer VRF-collected (store_vrfs off, skip_vrf_devices, pseudo)
+# has just lost its named-VRF addresses, so its VRFs go too, and the recompute
+# then drops its inferred domain members. Manual members are kept. A device
+# still collected but whose class lists no VRFs keeps the rows a CLI
+# collector recorded.
+sub _remove_vrfs_when_not_collected {
+  my $device = shift;
+  return 0 if vrf_collection_enabled($device);
+  my $gone = schema('netdisco')->resultset('DeviceVrf')->remove_unseen({ ip => $device->ip }, []);
+  debug sprintf ' [%s] device - removed %d VRFs, as VRFs are not collected for it', $device->ip, $gone
+    if $gone;
+  return $gone;
+}
 
 sub _canonical_addr {
   my $ip = NetAddr::IP::Lite->new($_[0]);
@@ -387,6 +415,245 @@ sub _canonical_addr {
 sub _dedupe_aliases {
   my %seen;
   return grep { not $seen{ _canonical_addr($_->{alias}) }++ } @_;
+}
+
+# store_vrfs path: each instance SNMP::Info lists is read in its own context and
+# stored under its own VRF, and one that cannot be read whole keeps its rows
+sub _store_aliases_per_vrf {
+  my ($device, $snmp, $instances, $now) = @_;
+  # read before any switch, as update() clears SNMP::Info's cache
+  my $list_complete = $snmp->vrf_instances_complete;
+  my $default_interfaces = $snmp->interfaces || {};
+
+  my @reads = _read_vrf_instances($device, $snmp, $instances, $default_interfaces);
+  my @aliases = map { @{ $_->{aliases} } } grep { $_->{complete} } @reads;
+  my @subnets = map { @{ $_->{subnets} } } grep { $_->{complete} } @reads;
+  my %kept = map { ($_->{vrf} => 1) } grep { not $_->{complete} } @reads;
+  my %stored_vrfs = map { ($_ => 1) }
+    _unlisted_stored_vrfs($device, $instances, $list_complete);
+  $kept{$_} = 1 for keys %stored_vrfs;
+
+  my @kept_rows = _stored_device_ips($device, \%kept);
+
+  my @rows = _vrf_device_ip_rows($device, \@aliases, \@kept_rows);
+  my @seen = ((map {{ alias => $_->{alias}, vrf => $_->{vrf} }} @rows), @kept_rows);
+  my @vrf_rows = map { _device_vrf_row($device, $_, $now) } @reads;
+  my @vrf_seen = ((map {{ vrf => $_->{vrf} }} @vrf_rows),
+    map {{ vrf => $_ }} sort keys %stored_vrfs, _cli_listed_vrfs($device));
+
+  my $evidence_changed = 0;
+  my $status = schema('netdisco')->txn_do(sub {
+    # read before the upsert, in the transaction that replaces the rows
+    my %before = _stored_vrf_evidence($device);
+    $evidence_changed = _evidence_changed(\%before, \@vrf_rows, \@vrf_seen);
+    my $rs = schema('netdisco')->resultset('DeviceIp');
+    $rs->upsert(\@rows);
+    my $gone = $rs->remove_unseen({ ip => $device->ip }, \@seen);
+    debug sprintf ' [%s] device - removed %d aliases', $device->ip, $gone;
+
+    schema('netdisco')->resultset('Subnet')
+      ->upsert_subnet($_->{net}, $now, $_->{vrf}, $device->ip) for @subnets;
+
+    my $vrfs = schema('netdisco')->resultset('DeviceVrf');
+    $vrfs->upsert(\@vrf_rows);
+    $vrfs->remove_unseen({ ip => $device->ip }, \@vrf_seen);
+
+    return Status->info(sprintf ' [%s] aliases - added %d new aliases and %d subnets in %d VRFs',
+      $device->ip, scalar @aliases, scalar @subnets, scalar @reads);
+  });
+
+  _recompute_l3_domains_after($device, $evidence_changed);
+  return $status;
+}
+
+# VRFs a CLI collector recorded (record_cli_vrfs) are that collector's to retire
+sub _cli_listed_vrfs {
+  my $device = shift;
+  my %hri = (result_class => 'DBIx::Class::ResultClass::HashRefInflator');
+  return map { $_->{vrf} } grep { ($_->{listed_by} // '') eq 'cli' }
+    $device->vrfs(undef, { columns => [qw/vrf listed_by/], %hri })->all;
+}
+
+sub _stored_vrf_evidence {
+  my $device = shift;
+  return _named_vrf_evidence(schema('netdisco')->resultset('DeviceVrf')
+    ->search({ ip => $device->ip, vrf => { '!=' => '' } },
+      { columns => [qw/vrf rt_import rt_export l3_isid/],
+        result_class => 'DBIx::Class::ResultClass::HashRefInflator' })->all);
+}
+
+# Route-target sets are cleaned as the SQL key does (no NULL or empty, no
+# repeats, byte order), so a set that merely came back in another order is the
+# same evidence.
+sub _evidence_tuple {
+  my $row = shift;
+  my $clean = sub { my %seen; join ',', sort grep { defined and length and not $seen{$_}++ } @{ $_[0] || [] } };
+  return join "\0", $clean->($row->{rt_import}), $clean->($row->{rt_export}), $row->{l3_isid} // '';
+}
+
+sub _named_vrf_evidence {
+  return map { ($_->{vrf} => _evidence_tuple($_)) } grep { length($_->{vrf} // '') } @_;
+}
+
+# the named VRFs the device will hold once the refresh commits: the stored ones
+# the refresh keeps, with the rows it writes laid over them
+sub _evidence_changed {
+  my ($before, $written, $seen) = @_;
+  my %keep = map { ($_->{vrf} => 1) } @$seen;
+  my %after = (map { ($_ => $before->{$_}) } grep { $keep{$_} } keys %$before);
+  %after = (%after, _named_vrf_evidence(@$written));
+  return 0 if join("\n", map { "$_\t$before->{$_}" } sort keys %$before)
+    eq join("\n", map { "$_\t$after{$_}" } sort keys %after);
+  return 1;
+}
+
+# outside the discover transaction: the recompute is network-wide and takes its
+# own lock; the rows are committed, so a failure waits for the next discover
+sub _recompute_l3_domains_after {
+  my ($device, $evidence_changed) = @_;
+  try {
+    if (l3_domain_recompute_needed(schema('netdisco'), $evidence_changed)) { recompute_l3_domains(schema('netdisco')) }
+    else { debug sprintf ' [%s] device - L3 domain recompute skipped, no VRF evidence changed', $device->ip }
+  }
+  catch { warning sprintf ' [%s] device - L3 domain recompute failed, the next discover that finds a change retries: %s',
+    $device->ip, $_ };
+}
+
+# the device's own address gets a default-table row only when no VRF holds it,
+# as today's path fakes one when ip_index does not list it
+sub _vrf_device_ip_rows {
+  my ($device, $aliases, $kept_rows) = @_;
+  my $resolved_aliases = hostnames_resolve_async([ @$aliases ]);
+  my $device_addr = _canonical_addr($device->ip);
+  push @$resolved_aliases, { alias => $device_addr, vrf => '', dns => $device->dns }
+    if 0 == scalar grep {_canonical_addr($_->{alias}) eq $device_addr} @$aliases, @$kept_rows;
+  vars->{'hook_data'}->{'device_ips'} = $resolved_aliases;
+
+  return map {{
+    ip       => $device->ip,
+    alias    => $_->{alias},
+    vrf      => $_->{vrf},
+    subnet   => $_->{subnet},
+    port     => $_->{port},
+    dns      => $_->{dns},
+    creation => \'LOCALTIMESTAMP',
+  }} @$resolved_aliases;
+}
+
+# the instance walk is shared with arpnip; in default-first order, as the
+# device_ip and subnet rows were built before it was shared
+sub _read_vrf_instances {
+  my ($device, $snmp, $instances, $default_interfaces) = @_;
+  my $reads = each_vrf_instance($device, $snmp, $instances,
+    _vrf_alias_reader($snmp, $default_interfaces), walk_methods => ['interfaces']);
+  return map {
+    _vrf_instance_read($device, $instances->{$_}, $reads->{ netdisco_vrf($_) })
+  } ('default', sort grep { $_ ne 'default' } keys %$instances);
+}
+
+# a context's own interfaces win, as in _get_ipv4_aliases' merge; the walk
+# check includes the interfaces walk, as a short one alone would null every port
+sub _vrf_alias_reader {
+  my ($snmp, $default_interfaces) = @_;
+  return sub {
+    my ($name, $instance, $switched) = @_;
+    my $interfaces = $switched
+      ? { %$default_interfaces, %{ $snmp->interfaces || {} } } : $default_interfaces;
+    return { interfaces => $interfaces,
+      addresses => ($snmp->vrf_addresses($name) || {}),
+      subnets   => ($snmp->vrf_subnets($name) || {}) };
+  };
+}
+
+sub _vrf_instance_read {
+  my ($device, $instance, $read) = @_;
+  my $vrf = netdisco_vrf($instance->{name});
+  my $data = $read->{data}
+    or return { instance => $instance, vrf => $vrf, complete => 0 };
+  my ($addresses, $subnets) = @{$data}{qw/addresses subnets/};
+
+  my @aliases = _dedupe_aliases(map {
+    _vrf_alias($device, $addresses->{$_}, $data->{interfaces}, $vrf)
+  } sort keys %$addresses);
+  my @nets = List::MoreUtils::uniq grep {defined} map {
+    _vrf_subnet($subnets->{$_})
+  } sort keys %$subnets;
+
+  return { instance => $instance, vrf => $vrf, complete => $read->{complete},
+    aliases => \@aliases, subnets => [ map {{ net => $_, vrf => $vrf }} @nets ] };
+}
+
+# the same addresses are left out as by _get_ipv4_aliases and _get_ipv6_aliases
+sub _vrf_address_ignored {
+  my ($ip, $is_v6) = @_;
+  return 1 if $ip->addr eq '0.0.0.0' or $ip->addr eq '0:0:0:0:0:0:0:0';
+  return 1 if acl_matches($ip, 'group:__LOOPBACK_ADDRESSES__');
+  return 1 if not $is_v6 and setting('ignore_private_nets') and $ip->is_rfc1918;
+  return 1 if $is_v6 and acl_matches($ip, 'group:__LOCAL_ADDRESSES__');
+  return 0;
+}
+
+sub _vrf_alias {
+  my ($device, $entry, $interfaces, $vrf) = @_;
+  my $ip = NetAddr::IP::Lite->new($entry->{ip} // '') or return;
+  return if _vrf_address_ignored($ip, ($entry->{ip} =~ m/:/));
+  my $addr = $ip->addr;
+  my $subnet = $entry->{prefix_len}
+    ? NetAddr::IP::Lite->new($addr .'/'. $entry->{prefix_len})->network->cidr
+    : undef;
+
+  debug sprintf ' [%s] device - aliased as %s in VRF "%s"', $device->ip, $addr, $vrf;
+  return { alias => $addr, vrf => $vrf, subnet => $subnet, dns => undef,
+    port => (defined $entry->{ifindex} ? $interfaces->{ $entry->{ifindex} } : undef) };
+}
+
+sub _vrf_subnet {
+  my $entry = shift;
+  return unless defined $entry->{prefix} and defined $entry->{len};
+  my $net = NetAddr::IP::Lite->new($entry->{prefix} .'/'. $entry->{len}) or return;
+  return if _vrf_address_ignored($net, ($entry->{prefix} =~ m/:/));
+  return $net->network->cidr;
+}
+
+# a short instance list may leave out a VRF the device still has, so its
+# stored rows stand; a skipped VRF is retired all the same
+sub _unlisted_stored_vrfs {
+  my ($device, $instances, $list_complete) = @_;
+  return () if $list_complete;
+  my %listed = map { (netdisco_vrf($_) => 1) } keys %$instances;
+  my %hri = (result_class => 'DBIx::Class::ResultClass::HashRefInflator');
+  my @stored = ((map { $_->{vrf} } $device->vrfs(undef, { columns => ['vrf'], %hri })->all),
+    (map { $_->{vrf} } $device->device_ips(undef, { columns => ['vrf'], distinct => 1, %hri })->all));
+  my $skipped = vrf_skip_test($device);
+  return List::MoreUtils::uniq grep { not $listed{$_} and not $skipped->($_) } @stored;
+}
+
+sub _stored_device_ips {
+  my ($device, $kept) = @_;
+  return () unless scalar keys %$kept;
+  return map {{ alias => $_->{alias}, vrf => $_->{vrf} }} grep { $kept->{ $_->{vrf} } }
+    $device->device_ips(undef, { columns => [qw/alias vrf/],
+      result_class => 'DBIx::Class::ResultClass::HashRefInflator' })->all;
+}
+
+my %unset_rd = map { ($_ => 1) } ('', 'None', '0:0', '<not set>');
+
+sub _device_vrf_row {
+  my ($device, $read, $now) = @_;
+  my $instance = $read->{instance};
+  my $rd = $instance->{rd};
+  return {
+    ip            => $device->ip,
+    vrf           => $read->{vrf},
+    kind          => $instance->{kind},
+    rd            => ((defined $rd and not $unset_rd{$rd}) ? $rd : undef),
+    rt_import     => [ @{ $instance->{rt_import} || [] } ],
+    rt_export     => [ @{ $instance->{rt_export} || [] } ],
+    l3_isid       => $instance->{l3_isid},
+    listed_by     => $instance->{listed_by},
+    complete      => $read->{complete},
+    last_discover => \$now,
+  };
 }
 
 # VRF collection is not reliable yet, so a failed VRF walk drops that VRF's
