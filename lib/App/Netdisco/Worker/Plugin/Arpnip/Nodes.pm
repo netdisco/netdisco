@@ -11,7 +11,7 @@ use App::Netdisco::Transport::SNMP ();
 
 use App::Netdisco::Util::Node qw/check_mac memoize_arp store_arp retire_unvouched_arps record_cli_vrfs/;
 use App::Netdisco::Util::VRF
-  qw/vrf_collection_enabled vrf_skipped netdisco_vrf vrf_instances_for each_vrf_instance/;
+  qw/vrf_collection_enabled vrf_skip_test netdisco_vrf vrf_instances_for each_vrf_instance/;
 use App::Netdisco::Util::FastResolver 'hostnames_resolve_async';
 
 use NetAddr::IP::Lite ':lower';
@@ -315,9 +315,10 @@ sub gather_arps_by_vrf_cli {
   # a platform that read no VRF cannot vouch that its list is whole
   my $list_complete = (scalar keys %vrf_read ? $result->{vrf_list_complete} : 0);
 
+  my $skipped = vrf_skip_test($device);
   foreach my $entry (@{ $result->{entries} || [] }) {
     my $vrf = netdisco_vrf($entry->{vrf}) // '';
-    next if vrf_skipped($device, $vrf);
+    next if $skipped->($vrf);
     # entries from a VRF the platform did not report reading prove no read
     $vrf_read{$vrf} = 0 unless exists $vrf_read{$vrf};
     my $arp = { %$entry, vrf => $vrf };
@@ -326,7 +327,7 @@ sub gather_arps_by_vrf_cli {
     cache_arp($arp, ($vrf eq '' and ($mixed or not $vrf_read{''})));
   }
 
-  delete @vrf_read{ grep { vrf_skipped($device, $_) } keys %vrf_read };
+  delete @vrf_read{ grep { $skipped->($_) } keys %vrf_read };
   # stored in device_vrf by the store phase, so a VRF SNMP does not list gets a domain
   vars->{'cli_vrf_list'} = { read => { %vrf_read }, complete => $list_complete };
   my @not_whole = sort grep { not $vrf_read{$_} } keys %vrf_read;

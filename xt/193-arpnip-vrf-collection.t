@@ -302,7 +302,7 @@ subtest 'arpnip__empty_contexts__recorded_incomplete_not_read' => sub {
 };
 
 subtest 'arpnip__skipped_vrf__no_entries' => sub {
-  run_with_vrfs(settings => { vrf_no_name => ['blue'] });
+  run_with_vrfs(settings => { vrf_no_devicevrf => { 'group:__ANY__' => 'vrf:blue' } });
   ok !$last_snmp->{vrf_reads}{blue}, 'blue never read';
   ok !(grep { $_ eq 'blue' } @{ $last_snmp->{contexts_asked} }), 'never switched to blue';
   is scalar(in_vrf('blue')), 0, 'no blue entries';

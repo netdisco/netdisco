@@ -8,7 +8,7 @@ use App::Netdisco::Transport::SNMP ();
 use App::Netdisco::Transport::SSH ();
 use App::Netdisco::Util::Permission 'acl_matches';
 use App::Netdisco::Util::VRF qw/
-  vrf_collection_enabled vrf_skipped netdisco_vrf vrf_instances_for each_vrf_instance/;
+  vrf_collection_enabled vrf_skip_test netdisco_vrf vrf_instances_for each_vrf_instance/;
 use Dancer::Plugin::DBIC 'schema';
 use NetAddr::IP::Lite ':lower';
 use Time::HiRes 'gettimeofday';
@@ -138,9 +138,10 @@ sub store_cli_vrf_subnets {
   }
 
   my %seen;
+  my $skipped = vrf_skip_test($device);
   foreach my $device_vrf (sort keys %$found) {
     my $vrf = netdisco_vrf($device_vrf);
-    next if vrf_skipped($device, $vrf);
+    next if $skipped->($vrf);
     unless (ref [] eq ref $found->{$device_vrf}) {
       debug sprintf ' [%s] arpnip (cli) - subnets for vrf "%s" are not a list, skipped', $device->ip, $vrf;
       next;

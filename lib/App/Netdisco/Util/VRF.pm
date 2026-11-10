@@ -14,7 +14,7 @@ use base 'Exporter';
 our @EXPORT = ();
 our @EXPORT_OK = qw/
   vrf_collection_enabled
-  vrf_skipped
+  vrf_skip_test
   netdisco_vrf
   vrf_instances_for
   each_vrf_instance
@@ -54,28 +54,82 @@ sub vrf_collection_enabled {
   return (not acl_matches($device, 'skip_vrf_devices'));
 }
 
-=head2 vrf_skipped( $device, $local_name )
+=head2 vrf_skip_test( $device )
 
-True when the VRF name, exactly as the device reports it, is listed in
-C<vrf_no_name>, or C<< <device ip>:<name> >> is listed in C<vrf_no_devicevrf>.
+Returns a test, C<< $skipped->($local_name) >>, true when C<vrf_no_devicevrf>
+skips that VRF on C<$device>. Build it once, before a loop: the device is
+matched against the setting's keys here, and each name's answer is kept, so
+the test costs one ACL check per distinct name however often it is asked.
 Never true for the default table, whichever of C<default> or the empty string
 names it.
 
+C<vrf_no_devicevrf> is a dictionary, or a list of them, as
+C<macsuck_no_deviceports>: each key is an ACL matching devices, its value an
+ACL matching the VRFs to skip on them. A VRF is matched as C<vrf:E<lt>regexE<gt>>,
+anchored at both ends, so C<.>, C<+> and C<(> are live; C<(?i)> ignores case.
+
+  vrf_no_devicevrf:
+    'group:__ANY__': ['vrf:(?i)mgmt', 'vrf:lab-.*']
+    '192.0.2.1': 'vrf:cust:a'
+
+A hostname or regex rule in a key costs a DNS lookup each time a test is
+built, which is a few times per job. A value rule without a property (a bare
+name) or a regex object never matches a VRF, so each warns once.
+
 =cut
 
-sub vrf_skipped {
-  my ($device, $name) = @_;
-  return 0 if not defined $name or $name eq '' or $name eq 'default';
+sub vrf_skip_test {
+  my $device = shift;
+  my @vrf_acls = _vrf_acls_for($device);
+  my %answer;
 
-  my $no_name = setting('vrf_no_name');
-  return 1 if ref [] eq ref $no_name and scalar grep { $_ eq $name } @$no_name;
+  return sub {
+    my $name = shift;
+    return 0 if not defined $name or $name eq '' or $name eq 'default';
+    return 0 unless scalar @vrf_acls;
+    $answer{$name} //= ((scalar grep { acl_matches({ vrf => $name }, $_) } @vrf_acls) ? 1 : 0);
+    return $answer{$name};
+  };
+}
 
-  my $no_devicevrf = setting('vrf_no_devicevrf');
-  my $ip = $device->ip;
-  return 1 if ref [] eq ref $no_devicevrf
-    and scalar grep { $_ eq "$ip:$name" } @$no_devicevrf;
+sub _vrf_acls_for {
+  my $device = shift;
+  my @acls;
+  foreach my $map (_skip_maps()) {
+    foreach my $key (sort keys %$map) {
+      next unless $key and $map->{$key};
+      _warn_unmatchable_rules($map->{$key});
+      push @acls, $map->{$key} if acl_matches($device, $key);
+    }
+  }
+  return @acls;
+}
 
-  return 0;
+my %warned;
+
+sub _skip_maps {
+  my $setting = setting('vrf_no_devicevrf');
+  return ($setting) if ref {} eq ref $setting;
+  return () unless ref [] eq ref $setting;
+  foreach my $entry (grep { ref {} ne ref $_ } @$setting) {
+    next if $warned{"entry:" . ($entry // '')}++;
+    warning sprintf 'vrf_no_devicevrf entry "%s" is ignored: each entry maps a device ACL to VRF rules. Write it as \'<device>\': \'vrf:<name>\'', $entry // '';
+  }
+  return grep { ref {} eq ref $_ } @$setting;
+}
+
+# check_acl reads a bare string as an address or hostname, and a regex object
+# as a pattern for the device's DNS name, so neither can match { vrf => ... }
+sub _warn_unmatchable_rules {
+  my $rules = shift;
+  foreach my $rule (ref [] eq ref $rules ? @$rules : ($rules)) {
+    next if not defined $rule or $warned{"rule:$rule"};
+    my $plain = ref $rule ? '' : $rule;
+    $plain =~ s/^!//;
+    next if $plain eq 'op:and' or ($plain =~ m/^([^:]+):/ and $1 !~ m/^[a-f0-9]+$/i);
+    $warned{"rule:$rule"}++;
+    warning sprintf 'vrf_no_devicevrf rule "%s" matches no VRF. Write a VRF as vrf:<name> or vrf:<regex>', $rule;
+  }
 }
 
 =head2 netdisco_vrf( $snmpinfo_name )
@@ -93,7 +147,7 @@ sub netdisco_vrf {
 =head2 vrf_instances_for( $device, $snmp )
 
 Returns the hashref from C<< $snmp->vrf_instances >> without the VRFs skipped
-by L</vrf_skipped>, or C<undef> when collection is disabled for the device or
+by L</vrf_skip_test>, or C<undef> when collection is disabled for the device or
 the SNMP::Info class has no VRF support (C<vrf_instances_complete> is
 C<undef>). No SNMP method is called when collection is disabled.
 
@@ -108,8 +162,9 @@ sub vrf_instances_for {
   return undef unless defined $snmp->vrf_instances_complete;
 
   my $instances = $snmp->vrf_instances || {};
+  my $skipped = vrf_skip_test($device);
   return { map { ($_ => $instances->{$_}) }
-           grep { not vrf_skipped($device, $_) } keys %$instances };
+           grep { not $skipped->($_) } keys %$instances };
 }
 
 =head2 each_vrf_instance( $device, $snmp, $instances, \&reader, %options )
@@ -234,7 +289,7 @@ sub _complete_default_read {
   my $log_as = $options->{log_as} || 'device';
   my @skipped = grep { not $instances->{$_} } @$leaked;
   if (@skipped) {
-    debug sprintf ' [%s] %s - default read stays partial: %s is not collected (vrf_no_name or vrf_no_devicevrf)',
+    debug sprintf ' [%s] %s - default read stays partial: %s is not collected (vrf_no_devicevrf)',
       $device->ip, $log_as, join(', ', @skipped);
     return;
   }

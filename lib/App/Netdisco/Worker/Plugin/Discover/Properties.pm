@@ -12,7 +12,7 @@ use App::Netdisco::Util::DNS 'hostname_from_ip';
 use App::Netdisco::Util::SNMP qw/snmp_comm_reindex snmp_vrf_reindex get_mibdirs_shortnames walk_mark
   incomplete_walks incomplete_walks_for incomplete_walk_message incomplete_walk_level/;
 use App::Netdisco::Util::VRF
-  qw/vrf_collection_enabled vrf_instances_for vrf_skipped netdisco_vrf each_vrf_instance/;
+  qw/vrf_collection_enabled vrf_instances_for vrf_skip_test netdisco_vrf each_vrf_instance/;
 use App::Netdisco::Util::L3Domain qw/recompute_l3_domains l3_domain_recompute_needed/;
 use App::Netdisco::Util::Web 'sort_port';
 use App::Netdisco::Util::SNMPText qw/decode_snmp_text decode_text_with/;
@@ -624,7 +624,8 @@ sub _unlisted_stored_vrfs {
   my %hri = (result_class => 'DBIx::Class::ResultClass::HashRefInflator');
   my @stored = ((map { $_->{vrf} } $device->vrfs(undef, { columns => ['vrf'], %hri })->all),
     (map { $_->{vrf} } $device->device_ips(undef, { columns => ['vrf'], distinct => 1, %hri })->all));
-  return List::MoreUtils::uniq grep { not $listed{$_} and not vrf_skipped($device, $_) } @stored;
+  my $skipped = vrf_skip_test($device);
+  return List::MoreUtils::uniq grep { not $listed{$_} and not $skipped->($_) } @stored;
 }
 
 sub _stored_device_ips {

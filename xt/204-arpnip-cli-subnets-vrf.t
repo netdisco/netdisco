@@ -210,9 +210,9 @@ subtest 'cli_subnets__host_and_link_local_routes__dropped' => sub {
 
 subtest 'cli_subnets__skipped_vrf__not_stored' => sub {
   my $platform = ReportingPlatform->new(by_vrf => by_vrf());
-  run_subnets(platform => $platform, settings => { vrf_no_name => ['blue'] });
+  run_subnets(platform => $platform, settings => { vrf_no_devicevrf => { 'group:__ANY__' => 'vrf:blue' } });
   is stored(), join(' ', sort '172.20.20.0/24|', '10.100.1.0/24|red', '2001:db8:1:0:0:0:0:0/64|red'), 'blue not stored';
-  run_subnets(platform => $platform, settings => { vrf_no_devicevrf => ['192.0.2.1:red'] });
+  run_subnets(platform => $platform, settings => { vrf_no_devicevrf => { '192.0.2.1' => 'vrf:red' } });
   is stored(), join(' ', sort '172.20.20.0/24|', '10.100.1.0/24|blue'), 'vrf_no_devicevrf drops red';
 };
 

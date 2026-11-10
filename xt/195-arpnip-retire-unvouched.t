@@ -125,10 +125,10 @@ subtest 'retire__switch_on__short_vrf_list__uncovered_vrfs_kept' => sub {
 
 subtest 'retire__switch_on__skipped_vrf__retired_even_with_short_list' => sub {
   my (undef, @by_name) = with_settings(sub {
-    run_retire(['', 'blue', 'gone'], $now, { '' => 1 }, 0) }, vrf_no_name => ['blue']);
-  is_deeply retired_vrfs(@by_name), ['', 'blue'], 'vrf_no_name';
+    run_retire(['', 'blue', 'gone'], $now, { '' => 1 }, 0) }, vrf_no_devicevrf => { 'group:__ANY__' => 'vrf:blue' });
+  is_deeply retired_vrfs(@by_name), ['', 'blue'], 'vrf_no_devicevrf for every device';
   my (undef, @by_device) = with_settings(sub {
-    run_retire(['', 'blue', 'gone'], $now, { '' => 1 }, 0) }, vrf_no_devicevrf => ["$router:gone"]);
+    run_retire(['', 'blue', 'gone'], $now, { '' => 1 }, 0) }, vrf_no_devicevrf => { $router => 'vrf:gone' });
   is_deeply retired_vrfs(@by_device), ['', 'gone'], 'vrf_no_devicevrf';
 };
 

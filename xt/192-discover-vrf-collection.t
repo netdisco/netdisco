@@ -506,7 +506,7 @@ subtest 'discover__polled_address_kept_in_incomplete_vrf__no_fake_default_row' =
 subtest 'discover__skipped_vrf__absent_from_device_ip_and_device_vrf' => sub {
   local $stored_rows = [ { alias => '10.40.0.1', vrf => 'blue' } ];
   local $stored_vrfs = [ { vrf => 'blue' }, { vrf => 'red' }, { vrf => '' } ];
-  run_with_vrfs(settings => { vrf_no_name => ['blue'] });
+  run_with_vrfs(settings => { vrf_no_devicevrf => { 'group:__ANY__' => 'vrf:blue' } });
 
   ok !$last_snmp->{vrf_reads}{blue}, 'blue readers never called';
   ok !(grep { $_ eq 'blue' } @{ $last_snmp->{contexts_asked} }), 'never switched to blue';
@@ -536,7 +536,7 @@ subtest 'discover__short_instance_list__unlisted_vrf_rows_kept' => sub {
   my %fixture = vrf_fixture();
   delete $fixture{instances}{blue};
   run_with_vrfs(instances => $fixture{instances}, instances_complete => 0,
-    settings => { vrf_no_name => ['blue'] });
+    settings => { vrf_no_devicevrf => { 'group:__ANY__' => 'vrf:blue' } });
 
   my @seen = @{ (removals_of('DeviceIp'))[0][2] };
   is keyed(grep { $_->{vrf} eq 'green' } @seen), '10.77.0.1|green', 'unlisted VRF rows kept';

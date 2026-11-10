@@ -769,7 +769,6 @@ skip_modules: []
 store_modules: true
 store_vrfs: false
 skip_vrf_devices: []
-vrf_no_name: []
 vrf_no_devicevrf: []
 vrf_domains: []
 snmp_charset:
