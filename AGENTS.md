@@ -12,7 +12,9 @@ Before changing a worker, the job queue or a transport under
 `lib/App/Netdisco/Worker/`, `Backend/`, `JobQueue/` or `Transport/`, read
 `.claude/skills/netdisco-backend/SKILL.md`; before changing an SSH
 collector under `lib/App/Netdisco/SSHCollector/`, read
-`.claude/skills/netdisco-ssh-collector/SKILL.md`.
+`.claude/skills/netdisco-ssh-collector/SKILL.md`. Before reviewing a pull
+request, your own or someone else's, read
+`.claude/skills/netdisco-pr-review/SKILL.md`.
 
 ## How the code fits together
 
@@ -155,6 +157,26 @@ perl Build.PL && HARNESS_OPTIONS=j$(nproc) ./Build test --test_files xt/
   time: `node --test xt/js/NAME.test.js`. A new `xt/js` file must also be
   added by name to `.github/workflows/frontend-tests.yml`, because
   `node --test` exits 0 on a glob that matches nothing.
+
+**CI checks beyond the tests:**
+
+- **Perl dependency scan** (`cpan-audit.yml`, and two steps in
+  `build-and-publish.yml` on pull requests) fails when a dependency has a
+  CPANSec advisory: a `Build.PL` minimum that still allows an affected
+  version, an upgraded install that holds one, or a dependency with an
+  advisory that Netdisco loads but `Build.PL` does not name. Fix it by
+  raising or adding the minimum in `Build.PL`; on failure,
+  `xt/bin/cpan-audit-fix-hints` prints what to change. Only when no
+  release fixes it, or it does not apply, add the advisory to
+  `.cpanauditignore` with the reason its header asks for. The scan runs
+  daily against a fresh advisory database, so it can fail with no related
+  change; fix that in its own pull request.
+- **Frontend dependency scan** (retire.js) and
+  `xt/33-vendored-manifest.t`: see the frontend skill.
+- **`xt/00-compile-1.t` to `-4.t`** each compile a share of `lib/` and
+  `bin/`; a failure there means a file does not compile.
+- **`check-version` skipped** on a pull request is normal: it runs only
+  for Dependabot's.
 
 ## Trying a change
 
