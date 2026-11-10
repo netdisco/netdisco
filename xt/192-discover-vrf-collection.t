@@ -215,6 +215,7 @@ our $stored_rows = [];
 our $stored_vrfs = [];
 our @warnings;
 our $recompute_dies = 0;
+our @debugs;
 our %remove_returns;
 my $last_snmp;
 
@@ -232,7 +233,7 @@ sub with_settings {
 sub run_discover {
   my (%snmp) = @_;
   delete @{ vars() }{qw/device_changed new_device device_ports hook_data timestamp incomplete_walks/};
-  @upserts = @removals = @events = @warnings = ();
+  @upserts = @removals = @events = @warnings = @debugs = ();
 
   my $device = App::Netdisco::DB->resultset('Device')->new_result({ %device_cols });
   $device->in_storage(1);
@@ -250,8 +251,17 @@ sub run_discover {
     = sub { return bless {}, 'FakeSchema' };
   local *App::Netdisco::Worker::Plugin::Discover::Properties::recompute_l3_domains
     = sub { push @events, 'recompute'; die "lock timeout\n" if $recompute_dies; return 0 };
+  # the real one asks the database about vrf_domains, manual rows and legacy keys (xt/213)
+  local *App::Netdisco::Worker::Plugin::Discover::Properties::l3_domain_recompute_needed
+    = sub { return $_[1] ? 1 : 0 };
+  local *App::Netdisco::Worker::Plugin::Discover::Properties::debug = sub { push @debugs, @_ };
   local *App::Netdisco::DB::Result::Device::ports = sub { return FakeRows->new };
   local *App::Netdisco::DB::Result::Device::device_ips = sub { return FakeRows->new(@$stored_rows) };
+  local *DBIx::Class::ResultSet::search = sub {
+    my ($rs) = @_;
+    return FakeRows->new(@$stored_vrfs) if $rs->result_source->source_name eq 'DeviceVrf';
+    return $search->(@_);
+  };
   local *App::Netdisco::DB::Result::Device::vrfs = sub { return FakeRows->new(@$stored_vrfs) };
   local *App::Netdisco::Worker::Plugin::Discover::Properties::warning = sub { push @warnings, @_ };
   local *App::Netdisco::DB::Result::Device::update = sub { return $_[0] };
@@ -644,12 +654,67 @@ subtest 'discover__recompute_fails__warns_and_discover_succeeds' => sub {
   is scalar(grep { m/L3 domain recompute failed.*lock timeout/ } @warnings), 1, 'one warning';
 };
 
-subtest 'discover__vrf_path__recompute_runs_each_time' => sub {
+subtest 'discover__vrf_path__no_stored_rows__recomputes_each_time' => sub {
   run_with_vrfs();
   is scalar(grep { $_ eq 'recompute' } @events), 1, 'first discover recomputes';
   run_with_vrfs();
-  is scalar(grep { $_ eq 'recompute' } @events), 1,
-    'an unchanged second discover recomputes too, so a failed one is retried';
+  is scalar(grep { $_ eq 'recompute' } @events), 1, 'so does one whose VRFs are all new again';
+};
+
+# xt/213 covers the other reasons to recompute; here only the device's evidence
+sub stored_like_fixture {
+  my %over = @_;
+  return [
+    { vrf => '', rt_import => [], rt_export => [], l3_isid => undef },
+    { vrf => 'red', rt_import => ['64512:30'], rt_export => ['64512:31'], l3_isid => undef },
+    { vrf => 'blue', rt_import => [], rt_export => [], l3_isid => undef },
+    map { $over{extra} ? { vrf => $_, rt_import => [], rt_export => [], l3_isid => undef } : () } 'green',
+  ];
+}
+
+subtest 'discover__unchanged_vrfs__no_recompute' => sub {
+  local $stored_vrfs = stored_like_fixture();
+  run_with_vrfs();
+  ok scalar(upserted('DeviceVrf')), 'rows still written';
+  ok !(grep { $_ eq 'recompute' } @events), 'no recompute';
+  is scalar(grep { m/\[192\.0\.2\.1\].*recompute skipped/ } @debugs), 1, 'one debug line names the device';
+};
+
+subtest 'discover__rt_order_only_changed__no_recompute' => sub {
+  my $fixture = { vrf_fixture() };
+  $fixture->{instances}{red}{rt_import} = [ '64512:9', '64512:30', '64512:30', '' ];
+  local $stored_vrfs = stored_like_fixture();
+  $stored_vrfs->[1]{rt_import} = [ '64512:30', '64512:9' ];
+  with_settings(sub { run_discover(%$fixture) }, store_vrfs => 1);
+  ok !(grep { $_ eq 'recompute' } @events), 'same set in another order, no recompute';
+};
+
+subtest 'discover__rt_member_changed__recompute' => sub {
+  local $stored_vrfs = stored_like_fixture();
+  $stored_vrfs->[1]{rt_import} = ['64512:99'];
+  run_with_vrfs();
+  is scalar(grep { $_ eq 'recompute' } @events), 1, 'recomputed';
+};
+
+subtest 'discover__isid_changed__recompute' => sub {
+  local $stored_vrfs = stored_like_fixture();
+  $stored_vrfs->[2]{l3_isid} = 4100;
+  run_with_vrfs();
+  is scalar(grep { $_ eq 'recompute' } @events), 1, 'recomputed';
+};
+
+subtest 'discover__vrf_removed__recompute' => sub {
+  local $stored_vrfs = stored_like_fixture(extra => 1);
+  run_with_vrfs();
+  ok !(grep { $_->{vrf} eq 'green' } @{ (removals_of('DeviceVrf'))[0][2] }), 'green removed';
+  is scalar(grep { $_ eq 'recompute' } @events), 1, 'recomputed';
+};
+
+subtest 'discover__vrf_added__recompute' => sub {
+  local $stored_vrfs = stored_like_fixture();
+  splice @$stored_vrfs, 2, 1;
+  run_with_vrfs();
+  is scalar(grep { $_ eq 'recompute' } @events), 1, 'recomputed';
 };
 
 subtest 'discover__switch_dies__default_context_restored' => sub {

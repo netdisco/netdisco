@@ -1,0 +1,17 @@
+[% USE CSV -%]
+[% CSV.dump([ 'Device' 'Device IP' 'VRF' 'Domain' 'Why grouped' 'RD' 'Import RTs' 'Export RTs' 'I-SID' ]) %]
+
+[% FOREACH row IN results %]
+  [% mylist = [] %]
+  [% mylist.push(row.dns || row.device_name || row.ip) %]
+  [% mylist.push(row.ip) %]
+  [% mylist.push(row.vrf) %]
+  [% mylist.push(row.domain) %]
+  [% mylist.push(row.grouped_by) %]
+  [% mylist.push(row.rd) %]
+  [% mylist.push(row.rt_import.join(',')) %]
+  [% mylist.push(row.rt_export.join(',')) %]
+  [% mylist.push(row.l3_isid) %]
+  [% CSV.dump(mylist) %]
+
+[% END %]

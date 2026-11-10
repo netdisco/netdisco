@@ -49,4 +49,15 @@ Returns the entry from the C<device> table which reported this instance.
 
 __PACKAGE__->belongs_to( device => 'App::Netdisco::DB::Result::Device', 'ip' );
 
+=head2 l3_member
+
+Returns the C<l3_domain_member> row placing this VRF in an L3 domain, if the
+recompute has placed it.
+
+=cut
+
+__PACKAGE__->might_have( l3_member => 'App::Netdisco::DB::Result::L3DomainMember',
+  { 'foreign.ip' => 'self.ip', 'foreign.vrf' => 'self.vrf' },
+  { cascade_copy => 0, cascade_update => 0, cascade_delete => 0 } );
+
 1;

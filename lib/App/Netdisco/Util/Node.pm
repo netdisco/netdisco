@@ -6,7 +6,7 @@ use Dancer::Plugin::DBIC 'schema';
 use NetAddr::MAC;
 use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
 use App::Netdisco::Util::VRF qw/vrf_collection_enabled vrf_skip_test/;
-use App::Netdisco::Util::L3Domain 'recompute_l3_domains';
+use App::Netdisco::Util::L3Domain qw/recompute_l3_domains l3_domain_recompute_needed/;
 use Try::Tiny;
 
 use base 'Exporter';
@@ -280,10 +280,9 @@ sub record_cli_vrfs {
                              vrf => { -not_in => \@names } })->delete;
     $changed += ($gone eq '0E0' ? 0 : $gone);
   }
-  return 0 unless $changed;
-
-  try { recompute_l3_domains(schema(vars->{'tenant'})) }
-  catch { warning sprintf ' [%s] arpnip - L3 domain recompute failed, the next discover retries: %s',
+  my $schema = schema(vars->{'tenant'});
+  try { recompute_l3_domains($schema) if l3_domain_recompute_needed($schema, $changed, 'by arpnip') }
+  catch { warning sprintf ' [%s] arpnip - L3 domain recompute failed, the next discover that finds a change retries: %s',
     $device->ip, $_ };
   return $changed;
 }
