@@ -39,6 +39,15 @@ foreach my $view (all_templates()) {
 
 printf "wrote %d snapshots to xt/snapshots/\n", $written;
 
+# xt/188 renders the *.two-domains.html files from its own stub rows, so it
+# writes them itself.
+{
+    local $ENV{ND_WRITE_DOMAIN_SNAPSHOTS} = 1;
+    my $lib = dir($FindBin::RealBin)->parent->parent->subdir('lib')->stringify;
+    system($^X, "-I$lib", '-Ixt/lib', 'xt/188-vrf-domain-readers.t') == 0
+      or push @failed, 'xt/188-vrf-domain-readers.t (two-domain snapshots)';
+}
+
 if (@failed) {
     printf STDERR "%d template(s) failed to render:\n  %s\n",
         scalar(@failed), join("\n  ", @failed);

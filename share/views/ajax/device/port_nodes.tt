@@ -52,6 +52,7 @@
     [% ELSE %]
       <a href="[% search_node | none %]&q=[% ip.ip | uri %]">[% ip.ip | html_entity %]</a>
     [% END %]
+    [% ' in VRF ' _ ip.vrf | html_entity IF ip.vrf.length %]
     [% END %]
     [% IF node.stitched_ips.size AND node.stitched_ips.size > settings.devport_ips_collapse_threshold %]
     </div>

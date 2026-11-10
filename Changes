@@ -1,3 +1,11 @@
+2.118000 - tbd
+
+  [ENHANCEMENTS]
+
+  * upgrade SNMP::Info dependency to 3.985002
+  * #1785 record addresses, subnets and ARP entries per VRF, with L3 domains,
+    behind the new store_vrfs setting (database schema 105: run netdisco-deploy)
+
 2.117003 - 2026-11-07
 
   [ENHANCEMENTS]

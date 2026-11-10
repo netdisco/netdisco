@@ -5,6 +5,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
+use App::Netdisco::Util::L3Domain qw/results_span_domains label_rows_by_domain/;
 use NetAddr::IP::Lite ':lower';
 use POSIX qw/strftime/;
 
@@ -72,14 +73,17 @@ get '/ajax/content/report/ipinventory' => require_login sub {
         (($start and $end) ? (start => "$start 00:00:00", end => "$end 23:59:59") : ()),
     })->all;
     return unless scalar @results;
+    my $multi_domain = results_span_domains(\@results);
 
     if ( request->is_ajax ) {
-        my $json = to_json( \@results );
-        template 'ajax/report/ipinventory.tt', { results => $json }, { layout => 'noop' };
+        my $json = to_json( label_rows_by_domain(\@results, $multi_domain) );
+        template 'ajax/report/ipinventory.tt',
+          { results => $json, multi_domain => $multi_domain }, { layout => 'noop' };
     }
     else {
         header( 'Content-Type' => 'text/comma-separated-values' );
-        template 'ajax/report/ipinventory_csv.tt', { results => \@results, }, { layout => 'noop' };
+        template 'ajax/report/ipinventory_csv.tt',
+          { results => \@results, multi_domain => $multi_domain }, { layout => 'noop' };
     }
 };
 

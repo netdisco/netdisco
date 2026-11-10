@@ -55,10 +55,22 @@ Returns C<undef> if the connection fails.
       if $self->platform->can('arpnip');
   }
 
+  sub arpnip_by_vrf {
+    my $self = shift;
+    $self->platform->arpnip_by_vrf(@_, $self->host, $self->ssh, $self->auth)
+      if $self->platform->can('arpnip_by_vrf');
+  }
+
   sub macsuck {
     my $self = shift;
     $self->platform->macsuck(@_, $self->host, $self->ssh, $self->auth)
       if $self->platform->can('macsuck');
+  }
+
+  sub subnets_by_vrf {
+    my $self = shift;
+    $self->platform->subnets_by_vrf(@_, $self->host, $self->ssh, $self->auth)
+      if $self->platform->can('subnets_by_vrf');
   }
 
   sub subnets {

@@ -1,0 +1,108 @@
+# IOS-XR (lab capture, XRd 26.1.1), the sections IOSXR.pm reads
+#prompt: RP/0/RP0/CPU0:router#
+# The "show ipv6 neighbors" (no VRF) and "terminal width 0" sections are SYNTHETIC: the first was not
+# captured, the second only mirrors the captured "terminal length 0" shape
+#--- terminal length 0
+Sat Oct 31 18:19:34.456 UTC
+#--- terminal width 0
+Sat Oct 31 18:19:34.500 UTC
+#--- show vrf all
+Sat Oct 31 18:19:34.642 UTC
+VRF                  RD                  RT                         AFI   SAFI     
+blue                 not set            
+green                not set            
+grey                 not set            
+red                  not set            
+#--- show arp vrf all
+Sat Oct 31 18:19:34.765 UTC
+
+-------------------------------------------------------------------------------
+0/RP0/CPU0
+-------------------------------------------------------------------------------
+Address         Age        Hardware Addr   State      Type  Interface
+10.60.0.1       -          5254.0048.04c0  Interface  ARPA  GigabitEthernet0/0/0/0
+10.60.0.1       -          5254.00fc.fa99  Interface  ARPA  GigabitEthernet0/0/0/1
+10.60.0.2       00:00:31   0200.0000.0601  Dynamic    ARPA  GigabitEthernet0/0/0/0
+10.60.0.2       00:00:24   0200.0000.0602  Dynamic    ARPA  GigabitEthernet0/0/0/1
+10.61.0.1       -          5254.0018.1b0c  Interface  ARPA  GigabitEthernet0/0/0/2
+10.61.0.2       00:00:17   0200.0000.0603  Dynamic    ARPA  GigabitEthernet0/0/0/2
+10.62.0.1       -          5254.0046.10e6  Interface  ARPA  GigabitEthernet0/0/0/3
+10.62.0.2       00:00:17   0200.0000.0603  Dynamic    ARPA  GigabitEthernet0/0/0/3
+#--- show arp vrf red
+Sat Oct 31 18:19:34.887 UTC
+
+-------------------------------------------------------------------------------
+0/RP0/CPU0
+-------------------------------------------------------------------------------
+Address         Age        Hardware Addr   State      Type  Interface
+10.60.0.1       -          5254.0048.04c0  Interface  ARPA  GigabitEthernet0/0/0/0
+10.60.0.2       00:00:31   0200.0000.0601  Dynamic    ARPA  GigabitEthernet0/0/0/0
+10.61.0.1       -          5254.0018.1b0c  Interface  ARPA  GigabitEthernet0/0/0/2
+10.61.0.2       00:00:17   0200.0000.0603  Dynamic    ARPA  GigabitEthernet0/0/0/2
+#--- show arp vrf blue
+Sat Oct 31 18:19:35.052 UTC
+
+-------------------------------------------------------------------------------
+0/RP0/CPU0
+-------------------------------------------------------------------------------
+Address         Age        Hardware Addr   State      Type  Interface
+10.60.0.1       -          5254.00fc.fa99  Interface  ARPA  GigabitEthernet0/0/0/1
+10.60.0.2       00:00:24   0200.0000.0602  Dynamic    ARPA  GigabitEthernet0/0/0/1
+10.62.0.1       -          5254.0046.10e6  Interface  ARPA  GigabitEthernet0/0/0/3
+10.62.0.2       00:00:17   0200.0000.0603  Dynamic    ARPA  GigabitEthernet0/0/0/3
+#--- show arp vrf green
+Sat Oct 31 18:19:35.237 UTC
+#--- show arp vrf grey
+Sat Oct 31 18:19:35.415 UTC
+#--- show arp
+Sat Oct 31 18:19:35.529 UTC
+
+-------------------------------------------------------------------------------
+0/RP0/CPU0
+-------------------------------------------------------------------------------
+Address         Age        Hardware Addr   State      Type  Interface
+172.20.20.1     00:00:12   92f9.ea9d.aeda  Dynamic    ARPA  MgmtEth0/RP0/CPU0/0
+172.20.20.19    -          5254.0091.3b70  Interface  ARPA  MgmtEth0/RP0/CPU0/0
+#--- show arp vrf RED
+Sat Oct 31 18:19:35.654 UTC
+#--- show arp vrf nosuchvrf
+Sat Oct 31 18:19:35.777 UTC
+#--- show ipv6 neighbors vrf red
+Sat Oct 31 18:19:35.952 UTC
+IPv6 Address                             Age  Link-layer Add State Interface            Location
+2001:db8:60::2                           10   0200.0000.0601 REACH Gi0/0/0/0            0/RP0/CPU0     
+fe80::2                                  34   0200.0000.0601 REACH Gi0/0/0/0            0/RP0/CPU0     
+[Mcast adjacency]                           - 0000.0000.0000 REACH Gi0/0/0/0            0/RP0/CPU0     
+2001:db8:61::2                           19   0200.0000.0603 REACH Gi0/0/0/2            0/RP0/CPU0     
+2001:db8:61::ff:fe00:603                 23   0200.0000.0603 REACH Gi0/0/0/2            0/RP0/CPU0     
+fe80::2                                  23   0200.0000.0603 REACH Gi0/0/0/2            0/RP0/CPU0     
+[Mcast adjacency]                           - 0000.0000.0000 REACH Gi0/0/0/2            0/RP0/CPU0     
+#--- show ipv6 neighbors vrf blue
+Sat Oct 31 18:19:36.136 UTC
+IPv6 Address                             Age  Link-layer Add State Interface            Location
+2001:db8:60::2                           26   0200.0000.0602 REACH Gi0/0/0/1            0/RP0/CPU0     
+2001:db8:60::ff:fe00:602                 30   0200.0000.0602 REACH Gi0/0/0/1            0/RP0/CPU0     
+fe80::2                                  30   0200.0000.0602 REACH Gi0/0/0/1            0/RP0/CPU0     
+[Mcast adjacency]                           - 0000.0000.0000 REACH Gi0/0/0/1            0/RP0/CPU0     
+2001:db8:62::2                           19   0200.0000.0603 REACH Gi0/0/0/3            0/RP0/CPU0     
+2001:db8:62::ff:fe00:603                 23   0200.0000.0603 REACH Gi0/0/0/3            0/RP0/CPU0     
+fe80::2                                  23   0200.0000.0603 REACH Gi0/0/0/3            0/RP0/CPU0     
+fe80::ff:fe00:603                        13   0200.0000.0603 REACH Gi0/0/0/3            0/RP0/CPU0     
+[Mcast adjacency]                           - 0000.0000.0000 REACH Gi0/0/0/3            0/RP0/CPU0     
+#--- show ipv6 neighbors vrf green
+Sat Oct 31 18:19:36.258 UTC
+IPv6 Address                             Age  Link-layer Add State Interface            Location
+2001:db8:63::2                           13   0200.0000.0604 REACH Gi0/0/0/4            0/RP0/CPU0     
+2001:db8:63::ff:fe00:604                 18   0200.0000.0604 REACH Gi0/0/0/4            0/RP0/CPU0     
+fe80::2                                  13   0200.0000.0604 REACH Gi0/0/0/4            0/RP0/CPU0     
+[Mcast adjacency]                           - 0000.0000.0000 REACH Gi0/0/0/4            0/RP0/CPU0     
+#--- show ipv6 neighbors vrf grey
+Sat Oct 31 18:19:36.383 UTC
+#--- show ipv6 neighbors vrf nosuchvrf
+Sat Oct 31 18:19:36.506 UTC
+Invalid VRF specified, please check vrf name. 
+#--- show ipv6 neighbors
+Sat Oct 31 18:19:36.050 UTC
+IPv6 Address                             Age  Link-layer Add State Interface            Location
+fe80::9ef9:eaff:fe9d:aeda                12   92f9.ea9d.aeda REACH Mg0/RP0/CPU0/0        0/RP0/CPU0     
+#--- exit

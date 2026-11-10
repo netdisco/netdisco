@@ -33,6 +33,7 @@ our @EXPORT_OK = qw/
   pane_history_header
   escape_for_script_context
   escape_results_token
+  omit_empty_columns
   tacacs_configured
   tacacs_unavailable
   tacacs_startup_warning
@@ -683,6 +684,37 @@ sub escape_results_token {
 
   $tokens->{results} = escape_for_script_context( $tokens->{results} );
   return $tokens;
+}
+
+=head2 omit_empty_columns( \@rows, \@column_order, \%column_config )
+
+Applies two column options of a configured report and returns the columns to
+show, in order. C<_omit_if_empty> leaves a column out when no row has a value
+for it, and deletes its key from every row. C<_empty_as> gives the text an empty
+cell shows when the column is kept. A missing key counts as empty. Rows are
+changed in place.
+
+=cut
+
+# Compares a copy: reading a number as a string in place would make the JSON
+# encoder serialize it as a string.
+sub _is_empty { my $value = shift; return (not defined $value or "$value" eq '') }
+
+sub omit_empty_columns {
+  my ($rows, $column_order, $column_config) = @_;
+  my @kept;
+  foreach my $col (@$column_order) {
+    my $options = $column_config->{$col} || {};
+    if ($options->{_omit_if_empty} and not grep { not _is_empty($_->{$col}) } @$rows) {
+      delete $_->{$col} for @$rows;
+      next;
+    }
+    if (defined $options->{_empty_as}) {
+      $_->{$col} = $options->{_empty_as} for grep { _is_empty($_->{$col}) } @$rows;
+    }
+    push @kept, $col;
+  }
+  return @kept;
 }
 
 =head2 tacacs_configured

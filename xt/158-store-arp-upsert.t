@@ -6,7 +6,7 @@ use warnings;
 # store_arp wrote each ARP entry three times: the retire step hit the target
 # row too, then update_or_new and the router maps each wrote a new version,
 # none HOT while GIN indexes covered the maps. It now locks the IP, retires
-# every other active binding of that IP, and upserts once.
+# every other active binding of that IP within the same VRF, and upserts once.
 #
 # Excluding the target row from the retire is what lets two pollers that
 # report one IP under different MACs deadlock, so the lock must come first
@@ -19,7 +19,7 @@ BEGIN { $ENV{DANCER_ENVDIR} = '/dev/null'; }
 use Test::More 0.88;
 use App::Netdisco;
 use Dancer ':tests';
-use App::Netdisco::Util::Node 'store_arp';
+use App::Netdisco::Util::Node qw/store_arp memoize_arp/;
 
 set logger => 'null';
 
@@ -65,8 +65,8 @@ subtest 'store_arp__lock__hashes_inet_normalized_ip' => sub {
 
 subtest 'store_arp__retire__excludes_only_the_target' => sub {
   my (undef, $retire) = run_store({%host}, $now, '198.51.100.1');
-  like($retire->[0], qr/WHERE ip = \? AND active AND NOT \(mac = \? AND vrf = \?\)/);
-  is_deeply([@$retire[1 .. $#$retire]], ['192.0.2.1', '00:11:22:33:44:55', '']);
+  like($retire->[0], qr/WHERE ip = \? AND vrf = \? AND active AND mac <> \?/);
+  is_deeply([@$retire[1 .. $#$retire]], ['192.0.2.1', '', '00:11:22:33:44:55']);
 };
 
 subtest 'store_arp__upsert__conflict_key_and_columns' => sub {
@@ -76,7 +76,7 @@ subtest 'store_arp__upsert__conflict_key_and_columns' => sub {
   my ($update) = $sql =~ /DO UPDATE(.*)\z/s;
   like($update, qr/active = true/);
   like($update, qr/dns = EXCLUDED\.dns/);
-  like($update, qr/time_last = EXCLUDED\.time_last/);
+  like($update, qr/time_last = GREATEST\(n\.time_last, EXCLUDED\.time_last\)/);
   unlike($update, qr/time_first/, 'time_first only on insert');
   ok(index($sql, $now) >= 0, 'job time interpolated');
 };
@@ -84,7 +84,7 @@ subtest 'store_arp__upsert__conflict_key_and_columns' => sub {
 subtest 'store_arp__with_device_ip__writes_both_router_maps' => sub {
   my (undef, undef, $upsert) = run_store({%host}, $now, '198.51.100.1');
   my ($sql, @binds) = @$upsert;
-  is(scalar(grep { $_ eq '198.51.100.1' } @binds), 3, 'router in both new maps and the first-seen test');
+  is(scalar(grep { $_ eq '198.51.100.1' } @binds), 4, 'router in both new maps, router_last and the first-seen test');
   is(scalar(grep { $_ eq '{198.51.100.1}' } @binds), 2, 'router path for both jsonb_set calls');
   my ($update) = $sql =~ /DO UPDATE(.*)\z/s;
   like($update, qr/seen_on_router_last = jsonb_set\(n\.seen_on_router_last/);
@@ -100,15 +100,75 @@ subtest 'store_arp__without_device_ip__leaves_router_maps_alone' => sub {
   unlike($update, qr/seen_on_router/);
 };
 
+subtest 'store_arp__with_router__inserts_and_updates_router_last' => sub {
+  my (undef, undef, $upsert) = run_store({%host}, $now, '198.51.100.1');
+  my ($sql, @binds) = @$upsert;
+  my ($columns) = $sql =~ /INSERT INTO node_ip AS n\s*\((.*?)\)\s*VALUES/s;
+  like($columns, qr/\brouter_last\b/, 'insert column list');
+  my ($update) = $sql =~ /DO UPDATE(.*)\z/s;
+  like($update, qr/router_last = EXCLUDED\.router_last/, 'update takes the inserted value');
+  is(scalar(grep { $_ eq '198.51.100.1' } @binds), 4, 'insert binds the device IP for both maps and router_last');
+};
+
+subtest 'store_arp__without_router__router_last_untouched' => sub {
+  my @stmts = run_store({%host});
+  my ($sql) = @{ $stmts[2] };
+  unlike($sql, qr/\brouter_last\b/, 'not in the insert or the update');
+};
+
 subtest 'store_arp__with_vrf__binds_vrf_in_key_and_exclusion' => sub {
   my (undef, $retire, $upsert) = run_store({%host, vrf => 'blue'}, $now, '198.51.100.1');
-  is($retire->[-1], 'blue', 'retire exclusion');
+  is($retire->[2], 'blue', 'retire scope');
   ok(scalar(grep { defined and $_ eq 'blue' } @$upsert[1 .. $#$upsert]), 'upsert key');
+};
+
+# a VRF named "0" is false in Perl, so it must not fall back to the default table
+subtest 'store_arp__vrf_named_0__kept_as_0_not_default_table' => sub {
+  my (undef, $retire, $upsert) = run_store({%host, vrf => '0'}, $now, '198.51.100.1');
+  is($retire->[2], '0', 'retire scoped to VRF 0');
+  is($upsert->[3], '0', 'upsert key carries VRF 0');
+};
+
+subtest 'store_arp__no_vrf__default_table' => sub {
+  my (undef, $retire, $upsert) = run_store({%host}, $now, '198.51.100.1');
+  is($retire->[2], '', 'retire scoped to the default table');
+  is($upsert->[3], '', 'upsert key carries the default table');
 };
 
 subtest 'store_arp__bad_mac__writes_nothing' => sub {
   my @stmts = run_store({%host, node => 'zz'}, $now, '198.51.100.1');
   is(scalar @stmts, 0);
+};
+
+subtest 'store_arp__retire__scoped_to_the_entry_vrf' => sub {
+  my (undef, $retire) = run_store({%host, vrf => 'red'}, $now, '198.51.100.1');
+  like($retire->[0], qr/vrf = \?/);
+  is_deeply([@$retire[1 .. $#$retire]], ['192.0.2.1', 'red', '00:11:22:33:44:55']);
+};
+
+subtest 'store_arp__retire__default_vrf_binds_empty_string' => sub {
+  my (undef, $retire) = run_store({%host}, $now, '198.51.100.1');
+  is($retire->[2], '');
+};
+
+subtest 'memoize_arp__same_ip_mac_two_vrfs__two_keys' => sub {
+  isnt(memoize_arp({%host, vrf => 'red'}), memoize_arp({%host, vrf => 'blue'}));
+};
+
+subtest 'memoize_arp__no_vrf__equals_empty_vrf' => sub {
+  is(memoize_arp({%host}), memoize_arp({%host, vrf => ''}));
+  is(memoize_arp({%host}), join(chr(28), $host{node}, $host{ip}, ''));
+};
+
+# An older job of one router storing after a newer job must not lower time_last,
+# or the newer job's retire_unvouched_arps deactivates a host both reported.
+subtest 'store_arp__older_store_after_newer__time_last_not_lowered' => sub {
+  for my $device_ip ('198.51.100.1', undef) {
+    my @stmts = run_store({%host}, $now, $device_ip);
+    my ($update) = $stmts[2][0] =~ /DO UPDATE(.*)\z/s;
+    like($update, qr/time_last = GREATEST\(n\.time_last, EXCLUDED\.time_last\)/, 'keeps the later stamp');
+    unlike($update, qr/time_last = EXCLUDED\.time_last/, 'no unconditional overwrite');
+  }
 };
 
 done_testing;

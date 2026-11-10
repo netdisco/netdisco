@@ -5,6 +5,7 @@ use Dancer::Plugin::DBIC;
 use Dancer::Plugin::Auth::Extensible;
 
 use App::Netdisco::Web::Plugin;
+use App::Netdisco::Util::Web 'omit_empty_columns';
 use Path::Class 'file';
 use Storable 'dclone';
 use Safe;
@@ -75,6 +76,7 @@ foreach my $report (@{setting('reports')}) {
       my $munger  = file(($ENV{NETDISCO_HOME} || $ENV{HOME}), 'site_plugins', $r)->stringify;
       my @results = ((-f $munger) ? $compartment->rdo( $munger ) : @data);
       return if $@ or (0 == scalar @results);
+      @column_order = omit_empty_columns(\@results, \@column_order, \%column_config);
 
       if (request->is_ajax) {
           # searchable field support..

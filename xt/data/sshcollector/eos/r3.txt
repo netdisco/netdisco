@@ -1,0 +1,81 @@
+# Arista EOS (lab capture, cEOS 4.36.2F, r3), the JSON EOS.pm reads over capture with stdin_data
+#--- show ip arp vrf all | json | no-more
+{
+    "vrfs": {
+        "MGMT": {
+            "ipV4Neighbors": [
+                {
+                    "address": "172.20.20.1",
+                    "age": 0,
+                    "hwAddress": "be57.40b3.ef86",
+                    "interface": "Management0"
+                }
+            ],
+            "totalEntries": 1,
+            "staticEntries": 0,
+            "dynamicEntries": 1,
+            "notLearnedEntries": 0
+        },
+        "RED_VRF": {
+            "ipV4Neighbors": [],
+            "totalEntries": 0,
+            "staticEntries": 0,
+            "dynamicEntries": 0,
+            "notLearnedEntries": 0
+        },
+        "Red": {
+            "ipV4Neighbors": [
+                {
+                    "address": "10.111.3.2",
+                    "age": 16953163,
+                    "hwAddress": "0200.0000.1103",
+                    "interface": "Ethernet3"
+                }
+            ],
+            "totalEntries": 1,
+            "staticEntries": 0,
+            "dynamicEntries": 1,
+            "notLearnedEntries": 0
+        },
+        "default": {
+            "ipV4Neighbors": [],
+            "totalEntries": 0,
+            "staticEntries": 0,
+            "dynamicEntries": 0,
+            "notLearnedEntries": 0
+        }
+    }
+}
+#--- show ipv6 neighbor vrf all | json | no-more
+{
+    "vrfs": {
+        "MGMT": {
+            "ipV6Neighbors": [],
+            "totalEntries": 0,
+            "staticEntries": 0,
+            "dynamicEntries": 0,
+            "notLearnedEntries": 0
+        },
+        "RED_VRF": {
+            "ipV6Neighbors": [],
+            "totalEntries": 0,
+            "staticEntries": 0,
+            "dynamicEntries": 0,
+            "notLearnedEntries": 0
+        },
+        "Red": {
+            "ipV6Neighbors": [],
+            "totalEntries": 0,
+            "staticEntries": 0,
+            "dynamicEntries": 0,
+            "notLearnedEntries": 0
+        },
+        "default": {
+            "ipV6Neighbors": [],
+            "totalEntries": 0,
+            "staticEntries": 0,
+            "dynamicEntries": 0,
+            "notLearnedEntries": 0
+        }
+    }
+}
