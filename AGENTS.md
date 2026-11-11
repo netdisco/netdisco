@@ -52,10 +52,10 @@ Worker plugins:
   package matches `::Plugin::<action>`, from `worker_plugins` and
   `extra_worker_plugins`. An `X::Foo` name maps to
   `App::NetdiscoX::Worker::Plugin::Foo`, for site-local plugins.
-- Plugins call `register_worker` (`Worker/Plugin.pm`) with a `phase`
-  (`check`, `early`, `main`, `user`, `store`, `late`) and a `driver`.
-  `App::Netdisco::Worker::Runner` runs the phases in order and handles
-  per-device credentials (`device_auth`).
+- Plugins call `register_worker` (`Worker/Plugin.pm`) with a `phase` and
+  a `driver`. `App::Netdisco::Worker::Runner` runs the phases in order and
+  handles per-device credentials (`device_auth`). The backend skill covers
+  them.
 - Device access goes through SNMP::Info, a separate CPAN distribution. A
   fix that belongs in how a device is read usually belongs there, not here.
   SSH collectors are under `lib/App/Netdisco/SSHCollector/Platform/`.
@@ -73,22 +73,22 @@ Web plugins:
   unexpectedly.
 - **Tenants:** a site can split its data across databases
   (`tenant_databases`). Web code reads data through
-  `schema(vars->{'tenant'})`, which follows the `/t/<tenant>` URL; only
-  users, logins and access control lists use `schema('netdisco')`. Code
-  that names `'netdisco'` for device data shows the wrong tenant's data.
-- **Every route declares its access:** `require_login`, or
-  `require_role` with `admin`, `api`, `api_admin` or `setting`. A route
-  without one is open to anyone.
+  `schema(vars->{'tenant'})`, which follows the `/t/<tenant>` URL.
+  `schema('netdisco')` is for what all tenants share, such as users and
+  sessions; code that names it for device data shows the wrong tenant's
+  data.
+- **Every route declares its access** with `require_login`,
+  `require_role` or `require_any_role`; existing routes show which roles
+  each area uses. A route without one is open to anyone.
 - **API responses are a contract.** Adding a key is fine; renaming or
   removing one breaks clients, so say so in the PR.
 
 Database:
 
 - PostgreSQL is the only supported database (DBD::Pg, through DBIx::Class).
-  Releases still run on PostgreSQL 9.6; a startup warning
-  (`App::Netdisco::Util::PostgresFloor`) names 14 as the version future
-  releases will require. Write for the oldest version still supported;
-  the database skill covers it.
+  Releases still run on older PostgreSQL than the startup warning in
+  `App::Netdisco::Util::PostgresFloor` names for future releases. Write
+  for the oldest version still supported; the database skill covers it.
 - `lib/App/Netdisco/DB/Result/` holds one DBIx::Class result class per
   table; `DB/ResultSet/` holds custom queries.
 - `App::Netdisco::GenericDB` is a separate, schema-less layer that
@@ -109,7 +109,8 @@ Configuration:
 
 ## Code style
 
-- Every module starts with `use strict; use warnings;`.
+- Every module turns on strict and warnings: `use Dancer` does both, and
+  a module without it says `use strict; use warnings;`.
 - New classes use `Moo` or `Moo::Role`; error handling uses `Try::Tiny`
   rather than `eval`.
 - Follow the code around you before any general preference.

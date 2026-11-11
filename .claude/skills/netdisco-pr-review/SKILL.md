@@ -1,6 +1,6 @@
 ---
 name: netdisco-pr-review
-description: Use when reviewing a Netdisco pull request, your own before opening it or someone else's, including checking that it is current with master, that its numbers and Changes entry are right, and that each finding is verified before it is reported.
+description: Use when reviewing a Netdisco pull request, your own before opening it or someone else's, or when asked whether a Netdisco change is ready to merge.
 ---
 
 # Reviewing a Netdisco pull request
@@ -12,12 +12,13 @@ area the diff touches:
 
 | The diff touches | Read |
 |---|---|
-| `share/views/`, `share/public/`, `lib/App/Netdisco/Web/` | `netdisco-frontend` |
-| `share/schema_versions/`, `DB/Result/`, `DB/ResultSet/`, rows a worker writes | `netdisco-database` |
-| `Worker/`, `Backend/`, `JobQueue/`, `Transport/` | `netdisco-backend` |
-| `SSHCollector/Platform/`, `xt/data/sshcollector/` | `netdisco-ssh-collector` |
+| `share/views/`, `share/public/`, `lib/App/Netdisco/Web/` | `.claude/skills/netdisco-frontend/SKILL.md` |
+| `share/schema_versions/`, `DB/Result/`, `DB/ResultSet/`, rows a worker writes | `.claude/skills/netdisco-database/SKILL.md` |
+| `Worker/`, `Backend/`, `JobQueue/`, `Transport/` | `.claude/skills/netdisco-backend/SKILL.md` |
+| `SSHCollector/Platform/`, `xt/data/sshcollector/` | `.claude/skills/netdisco-ssh-collector/SKILL.md` |
 
-Each of those skills ends with a checklist. Run it against the PR.
+Each of those skills ends with a "Before you open the PR" checklist. Run
+it against the PR.
 
 ## First: is the PR what it says
 
@@ -64,7 +65,8 @@ Two open PRs can each be fine and still not both merge.
 
 ## The rules most often missed
 
-- **Access:** every new route declares `require_login` or `require_role`.
+- **Access:** every new route declares `require_login`, `require_role` or
+  `require_any_role`.
   Web code reads device data through `schema(vars->{'tenant'})`.
 - **Jobs:** a new action that only the backend host should run is refused
   to the web and API; a job field never reaches configuration without the
@@ -81,8 +83,9 @@ Two open PRs can each be fine and still not both merge.
 - **Schema steps:** never edit a shipped step; new steps are safe to run
   again and run on the oldest supported PostgreSQL (`netdisco-database`).
 - **`Changes`:** an entry goes under the unreleased block at the top, as
-  `* #NNNN <PR title>`. An entry under a released block is filed with that
-  release.
+  `* #NNNN <PR title>`, or is left for the maintainer. An entry under a
+  released block is filed with that release, and a heading that is not a
+  real version number is dropped.
 - **Release files:** `$VERSION` in `lib/App/Netdisco.pm`, `META.json`,
   `META.yml` and `MANIFEST` are not edited in a PR. A new file that must
   not ship has a `MANIFEST.SKIP` line.

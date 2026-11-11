@@ -24,17 +24,19 @@ often skipping several releases at once.
 
 - **Never edit a step that has shipped.** Sites have already run it. Fix
   forward with a new step.
-- **One step per schema version**, plain DDL and data fixes. The parser
-  (`App::Netdisco::DB::StepFile`) handles strings, dollar-quoted bodies and
-  `BEGIN`/`COMMIT` wrappers; `xt/150-schema-step-file.t` checks every
-  shipped step against it.
+- **One step per schema version**, plain DDL and data fixes.
+  `App::Netdisco::DB::StepFile` parses it; the fixtures in
+  `xt/150-schema-step-file.t` show what the parser accepts.
 - **Comments go on their own lines.** No trailing `-- comment` after code:
   the older reader joins lines and the comment swallows the rest of the
-  statement. `xt/150` fails a step from 101 on that has one.
+  statement. `xt/150-schema-step-file.t` fails a step from 101 on that
+  has one.
 - **The step runs in one transaction.** `netdisco-db-deploy` stops at a
   failing step and applies nothing from it. A statement PostgreSQL refuses
   inside a transaction, such as `CREATE INDEX CONCURRENTLY`, needs
-  `-- netdisco: no-transaction` as the step's first line.
+  `-- netdisco: no-transaction` as the step's first line. Such a step has
+  no rollback: statements before a failing one stay applied, so put one
+  statement in it, or only statements that are safe to run again.
 - **Steps must be safe to run again.** `netdisco-db-deploy --redeploy-all`
   replays every step on a database that already has them, and
   `--force-step` skips a step's failing statements. Use `IF NOT EXISTS` on
@@ -82,14 +84,13 @@ Then update the result class to match: columns, primary key, relations.
 ## Writing rows from a worker
 
 - **Bulk writes use the shared upsert.** Every result set has
-  `$rs->upsert(\@rows, \%options)` (`App::Netdisco::DB::Upsert`): one
-  `INSERT ... ON CONFLICT (primary key) DO UPDATE` per batch, writing only
-  rows whose values changed. Its POD lists the options (`insert_only`,
-  `touch`) and the row rules. Prefer it to delete-and-reinsert, which
-  writes every row on every poll.
+  `$rs->upsert(\@rows, \%options)` (`App::Netdisco::DB::Upsert`, whose
+  POD lists its options and row rules). Prefer it to delete-and-reinsert,
+  which writes every row on every poll.
 - **Never select, then insert.** Two pollers that see the same new row
   both insert it, and one fails on the primary key; the upsert's
-  `ON CONFLICT` makes concurrent writers safe (`xt/160-subnet-upsert.t`).
+  `ON CONFLICT` makes concurrent writers safe. `xt/160-subnet-upsert.t`
+  checks the SQL it sends; the concurrency itself needs a real database.
 - **Updating in place resets nothing.** Delete-and-reinsert cleared stale
   state as a side effect; with the upsert, anything that should disappear
   must be cleared explicitly, such as tags on ports that no longer match
@@ -106,20 +107,18 @@ Then update the result class to match: columns, primary key, relations.
   `App::Netdisco::Util::Node` and the per-link transactions in
   `Discover/Neighbors.pm`); read those comments before changing that code.
 - **Advisory lock classes are unique numbers.** The first argument of
-  `pg_advisory_xact_lock` names what is locked: `1728` is ARP entries by
-  address (`App::Netdisco::Util::Node`), `1729` the L3 domain recompute
-  (`App::Netdisco::Util::L3Domain`). Before taking a new class, search
-  `lib/` and open pull requests for `pg_advisory`, keep the number in a
-  named constant with a comment, and use the `_xact_` form so the lock ends
-  with its transaction.
+  `pg_advisory_xact_lock` names what is locked. Before taking a new class,
+  search `lib/` and open pull requests for `pg_advisory`, keep the number
+  in a named constant with a comment, as the existing ones are, and use
+  the `_xact_` form so the lock ends with its transaction.
 - **Do not open a database connection before the backend forks.** Code that
   runs at load time or in the backend's startup checks must not query. A
   handle opened in the parent can be cached into every worker, and two
   processes then share one connection.
-- **A short read must not delete.** When SNMP or SSH returns less than a
-  full table, keep the stored rows rather than treating the missing ones
-  as gone. Workers check this with `walk_mark` and `incomplete_walks_for`
-  (`App::Netdisco::Util::SNMP`).
+- **A short read must not delete.** Keep the stored rows when SNMP or SSH
+  returns less than a full table. How a worker tells is in
+  `.claude/skills/netdisco-backend/SKILL.md` (What SNMP::Info gives a
+  worker).
 - **Timestamps:** build them the way the workers already do (the forms the
   upsert accepts are listed at the top of `DB/Upsert.pm`). A hand-built
   string that sorts differently breaks the retirement logic that compares
@@ -136,16 +135,28 @@ Then update the result class to match: columns, primary key, relations.
   `remove_unseen` with recorders and run the real worker (`xt/167` to
   `xt/176`). CI runs these, unlike the tests that need PostgreSQL.
 - A new step: add a test that the step file parses and that the result
-  class matches it, beside `xt/150` and `xt/166-schema-104-first-seen.t`.
+  class matches it, beside `xt/150-schema-step-file.t` and
+  `xt/166-schema-104-first-seen.t`.
 
 ## Changes and the PR
 
-- `Changes` keys on the version at the top of each block. An entry under a
-  block that has already been released is filed with that release, and a
-  heading that is not a real version number is dropped. Put the entry
-  under the unreleased block at the top, `* #NNNN <PR title>`, or leave it
-  for the maintainer.
-- A schema change needs `netdisco-deploy` on upgrade. Say so in the entry
-  the way earlier ones do: `(database schema 104: run netdisco-deploy)`.
+- The `Changes` entry follows `.claude/skills/netdisco-pr-review/SKILL.md`.
+  A schema change needs `netdisco-deploy` on upgrade, so say so in the
+  entry the way earlier ones do: `(database schema 104: run
+  netdisco-deploy)`.
 - Say in the PR body which schema number and test numbers you took, the
   PostgreSQL versions you tested, and what the step costs on a large site.
+
+## Before you open the PR
+
+- [ ] The schema step number is not taken on `master` or in an open PR,
+      and `$VERSION` in `DB.pm` matches it.
+- [ ] No shipped step was edited; the new step is safe to run again and
+      runs on the oldest PostgreSQL sites still use.
+- [ ] Bulk writes use `upsert`; nothing selects then inserts; anything the
+      upsert no longer clears is cleared explicitly.
+- [ ] `remove_unseen` scopes name the device's `ip` and never run after a
+      short read.
+- [ ] A new advisory lock class is unique and a named constant.
+- [ ] The PR says which PostgreSQL versions ran the database tests, or
+      that they skipped.

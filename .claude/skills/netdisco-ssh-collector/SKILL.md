@@ -23,10 +23,9 @@ into "nothing there" makes Netdisco retire live data.
   captured from the device and OS version it targets, and name them in
   the PR. A collector without a capture keeps its current behavior.
 - **Prefer structured output:** `| json` where the platform has it, then
-  `| display xml` (Junos), then text. Use text only where a capture shows
-  no structured form, and say so in the platform's POD. EOS reads JSON
-  throughout; NX-OS's per-VRF reads use `| json`; IOS-XR, IOS-XE and VOSS
-  have no structured form for these commands and are parsed as text.
+  `| display xml` (Junos), then text. Use
+  text only where a capture shows no structured form, and say so in the
+  platform's POD.
 - **Prefer a command that names what each row belongs to.** NX-OS
   `show ip arp vrf all | json` does not name the VRF per row, so the
   collector lists the VRFs (`show vrf | json`) and reads each by name.
@@ -42,8 +41,9 @@ platform's POD.
 - `subnets`: a list of CIDR strings.
 - `arpnip_by_vrf`: `{ entries => [ { ip, mac, vrf } ], vrf_read =>
   { VRF => 0|1 }, vrf_list_complete => 0|1, families => [4, 6] }`, or
-  undef when nothing was read. The contract is the comment above
-  `gather_arps_by_vrf_cli` in `Arpnip/Nodes.pm`.
+  undef when nothing was read. The contract, which wins over this
+  summary, is the comment above `gather_arps_by_vrf_cli` in
+  `Arpnip/Nodes.pm`.
 - `subnets_by_vrf`: `{ VRF => [ { prefix, len } ] }`, or undef.
 - **A subclass that overrides `arpnip` or `subnets` must override the
   `_by_vrf` method too**, or with `store_vrfs` on the inherited one runs
@@ -72,9 +72,9 @@ Then:
   rows is a whole, empty list. Empty output for a VRF name the device
   listed is unread (0), never "empty". A count of zero, where the platform
   prints one, is a whole, empty VRF.
-- **A protocol the device says a VRF lacks is whole and empty.** NX-OS's
-  `show vrf` Protocols column shows whether a VRF has IPv6; for one
-  without, send no IPv6 command.
+- **A family the device says a VRF lacks is whole and empty** for that
+  VRF, so skipping its command does not leave the VRF unread. Base this on
+  what the device reports, never on empty output.
 - **A global table that also lists VRF hosts** (IOS XR's
   `show ipv6 neighbors`) marks its entries `mixed => 1`, so the worker can
   drop the default-table copy of a host a VRF also holds.
@@ -84,15 +84,14 @@ Then:
 - **Exec channel or pty.** `$ssh->capture($command)` runs one command on
   its own exec channel, with no pager and no prompt to match; check
   `$ssh->error` after each. Where the platform needs an interactive
-  session, `$ssh->open2pty` with Expect (`IOSXR.pm`, `IOSXE.pm`, `VOSS.pm`)
-  must turn the pager off first (`terminal length 0`,
-  `terminal more disable`, or `| no-more` per command).
+  session, `$ssh->open2pty` with Expect must turn the pager off first
+  (`terminal length 0`, `terminal more disable`, or `| no-more` per
+  command).
 - **Anchor the prompt on a capture, and test it against the capture.**
-  Two prompts were wrong for a long time: IOS-XR's `qr/# +$/` never
-  matched XRd, which prints `#` with no trailing space (three 10 second
-  timeouts per run, and entries survived only because Expect copies its
-  buffer on timeout); and `^\S+#\s*\z` matched a banner line of just `#`,
-  so the reader ran one reply behind.
+  A prompt that does not match makes every read wait out its timeout and
+  keep only what Expect buffered: `qr/# +$/`, which several platforms
+  use, needs a space after `#` that XRd does not print. A loose one is
+  as bad: a banner line of `#` alone puts the reader one reply behind.
 - **A timeout leaves output behind.** On a real device, the partial
   output of a command that timed out arrives in front of the next
   command's output. Resynchronize to the prompt, or mark every later read
@@ -100,14 +99,13 @@ Then:
 - **Do not rely on the device closing an exec channel.**
   `Transport/SSH.pm` builds Net::OpenSSH without `kill_ssh_on_timeout`,
   so a channel the device never closes blocks the job until the worker
-  timeout. It was seen with plain `ssh` on NX-OSv, not through
-  Net::OpenSSH; keep each command short and its output bounded.
-- **Inactivity timeout:** Net::OpenSSH gets the stanza's `timeout`, 30
-  seconds without traffic by default. A long command that prints nothing
-  for that long is cut off and must count as unread.
-- Keep an existing filter while a platform's commands are unchanged
-  (NX-OS's `arpnip` pipes through `| inc ^[1-9]`); change commands only
-  with a capture.
+  timeout. This has been observed with plain `ssh` on NX-OSv, not yet
+  through Net::OpenSSH; keep each command short and its output bounded.
+- **Inactivity timeout:** Net::OpenSSH gets the stanza's `timeout`
+  (`Transport/SSH.pm`). A long command that prints nothing for that long
+  is cut off and must count as unread.
+- Keep an existing filter while a platform's commands are unchanged;
+  change commands only with a capture.
 
 ## Fixtures and tests
 
