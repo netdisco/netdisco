@@ -6,8 +6,10 @@ data in PostgreSQL, and serves a web UI, an API and a CLI.
 
 Before changing anything under `share/views/`, `share/public/` or
 `lib/App/Netdisco/Web/`, read `.claude/skills/netdisco-frontend/SKILL.md`.
-Before changing the schema, a step file under `share/schema_versions/`, or
-how a worker writes rows, read `.claude/skills/netdisco-database/SKILL.md`.
+Before changing the schema, a step file under `share/schema_versions/`, a
+result or result set class under `lib/App/Netdisco/DB/` (including the
+DataTables server-side queries in `DB/ResultSet.pm`), or how a worker or
+route writes rows, read `.claude/skills/netdisco-database/SKILL.md`.
 Before changing a worker, the job queue or a transport under
 `lib/App/Netdisco/Worker/`, `Backend/`, `JobQueue/` or `Transport/`, read
 `.claude/skills/netdisco-backend/SKILL.md`; before changing an SSH

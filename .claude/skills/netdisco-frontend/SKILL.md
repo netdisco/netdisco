@@ -191,6 +191,13 @@ they seem to disagree, the code is right; say so in the PR.
   both, so the first paint and a user's re-sort agree
   (`xt/11-port-sortkey.t`).
 
+## Template Toolkit
+
+- **Test hash membership with `exists`.** `hash.$key` falls back to Template
+  Toolkit's hash methods when the key is missing, so a data key named
+  `keys`, `values`, `each`, `list` or `items` reads as present. Use
+  `hash.exists(key)`.
+
 ## Escaping
 
 - Template Toolkit escapes every interpolation (`AUTO_FILTER` in

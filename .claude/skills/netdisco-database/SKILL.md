@@ -1,6 +1,6 @@
 ---
 name: netdisco-database
-description: Use when changing or reviewing Netdisco's database schema, a schema step file under share/schema_versions, a DBIx::Class result or result set class, or code that writes rows from a worker, including the Changes entry and test numbering such a change needs.
+description: Use when changing or reviewing Netdisco's database schema, a schema step file under share/schema_versions, a DBIx::Class result or result set class (including the DataTables server-side query helpers in DB/ResultSet.pm), code that writes rows from a worker or a web route, including the Changes entry and test numbering such a change needs.
 ---
 
 # Changing the Netdisco database
@@ -80,6 +80,17 @@ Then update the result class to match: columns, primary key, relations.
   of values lets PostgreSQL use an index (`xt/138`), and a correlated
   subquery per row, which raises the planner's estimate past its JIT
   threshold and adds tens of milliseconds to every call.
+
+## Transactions
+
+- **A transaction covers only the handle it was opened on.** `'netdisco'`
+  is an alias of `'default'`, but `DBICx::Sugar::schema` caches a handle
+  under whichever name is asked for first, so `schema('netdisco')` and
+  `schema(vars->{'tenant'})` (undef for the default tenant) can be two
+  connections to the same database. A `txn_do` on one does not cover
+  writes made through the other. Open the transaction on the handle every
+  covered write uses, and keep writes that must succeed or fail together
+  inside it.
 
 ## Writing rows from a worker
 
