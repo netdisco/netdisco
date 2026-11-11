@@ -1,15 +1,36 @@
 2.118000 - tbd
 
+  [NEW FEATURES]
+
+  * #1785 VRF support for overlapping address space: with the new
+    store_vrfs setting on, device addresses, subnets and ARP entries
+    record their VRF, so the same address can be stored once per VRF.
+    VRFs are read over SNMP, through each device's per-VRF SNMP contexts,
+    on the devices SNMP::Info supports for VRFs (see its Changes from
+    3.983000; Netdisco now requires 3.985002), and the VOSS, EOS, IOS-XE,
+    NX-OS and IOS-XR SSH collectors also read ARP entries per VRF. one
+    rule now decides which device an address belongs to, so an address
+    reused in VRFs on several devices no longer points to an arbitrary
+    one. Subnet Utilization, IP Inventory, IPs on Multiple Devices and
+    Duplicate Private Networks count each L3 domain separately and show
+    a VRF column. skip_vrf_devices and vrf_no_devicevrfs leave devices or
+    VRFs out. store_vrfs is off by default, and with it off nothing
+    changes (database schema 105: run netdisco-deploy)
+  * #1811 L3 domains: VRFs on different routers are grouped into the
+    network they belong to from how the routers are configured (the same
+    L3 I-SID, then the same import and export route targets, then the same
+    name), not by name alone, so customers that reuse a VRF name stay
+    apart. the new vrf_domains setting corrects the grouping by hand. two
+    new reports: L3 Domains shows each VRF's group and why it is there,
+    and VRF Naming Inconsistencies lists mismatched names, shared route
+    distinguishers and links between routers whose VRFs ended up in
+    different groups
+
   [ENHANCEMENTS]
 
   * upgrade SNMP::Info dependency to 3.985002
-  * #1785 record the VRF of device addresses and subnets, and resolve
-    addresses to devices through one rule (database schema 105: run
-    netdisco-deploy)
-  * #1811 group VRFs into L3 domains by router configuration, with
-    vrf_domains and two reports
-  * #1805 Add AGENTS.md and skills to guide AI coding agents on the
-    frontend, database, backend, SSH collectors and PR review
+  * #1805 agent guidance: AGENTS.md and skills for the frontend, database,
+    backend, SSH collectors and PR review
 
 2.117003 - 2026-11-07
 
