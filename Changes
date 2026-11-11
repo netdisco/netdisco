@@ -8,6 +8,8 @@
     netdisco-deploy)
   * #1811 group VRFs into L3 domains by router configuration, with
     vrf_domains and two reports
+  * #1805 Add AGENTS.md and skills to guide AI coding agents on the
+    frontend, database, backend, SSH collectors and PR review
 
 2.117003 - 2026-11-07
 

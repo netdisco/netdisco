@@ -24,4 +24,5 @@ yarn.lock
 uv.lock
 CLAUDE.local.md
 .superpowers/
-.claude/
+.claude/*
+!.claude/skills/

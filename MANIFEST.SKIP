@@ -81,6 +81,9 @@ logs/.*
 README.md
 SECURITY.md
 CLAUDE.md
+^AGENTS\.md$
+^\.claude/
+^\.agents/
 
 # ignore intellij project directory
 \B\.idea
