@@ -17,14 +17,8 @@ our @EXPORT_OK = qw/
   tenant_key
   acl_txn_do
   load_managed_config
-  refresh_managed_config
-  apply_managed_config
   capture_yaml_settings
   yaml_setting
-  _read_config_version
-  _bump_config_version
-  _read_acl_rows
-  _build_overlay
 /;
 
 # kept here and not in CONFIG, so that dumpconfig and setting() only ever see
@@ -32,7 +26,6 @@ our @EXPORT_OK = qw/
 our %YAML;      # setting name => clean copy of its YAML value
 our $CAPTURED;  # true once %YAML has been taken in this process
 our %CACHE;     # tenant key => { version => Int, overlay => HashRef }
-our $LOADED;    # true once any overlay has been built in this process
 
 =head1 NAME
 
@@ -44,14 +37,8 @@ The C<config_version> table holds one counter per scope. The C<acl> counter
 goes up by one every time the ACL Manager writes, so a process can tell
 whether its copy is stale with one cheap read.
 
-The counter is bumped in Perl by L</acl_txn_do>, not by a database trigger.
-That keeps the bump visible at the place where the ACL is written, and a
-reader of the writing code can see which writes are counted.
-
-Because only those writes are counted, two kinds of change go unnoticed: an
-ACL table edited by hand, for example in C<psql>, and a restored database dump
-whose counter equals the one a process last saw. After either, restart
-C<netdisco-web> and C<netdisco-backend>, or bump the counter by hand:
+Only writes made through L</acl_txn_do> bump it, so after editing the ACL
+tables by hand restart C<netdisco-web> and C<netdisco-backend>, or run:
 
   UPDATE config_version SET version = version + 1 WHERE scope = 'acl';
 
@@ -68,19 +55,16 @@ sub tenant_key { return (vars->{'tenant'} || 'netdisco') }
 =head2 acl_txn_do( $coderef )
 
 Runs C<$coderef> in a transaction on the current tenant's database, then bumps
-the C<acl> counter in that same transaction and returns what C<$coderef>
-returned. If C<$coderef> dies nothing is bumped and the error propagates.
+the C<acl> counter in that same transaction. Returns nothing. If C<$coderef>
+dies nothing is bumped and the error propagates.
 
 =cut
 
 sub acl_txn_do {
   my $code = shift;
   my $schema = schema(tenant_key());
-  return $schema->txn_do(sub {
-    my @ret = wantarray ? $code->() : scalar $code->();
-    _bump_config_version($schema);
-    return wantarray ? @ret : $ret[0];
-  });
+  $schema->txn_do(sub { $code->(); _bump_config_version($schema) });
+  return;
 }
 
 # Plain DBI rather than a resultset: this read happens on every request, and
@@ -123,19 +107,14 @@ A value of either setting that isn't a hash at all counts as empty.
 sub load_managed_config {
   capture_yaml_settings() unless $CAPTURED;
   my $tenant_key = tenant_key();
-  refresh_managed_config($tenant_key);
-  apply_managed_config($tenant_key);
+  _refresh($tenant_key);
+  _apply($tenant_key);
   return;
 }
 
-=head2 refresh_managed_config( $tenant_key )
-
-Reads the tenant's counter and, if it moved, rebuilds the tenant's overlay from
-its ACL rows. A failed read drops the tenant's cache entry.
-
-=cut
-
-sub refresh_managed_config {
+# reads the tenant's counter and, if it moved, rebuilds the tenant's overlay
+# from its ACL rows. a failed read drops the tenant's cache entry.
+sub _refresh {
   my $tenant_key = shift;
 
   # a failed read (no database, or no config_version row because the schema
@@ -157,7 +136,6 @@ sub refresh_managed_config {
       version => $version,
       overlay => _build_overlay($tenant_key, _read_acl_rows($tenant_key)),
     };
-    $LOADED = 1;
   }
   catch {
     delete $CACHE{$tenant_key};
@@ -166,23 +144,12 @@ sub refresh_managed_config {
   return;
 }
 
-=head2 apply_managed_config( $tenant_key )
-
-Writes the clean YAML copy merged with the tenant's overlay into
-C<portctl_by_role> and C<host_groups>. ACL Manager entries replace YAML ones of
-the same name.
-
-=cut
-
-sub apply_managed_config {
+# writes the clean YAML copy merged with the tenant's overlay into CONFIG; ACL
+# Manager entries replace YAML ones of the same name. with no overlay (a failed
+# read) this is the YAML alone, so a worker never keeps stale database roles,
+# or those of the last request's tenant.
+sub _apply {
   my $tenant_key = shift;
-
-  # until something has been loaded in this process CONFIG is left exactly as
-  # it is, so tests with no database keep the values they set, as they keep
-  # their roles when get_user_roles fails. once something was loaded, a failed
-  # read must put the YAML back, or a worker would keep stale database roles,
-  # or those of the last request's tenant.
-  return unless exists $CACHE{$tenant_key} or $LOADED;
 
   my $overlay = exists $CACHE{$tenant_key}
     ? $CACHE{$tenant_key}->{overlay}
@@ -212,29 +179,9 @@ L</load_managed_config> and L</yaml_setting> call this themselves the first
 time either runs in a process, so nothing else needs to. Tests call it again
 after setting new YAML values.
 
-The copy is taken then, and not as this module loads, for three reasons:
-
-=over 4
-
-=item *
-
-In production the first request or job always runs before anything changes
-these settings, so the copy is the same either way.
-
-=item *
-
-C<Web.pm> loads site web plugins after C<App::Netdisco::Web::ManagedConfig>,
-which loads this module. A plugin that adds to C<host_groups> as it loads is
-still in the copy.
-
-=item *
-
-A value a test sets before its first request or job counts as YAML. A copy
-taken as the module loaded missed it, and once a database answered, even with
-an empty ACL Manager, the next load rebuilt the setting from that copy and the
-test's value was gone.
-
-=back
+It is taken then, not as this module loads, so that site web plugins (which
+C<Web.pm> loads later) and values a test sets before its first request or job
+are in the copy.
 
 =cut
 

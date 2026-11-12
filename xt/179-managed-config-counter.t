@@ -14,7 +14,7 @@ use Test::More 0.88;
 use Test::File::ShareDir::Dist { 'App-Netdisco' => 'share/' };
 
 # first, so that the environment and config are set up before Dancer loads
-use App::Netdisco::Util::ManagedConfig qw(acl_txn_do tenant_key _read_config_version);
+use App::Netdisco::Util::ManagedConfig qw(acl_txn_do tenant_key);
 use Dancer qw/:syntax :script !pass/;
 use App::Netdisco::DB::StepFile qw(parse_step_file);
 use App::Netdisco::DB;
@@ -27,8 +27,8 @@ subtest 'step_105_106__creates_config_version_and_seeds_acl' => sub {
   is(scalar(grep { /INSERT INTO config_version.*'acl'.*ON CONFLICT/s } @{ $step->{statements} }), 1, 'seeds acl');
 };
 
-subtest 'db_version__is_106' => sub {
-  is($App::Netdisco::DB::VERSION, 106);
+subtest 'db_version__is_at_least_106' => sub {
+  cmp_ok($App::Netdisco::DB::VERSION, '>=', 106);
 };
 
 my (@log, @schema_calls, $dbh_result);
@@ -55,9 +55,8 @@ my $bump = ['UPDATE config_version SET version = version + 1 WHERE scope = ?', '
 
 subtest 'aclTxnDo__a_successful_block__bumps_once_after_it' => sub {
   @log = ();
-  my @ret = acl_txn_do(sub { push @log, 'block'; return ('a', 'b') });
+  acl_txn_do(sub { push @log, 'block' });
   is_deeply(\@log, ['block', $bump], 'block then one bump');
-  is_deeply(\@ret, ['a', 'b'], 'returns the block values');
 };
 
 subtest 'aclTxnDo__a_block_that_dies__does_not_bump_and_rethrows' => sub {
@@ -83,7 +82,7 @@ subtest 'aclTxnDo__uses_the_current_tenant' => sub {
 subtest 'readConfigVersion__returns_the_acl_counter' => sub {
   @log = ();
   $dbh_result = 7;
-  is(_read_config_version('netdisco'), 7, 'value');
+  is(App::Netdisco::Util::ManagedConfig::_read_config_version('netdisco'), 7, 'value');
   is_deeply($log[0], ['SELECT version FROM config_version WHERE scope = ?', 'acl'], 'sql and bind');
 };
 

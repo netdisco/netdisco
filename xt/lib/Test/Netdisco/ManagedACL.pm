@@ -81,10 +81,7 @@ sub stub_managed_config {
 
   # keep_cache changes what the database "holds" without dropping what the
   # loader already built, so a test can show the next load noticing (or not)
-  unless ($opts{keep_cache}) {
-    %App::Netdisco::Util::ManagedConfig::CACHE = ();
-    $App::Netdisco::Util::ManagedConfig::LOADED = undef;
-  }
+  %App::Netdisco::Util::ManagedConfig::CACHE = () unless $opts{keep_cache};
 
   return $calls;
 }

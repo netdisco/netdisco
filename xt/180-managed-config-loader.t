@@ -4,12 +4,13 @@
 # ACLs) into CONFIG, so that setting() and check_acl() never touch the
 # database. The two database reads are stubbed; everything above them is real.
 #
-# Two rules here are easy to break without noticing:
+# Rules here that are easy to break without noticing:
 # - the counter is read before the rows, or a change committed between the two
 #   reads would be stored under the new counter and never reloaded;
-# - a failed read leaves CONFIG alone only until something has been loaded,
-#   after which it must go back to the YAML, or a worker keeps stale (or
-#   another tenant's) roles after the database goes away.
+# - a failed read puts the YAML back, or a worker keeps stale (or another
+#   tenant's) roles after the database goes away;
+# - check_acl only reads CONFIG: it never reads the database, and an unknown
+#   group is not written into host_groups (it used to be, on every read).
 
 use strict;
 use warnings;
@@ -19,7 +20,6 @@ BEGIN { $ENV{DANCER_ENVDIR} = '/dev/null'; }
 use lib 'xt/lib';
 use Test::More 0.88;
 use Test::File::ShareDir::Dist { 'App-Netdisco' => 'share/' };
-use Scalar::Util 'refaddr';
 use Storable 'dclone';
 
 # first, so that the environment and config are set up before Dancer loads
@@ -51,18 +51,15 @@ sub normalized {
 
 sub synth_keys { return [ sort grep { /^synthesized_group_/ } keys %{ setting('host_groups') } ] }
 
-subtest 'loader__nothing_loaded_and_reads_fail__leaves_config_alone' => sub {
-  yaml();
-  config->{'portctl_by_role'} = { t => [$IN] };
-  my $before = setting('portctl_by_role');
-  my $groups = setting('host_groups');
+subtest 'loader__nothing_loaded_and_reads_fail__applies_the_yaml' => sub {
+  yaml(roles => { t => [$IN] }, groups => { g => [$IN] });
 
   stub_managed_config(version => sub { die "no database\n" });
   load_managed_config();
 
-  is_deeply(setting('portctl_by_role'), { t => [$IN] }, 'roles as the test set them');
-  is(refaddr(setting('portctl_by_role')), refaddr($before), 'roles not even replaced');
-  is(refaddr(setting('host_groups')), refaddr($groups), 'groups not replaced');
+  is_deeply(setting('portctl_by_role'), { t => [$IN] }, 'yaml roles');
+  is_deeply(setting('host_groups')->{g}, [$IN], 'yaml groups');
+  is_deeply(synth_keys(), [], 'no synthesized groups');
 };
 
 subtest 'loader__roles_merge_over_yaml_roles_of_the_same_name' => sub {
@@ -273,6 +270,22 @@ subtest 'loader__a_yaml_value_that_is_not_a_hash__counts_as_empty' => sub {
   eval { load_managed_config(); 1 } or fail("load died: $@");
   is_deeply([ keys %{ setting('portctl_by_role') } ], ['dbrole'], 'only the database role');
   is_deeply(synth_keys(), ['synthesized_group_netdisco_1'], 'only the synthesized group');
+};
+
+subtest 'checkAcl__an_unknown_group__matches_nothing_and_is_not_written_into_config' => sub {
+  yaml();
+  ok(!check_acl($IN, ['group:nosuch']), 'group:nosuch matches nothing');
+  ok(check_acl($IN, ['!group:nosuch']), '!group:nosuch matches');
+  ok(!exists setting('host_groups')->{'nosuch'}, 'host_groups is untouched');
+};
+
+subtest 'checkAcl__never_reads_the_database' => sub {
+  my $calls = stub_managed_config(version => 1, rows => { netdisco => {
+    office => { type => 'host', maps => [ [[$IN]] ] } } });
+  check_acl($IN, ['group:office']) for 1 .. 5;
+  check_acl($IN, ['group:nosuch']) for 1 .. 5;
+  is($calls->{version_reads}, 0, 'counter not read');
+  is($calls->{row_reads}, 0, 'rows not read');
 };
 
 done_testing;
