@@ -70,6 +70,49 @@ sub sync_portctl_roles {
   }
 }
 
+# the role names a user holds. a role is a name in portctl_by_role, and an
+# empty list means port_control is not scoped to any role
+sub _user_portctl_roles {
+  my $user = shift;
+  my $roles = $user->portctl_roles;
+  return () unless $roles and ref $roles eq ref [];
+  return grep { defined and length } @$roles;
+}
+
+# one role ACL against a device and port. a device ACL permits every port on a
+# matching device, and a hash of device => port pairs needs both to match
+sub _role_allows_port {
+  my ($acl, $device, $port) = @_;
+
+  if (ref $acl eq q{} or ref $acl eq ref []) {
+      return acl_matches($device, $acl) ? true : false;
+  }
+  elsif (ref $acl eq ref {}) {
+      foreach my $key (keys %$acl) {
+          # lhs matches device, rhs matches port
+          next unless $key and $acl->{$key};
+          return true if (acl_matches($device, $key)
+                          and acl_matches_only($port, $acl->{$key}));
+      }
+  }
+  return false;
+}
+
+# for changes with no port to match so the device must be matched
+sub _role_allows_device {
+  my ($acl, $device) = @_;
+
+  if (ref $acl eq q{} or ref $acl eq ref []) {
+      return acl_matches($device, $acl) ? true : false;
+  }
+  elsif (ref $acl eq ref {}) {
+      foreach my $key (grep { defined } keys %$acl) {
+          return true if acl_matches($device, $key);
+      }
+  }
+  return false;
+}
+
 =head2 port_acl_by_role_check( $port, $device?, $user? )
 
 =over 4
@@ -78,6 +121,10 @@ sub sync_portctl_roles {
 
 Permission check on C<portctl_by_role> if the device and user are provided. A
 bare username will be promoted to a user instance.
+
+A user may hold several roles and is permitted what any one of them permits.
+A role which is not defined grants nothing, and a user whose roles are all
+undefined is refused.
 
 =back
 
@@ -103,31 +150,17 @@ sub port_acl_by_role_check {
     # they can submit port control jobs
     return true if ($user->admin and $user->port_control);
 
-    my $role = $user->portctl_role;
-    my $acl  = $role ? setting('portctl_by_role')->{$role} : undef;
+    my @roles = _user_portctl_roles($user);
 
-    if ($acl and (ref $acl eq q{} or ref $acl eq ref [])) {
-        # all ports are permitted when the role acl is a device acl
-        # but check the device anyway
-        return acl_matches($device, $acl);
-    }
-    elsif ($acl and ref $acl eq ref {}) {
-        my $found = false;
-        foreach my $key (keys %$acl) {
-            # lhs matches device, rhs matches port
-            next unless $key and $acl->{$key};
-            if (acl_matches($device, $key)
-                and acl_matches_only($port, $acl->{$key})) {
-
-                $found = true;
-                last;
-            }
-        }
-        return $found;
+    # a user holds the union of their roles' rights, and a role missing
+    # from portctl_by_role grants nothing
+    foreach my $role (@roles) {
+        my $acl = setting('portctl_by_role')->{$role} or next;
+        return true if _role_allows_port($acl, $device, $port);
     }
 
-    # a role missing from portctl_by_role must not fall back to any-port
-    return false if $role;
+    # roles were assigned but none of them allowed this, so the user must not fall back to any-port
+    return false if scalar @roles;
 
     # if the user has "Enabled (any port)" setting
     return $user->port_control;
@@ -219,6 +252,8 @@ A role ACL naming devices and ports is matched on the device alone, because
 there is no port to match. This is the same decision the device details view
 makes when it chooses whether to render an editable cell.
 
+As for ports, a user holding several roles is permitted what any one permits.
+
 Returns false if the request should be denied, true if OK to proceed.
 
 =cut
@@ -236,20 +271,15 @@ sub device_acl_by_role_check {
   return false unless $user;
   return false unless $user->port_control;
   return true if $user->admin;
-  return true unless $user->portctl_role;
+  my @roles = _user_portctl_roles($user);
+  return true unless scalar @roles;
 
-  my $acl = setting('portctl_by_role')->{ $user->portctl_role };
-  if ($acl and (ref $acl eq q{} or ref $acl eq ref [])) {
-      return acl_matches($device, $acl) ? true : false;
-  }
-  elsif ($acl and ref $acl eq ref {}) {
-      foreach my $key (grep { defined } keys %$acl) {
-          return true if acl_matches($device, $key);
-      }
-      return false;
+  foreach my $role (@roles) {
+      my $acl = setting('portctl_by_role')->{$role} or next;
+      return true if _role_allows_device($acl, $device);
   }
 
-  # assigned an unknown role
+  # assigned an unknown role or a role that does not work for this device
   return false;
 }
 

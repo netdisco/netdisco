@@ -151,7 +151,7 @@ subtest 'every_step_file__information_schema_lookups__scoped_to_current_schema' 
     ok(scalar @blocks, "step $from has a statement with a lookup");
     ok(lookups_scoped($_), "step $from: " . substr($_ =~ s/\s+/ /gr, 0, 60)) for @blocks;
   }
-  is_deeply([sort { $a <=> $b } @found], [32, 50, 52, 55, 58, 64, 66, 93, 101], 'step files with lookups');
+  is_deeply([sort { $a <=> $b } @found], [32, 50, 52, 55, 58, 64, 66, 93, 101, 105], 'step files with lookups');
 };
 subtest 'schema_version__is_at_least_104' => sub {
   open my $fh, '<', 'lib/App/Netdisco/DB.pm' or die "cannot read DB.pm: $!";

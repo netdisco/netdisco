@@ -21,30 +21,32 @@ use Dancer qw/setting/;
 use App::Netdisco::Util::Port 'device_acl_by_role_check';
 
 { package Test::FakeUser;
-  sub new { my ($c, %a) = @_; return bless { port_control => 1, admin => 0, portctl_role => undef, %a }, $c }
+  sub new { my ($c, %a) = @_; return bless { port_control => 1, admin => 0, portctl_roles => undef, %a }, $c }
   sub port_control { $_[0]->{port_control} }
   sub admin        { $_[0]->{admin} }
-  sub portctl_role { $_[0]->{portctl_role} }
+  sub portctl_roles { $_[0]->{portctl_roles} }
 }
 
 my $IN  = '192.168.0.11';
 my $OUT = '192.168.0.22';
+my $OTHER = '192.168.0.33';
 
 # the shape sync_portctl_roles builds from a host_port ACL made in the admin UI
 setting('host_groups' => { leafgroup => [$IN] });
 setting('portctl_by_role' => {
   leafonly  => { 'group:leafgroup' => [] },   # empty rhs means any port
   plainonly => [$IN],                          # the yaml list form
+  otheronly => [$OTHER],
 });
 
 subtest 'deviceAclByRoleCheck__a_role_ACL_of_devices_and_ports__is_matched_on_the_device' => sub {
-  my $user = Test::FakeUser->new(portctl_role => 'leafonly');
+  my $user = Test::FakeUser->new(portctl_roles => ['leafonly']);
   ok  device_acl_by_role_check($IN,  $user), 'a device the role covers is allowed';
   ok !device_acl_by_role_check($OUT, $user), 'a device it does not cover is refused';
 };
 
 subtest 'deviceAclByRoleCheck__a_role_ACL_naming_devices_only__is_matched_the_same_way' => sub {
-  my $user = Test::FakeUser->new(portctl_role => 'plainonly');
+  my $user = Test::FakeUser->new(portctl_roles => ['plainonly']);
   ok  device_acl_by_role_check($IN,  $user), 'covered device allowed';
   ok !device_acl_by_role_check($OUT, $user), 'uncovered device refused';
 };
@@ -55,17 +57,28 @@ subtest 'deviceAclByRoleCheck__a_user_with_no_role__keeps_every_device' => sub {
 };
 
 subtest 'deviceAclByRoleCheck__an_admin__keeps_every_device' => sub {
-  my $user = Test::FakeUser->new(admin => 1, portctl_role => 'leafonly');
+  my $user = Test::FakeUser->new(admin => 1, portctl_roles => ['leafonly']);
   ok device_acl_by_role_check($OUT, $user), 'an admin is not scoped by a role';
 };
 
 subtest 'deviceAclByRoleCheck__without_port_control_or_a_known_role__refuses' => sub {
   ok !device_acl_by_role_check($IN, Test::FakeUser->new(port_control => 0)),
     'a user without port_control is refused';
-  ok !device_acl_by_role_check($IN, Test::FakeUser->new(portctl_role => 'nosuchrole')),
+  ok !device_acl_by_role_check($IN, Test::FakeUser->new(portctl_roles => ['nosuchrole'])),
     'a role with no ACL is refused rather than allowed';
   ok !device_acl_by_role_check(undef, Test::FakeUser->new), 'no device is refused';
   ok !device_acl_by_role_check($IN, undef), 'no user is refused';
+};
+
+subtest 'deviceAclByRoleCheck__several_roles__allow_what_any_one_allows' => sub {
+  my $both = Test::FakeUser->new(portctl_roles => ['plainonly', 'otheronly']);
+  ok  device_acl_by_role_check($IN,    $both), 'the first role covers its device';
+  ok  device_acl_by_role_check($OTHER, $both), 'the second role covers its device';
+  ok !device_acl_by_role_check($OUT,   $both), 'neither covers another device';
+
+  my $mixed = Test::FakeUser->new(portctl_roles => ['nosuchrole', 'plainonly']);
+  ok  device_acl_by_role_check($IN,  $mixed), 'an undefined role is skipped';
+  ok !device_acl_by_role_check($OUT, $mixed), 'and does not widen the defined one';
 };
 
 subtest 'writePaths__both_scoped_routes__consult_the_check_and_sync_first' => sub {

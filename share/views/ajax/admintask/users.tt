@@ -3,6 +3,36 @@
 [%- SET has_tacacs = (settings.tacacs AND settings.tacacs.size > 0) -%]
 [%- SET demo_site  = (settings.defanged_admin != 'admin') -%]
 
+[% BLOCK portctl_cell %]
+  [% SET held_count = 0 %]
+  [% FOREACH role IN port_control_roles %][% SET held_count = held_count + 1 IF held.$role %][% END %]
+  [% SET by_role = (enabled AND held_count > 0) %]
+  <div class="form-group">
+    <select class="form-select nd_portctl_mode" data-form="[% form %]" name="port_control">
+      <option[% ' selected' IF NOT enabled %] value="">Off</option>
+      <option[% ' selected' IF enabled AND NOT by_role %] value="_global_">Enabled (any port)</option>
+      [% IF port_control_roles.size > 0 %]
+      <option[% ' selected' IF by_role %] value="_roles_" hidden>By role</option>
+      <option disabled>──────────</option>
+      [% FOREACH role IN port_control_roles %]
+      <option data-nd-role="[% loop.index %]" value="[% role | html_entity %]"[% ' disabled' IF by_role AND held.$role %]>[% role | html_entity %]</option>
+      [% END %]
+      [% END %]
+    </select>
+    [% IF port_control_roles.size > 0 %]
+    <div class="nd_portctl_roles d-flex flex-wrap justify-content-center gap-1 mt-1">
+      [% FOREACH role IN port_control_roles %]
+      <span class="badge text-bg-secondary nd_portctl_chip" data-nd-role="[% loop.index %]"[% ' hidden' IF NOT (by_role AND held.$role) %]>
+        <input type="checkbox" hidden data-form="[% form %]" name="portctl_roles" value="[% role | html_entity %]"[% ' checked' IF by_role AND held.$role %]>
+        [% role | html_entity %]
+        <button type="button" class="btn btn-link btn-sm p-0 ms-1 lh-1 align-baseline text-reset text-decoration-none nd_portctl_remove"
+          aria-label="Remove role [% role | html_entity %]" title="Remove role">&times;</button>
+      </span>
+      [% END %]
+    </div>
+    [% END %]
+  </div>
+[% END %]
 [% IF settings.allow_permanent_tokens %]
 <div class="alert alert-info">
   Configured Token Lifetime: [% settings.api_token_lifetime | html_entity %]s
@@ -50,15 +80,7 @@
         <a class="btn" href="[% uri_for('/admin/aclmanager') | none %]"><i class="fas fa-list-ul fa-lg fa-border"></i>Edit ACLs</a>
       </td>
       <td class="nd_center-cell">
-        <div class="form-group">
-          <select class="form-select" data-form="add" name="port_control">
-            <option value="" selected>Off</option>
-            <option value="_global_">Enabled (any port)</option>
-            [% FOREACH role IN port_control_roles %]
-            <option value="[% role | html_entity %]">Role: [% role | html_entity %]</option>
-            [% END %]
-          </select>
-        </div>
+        [% INCLUDE portctl_cell form = 'add', enabled = 0, held = {} %]
       </td>
       <td class="nd_center-cell"><input data-form="add" type="checkbox" name="admin"></td>
       <td class="nd_center-cell"></td>
@@ -135,15 +157,9 @@
         [% END %]
       </td>
       <td class="nd_center-cell">
-        <div class="form-group">
-          <select class="form-select" data-form="update" name="port_control">
-            <option[% ' selected' IF NOT row.port_control %] value="">Off</option>
-            <option[% ' selected' IF row.port_control AND row.portctl_role == "" %] value="_global_">Enabled (any port)</option>
-            [% FOREACH role IN port_control_roles %]
-            <option[% ' selected' IF row.port_control AND row.portctl_role == role %] value="[% role | html_entity %]">Role: [% role | html_entity %]</option>
-            [% END %]
-          </select>
-        </div>
+        [% SET held = {} %]
+        [% FOREACH held_role IN row.portctl_roles %][% held.$held_role = 1 %][% END %]
+        [% INCLUDE portctl_cell form = 'update', enabled = row.port_control, held = held %]
       </td>
       <td class="nd_center-cell">
         <input data-form="update" name="admin" type="checkbox" [% ' checked="checked"' IF row.admin %]>

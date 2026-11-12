@@ -27,11 +27,11 @@ use Dancer::Test;
 config->{logger} = 'null';
 
 package FakeUser;
-sub new { my ($c, %a) = @_; return bless { username => 'someone', port_control => 1, admin => 0, portctl_role => '', %a }, $c }
+sub new { my ($c, %a) = @_; return bless { username => 'someone', port_control => 1, admin => 0, portctl_roles => [], %a }, $c }
 sub username     { $_[0]->{username} }
 sub port_control { $_[0]->{port_control} }
 sub admin        { $_[0]->{admin} }
-sub portctl_role { $_[0]->{portctl_role} }
+sub portctl_roles { $_[0]->{portctl_roles} }
 
 package main;
 
@@ -71,7 +71,7 @@ my $IN  = '{"action":"cf_owner","device":"192.0.2.1","subaction":"noc"}';
 my $OUT = '{"action":"cf_owner","device":"192.0.2.99","subaction":"noc"}';
 
 @roles = ('api', 'port_control');
-$user  = FakeUser->new(portctl_role => 'leafonly');
+$user  = FakeUser->new(portctl_roles => ['leafonly']);
 
 my $res = queue_jobs("[$IN]");
 is $res->status, 200, 'queue_jobs__scoped_user_on_a_device_in_the_role__is_accepted';
@@ -89,7 +89,7 @@ $res = queue_jobs('[{"action":"cf_owner","subaction":"noc"}]');
 is $res->status, 403, 'queue_jobs__scoped_user_with_no_device__is_refused';
 is scalar @queued, 0, 'queue_jobs__scoped_user_with_no_device__queues_nothing';
 
-$user = FakeUser->new(portctl_role => 'nosuchrole');
+$user = FakeUser->new(portctl_roles => ['nosuchrole']);
 $res = queue_jobs("[$IN]");
 is $res->status, 403, 'queue_jobs__user_with_an_unknown_role__is_refused';
 
@@ -99,7 +99,7 @@ is $res->status, 200, 'queue_jobs__any_port_user__is_accepted_on_any_device';
 
 # as on the web route, an admin is not scoped by a port control role
 @roles = ('api', 'api_admin', 'port_control');
-$user  = FakeUser->new(admin => 1, portctl_role => 'leafonly');
+$user  = FakeUser->new(admin => 1, portctl_roles => ['leafonly']);
 $res = queue_jobs("[$OUT]");
 is $res->status, 200, 'queue_jobs__api_admin__is_not_scoped_by_the_role';
 
