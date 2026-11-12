@@ -136,7 +136,7 @@
             "Regexp::Common" : "2017060201",
             "Regexp::Common::net::CIDR" : "0",
             "Role::Tiny" : "1.002005",
-            "SNMP::Info" : "3.985001",
+            "SNMP::Info" : "3.985002",
             "SQL::Abstract" : "2.000003",
             "SQL::Translator" : "0.11024",
             "Safe" : "2.27",
@@ -185,7 +185,7 @@
    "provides" : {
       "App::Netdisco" : {
          "file" : "lib/App/Netdisco.pm",
-         "version" : "2.117003"
+         "version" : "2.118000"
       },
       "App::Netdisco::AnyEvent::Nbtstat" : {
          "file" : "lib/App/Netdisco/AnyEvent/Nbtstat.pm"
@@ -213,7 +213,7 @@
       },
       "App::Netdisco::DB" : {
          "file" : "lib/App/Netdisco/DB.pm",
-         "version" : "104"
+         "version" : "105"
       },
       "App::Netdisco::DB::Deploy" : {
          "file" : "lib/App/Netdisco/DB/Deploy.pm"
@@ -248,6 +248,9 @@
       "App::Netdisco::DB::Result::DeviceIp" : {
          "file" : "lib/App/Netdisco/DB/Result/DeviceIp.pm"
       },
+      "App::Netdisco::DB::Result::DeviceIpResolved" : {
+         "file" : "lib/App/Netdisco/DB/Result/DeviceIpResolved.pm"
+      },
       "App::Netdisco::DB::Result::DeviceModule" : {
          "file" : "lib/App/Netdisco/DB/Result/DeviceModule.pm"
       },
@@ -281,8 +284,17 @@
       "App::Netdisco::DB::Result::DeviceVlan" : {
          "file" : "lib/App/Netdisco/DB/Result/DeviceVlan.pm"
       },
+      "App::Netdisco::DB::Result::DeviceVrf" : {
+         "file" : "lib/App/Netdisco/DB/Result/DeviceVrf.pm"
+      },
       "App::Netdisco::DB::Result::Enterprise" : {
          "file" : "lib/App/Netdisco/DB/Result/Enterprise.pm"
+      },
+      "App::Netdisco::DB::Result::L3Domain" : {
+         "file" : "lib/App/Netdisco/DB/Result/L3Domain.pm"
+      },
+      "App::Netdisco::DB::Result::L3DomainMember" : {
+         "file" : "lib/App/Netdisco/DB/Result/L3DomainMember.pm"
       },
       "App::Netdisco::DB::Result::Log" : {
          "file" : "lib/App/Netdisco/DB/Result/Log.pm"
@@ -355,6 +367,9 @@
       },
       "App::Netdisco::DB::Result::Virtual::CidrIps" : {
          "file" : "lib/App/Netdisco/DB/Result/Virtual/CidrIps.pm"
+      },
+      "App::Netdisco::DB::Result::Virtual::CidrIpsByDomain" : {
+         "file" : "lib/App/Netdisco/DB/Result/Virtual/CidrIpsByDomain.pm"
       },
       "App::Netdisco::DB::Result::Virtual::DeviceDnsMismatch" : {
          "file" : "lib/App/Netdisco/DB/Result/Virtual/DeviceDnsMismatch.pm"
@@ -430,6 +445,9 @@
       },
       "App::Netdisco::DB::Result::Virtual::UserRole" : {
          "file" : "lib/App/Netdisco/DB/Result/Virtual/UserRole.pm"
+      },
+      "App::Netdisco::DB::Result::Virtual::VrfInconsistency" : {
+         "file" : "lib/App/Netdisco/DB/Result/Virtual/VrfInconsistency.pm"
       },
       "App::Netdisco::DB::Result::Virtual::WalkJobs" : {
          "file" : "lib/App/Netdisco/DB/Result/Virtual/WalkJobs.pm"
@@ -626,6 +644,9 @@
       "App::Netdisco::Util::JobAction" : {
          "file" : "lib/App/Netdisco/Util/JobAction.pm"
       },
+      "App::Netdisco::Util::L3Domain" : {
+         "file" : "lib/App/Netdisco/Util/L3Domain.pm"
+      },
       "App::Netdisco::Util::MCE" : {
          "file" : "lib/App/Netdisco/Util/MCE.pm"
       },
@@ -676,6 +697,9 @@
       },
       "App::Netdisco::Util::Token" : {
          "file" : "lib/App/Netdisco/Util/Token.pm"
+      },
+      "App::Netdisco::Util::VRF" : {
+         "file" : "lib/App/Netdisco/Util/VRF.pm"
       },
       "App::Netdisco::Util::Web" : {
          "file" : "lib/App/Netdisco/Util/Web.pm"
@@ -830,6 +854,9 @@
       "App::Netdisco::Web::Plugin::Report::IpInventory" : {
          "file" : "lib/App/Netdisco/Web/Plugin/Report/IpInventory.pm"
       },
+      "App::Netdisco::Web::Plugin::Report::L3Domains" : {
+         "file" : "lib/App/Netdisco/Web/Plugin/Report/L3Domains.pm"
+      },
       "App::Netdisco::Web::Plugin::Report::ModuleInventory" : {
          "file" : "lib/App/Netdisco/Web/Plugin/Report/ModuleInventory.pm"
       },
@@ -874,6 +901,9 @@
       },
       "App::Netdisco::Web::Plugin::Report::VlanInventory" : {
          "file" : "lib/App/Netdisco/Web/Plugin/Report/VlanInventory.pm"
+      },
+      "App::Netdisco::Web::Plugin::Report::VrfInconsistency" : {
+         "file" : "lib/App/Netdisco/Web/Plugin/Report/VrfInconsistency.pm"
       },
       "App::Netdisco::Web::Plugin::Search::Device" : {
          "file" : "lib/App/Netdisco/Web/Plugin/Search/Device.pm"
@@ -1149,6 +1179,6 @@
       "x_IRC" : "irc://irc.libera.chat/#netdisco",
       "x_MailingList" : "https://lists.sourceforge.net/lists/listinfo/netdisco-users"
    },
-   "version" : "2.117003",
+   "version" : "2.118000",
    "x_serialization_backend" : "JSON::PP version 4.16"
 }
