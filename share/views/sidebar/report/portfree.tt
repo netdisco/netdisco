@@ -1,0 +1,55 @@
+
+            <p class="nd_sidebar-title"><em>Free Ports</em></p>
+            <div class="clearfix">
+              <em class="text-muted">Free for at least:</em><br/>
+              <input id="nd_days-input" class="form-control d-inline-block" type="number" min="0"
+                name="age_num" value="[% vars.sidebar_defaults.report_portfree.age_num | html_entity %]"/>
+              <select id="nd_age-select" class="form-select d-inline-block" name="age_unit">
+                [% FOREACH unit IN [ 'days', 'weeks', 'months', 'years' ] %]
+                <option[% ' selected="selected"' IF vars.sidebar_defaults.report_portfree.age_unit == unit %]>[% unit | html_entity %]</option>
+                [% END %]
+              </select>
+            </div>
+            <div class="clearfix">
+              <em class="text-muted">Operational status:</em><br/>
+              <select class="form-select" name="up">
+                [% FOREACH st IN [ 'down', 'up', 'any' ] %]
+                <option[% ' selected="selected"' IF vars.sidebar_defaults.report_portfree.up == st %]>[% st | html_entity %]</option>
+                [% END %]
+              </select>
+            </div>
+            <div class="clearfix">
+              <em class="text-muted">Administrative status:</em><br/>
+              <select class="form-select" name="up_admin">
+                [% FOREACH st IN [ 'any', 'up', 'down' ] %]
+                <option[% ' selected="selected"' IF vars.sidebar_defaults.report_portfree.up_admin == st %]>[% st | html_entity %]</option>
+                [% END %]
+              </select>
+            </div>
+            <div class="clearfix">
+              <em class="text-muted">Device:</em><br/>
+              <input class="form-control" type="text" name="device" placeholder="IP, prefix or name"
+                value="[% vars.sidebar_defaults.report_portfree.device | html_entity %]"
+                rel="tooltip" data-bs-placement="left" data-bs-title="IP, prefix, or start of DNS or SNMP name"/>
+            </div>
+
+            <div class="clearfix">
+              <em class="text-muted">Free since based on:</em><br/>
+              [% basis_sel = params.basis.list %]
+              [% FOREACH b IN [ 'mac', 'lastchange', 'boot', 'unknown' ] %]
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="nd_portfree-basis-[% b | html_entity %]"
+                  name="basis" value="[% b | html_entity %]"[% ' checked="checked"' IF NOT params.basis.defined OR basis_sel.grep("^$b\$").size %]/>
+                <label class="form-check-label" for="nd_portfree-basis-[% b | html_entity %]">[% b | html_entity %]</label>
+              </div>
+              [% END %]
+            </div>
+            <div class="clearfix">
+              <em class="text-muted">Show at most (0 for all):</em><br/>
+              <input class="form-control" type="number" min="0" name="limit"
+                value="[% vars.sidebar_defaults.report_portfree.limit | html_entity %]"/>
+            </div>
+
+            <button id="[% report.tag | html_entity %]_submit" type="submit" class="btn btn-info">
+             <i class="fas fa-magnifying-glass fa-lg float-start nd_navbar-icon"></i> Run Report</button>
+
