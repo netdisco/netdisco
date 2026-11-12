@@ -51,8 +51,8 @@ Three runtime pieces share one codebase, configuration and schema
 Worker plugins:
 
 - `App::Netdisco::Worker::Loader` loads every configured plugin whose
-  package matches `::Plugin::<action>`, from `worker_plugins` and
-  `extra_worker_plugins`. An `X::Foo` name maps to
+  package matches `::Plugin::<action>` or `::Plugin::Internal`, from
+  `worker_plugins` and `extra_worker_plugins`. An `X::Foo` name maps to
   `App::NetdiscoX::Worker::Plugin::Foo`, for site-local plugins.
 - Plugins call `register_worker` (`Worker/Plugin.pm`) with a `phase` and
   a `driver`. `App::Netdisco::Worker::Runner` runs the phases in order and
@@ -65,11 +65,18 @@ Worker plugins:
 Web plugins:
 
 - Feature areas register through `lib/App/Netdisco/Web/Plugin.pm`
-  (`web_plugins` in config): device tabs, search tabs, reports and admin
-  tasks. Concrete plugins live under
-  `lib/App/Netdisco/Web/Plugin/{Device,Search,Report,AdminTask}/`. A
-  plugin that ships its own templates adds their directory with
-  `register_template_path`.
+  (`web_plugins` in config, whose order is the tab order): navbar items,
+  device tabs, search tabs, reports, admin tasks, device port columns,
+  device details, and a plugin's own CSS and JavaScript. Concrete plugins
+  live under `lib/App/Netdisco/Web/Plugin/`, mostly in
+  `{Device,Search,Report,AdminTask}/`. A shipped plugin not listed in
+  `web_plugins` in `share/config.yml` never loads.
+- `Web/Plugin.pm` holds each registration's options and checks: a report
+  needs a `category`, even a hidden one. Keep tags to `\w+`, the only
+  form the pane history hook in `Web.pm` matches. A plugin that
+  ships its own templates passes the directory above their `views/` to
+  `register_template_path`; a site's `template_paths` are searched before
+  it.
 - `lib/App/Netdisco/Web.pm` monkeypatches several Dancer subs for tenant
   URLs and JSON errors. Look there first when routing or redirects behave
   unexpectedly.
@@ -81,7 +88,12 @@ Web plugins:
   data.
 - **Every route declares its access** with `require_login`,
   `require_role` or `require_any_role`; existing routes show which roles
-  each area uses. A route without one is open to anyone.
+  each area uses. A route without one is open to anyone. The roles routes
+  check are `admin`, `port_control`, `api` and `api_admin`
+  (`DB/Result/Virtual/UserRole.pm`). `admin` does not imply
+  `port_control`, so a port write uses
+  `require_any_role [qw(admin port_control)]`, as `Web/PortControl.pm`
+  does.
 - **API responses are a contract.** Adding a key is fine; renaming or
   removing one breaks clients, so say so in the PR.
 
@@ -185,8 +197,14 @@ perl Build.PL && HARNESS_OPTIONS=j$(nproc) ./Build test --test_files xt/
 
 With a database set in `~/environments/deployment.yml`:
 
-- `bin/netdisco-web-fg` runs the web UI in the foreground.
-- `bin/netdisco-backend-fg` runs the backend in the foreground.
+- `plackup -R share,lib,~/environments bin/netdisco-web-fg` runs the web
+  UI in the foreground. `bin/netdisco-web-fg` is a PSGI app and exits with
+  a hint when run directly.
+- `ND2_SINGLE_WORKER=1 bin/netdisco-backend-fg` runs the backend in the
+  foreground with one worker.
+- `DBIC_TRACE=1` prints the SQL; `INFO_TRACE=1` traces SNMP::Info
+  (`Transport/SNMP.pm`); `NETDISCO_DB_NAME` picks another database
+  (`Configuration.pm`).
 - `bin/netdisco-do ACTION -d DEVICE -D` runs one job against one device
   with debug output.
 

@@ -32,7 +32,10 @@ often skipping several releases at once.
   statement. `xt/150-schema-step-file.t` fails a step from 101 on that
   has one.
 - **The step runs in one transaction.** `netdisco-db-deploy` stops at a
-  failing step and applies nothing from it. A statement PostgreSQL refuses
+  failing step and applies nothing from it. The runner opens the
+  transaction and sets `client_min_messages` to `warning`, so a step needs
+  neither `BEGIN;`/`COMMIT;` nor a `SET` of its own
+  (`DB/SchemaVersioned.pm`, `DB/StepFile.pm`). A statement PostgreSQL refuses
   inside a transaction, such as `CREATE INDEX CONCURRENTLY`, needs
   `-- netdisco: no-transaction` as the step's first line. Such a step has
   no rollback: statements before a failing one stay applied, so put one
@@ -44,11 +47,14 @@ often skipping several releases at once.
   and `CREATE OR REPLACE` for functions and views (a view can only gain
   columns at the end). Make data fixes conditional, so a second run
   matches nothing and changes no data Netdisco or an administrator keeps.
-- **Write for the oldest PostgreSQL sites run.** The startup warning in
+- **Write for the oldest PostgreSQL sites run.** `netdisco-db-deploy`
+  refuses servers before 9.6. The startup warning in
   `App::Netdisco::Util::PostgresFloor` names the version a future release
   will require; until then older servers still deploy. Raising what a step
   needs is a maintainer decision, so say in the PR if yours needs a newer
   server.
+- **Match the existing schema:** no foreign keys, and `timestamp` without
+  time zone.
 - **Large tables:** a step that rewrites `node`, `node_ip` or `device_port`
   takes minutes on a big site and holds its locks throughout. Prefer
   changes PostgreSQL can make without a rewrite, and say in the PR what
@@ -148,6 +154,10 @@ Then update the result class to match: columns, primary key, relations.
 - A new step: add a test that the step file parses and that the result
   class matches it, beside `xt/150-schema-step-file.t` and
   `xt/166-schema-104-first-seen.t`.
+- Against a scratch database, deploy from empty, run
+  `netdisco-db-deploy --check` (it should list no differences), and deploy
+  again (it should have nothing to do). Then upgrade a copy of a database
+  from the previous release.
 
 ## Changes and the PR
 

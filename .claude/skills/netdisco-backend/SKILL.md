@@ -21,16 +21,25 @@ they seem to disagree, the code is right; say so in the PR.
 
 - **Registration, phases and options** are in `Worker/Plugin.pm`
   (`register_worker`), `Worker/Runner.pm` (phase order) and
-  `Worker/Loader.pm` (driver priority). The package name gives the action
+  `Worker/Loader.pm` (run order). Driver priorities are `driver_priority`
+  in `share/config.yml`. The package name gives the action
   and namespace: `Plugin::Arpnip::Nodes` is `netdisco-do arpnip::nodes`.
   `only` and `no` take device ACLs (`Util/Permission.pm`): a list matches
   when any rule does, or every rule when it holds `op:and`, and an empty
   `only` matches every device.
 - **Every `main` worker runs.** One returning `done` does not stop the
   next.
+- **Name a phase.** The default is `user`, which `best_status`
+  (`Backend/Job.pm`) ignores, so a `done` there never lets the store
+  workers or hooks run.
+- **A worker with a driver priority below `direct` is networked:** it is
+  skipped when no `device_auth` stanza is left for it, and, in `main`,
+  when the job runs offline (`Worker/Plugin.pm`).
 - **Workers share the job's `vars`,** and higher priority drivers run
   later, but each action merges in its own way. Read the action's merge
-  before relying on which driver wins.
+  before relying on which driver wins, and read its `early` and `store`
+  workers before relying on the shape of a key: `subnets` is keyed by VRF,
+  and `arps` is a hash until the store phase makes it a list.
 - **The check phase gates the job** (`check_passed` in `Backend/Job.pm`).
   Refuse there when the device is not stored, not eligible or not
   permitted, as `Arpnip.pm` and `PortControl.pm` do. A check's `done` is

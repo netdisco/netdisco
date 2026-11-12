@@ -51,7 +51,14 @@ they seem to disagree, the code is right; say so in the PR.
   XMLHttpRequest`.** Dancer's `ajax` keyword answers 404 without it, and
   htmx 4 does not send it on its own. In markup use
   `hx-headers='{"X-Requested-With": "XMLHttpRequest"}'`; in script use the
-  helpers in `netdisco-request.js`.
+  helpers in `netdisco-request.js`. The exception is a CSV download, a
+  plain link with no such header: a content route that sets
+  `provides_csv` is declared with `get`, not `ajax`, and branches on
+  `request->is_ajax`.
+- **A tab with no sidebar fields** declares
+  `<input type="hidden" data-nd-has-sidebar="<tag>" value="0">`, as
+  `sidebar/report/portlog.tt` does; `nd_has_sidebar()` in `netdisco.js`
+  reads it.
 - **A report page loads its content by submitting its sidebar form,** so a
   query parameter on `/report/<tag>` reaches the content route only if the
   sidebar has a field of that name. To link into a report filtered by
@@ -61,9 +68,13 @@ they seem to disagree, the code is right; say so in the PR.
   `HX-Push-Url` or `HX-Replace-Url`; do not call `history.pushState`
   yourself.
 - **Initialize after a swap, not on page load.** A pane arrives by htmx swap
-  long after `DOMContentLoaded`. Hook `htmx:after:swap`, or register with
-  `ndPages` and give your page an `innerView(tab)`, which runs after
-  every pane swap; `ready()` runs once, on page load.
+  long after `DOMContentLoaded`. Hook `htmx:after:swap`.
+- **`ndPages` holds one entry per page** (`device`, `search`, `report`,
+  `admin`; declared in `netdisco.js`). Its `innerView(tab)` runs after
+  every pane swap, but its `ready()` runs only on admin pages, because
+  `netdisco.js` sets up the other three itself. Extend the page's existing
+  entry (`ndPages.admin` is in `netdisco-admin.js`); a plugin or
+  site-local script never assigns one, which would replace it.
 - **htmx binds triggers once, when it processes a node.** Rows that
   DataTables draws later have no htmx listeners, and a `once` trigger is
   spent before the request, so a failed fetch leaves the element inert.
@@ -81,10 +92,14 @@ they seem to disagree, the code is right; say so in the PR.
   (`<script type="application/json" id="...">`), and Template Toolkit
   generates no code. This keeps every script inside CodeQL's analysis and
   inside the `xt/js` tests.
+- **A web plugin's own script and stylesheet are the exception:**
+  `plugin/<name>/<name>.js` and `.css` on the plugin's template path,
+  registered with `register_javascript` and `register_css`.
+  `Web/Static.pm` renders them through Template Toolkit, so `[%` in one is
+  a directive, and the layout loads plugin scripts after the core ones, at
+  the end of `<body>`.
 - **No jQuery**, in any shipped script or the layout. Use the DOM API and
   Bootstrap 5's own JavaScript.
-- **Page scripts register with `ndPages`** (declared in `netdisco.js`), so
-  `netdisco.js` does not need to know which pages exist.
 - **Authored functions carry JSDoc** with a description, parameters and
   return value, as in `netdisco-request.js`.
 
@@ -159,9 +174,12 @@ they seem to disagree, the code is right; say so in the PR.
 - **New tables take their rows from a JSON data block.** The route sends
   `to_json(\@results)` to the HTML template and the plain `\@results` to
   the CSV template. The template writes
-  `<script type="application/json" id="nd-results-<area>-<tag>">[% results.replace('<', '<') | none %]</script>`
-  and names it in `data-nd-data`. Escaping `<` as `<` matters: a
-  value containing `</script>` would otherwise end the block. Older
+  `<script type="application/json" id="nd-results-<area>-<tag>">[% results.replace('<', '\u003c') | none %]</script>`
+  and names it in `data-nd-data`. Escaping `<` as `\u003c` matters: a
+  value containing `</script>` would otherwise end the block. A
+  `before_template` hook in `Web.pm` also escapes a token named
+  `results`, so a block built from any other token relies on its own
+  `replace`. Older
   templates that render `<tbody>` rows move to JSON when you change them
   substantially.
 - **DataTables reads `data-search` from the first body row only.** A
@@ -205,7 +223,12 @@ they seem to disagree, the code is right; say so in the PR.
   that is already safe markup or a URL from `uri_for`, never for data read
   from the network or the database.
 - CSV output is rendered with the filter off, so a CSV template must not
-  carry markup.
+  carry markup. It starts with `[% USE CSV %]` and writes every row with
+  `CSV.dump`, which neutralizes cells a spreadsheet would run as a formula
+  (`xt/83`, `xt/95`).
+- **A content route that also serves the API** (`api_endpoint`) renders
+  with `{ layout => 'noop' }`. With `layout => undef` Dancer skips the
+  `before_layout_render` hook in `Web.pm` that turns the result into JSON.
 - In renderers, escape with the `esc` helper in `netdisco-tables.js`. It
   does not escape the single quote, so never put an escaped value inside
   a single-quoted attribute (`xt/39-html-escaper.t`).
@@ -223,8 +246,10 @@ they seem to disagree, the code is right; say so in the PR.
   so `netdisco-do checksitelocal` tells the admin what to change. The
   comment above its rules says what a rule needs, and
   `xt/47-site-local-checker.t` counts them.
-- A plugin's own template, such as a `device_port_column.tt`, renders
-  through the same engine and must keep working.
+- A plugin's own templates render through the same engine and must keep
+  working: `plugin/<name>/device_port_column.tt`,
+  `device_port_column_csv.tt` and `device_details.tt`, included from
+  `ajax/device/ports.tt`, `ports_csv.tt` and `details.tt`.
 
 ## Tests and verification
 
