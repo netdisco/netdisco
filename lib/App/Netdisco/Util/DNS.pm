@@ -150,9 +150,10 @@ sub check_acl_no_ipaddr_only {
 
       if ($item =~ m/^group:(.+)$/) {
           my $group = $1;
-          setting('host_groups')->{$group} ||= [];
+          # an unknown group matches nothing; reading must not write into config
+          my $rules = (setting('host_groups') || {})->{$group} || [];
 
-          if ($neg xor check_acl_no_ipaddr_only($thing, setting('host_groups')->{$group})) {
+          if ($neg xor check_acl_no_ipaddr_only($thing, $rules)) {
             return 1 if not $all;
           }
           else {

@@ -6,6 +6,7 @@ use Dancer::Plugin::Auth::Extensible;
 use Dancer::Plugin::Ajax;
 
 use App::Netdisco::Web::Plugin;
+use App::Netdisco::Util::ManagedConfig 'acl_txn_do';
 
 use MIME::Base64 'decode_base64';
 
@@ -41,7 +42,7 @@ post '/ajax/control/admin/acleditor/add' => require_role setting('defanged_admin
     my $right_rule = param("right_rule");
     send_error('Bad Request', 400) unless $left_rule and $acl;
 
-    schema(vars->{'tenant'})->txn_do(sub {
+    acl_txn_do(sub {
       my $row = schema(vars->{'tenant'})->resultset('AccessControlListMap')
         ->create({
           acl_name => $acl,
@@ -64,7 +65,7 @@ post '/ajax/control/admin/acleditor/delete' => require_role setting('defanged_ad
     my $acl = param("acl_name");
     send_error('Bad Request', 400) unless $id and $acl;
     
-    schema(vars->{'tenant'})->txn_do(sub {
+    acl_txn_do(sub {
       my $map = schema(vars->{'tenant'})->resultset('AccessControlListMap')
         ->find($id) or send_error('Bad Request', 400);
 
@@ -120,7 +121,7 @@ post '/ajax/control/admin/acleditor/update' => require_role setting('defanged_ad
                                                       : defined param('right_rule') ? [param('right_rule')]
                                                                                     : [] };
 
-    schema(vars->{'tenant'})->txn_do(sub {
+    acl_txn_do(sub {
       my $row = schema(vars->{'tenant'})->resultset('AccessControlListMap')
         ->find($id) or send_error('Bad Request', 400);
 

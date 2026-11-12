@@ -125,7 +125,7 @@ ajax '/ajax/data/devices/typeahead' => require_login sub {
 
     my @data = ();
 
-    # TODO add in entries from the database
+    # ACL Manager host ACLs are in host_groups too, put there by the loader
     my @host_groups = sort {$a cmp $b}
                       grep {$_ !~ m/^synthesized_group_/}
                       keys %{ setting('host_groups')};

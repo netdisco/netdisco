@@ -11,9 +11,8 @@ no warnings 'once'; # the glob overrides below are single-use by design
 # control role, so the API must make the same device check or a scoped user
 # could write custom fields on any device by calling it instead.
 #
-# Only the DB edges are faked: the user, its roles, the role sync and the
-# queue insert. The route, the role checks and the device check are the real
-# ones.
+# Only the DB edges are faked: the user, its roles and the queue insert. The
+# route, the role checks and the device check are the real ones.
 
 BEGIN { $ENV{DANCER_ENVDIR} = '/dev/null'; delete $ENV{ND2_DO_FORCE} }
 
@@ -47,7 +46,6 @@ no warnings 'redefine';
 *Dancer::Plugin::Auth::Extensible::logged_in_user = sub { return $user };
 *App::Netdisco::Web::API::Queue::logged_in_user   = sub { return $user };
 *Dancer::Plugin::Auth::Extensible::user_roles     = sub { return wantarray ? @roles : [@roles] };
-*App::Netdisco::Web::API::Queue::sync_portctl_roles = sub { return };
 *App::Netdisco::Web::API::Queue::jq_insert = sub { push @queued, @{$_[0]}; return 1 };
 
 setting('portctl_by_role' => { leafonly => ['192.0.2.1'] });

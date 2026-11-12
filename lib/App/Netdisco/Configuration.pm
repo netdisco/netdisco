@@ -12,7 +12,6 @@ use Path::Class 'dir';
 use Net::Domain 'hostdomain';
 use AnyEvent::Loop; # avoid EV
 use File::ShareDir 'dist_dir';
-use Storable 'dclone';
 use URI::Based;
 
 BEGIN {
@@ -236,11 +235,6 @@ config->{'bulkwalk_off'} = true
 
 config->{'port_control_reasons'} =
   config->{'port_control_reasons'} || config->{'system_port_control_reasons'};
-
-# for managing database portctl_roles
-
-config->{'portctl_by_role_shadow'}
-  = dclone (setting('portctl_by_role') || {});
 
 # convert domain_suffix from scalar or list to regexp
 
