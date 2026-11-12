@@ -11,7 +11,7 @@ no warnings 'once'; # the glob overrides below are single-use by design
 #
 # acl_txn_do is replaced in each plugin's package by a recorder that does not
 # run the block, so the test needs no database and pins only the route's use
-# of the wrapper (the wrapper itself is covered by xt/179).
+# of the wrapper (the wrapper itself is covered by xt/219).
 
 BEGIN { $ENV{DANCER_ENVDIR} = '/dev/null'; }
 
