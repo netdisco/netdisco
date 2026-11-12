@@ -28,6 +28,7 @@ use App::Netdisco::Util::ManagedConfig qw(
 );
 use Test::Netdisco::ManagedACL qw(stub_managed_config);
 use App::Netdisco::Util::Permission qw(check_acl);
+use App::Netdisco::Util::DNS ();
 use Dancer qw/:syntax :script !pass/;
 
 my $IN  = '192.0.2.1';
@@ -276,6 +277,15 @@ subtest 'checkAcl__an_unknown_group__matches_nothing_and_is_not_written_into_con
   yaml();
   ok(!check_acl($IN, ['group:nosuch']), 'group:nosuch matches nothing');
   ok(check_acl($IN, ['!group:nosuch']), '!group:nosuch matches');
+  ok(!exists setting('host_groups')->{'nosuch'}, 'host_groups is untouched');
+};
+
+# Util::DNS keeps its own copy of the group walk, to avoid a circular import
+# of Util::Permission, so it needs the same guarantee
+subtest 'checkAclNoIpaddrOnly__an_unknown_group__matches_nothing_and_is_not_written_into_config' => sub {
+  yaml();
+  ok(!App::Netdisco::Util::DNS::check_acl_no_ipaddr_only($IN, ['group:nosuch']), 'group:nosuch matches nothing');
+  ok(App::Netdisco::Util::DNS::check_acl_no_ipaddr_only($IN, ['!group:nosuch']), '!group:nosuch matches');
   ok(!exists setting('host_groups')->{'nosuch'}, 'host_groups is untouched');
 };
 
