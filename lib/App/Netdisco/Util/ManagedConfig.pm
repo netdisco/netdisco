@@ -19,6 +19,7 @@ our @EXPORT_OK = qw/
   load_managed_config
   capture_yaml_settings
   yaml_setting
+  is_reserved_group_name
 /;
 
 # kept here and not in CONFIG, so that dumpconfig and setting() only ever see
@@ -211,6 +212,21 @@ sub yaml_setting {
   return $YAML{ $_[0] };
 }
 
+=head2 is_reserved_group_name( $name )
+
+True for a name a host ACL may not take, because it would replace a group
+Netdisco relies on: the C<__NAME__> groups such as C<__ANY__> that
+C<share/config.yml> ships, and the C<synthesized_group_> names this module
+makes for each ACL row.
+
+=cut
+
+sub is_reserved_group_name {
+  my $name = shift;
+  return 0 unless defined $name;
+  return (($name =~ m/^__.+__$/) or ($name =~ m/^synthesized_group_/)) ? 1 : 0;
+}
+
 # host_host ACLs are not read: nothing uses them as config
 sub _read_acl_rows {
   my $tenant_key = shift;
@@ -229,6 +245,12 @@ sub _build_overlay {
 
   foreach my $name (@rows) {
     my $is_role = ($name->acl_type eq 'host_port');
+
+    # a host ACL named __ANY__ replaced the shipped group with a reference to
+    # itself (a new ACL's first rule is group:__ANY__), and check_acl never
+    # returned. the ACL Manager refuses these names; this keeps out any saved
+    # before it did. a role of that name touches no group, so it still loads.
+    next if not $is_role and is_reserved_group_name($name->acl_name);
 
     # an ACL with no rows still replaces a YAML entry of the same name, and
     # matches nothing

@@ -10,7 +10,9 @@
 # - a failed read puts the YAML back, or a worker keeps stale (or another
 #   tenant's) roles after the database goes away;
 # - check_acl only reads CONFIG: it never reads the database, and an unknown
-#   group is not written into host_groups (it used to be, on every read).
+#   group is not written into host_groups (it used to be, on every read);
+# - a host ACL never replaces a shipped __NAME__ group or a synthesized one:
+#   one named __ANY__ made check_acl recurse without end.
 
 use strict;
 use warnings;
@@ -102,6 +104,46 @@ subtest 'loader__an_empty_host_acl__replaces_a_yaml_group_and_matches_nothing' =
 
   is_deeply(setting('host_groups')->{office}, [], 'empty group');
   ok(!check_acl($IN, ['group:office']), 'fails closed');
+};
+
+# A new host ACL starts with the rule group:__ANY__, so one named __ANY__
+# replaced the shipped group with a reference to itself and check_acl never
+# returned.
+subtest 'loader__a_host_acl_named_like_a_shipped_group__is_not_loaded' => sub {
+  yaml();
+  my $any = dclone(setting('host_groups')->{'__ANY__'});
+  stub_managed_config(version => 1, rows => { netdisco => {
+    __ANY__ => { type => 'host', maps => [ [['group:__ANY__']] ] },
+    office  => { type => 'host', maps => [ [[$IN]] ] },
+  }});
+  load_managed_config();
+
+  is_deeply(setting('host_groups')->{'__ANY__'}, $any, 'the shipped __ANY__ stays');
+  is_deeply(synth_keys(), ['synthesized_group_netdisco_2'], 'nothing synthesized for it');
+  ok(check_acl($IN, ['group:office']), 'the other ACL still loads');
+
+  local $SIG{ALRM} = sub { die "check_acl did not return\n" };
+  alarm 5;
+  my $ok = eval { check_acl($OUT, ['group:__ANY__']) };
+  alarm 0;
+  is($@, '', 'check_acl returns');
+  ok($ok, '__ANY__ still matches everything');
+};
+
+# the loader's own names: ids follow the sorted names, so office is 1 and the
+# ACL named after it would replace office's rules
+subtest 'loader__a_host_acl_named_like_a_synthesized_group__is_not_loaded' => sub {
+  yaml();
+  stub_managed_config(version => 1, rows => { netdisco => {
+    office => { type => 'host', maps => [ [[$IN]] ] },
+    synthesized_group_netdisco_1 => { type => 'host', maps => [ [[$OUT]] ] },
+  }});
+  load_managed_config();
+
+  is_deeply(setting('host_groups')->{'synthesized_group_netdisco_1'}, [$IN], 'office keeps its rules');
+  is_deeply(synth_keys(), ['synthesized_group_netdisco_1'], 'nothing synthesized for it');
+  ok(check_acl($IN, ['group:office']), 'office matches');
+  ok(!check_acl($OUT, ['group:office']), 'and nothing else');
 };
 
 subtest 'loader__a_deleted_row_disappears' => sub {
