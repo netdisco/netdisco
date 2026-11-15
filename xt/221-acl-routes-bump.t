@@ -12,6 +12,11 @@ no warnings 'once'; # the glob overrides below are single-use by design
 # acl_txn_do is replaced in each plugin's package by a recorder that does not
 # run the block, so the test needs no database and pins only the route's use
 # of the wrapper (the wrapper itself is covered by xt/219).
+#
+# The ACL Manager also refuses a host ACL named like a shipped __NAME__ group
+# or a synthesized one: an ACL named __ANY__ replaced the shipped group with a
+# reference to itself, and check_acl never returned (the loader's side is in
+# xt/220).
 
 BEGIN { $ENV{DANCER_ENVDIR} = '/dev/null'; }
 
@@ -103,5 +108,23 @@ $res = send_route(POST => '/ajax/control/admin/acleditor/update',
   id => 1, acl_name => 'example');
 is $res->status, 200, 'aclRoutes__acleditor_update__is_accepted';
 is $calls, 1, 'aclRoutes__acleditor_update__writes_inside_acl_txn_do';
+
+foreach my $name (qw/__ANY__ __LOCAL_ADDRESSES__ synthesized_group_netdisco_1/) {
+  $res = send_route(POST => '/ajax/control/admin/aclmanager/add',
+    acl_name => $name, acl_type => 'host');
+  is $res->status, 400, "aclRoutes__aclmanager_add__refuses_a_host_acl_named_$name";
+  is $calls, 0, "aclRoutes__aclmanager_add__writes_nothing_for_$name";
+
+  # renaming, or turning a role into a host ACL, can reach the name too
+  $res = send_route(POST => '/ajax/control/admin/aclmanager/update',
+    acl_name => $name, 'old-acl_name' => 'example', acl_type => 'host');
+  is $res->status, 400, "aclRoutes__aclmanager_update__refuses_a_host_acl_named_$name";
+  is $calls, 0, "aclRoutes__aclmanager_update__writes_nothing_for_$name";
+}
+
+# a role touches no group, so its name is free
+$res = send_route(POST => '/ajax/control/admin/aclmanager/add',
+  acl_name => '__ANY__', acl_type => 'host_port');
+is $res->status, 200, 'aclRoutes__aclmanager_add__accepts_a_role_named___ANY__';
 
 done_testing;

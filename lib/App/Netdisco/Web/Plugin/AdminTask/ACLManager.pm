@@ -6,7 +6,8 @@ use Dancer::Plugin::Auth::Extensible;
 use Dancer::Plugin::Ajax;
 
 use App::Netdisco::Web::Plugin;
-use App::Netdisco::Util::ManagedConfig qw/acl_txn_do yaml_setting/;
+use App::Netdisco::Util::ManagedConfig
+  qw/acl_txn_do yaml_setting is_reserved_group_name/;
 
 register_admin_task({
     tag => "aclmanager",
@@ -28,6 +29,10 @@ ajax '/ajax/control/admin/aclmanager/add' => require_role setting('defanged_admi
     my $type = param('acl_type');
     send_error('Bad Request', 400) unless $type
       and $type =~ m/^(?:host|host_host|host_port)$/;
+    # a host ACL becomes host_groups->{<name>}, so it must not take a name
+    # Netdisco relies on, such as __ANY__
+    send_error('Bad Request', 400)
+      if $type eq 'host' and is_reserved_group_name($acl);
     send_error('Bad Request', 400)
       if schema(vars->{'tenant'})->resultset('AccessControlListName')
                                  ->search({acl_name => $acl})->count();
@@ -94,6 +99,9 @@ ajax '/ajax/control/admin/aclmanager/update' => require_role setting('defanged_a
     my $type = param('acl_type');
     send_error('Bad Request', 400) unless $type
       and $type =~ m/^(?:host|host_host|host_port)$/;
+    # as for add: also reached by turning a role into a host ACL
+    send_error('Bad Request', 400)
+      if $type eq 'host' and is_reserved_group_name($acl);
 
     schema('netdisco')->resultset('User')
       ->search({ portctl_role => $old_acl })
