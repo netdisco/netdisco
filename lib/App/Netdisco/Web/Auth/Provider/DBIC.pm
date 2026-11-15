@@ -19,11 +19,10 @@ use File::ShareDir 'dist_dir';
 use Try::Tiny;
 use NetAddr::IP::Lite ':lower';
 
-use App::Netdisco::Util::Permission 'acl_matches_only';
+use App::Netdisco::Util::Permission 'check_acl';
 use App::Netdisco::Util::Web
   qw/trusted_client_address warn_forwarded_address_ignored
      tacacs_configured tacacs_unavailable/;
-use App::Netdisco::Util::Configuration 'refresh_managed_acl';
 
 sub authenticate_user {
     my ($self, $username, $password) = @_;
@@ -86,26 +85,34 @@ sub validate_api_token {
       and ($user->token_no_expire
         or $user->token_from > (time - setting('api_token_lifetime')));
 
-    # the ACL is loaded when the user is loaded from the DB above
+    # the ACL is loaded when the user is loaded from the DB above
     if ($user->token_acl) {
-        # refresh host_group for the token acl
-        refresh_managed_acl( $user->token_acl_name );
-
-        # would expect empty list acl to reject, because client IP is not in there
-        # but acl_matches_only returns true for empty list
-        # however managed host acls can never be empty, UI forces grp:any
         # NetAddr::IP::Lite->new(undef) is a truthy 0.0.0.0/0 in every stable
         # release, which a negated list matches, so refuse an absent address here.
         my $address = trusted_client_address();
         my $client = ($address ? NetAddr::IP::Lite->new($address) : undef);
         if (not $client
-            or not acl_matches_only($client, setting('host_groups')->{$user->token_acl})) {
+            or not _token_acl_matches($client, $user->token_acl_name)) {
             warn_forwarded_address_ignored('an API token access list');
             return undef;
         }
     }
 
     return $user;
+}
+
+# Matches the rows fetched with the user, not host_groups[acl name]. Tokens
+# always belong to the default database, while host_groups holds the current
+# tenant's named ACLs, so under /t/<tenant>/ a tenant ACL of the same name
+# must not decide whether a token is accepted. No rows fails closed, as
+# check_acl on an empty list would not.
+sub _token_acl_matches {
+    my ($client, $acl) = @_;
+    return 0 unless $acl;
+    foreach my $map ($acl->mappings->all) {
+        return 1 if check_acl($client, $map->left_acl->rules);
+    }
+    return 0;
 }
 
 sub get_user_roles {

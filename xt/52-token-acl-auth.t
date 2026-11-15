@@ -11,23 +11,22 @@ use Test::File::ShareDir::Dist { 'App-Netdisco' => 'share/' };
 use App::Netdisco;
 use App::Netdisco::DB; # fake user row
 use App::Netdisco::Web::Auth::Provider::DBIC;
-use App::Netdisco::Util::Configuration 'refresh_managed_acl';
+use Storable 'dclone';
 
 use Dancer qw/:script !pass/;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# API token auth now restricts by a *managed ACL name* (users.token_acl,
-# referencing access_control_list_name) instead of the old
-# users.token_allowed_ips text[] column. validate_api_token() loads the
-# named ACL's mappings (prefetched alongside the user row), synthesizes
-# them into config->{host_groups} via refresh_managed_acl(), then checks
-# the requesting client IP against that host group with acl_matches_only()
-# - all real, unmocked App::Netdisco::Util::{Configuration,Permission}
-# code. What's faked here is only the DB access: a fake schema/resultset
-# stands in for Dancer::Plugin::DBIC's schema(), and fake ACL result
-# objects stand in for the AccessControlListName/Map/List rows that would
-# normally be prefetched from Postgres (unavailable to xt/ tests). This
-# mirrors the fake-the-DB-edges approach in xt/51-updated-device-hook.t.
+# API token auth restricts by a *managed ACL name* (users.token_acl,
+# referencing access_control_list_name). validate_api_token() loads the
+# named ACL's mappings (prefetched alongside the user row) and checks the
+# requesting client IP against those rows directly with check_acl(), never
+# through config->{host_groups}: tokens always come from the default
+# database, while host_groups holds the current tenant's named ACLs. What's
+# faked here is only the DB access: a fake schema/resultset stands in for
+# Dancer::Plugin::DBIC's schema(), and fake ACL result objects stand in for
+# the AccessControlListName/Map/List rows that would normally be prefetched
+# from Postgres (unavailable to xt/ tests). This mirrors the
+# fake-the-DB-edges approach in xt/51-updated-device-hook.t.
 # The client IP is read by trusted_client_address(), so the fake request is
 # installed in App::Netdisco::Util::Web and not in the provider.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -90,8 +89,7 @@ sub env {
 package main;
 
 # a managed "host" ACL naming one allowed source network, as the ACL
-# manager UI would create it (App::Netdisco::Util::Configuration::
-# refresh_managed_acl turns this into config->{host_groups})
+# manager UI would create it
 my $allowed_net = FakeAccessControlList->new(id => 1, rules => ['192.0.2.0/24']);
 my $map         = FakeAccessControlListMap->new(id => 1, left_acl => $allowed_net, right_acl => undef);
 my $token_acl   = FakeAccessControlListName->new(
@@ -232,74 +230,90 @@ my $provider = App::Netdisco::Web::Auth::Provider::DBIC->new({});
     'tokenAcl__no_peer_address_at_all__is_denied_by_a_list_that_would_admit_it');
 }
 
-# Every case above starts from an empty host_groups, but a web worker serves
-# many API requests and refresh_managed_acl runs on each one. It used to push
-# onto the ACL's group without clearing it, so a row deleted in the ACL editor
-# stayed in force for the life of the worker, and the group grew by one entry
-# per request. These cases refresh again in the same process, as a second
-# request would.
+# A web worker serves many API requests, and the token's ACL is read from the
+# rows prefetched with the user each time. Nothing from an earlier request may
+# stay in force, and host_groups belongs to the current tenant, not the token.
+
+my $IN  = '192.0.2.55';
+my $OUT = '203.0.113.9';
+
+my $row = sub { my ($id, $rules) = @_; FakeAccessControlListMap->new( id => $id,
+  left_acl => FakeAccessControlList->new(id => $id, rules => $rules), right_acl => undef ) };
+my $acl_of = sub { FakeAccessControlListName->new(
+  acl_name => 'api_office_only', acl_type => 'host', mappings => [@_] ) };
 
 {
   config->{'host_groups'} = {};
-  setting('trusted_proxies' => []);
+  local *App::Netdisco::DB::Result::User::token_acl_name = sub { return $acl_of->($row->(4, ['192.0.2.0/24'])) };
+  local *App::Netdisco::Util::Web::request = sub { return FakeRequest->new($IN) };
+  ok($provider->validate_api_token('secret-api-token'),
+    'tokenAcl__a_client_in_its_rows__is_accepted');
+}
 
-  my $office = FakeAccessControlListMap->new( id => 4,
-    left_acl => FakeAccessControlList->new(id => 4, rules => ['192.0.2.0/24']), right_acl => undef );
-  my $vpn    = FakeAccessControlListMap->new( id => 5,
-    left_acl => FakeAccessControlList->new(id => 5, rules => ['198.51.100.0/24']), right_acl => undef );
+{
+  config->{'host_groups'} = {};
+  local *App::Netdisco::DB::Result::User::token_acl_name = sub { return $acl_of->($row->(4, ['192.0.2.0/24'])) };
+  local *App::Netdisco::Util::Web::request = sub { return FakeRequest->new($OUT) };
+  ok(!$provider->validate_api_token('secret-api-token'),
+    'tokenAcl__a_client_outside_its_rows__is_refused');
+}
 
-  my $acl = FakeAccessControlListName->new(
-    acl_name => 'api_office_only', acl_type => 'host', mappings => [$office, $vpn] );
+{
+  config->{'host_groups'} = {};
+  local *App::Netdisco::DB::Result::User::token_acl_name = sub { return $acl_of->() };
+  local *App::Netdisco::Util::Web::request = sub { return FakeRequest->new($IN) };
+  ok(!$provider->validate_api_token('secret-api-token'),
+    'tokenAcl__an_acl_with_no_rows__refuses');
+}
+
+{
+  config->{'host_groups'} = {};
+  my $acl = $acl_of->($row->(4, ['192.0.2.0/24']), $row->(5, ['198.51.100.0/24']));
   local *App::Netdisco::DB::Result::User::token_acl_name = sub { return $acl };
-  local *App::Netdisco::Util::Web::request
-    = sub { return FakeRequest->new('198.51.100.7') };
+  local *App::Netdisco::Util::Web::request = sub { return FakeRequest->new('198.51.100.7') };
 
   ok($provider->validate_api_token('secret-api-token'),
-    'tokenAcl__a_client_in_a_second_row__is_allowed');
+    'tokenAcl__a_client_in_a_second_row__is_accepted');
 
   # the admin deletes the VPN row; the next request reaches the same worker
-  $acl = FakeAccessControlListName->new(
-    acl_name => 'api_office_only', acl_type => 'host', mappings => [$office] );
-
+  $acl = $acl_of->($row->(4, ['192.0.2.0/24']));
   ok(!$provider->validate_api_token('secret-api-token'),
-    'tokenAcl__a_row_deleted_since_the_last_request__no_longer_allows_its_client');
-
-  $provider->validate_api_token('secret-api-token') for 1 .. 5;
-  is(scalar @{ setting('host_groups')->{'api_office_only'} }, 1,
-    'tokenAcl__repeated_requests__leave_one_entry_per_row');
+    'tokenAcl__a_deleted_row__is_no_longer_in_force');
 }
 
 {
-  # the same holds for the hash refresh_managed_acl builds for a paired ACL
-  config->{'host_groups'} = {};
+  config->{'host_groups'} = { api_office_only => [$OUT] };
+  vars->{'tenant'} = 'east';
+  local *App::Netdisco::DB::Result::User::token_acl_name = sub { return $acl_of->($row->(4, ['192.0.2.0/24'])) };
 
-  my $pair = sub { my $id = shift; FakeAccessControlListMap->new( id => $id,
-    left_acl  => FakeAccessControlList->new(id => 10 * $id,     rules => ['192.0.2.1']),
-    right_acl => FakeAccessControlList->new(id => 10 * $id + 1, rules => ['port:Gi1/1']) ) };
+  local *App::Netdisco::Util::Web::request = sub { return FakeRequest->new($IN) };
+  ok($provider->validate_api_token('secret-api-token'),
+    'tokenAcl__a_same_named_tenant_group__does_not_refuse_a_client_in_its_rows');
+  local *App::Netdisco::Util::Web::request = sub { return FakeRequest->new($OUT) };
+  ok(!$provider->validate_api_token('secret-api-token'),
+    'tokenAcl__a_same_named_tenant_group__has_no_effect');
 
-  refresh_managed_acl( FakeAccessControlListName->new(
-    acl_name => 'leaf_ports', acl_type => 'host_port', mappings => [ $pair->(6), $pair->(7) ] ) );
-  refresh_managed_acl( FakeAccessControlListName->new(
-    acl_name => 'leaf_ports', acl_type => 'host_port', mappings => [ $pair->(6) ] ) );
-
-  is_deeply([ keys %{ setting('host_groups')->{'leaf_ports'} } ], ['group:synthesized_group_60'],
-    'refreshManagedAcl__a_paired_row_deleted_since_the_last_refresh__is_gone');
+  vars->{'tenant'} = undef;
 }
 
 {
-  # an ACL left with no rows is refused, as one never loaded is, rather than
-  # left as an empty list, which acl_matches_only reads as "anything"
-  config->{'host_groups'} = {};
+  config->{'host_groups'} = { office => [$IN] };
+  local *App::Netdisco::DB::Result::User::token_acl_name = sub { return $acl_of->($row->(4, ['group:office'])) };
+  local *App::Netdisco::Util::Web::request = sub { return FakeRequest->new($IN) };
+  ok($provider->validate_api_token('secret-api-token'),
+    'tokenAcl__a_group_reference_in_its_rules__resolves_through_host_groups');
+}
 
-  my $one = FakeAccessControlListMap->new( id => 8,
-    left_acl => FakeAccessControlList->new(id => 8, rules => ['192.0.2.0/24']), right_acl => undef );
-  refresh_managed_acl( FakeAccessControlListName->new(
-    acl_name => 'api_office_only', acl_type => 'host', mappings => [$one] ) );
-  refresh_managed_acl( FakeAccessControlListName->new(
-    acl_name => 'api_office_only', acl_type => 'host', mappings => [] ) );
-
-  ok(!exists setting('host_groups')->{'api_office_only'},
-    'refreshManagedAcl__an_acl_with_no_rows__leaves_no_group_to_match');
+{
+  config->{'host_groups'} = { office => [$IN], api_office_only => [$OUT] };
+  my $before = dclone(config->{'host_groups'});
+  local *App::Netdisco::DB::Result::User::token_acl_name = sub { return $acl_of->($row->(4, ['group:office'])) };
+  local *App::Netdisco::Util::Web::request = sub { return FakeRequest->new($IN) };
+  $provider->validate_api_token('secret-api-token');
+  local *App::Netdisco::Util::Web::request = sub { return FakeRequest->new($OUT) };
+  $provider->validate_api_token('secret-api-token');
+  is_deeply(config->{'host_groups'}, $before,
+    'tokenAcl__validation_never_writes_host_groups');
 }
 
 done_testing;

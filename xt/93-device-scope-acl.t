@@ -30,7 +30,7 @@ use App::Netdisco::Util::Port 'device_acl_by_role_check';
 my $IN  = '192.168.0.11';
 my $OUT = '192.168.0.22';
 
-# the shape sync_portctl_roles builds from a host_port ACL made in the admin UI
+# the shape the ACL Manager loader builds from a host_port ACL made in the admin UI
 setting('host_groups' => { leafgroup => [$IN] });
 setting('portctl_by_role' => {
   leafonly  => { 'group:leafgroup' => [] },   # empty rhs means any port
@@ -68,14 +68,11 @@ subtest 'deviceAclByRoleCheck__without_port_control_or_a_known_role__refuses' =>
   ok !device_acl_by_role_check($IN, undef), 'no user is refused';
 };
 
-subtest 'writePaths__both_scoped_routes__consult_the_check_and_sync_first' => sub {
+subtest 'writePaths__both_scoped_routes__consult_the_check' => sub {
   # an import satisfies a search for the sub name alone, so look for the calls
   my $pc = read_text('lib/App/Netdisco/Web/PortControl.pm');
   like $pc, qr/device_acl_by_role_check\( param\('device'\), logged_in_user \)/,
     'the portcontrol route puts the submitted device to the check';
-  cmp_ok index($pc, 'sync_portctl_roles();'), '<',
-         index($pc, 'device_acl_by_role_check( param'),
-    'and syncs the database roles first';
 
   my $tp = read_text('lib/App/Netdisco/Web/Plugin/AdminTask/Topology.pm');
   like $tp, qr/port_acl_by_role_check\(\$port, \$device, logged_in_user\)/,

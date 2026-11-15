@@ -10,6 +10,7 @@ use App::Netdisco::Backend::Job;
 use App::Netdisco::Backend::Queues 'queue_for';
 use App::Netdisco::JobQueue
   qw/jq_locked jq_getsome jq_lock jq_warm_thrusters/;
+use App::Netdisco::Util::ManagedConfig 'load_managed_config';
 
 use Role::Tiny;
 use namespace::clean;
@@ -65,6 +66,13 @@ sub worker_body {
   while (1) {
       prctl sprintf 'nd2: #%s mgr: gathering', $wid;
       my %seen_job = ();
+
+      # jq_getsome skiplists devices by discover_only and the other device
+      # ACLs, which can name an ACL Manager host ACL as group:<name>. without
+      # this the group is unknown here and matches nothing, so the manager
+      # would skip devices a poller allows. one counter read per pass; the
+      # rows only when it moved.
+      load_managed_config();
 
       # this does have a race condition, but the jobs we're protecting
       # against are likely to be long running
