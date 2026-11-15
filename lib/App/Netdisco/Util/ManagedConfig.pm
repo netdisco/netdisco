@@ -38,8 +38,9 @@ The C<config_version> table holds one counter per scope. The C<acl> counter
 goes up by one every time the ACL Manager writes, so a process can tell
 whether its copy is stale with one cheap read.
 
-Only writes made through L</acl_txn_do> bump it, so after editing the ACL
-tables by hand restart C<netdisco-web> and C<netdisco-backend>, or run:
+Only writes made through L</"acl_txn_do( $coderef )"> bump it, so after
+editing the ACL tables by hand restart C<netdisco-web> and
+C<netdisco-backend>, or run:
 
   UPDATE config_version SET version = version + 1 WHERE scope = 'acl';
 
@@ -179,7 +180,7 @@ sub _apply {
 Takes the clean copy of the YAML values that the ACL Manager adds to, replacing
 any copy taken before. A value that isn't a hash is taken as an empty hash.
 
-L</load_managed_config> and L</yaml_setting> call this themselves the first
+L</load_managed_config> and L</"yaml_setting( $name )"> call this themselves the first
 time either runs in a process, so nothing else needs to. Tests call it again
 after setting new YAML values.
 
