@@ -66,7 +66,11 @@ ajax '/ajax/control/admin/aclmanager/delete' => require_role setting('defanged_a
       schema('netdisco')->txn_do(sub {
         my $users = schema('netdisco')->resultset('User');
 
-        $users->search(\[ 'portctl_roles = ARRAY[?]::text[]', $acl ])
+        # "contained by" rather than equality: a user left holding only this
+        # name more than once, or holding an empty list, must have port
+        # control turned off. array_remove below would otherwise leave them
+        # with {}, which the role checks read as "Enabled (any port)".
+        $users->search(\[ 'portctl_roles <@ ARRAY[?]::text[]', $acl ])
           ->update({ portctl_roles => undef, port_control => \'false' });
 
         $users->search(\[ '? = ANY(portctl_roles)', $acl ])
@@ -108,10 +112,6 @@ ajax '/ajax/control/admin/aclmanager/update' => require_role setting('defanged_a
     send_error('Bad Request', 400)
       if $type eq 'host' and is_reserved_group_name($acl);
 
-    schema('netdisco')->resultset('User')
-      ->search(\[ '? = ANY(portctl_roles)', $old_acl ])
-      ->update({ portctl_roles => \[ 'array_replace(portctl_roles, ?, ?)', $old_acl, $acl ] });
-
     acl_txn_do(sub {
       schema(vars->{'tenant'})->resultset('AccessControlListName')
         ->search({ acl_name => $old_acl })
@@ -127,6 +127,17 @@ ajax '/ajax/control/admin/aclmanager/update' => require_role setting('defanged_a
             ->update({ rules => [] });
       }
     });
+
+    # Users are renamed only once the ACL rename has committed. Renaming onto
+    # a name that already exists fails on the acl_name primary key, and when
+    # users were renamed first they kept the new name anyway: a user moved
+    # onto the other ACL's rights, or one holding both was left with the name
+    # twice. Users live in the default database and a tenant's ACLs in its
+    # own, so one transaction cannot cover both; the ordering does instead,
+    # as acl_txn_do throws before this runs.
+    schema('netdisco')->resultset('User')
+      ->search(\[ '? = ANY(portctl_roles)', $old_acl ])
+      ->update({ portctl_roles => \[ 'array_replace(portctl_roles, ?, ?)', $old_acl, $acl ] });
 
     return '';
 };

@@ -263,4 +263,59 @@ subtest 'aclManagerDelete__a_role_also_in_yaml__keeps_users_on_it' => sub { as_a
   is scalar @touched, 0, 'no user loses the role or port_control';
 }) };
 
+# Deleting a database role turns port control off for users left with no
+# other role. Matching that with equality missed a user holding the name
+# twice, and array_remove then left {} with port_control on, which the role
+# checks read as any port. xt/225 runs the statements against PostgreSQL;
+# this pins the condition where CI has no database.
+subtest 'aclManagerDelete__last_role_clearing__matches_by_containment' => sub { as_admin(sub {
+  local *App::Netdisco::Web::Plugin::AdminTask::ACLManager::schema = sub { FakeRS->new };
+  local *App::Netdisco::Web::Plugin::AdminTask::ACLManager::acl_txn_do = sub { return };
+  @FakeRS::UPDATES = ();
+
+  my $res = dancer_response(POST => '/ajax/control/admin/aclmanager/delete',
+    { headers => [ 'X-REMOTE_USER' => 'someone' ], params => { acl_name => 'dbonly' } });
+  is $res->status, 200, 'delete answers';
+  my ($clear) = grep { exists $_->{set}->{port_control} } @FakeRS::UPDATES;
+  ok $clear, 'users left without a role are turned off';
+  like ${ $clear->{cond} }->[0], qr/portctl_roles\s*<\@\s*ARRAY\[\?\]/,
+    'matched by containment, so {} and repeated names are caught';
+}) };
+
+# Users were once renamed before the ACL rename, outside its transaction. A
+# rename onto an existing name fails on the acl_name primary key, and the
+# users kept the new name: moved onto the other ACL's rights, or holding the
+# name twice, which a later delete turned into any port.
+subtest 'aclManagerUpdate__a_failed_rename__leaves_users_alone' => sub { as_admin(sub {
+  local *App::Netdisco::Web::Plugin::AdminTask::ACLManager::schema = sub { FakeRS->new };
+  local *App::Netdisco::Web::Plugin::AdminTask::ACLManager::acl_txn_do =
+    sub { die "duplicate key value violates unique constraint\n" };
+  @FakeRS::UPDATES = ();
+
+  my $res = dancer_response(POST => '/ajax/control/admin/aclmanager/update',
+    { headers => [ 'X-REMOTE_USER' => 'someone' ],
+      params => { 'old-acl_name' => 'old', acl_name => 'taken', acl_type => 'host_port' } });
+  isnt $res->status, 200, 'the failed rename is reported';
+  my @renamed = grep { exists $_->{set}->{portctl_roles} } @FakeRS::UPDATES;
+  is scalar @renamed, 0, 'no user is renamed';
+}) };
+
+subtest 'aclManagerUpdate__users_renamed_after_the_acl' => sub { as_admin(sub {
+  local *App::Netdisco::Web::Plugin::AdminTask::ACLManager::schema = sub { FakeRS->new };
+  my $renamed_before;
+  local *App::Netdisco::Web::Plugin::AdminTask::ACLManager::acl_txn_do = sub {
+    $renamed_before = grep { exists $_->{set}->{portctl_roles} } @FakeRS::UPDATES;
+    $_[0]->();
+  };
+  @FakeRS::UPDATES = ();
+
+  my $res = dancer_response(POST => '/ajax/control/admin/aclmanager/update',
+    { headers => [ 'X-REMOTE_USER' => 'someone' ],
+      params => { 'old-acl_name' => 'old', acl_name => 'new', acl_type => 'host_port' } });
+  is $res->status, 200, 'rename answers';
+  is $renamed_before, 0, 'no user is renamed before the ACL';
+  my @renamed = grep { exists $_->{set}->{portctl_roles} } @FakeRS::UPDATES;
+  is scalar @renamed, 1, 'users are renamed once the ACL rename is done';
+}) };
+
 done_testing;
