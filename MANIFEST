@@ -462,6 +462,7 @@ share/schema_versions/App-Netdisco-DB-102-103-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-103-104-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-104-105-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-105-106-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-106-107-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-11-12-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-12-13-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-13-14-PostgreSQL.sql
@@ -820,6 +821,7 @@ xt/221-acl-routes-bump.t
 xt/222-managed-config-web.t
 xt/223-managed-config-jobs.t
 xt/224-managed-config-manager.t
+xt/225-acl-delete-last-role.t
 xt/30-backend-workers.t
 xt/31-loadmibsfromoids-guard.t
 xt/32-swagger-ui-guard.t
@@ -926,6 +928,7 @@ xt/js/no-jstree.test.js
 xt/js/page-registry.test.js
 xt/js/pane-chrome.test.js
 xt/js/pane-settling.test.js
+xt/js/portctl-roles.test.js
 xt/js/portsort.test.js
 xt/js/request-helper.test.js
 xt/js/snmp-tree-control.test.js
