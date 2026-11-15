@@ -147,6 +147,7 @@ subtest 'web__named_host_acls__appear_in_the_group_typeahead' => sub {
   sub new { return bless {}, shift }
   sub resultset { my ($s, $n) = @_; $LAST = undef; return $s }
   sub search { my ($s, $cond) = @_; $LAST = $cond; return $s }
+  sub txn_do { return $_[1]->() }
   sub update { push @UPDATES, { cond => $LAST, set => $_[1] }; return 1 }
   sub hri { return $_[0] }
   sub all { return ({ username => 'someone', fullname => 'Some One' }) }
@@ -176,8 +177,76 @@ subtest 'users__role_dropdown__lists_yaml_and_database_roles_once' => sub { as_a
   is $res->status, 200, 'users list answers';
   # the page repeats the dropdown for each user row, so read the add form's
   my ($add) = $res->content =~ m{(data-form="add" name="port_control".*?</select>)}s;
-  my @opts = ($add || '') =~ m{<option value="([^"]+)">Role: }g;
+  my @opts = ($add || '') =~ m{<option data-nd-role="\d+" value="([^"]+)"}g;
   is_deeply [sort @opts], [qw/d y/], 'each role is offered once';
+}) };
+
+# A user whose roles are not in portctl_by_role (removed from YAML, or the
+# page is under /t/<tenant>/ with that tenant's roles) once had "Enabled (any
+# port)" selected, and saving the row for a note gave them every port. The row
+# must show "By role" and post the roles it holds, listed or not.
+sub users_update_cell {
+  my ($user_roles, $db_rows) = @_;
+  stub_managed_config(version => 1, rows => { netdisco => $db_rows });
+  local *App::Netdisco::Web::Plugin::AdminTask::Users::schema = sub { FakeRS->new };
+  no warnings 'redefine';
+  local *FakeRS::all = sub {
+    return ({ username => 'someone', fullname => 'Some One',
+              port_control => 1, portctl_roles => $user_roles });
+  };
+  my $res = dancer_response(GET => '/ajax/content/admin/users',
+    { headers => [ 'X-REMOTE_USER' => 'someone' ] });
+  my ($cell) = $res->content =~ m{(<select [^>]*data-form="update" name="port_control".*?</select>.*?</div>\s*</div>)}s;
+  my ($selected) = ($cell || '') =~ m{<option selected value="([^"]*)"};
+  my @posted = ($cell || '') =~ m{name="portctl_roles" value="([^"]+)"[^>]*\bchecked\b}g;
+  return ($res->status, $selected, [sort @posted], $cell || '');
+}
+
+subtest 'usersRow__only_role_unlisted__does_not_select_any_port' => sub { as_admin(sub {
+  my ($status, $selected, $posted) = users_update_cell(['gone'], {
+    d => { type => 'host_port', maps => [ [[$IN]] ] } });
+  is $status, 200, 'users list answers';
+  is $selected, '_roles_', 'By role is selected, not any port';
+  is_deeply $posted, ['gone'], 'the unlisted role is posted back';
+}) };
+
+subtest 'usersRow__only_role_unlisted_and_no_roles_listed__does_not_select_any_port' => sub { as_admin(sub {
+  config->{'portctl_by_role'} = {};
+  capture_yaml_settings();
+  my ($status, $selected, $posted) = users_update_cell(['gone'], {});
+  is $selected, '_roles_', 'By role is selected with no role listed at all';
+  is_deeply $posted, ['gone'], 'the unlisted role is posted back';
+}) };
+
+subtest 'usersRow__listed_and_unlisted_roles__both_kept' => sub { as_admin(sub {
+  my ($status, $selected, $posted) = users_update_cell(['y', 'gone'], {});
+  is $selected, '_roles_', 'By role is selected';
+  is_deeply $posted, [qw/gone y/], 'a save keeps the unlisted role beside the listed one';
+}) };
+
+# A role named like a TT hash method (keys, size, exists) once read as held or
+# listed, so a save rewrote the roles; portctl_cell keys its hashes "r:<role>".
+subtest 'usersRow__role_named_like_a_template_method__kept' => sub { as_admin(sub {
+  my ($status, $selected, $posted) = users_update_cell(['size', 'keys', 'exists'], {
+    d => { type => 'host_port', maps => [ [[$IN]] ] } });
+  is $status, 200, 'users list answers';
+  is $selected, '_roles_', 'By role is selected';
+  is_deeply $posted, [qw/exists keys size/], 'every role is posted back as it is';
+}) };
+
+subtest 'usersRow__listed_role_named_keys_not_held__not_checked' => sub { as_admin(sub {
+  my ($status, $selected, $posted) = users_update_cell(['d'], {
+    d    => { type => 'host_port', maps => [ [[$IN]] ] },
+    keys => { type => 'host_port', maps => [ [[$OUT]] ] } });
+  is $selected, '_roles_', 'By role is selected';
+  is_deeply $posted, ['d'], 'a listed role the user does not hold is not posted';
+}) };
+
+subtest 'usersRow__empty_role_element__ignored' => sub { as_admin(sub {
+  my ($status, $selected, $posted, $cell) = users_update_cell(['', 'gone'], {});
+  is $selected, '_roles_', 'By role is selected';
+  is_deeply $posted, ['gone'], 'only the named role is posted back';
+  unlike $cell, qr/name="portctl_roles" value=""/, 'no empty role is rendered';
 }) };
 
 subtest 'aclManagerDelete__a_role_also_in_yaml__keeps_users_on_it' => sub { as_admin(sub {
@@ -188,10 +257,65 @@ subtest 'aclManagerDelete__a_role_also_in_yaml__keeps_users_on_it' => sub { as_a
   my $res = dancer_response(POST => '/ajax/control/admin/aclmanager/delete',
     { headers => [ 'X-REMOTE_USER' => 'someone' ], params => { acl_name => 'y' } });
   is $res->status, 200, 'delete answers';
-  my ($role) = grep { exists $_->{cond}->{portctl_role} } @FakeRS::UPDATES;
-  ok $role, 'users on the role were updated';
-  ok !exists $role->{set}->{portctl_role}, 'portctl_role is not cleared';
-  ok !exists $role->{set}->{port_control}, 'port_control is not cleared';
+  # a user holds roles in portctl_roles, so neither the lone-role clearing nor
+  # the array_remove for a shared role may run while YAML still defines it
+  my @touched = grep { exists $_->{set}->{portctl_roles} or exists $_->{set}->{port_control} } @FakeRS::UPDATES;
+  is scalar @touched, 0, 'no user loses the role or port_control';
+}) };
+
+# Deleting a database role turns port control off for users left with no
+# other role. Matching that with equality missed a user holding the name
+# twice, and array_remove then left {} with port_control on, which the role
+# checks read as any port. xt/225 runs the statements against PostgreSQL;
+# this pins the condition where CI has no database.
+subtest 'aclManagerDelete__last_role_clearing__matches_by_containment' => sub { as_admin(sub {
+  local *App::Netdisco::Web::Plugin::AdminTask::ACLManager::schema = sub { FakeRS->new };
+  local *App::Netdisco::Web::Plugin::AdminTask::ACLManager::acl_txn_do = sub { return };
+  @FakeRS::UPDATES = ();
+
+  my $res = dancer_response(POST => '/ajax/control/admin/aclmanager/delete',
+    { headers => [ 'X-REMOTE_USER' => 'someone' ], params => { acl_name => 'dbonly' } });
+  is $res->status, 200, 'delete answers';
+  my ($clear) = grep { exists $_->{set}->{port_control} } @FakeRS::UPDATES;
+  ok $clear, 'users left without a role are turned off';
+  like ${ $clear->{cond} }->[0], qr/portctl_roles\s*<\@\s*ARRAY\[\?\]/,
+    'matched by containment, so {} and repeated names are caught';
+}) };
+
+# Users were once renamed before the ACL rename, outside its transaction. A
+# rename onto an existing name fails on the acl_name primary key, and the
+# users kept the new name: moved onto the other ACL's rights, or holding the
+# name twice, which a later delete turned into any port.
+subtest 'aclManagerUpdate__a_failed_rename__leaves_users_alone' => sub { as_admin(sub {
+  local *App::Netdisco::Web::Plugin::AdminTask::ACLManager::schema = sub { FakeRS->new };
+  local *App::Netdisco::Web::Plugin::AdminTask::ACLManager::acl_txn_do =
+    sub { die "duplicate key value violates unique constraint\n" };
+  @FakeRS::UPDATES = ();
+
+  my $res = dancer_response(POST => '/ajax/control/admin/aclmanager/update',
+    { headers => [ 'X-REMOTE_USER' => 'someone' ],
+      params => { 'old-acl_name' => 'old', acl_name => 'taken', acl_type => 'host_port' } });
+  isnt $res->status, 200, 'the failed rename is reported';
+  my @renamed = grep { exists $_->{set}->{portctl_roles} } @FakeRS::UPDATES;
+  is scalar @renamed, 0, 'no user is renamed';
+}) };
+
+subtest 'aclManagerUpdate__users_renamed_after_the_acl' => sub { as_admin(sub {
+  local *App::Netdisco::Web::Plugin::AdminTask::ACLManager::schema = sub { FakeRS->new };
+  my $renamed_before;
+  local *App::Netdisco::Web::Plugin::AdminTask::ACLManager::acl_txn_do = sub {
+    $renamed_before = grep { exists $_->{set}->{portctl_roles} } @FakeRS::UPDATES;
+    $_[0]->();
+  };
+  @FakeRS::UPDATES = ();
+
+  my $res = dancer_response(POST => '/ajax/control/admin/aclmanager/update',
+    { headers => [ 'X-REMOTE_USER' => 'someone' ],
+      params => { 'old-acl_name' => 'old', acl_name => 'new', acl_type => 'host_port' } });
+  is $res->status, 200, 'rename answers';
+  is $renamed_before, 0, 'no user is renamed before the ACL';
+  my @renamed = grep { exists $_->{set}->{portctl_roles} } @FakeRS::UPDATES;
+  is scalar @renamed, 1, 'users are renamed once the ACL rename is done';
 }) };
 
 done_testing;

@@ -290,9 +290,39 @@ function nd_token_fields(select) {
   if (btn) btn.hidden = !token;
   if (ips) { ips.disabled = !token; if (!token) ips.value = '' }
 }
+function nd_portctl_render(select) {
+  var held = 0;
+  Array.prototype.forEach.call(select.closest('tr').querySelectorAll('.nd_portctl_chip'), function (chip) {
+    // the checkbox under each label is what the row posts as portctl_roles
+    var on = chip.querySelector('input').checked;
+    if (on) held++;
+    chip.hidden = !on;
+    var option = select.querySelector('option[data-nd-role="' + chip.dataset.ndRole + '"]');
+    if (option) option.disabled = on;
+  });
+  // the select shows "By role" while any label is held. With none left it
+  // falls back to Off, never to any port, so nobody is widened by accident
+  if (held) select.value = '_roles_';
+  else if (select.value === '_roles_') select.value = '';
+}
+function nd_portctl_change(select) {
+  var picked = select.selectedOptions[0];
+  var role = picked ? picked.dataset.ndRole : undefined;
+  Array.prototype.forEach.call(select.closest('tr').querySelectorAll('.nd_portctl_chip'), function (chip) {
+    var input = chip.querySelector('input');
+    // Off and any port have no role, so they drop every label
+    input.checked = (role !== undefined) && (input.checked || chip.dataset.ndRole === role);
+  });
+  nd_portctl_render(select);
+}
+function nd_portctl_remove(button) {
+  button.closest('.nd_portctl_chip').querySelector('input').checked = false;
+  nd_portctl_render(button.closest('tr').querySelector('.nd_portctl_mode'));
+}
 document.addEventListener('change', function (event) {
   if (!(event.target instanceof Element)) return;
   if (event.target.matches('.nd_auth_method')) nd_token_fields(event.target);
+  if (event.target.matches('.nd_portctl_mode')) nd_portctl_change(event.target);
 });
 // Registered here at top level rather than inside a ready callback, so
 // this attaches ahead of netdisco.js's own htmx:after:swap listener, which
@@ -304,6 +334,11 @@ document.body.addEventListener('htmx:after:swap', function (evt) {
   // htmx dispatches this on the element that made the request, so the pane is
   // read from the context
   evt.detail.ctx.target.querySelectorAll('.nd_auth_method').forEach(nd_token_fields);
+});
+document.addEventListener('click', function (event) {
+  if (!(event.target instanceof Element)) return;
+  var remove = event.target.closest('.nd_portctl_remove');
+  if (remove) nd_portctl_remove(remove);
 });
 document.addEventListener('click', function (event) {
   if (!(event.target instanceof Element)) return;

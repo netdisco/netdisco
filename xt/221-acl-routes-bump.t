@@ -36,14 +36,15 @@ package FakeUser;
 sub new      { return bless { username => $_[1] }, $_[0] }
 sub username { return $_[0]->{username} }
 
-# only the User updates and the name-exists check of ACLManager add run
-# outside the wrapper
+# only the User updates (delete runs them in a transaction of their own) and
+# the name-exists check of ACLManager add run outside the wrapper
 package FakeSchema;
 sub new       { return bless {}, $_[0] }
 sub resultset { return $_[0] }
 sub search    { return $_[0] }
 sub update    { return 1 }
 sub count     { return 0 }
+sub txn_do    { return $_[1]->() }
 
 package main;
 
