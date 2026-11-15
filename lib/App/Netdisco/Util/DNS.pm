@@ -116,6 +116,10 @@ sub ipv4_from_hostname {
 # to avoid circular dependency with App::Netdisco::Util::Permission
 # supports IP addresses and CIDR blocks only
 
+# as %IN_GROUP in Util::Permission: a group that refers back to itself
+# matches nothing where it recurs
+our %IN_GROUP;
+
 sub check_acl_no_ipaddr_only {
   my ($thing, $config) = @_;
   return 0 unless defined $thing and defined $config;
@@ -153,7 +157,13 @@ sub check_acl_no_ipaddr_only {
           # an unknown group matches nothing; reading must not write into config
           my $rules = (setting('host_groups') || {})->{$group} || [];
 
-          if ($neg xor check_acl_no_ipaddr_only($thing, $rules)) {
+          my $match = 0;
+          if (not $IN_GROUP{$group}) {
+              local $IN_GROUP{$group} = 1;
+              $match = check_acl_no_ipaddr_only($thing, $rules);
+          }
+
+          if ($neg xor $match) {
             return 1 if not $all;
           }
           else {

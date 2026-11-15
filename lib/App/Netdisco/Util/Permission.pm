@@ -157,6 +157,12 @@ for the details.
 
 =cut
 
+# groups being checked further up this call, so a group that refers back to
+# itself, directly or through others, matches nothing where it recurs
+# instead of recursing without end. ACL Manager host ACLs are named groups,
+# so such a loop is one rule away.
+our %IN_GROUP;
+
 sub check_acl {
   my ($things, $config) = @_;
   return false unless defined $things and defined $config;
@@ -223,7 +229,13 @@ sub check_acl {
           # an unknown group matches nothing; reading must not write into config
           my $rules = (setting('host_groups') || {})->{$group} || [];
 
-          if ($neg xor check_acl($things, $rules)) {
+          my $match = false;
+          if (not $IN_GROUP{$group}) {
+              local $IN_GROUP{$group} = 1;
+              $match = check_acl($things, $rules);
+          }
+
+          if ($neg xor $match) {
             return true if not $all;
           }
           else {
