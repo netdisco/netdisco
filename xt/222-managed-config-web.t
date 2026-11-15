@@ -181,6 +181,49 @@ subtest 'users__role_dropdown__lists_yaml_and_database_roles_once' => sub { as_a
   is_deeply [sort @opts], [qw/d y/], 'each role is offered once';
 }) };
 
+# A user whose roles are not in portctl_by_role (removed from YAML, or the
+# page is under /t/<tenant>/ with that tenant's roles) once had "Enabled (any
+# port)" selected, and saving the row for a note gave them every port. The row
+# must show "By role" and post the roles it holds, listed or not.
+sub users_update_cell {
+  my ($user_roles, $db_rows) = @_;
+  stub_managed_config(version => 1, rows => { netdisco => $db_rows });
+  local *App::Netdisco::Web::Plugin::AdminTask::Users::schema = sub { FakeRS->new };
+  no warnings 'redefine';
+  local *FakeRS::all = sub {
+    return ({ username => 'someone', fullname => 'Some One',
+              port_control => 1, portctl_roles => $user_roles });
+  };
+  my $res = dancer_response(GET => '/ajax/content/admin/users',
+    { headers => [ 'X-REMOTE_USER' => 'someone' ] });
+  my ($cell) = $res->content =~ m{(<select [^>]*data-form="update" name="port_control".*?</select>.*?</div>\s*</div>)}s;
+  my ($selected) = ($cell || '') =~ m{<option selected value="([^"]*)"};
+  my @posted = ($cell || '') =~ m{name="portctl_roles" value="([^"]+)"[^>]*\bchecked\b}g;
+  return ($res->status, $selected, [sort @posted]);
+}
+
+subtest 'usersRow__only_role_unlisted__does_not_select_any_port' => sub { as_admin(sub {
+  my ($status, $selected, $posted) = users_update_cell(['gone'], {
+    d => { type => 'host_port', maps => [ [[$IN]] ] } });
+  is $status, 200, 'users list answers';
+  is $selected, '_roles_', 'By role is selected, not any port';
+  is_deeply $posted, ['gone'], 'the unlisted role is posted back';
+}) };
+
+subtest 'usersRow__only_role_unlisted_and_no_roles_listed__does_not_select_any_port' => sub { as_admin(sub {
+  config->{'portctl_by_role'} = {};
+  capture_yaml_settings();
+  my ($status, $selected, $posted) = users_update_cell(['gone'], {});
+  is $selected, '_roles_', 'By role is selected with no role listed at all';
+  is_deeply $posted, ['gone'], 'the unlisted role is posted back';
+}) };
+
+subtest 'usersRow__listed_and_unlisted_roles__both_kept' => sub { as_admin(sub {
+  my ($status, $selected, $posted) = users_update_cell(['y', 'gone'], {});
+  is $selected, '_roles_', 'By role is selected';
+  is_deeply $posted, [qw/gone y/], 'a save keeps the unlisted role beside the listed one';
+}) };
+
 subtest 'aclManagerDelete__a_role_also_in_yaml__keeps_users_on_it' => sub { as_admin(sub {
   local *App::Netdisco::Web::Plugin::AdminTask::ACLManager::schema = sub { FakeRS->new };
   local *App::Netdisco::Web::Plugin::AdminTask::ACLManager::acl_txn_do = sub { $_[0]->() };
