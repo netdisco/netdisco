@@ -81,6 +81,11 @@ logs/.*
 README.md
 SECURITY.md
 CLAUDE.md
+^AGENTS\.md$
+^\.claude/
+^\.agents/
+# brainstorming companion files left by local agent sessions
+^\.superpowers/
 
 # ignore intellij project directory
 \B\.idea

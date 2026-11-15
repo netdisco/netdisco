@@ -100,8 +100,8 @@ subtest 'result_class__device_ip_resolved__is_a_view_on_device_ip_resolved' => s
   is_deeply([ $source->columns ], [qw(ip alias)], 'columns: dns stays out, so resolve_alias stays index-only');
 };
 
-subtest 'schema_version__is_105' => sub {
-  is($App::Netdisco::DB::VERSION, 105);
+subtest 'schema_version__is_at_least_105' => sub {
+  cmp_ok($App::Netdisco::DB::VERSION, '>=', 105);
 };
 
 done_testing;

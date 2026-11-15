@@ -6,7 +6,13 @@
 use strict;
 use warnings;
 
+# Backend::Job loads the managed ACL config loader, which needs the shipped
+# config.yml to be found
+BEGIN { $ENV{DANCER_ENVDIR} = q{/dev/null}; }
+
 use Test::More 0.88;
+use Test::File::ShareDir::Dist { q{App-Netdisco} => q{share/} };
+use App::Netdisco;
 use App::Netdisco::DB;
 use App::Netdisco::JobQueue::PostgreSQL ();
 

@@ -270,4 +270,23 @@ ok(acl_matches($dp,'!cf:foo:asdfasfd'), '#1348 missing cf matches string if neg 
 ok(acl_matches($dp,'cf:foo:'), '#1348 missing cf will match if neg is not set');
 is(acl_matches($dp,'!cf:foo:'), 0, '#1348 missing cf cannot match if neg is set');
 
+# ACL Manager host ACLs are named groups, so groups can now refer to each
+# other: a -> b -> a, or a group to itself, made this recurse without end.
+# A group already being checked further up matches nothing where it recurs.
+{
+  setting('host_groups')->{'cycle_self'} = ['group:cycle_self'];
+  setting('host_groups')->{'cycle_a'}    = ['group:cycle_b'];
+  setting('host_groups')->{'cycle_b'}    = ['group:cycle_a', '192.0.2.1'];
+  local $SIG{ALRM} = sub { die "did not return\n" };
+  alarm 5;
+  my @got = eval { (
+    (App::Netdisco::Util::Permission::check_acl('192.0.2.1', ['group:cycle_self']) ? 1 : 0),
+    (App::Netdisco::Util::Permission::check_acl('192.0.2.1', ['group:cycle_a'])    ? 1 : 0),
+    (App::Netdisco::Util::Permission::check_acl('192.0.2.9', ['group:cycle_a'])    ? 1 : 0),
+  ) };
+  alarm 0;
+  is($@, '', 'a group cycle returns');
+  is_deeply(\@got, [0, 1, 0], 'a group cycle matches only its own rules');
+}
+
 done_testing;
