@@ -168,6 +168,7 @@ lib/App/Netdisco/Util/FastResolver.pm
 lib/App/Netdisco/Util/Graph.pm
 lib/App/Netdisco/Util/JobAction.pm
 lib/App/Netdisco/Util/L3Domain.pm
+lib/App/Netdisco/Util/ManagedConfig.pm
 lib/App/Netdisco/Util/MCE.pm
 lib/App/Netdisco/Util/Nbtstat.pm
 lib/App/Netdisco/Util/Node.pm
@@ -200,6 +201,7 @@ lib/App/Netdisco/Web/CustomFields.pm
 lib/App/Netdisco/Web/Device.pm
 lib/App/Netdisco/Web/GenericReport.pm
 lib/App/Netdisco/Web/Health.pm
+lib/App/Netdisco/Web/ManagedConfig.pm
 lib/App/Netdisco/Web/Metrics.pm
 lib/App/Netdisco/Web/Password.pm
 lib/App/Netdisco/Web/Plugin.pm
@@ -459,6 +461,7 @@ share/schema_versions/App-Netdisco-DB-101-102-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-102-103-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-103-104-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-104-105-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-105-106-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-11-12-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-12-13-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-13-14-PostgreSQL.sql
@@ -811,6 +814,12 @@ xt/215-node-wireless-current.t
 xt/216-compile-shards.t
 xt/217-tacacs-optional.t
 xt/218-cpan-audit-helpers.t
+xt/219-managed-config-counter.t
+xt/220-managed-config-loader.t
+xt/221-acl-routes-bump.t
+xt/222-managed-config-web.t
+xt/223-managed-config-jobs.t
+xt/224-managed-config-manager.t
 xt/30-backend-workers.t
 xt/31-loadmibsfromoids-guard.t
 xt/32-swagger-ui-guard.t
@@ -940,6 +949,7 @@ xt/js/view-templates.test.js
 xt/lib/App/NetdiscoX/Worker/Plugin/TestEight.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFive.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestFour.pm
+xt/lib/App/NetdiscoX/Worker/Plugin/TestManagedConfig.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestOne.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestSeven.pm
 xt/lib/App/NetdiscoX/Worker/Plugin/TestSix.pm
@@ -950,6 +960,7 @@ xt/lib/Test/Netdisco/CpanAudit.pm
 xt/lib/Test/Netdisco/CssRules.pm
 xt/lib/Test/Netdisco/FakeSSH.pm
 xt/lib/Test/Netdisco/LoadRecorder.pm
+xt/lib/Test/Netdisco/ManagedACL.pm
 xt/lib/Test/Netdisco/MungerProbe.pm
 xt/lib/Test/Netdisco/Snapshot.pm
 xt/portsort-corpus.json
