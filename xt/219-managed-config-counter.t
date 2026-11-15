@@ -66,16 +66,21 @@ subtest 'aclTxnDo__a_block_that_dies__does_not_bump_and_rethrows' => sub {
   is(scalar(grep { ref $_ && $_->[0] =~ /^UPDATE/ } @log), 0, 'no bump');
 };
 
-subtest 'aclTxnDo__uses_the_current_tenant' => sub {
+# The routes write through schema(vars->{'tenant'}), and a transaction only
+# covers its own handle. DBICx::Sugar caches a handle under the name it was
+# first asked for, and Web.pm asks for 'netdisco' at startup, so for the
+# default tenant schema('netdisco') and schema(undef) are two connections: a
+# transaction opened on 'netdisco' left the route writes autocommitting.
+subtest 'aclTxnDo__opens_its_transaction_on_the_handle_the_routes_write_through' => sub {
   @schema_calls = ();
   var tenant => 'east';
   acl_txn_do(sub { 1 });
-  is($schema_calls[0], 'east', 'east');
+  is_deeply(\@schema_calls, ['east'], 'a tenant');
   is(tenant_key(), 'east', 'tenant_key');
   @schema_calls = ();
   var tenant => undef;
   acl_txn_do(sub { 1 });
-  is($schema_calls[0], 'netdisco', 'default');
+  is_deeply(\@schema_calls, [undef], 'the default tenant: schema(undef), not schema(\'netdisco\')');
   is(tenant_key(), 'netdisco', 'tenant_key default');
 };
 

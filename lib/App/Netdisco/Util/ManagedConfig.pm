@@ -62,7 +62,10 @@ dies nothing is bumped and the error propagates.
 
 sub acl_txn_do {
   my $code = shift;
-  my $schema = schema(tenant_key());
+  # the name the routes write through, not tenant_key(): for the default
+  # tenant schema('netdisco') can be another connection than schema(undef),
+  # and the route writes would then fall outside this transaction
+  my $schema = schema(vars->{'tenant'});
   $schema->txn_do(sub { $code->(); _bump_config_version($schema) });
   return;
 }
