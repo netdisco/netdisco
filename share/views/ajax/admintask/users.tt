@@ -4,12 +4,19 @@
 [%- SET demo_site  = (settings.defanged_admin != 'admin') -%]
 
 [% BLOCK portctl_cell %]
-  [% SET listed = {} %]
-  [% FOREACH role IN port_control_roles %][% listed.$role = 1 %][% END %]
-  [% SET unlisted = [] %]
-  [% FOREACH role IN held.keys.sort %][% unlisted.push(role) UNLESS listed.$role %][% END %]
-  [% SET by_role = (enabled AND held.keys.size > 0) %]
-  [% SET show_roles = (port_control_roles.size > 0 OR (by_role AND unlisted.size > 0)) %]
+  [% SET held = {}; SET held_roles = [];
+     FOREACH role IN roles;
+       NEXT UNLESS role.length;
+       rk = 'r:' _ role;
+       NEXT IF held.$rk;
+       held.$rk = 1; held_roles.push(role);
+     END;
+     SET listed = {};
+     FOREACH role IN port_control_roles; rk = 'r:' _ role; listed.$rk = 1; END;
+     SET unlisted = [];
+     FOREACH role IN held_roles.sort; rk = 'r:' _ role; unlisted.push(role) UNLESS listed.$rk; END;
+     SET by_role = (enabled AND held_roles.size > 0);
+     SET show_roles = (port_control_roles.size > 0 OR (by_role AND unlisted.size > 0)) %]
   <div class="form-group">
     <select class="form-select nd_portctl_mode" data-form="[% form %]" name="port_control">
       <option[% ' selected' IF NOT enabled %] value="">Off</option>
@@ -19,16 +26,16 @@
       [% END %]
       [% IF port_control_roles.size > 0 %]
       <option disabled>──────────</option>
-      [% FOREACH role IN port_control_roles %]
-      <option data-nd-role="[% loop.index %]" value="[% role | html_entity %]"[% ' disabled' IF by_role AND held.$role %]>[% role | html_entity %]</option>
+      [% FOREACH role IN port_control_roles; rk = 'r:' _ role %]
+      <option data-nd-role="[% loop.index %]" value="[% role | html_entity %]"[% ' disabled' IF by_role AND held.$rk %]>[% role | html_entity %]</option>
       [% END %]
       [% END %]
     </select>
     [% IF show_roles %]
     <div class="nd_portctl_roles d-flex flex-wrap justify-content-center gap-1 mt-1">
-      [% FOREACH role IN port_control_roles %]
-      <span class="badge text-bg-secondary nd_portctl_chip" data-nd-role="[% loop.index %]"[% ' hidden' IF NOT (by_role AND held.$role) %]>
-        <input type="checkbox" hidden data-form="[% form %]" name="portctl_roles" value="[% role | html_entity %]"[% ' checked' IF by_role AND held.$role %]>
+      [% FOREACH role IN port_control_roles; rk = 'r:' _ role %]
+      <span class="badge text-bg-secondary nd_portctl_chip" data-nd-role="[% loop.index %]"[% ' hidden' IF NOT (by_role AND held.$rk) %]>
+        <input type="checkbox" hidden data-form="[% form %]" name="portctl_roles" value="[% role | html_entity %]"[% ' checked' IF by_role AND held.$rk %]>
         [% role | html_entity %]
         <button type="button" class="btn btn-link btn-sm p-0 ms-1 lh-1 align-baseline text-reset text-decoration-none nd_portctl_remove"
           aria-label="Remove role [% role | html_entity %]" title="Remove role">&times;</button>
@@ -96,7 +103,7 @@
         <a class="btn" href="[% uri_for('/admin/aclmanager') | none %]"><i class="fas fa-list-ul fa-lg fa-border"></i>Edit ACLs</a>
       </td>
       <td class="nd_center-cell">
-        [% INCLUDE portctl_cell form = 'add', enabled = 0, held = {} %]
+        [% INCLUDE portctl_cell form = 'add', enabled = 0, roles = [] %]
       </td>
       <td class="nd_center-cell"><input data-form="add" type="checkbox" name="admin"></td>
       <td class="nd_center-cell"></td>
@@ -173,9 +180,7 @@
         [% END %]
       </td>
       <td class="nd_center-cell">
-        [% SET held = {} %]
-        [% FOREACH held_role IN row.portctl_roles %][% held.$held_role = 1 %][% END %]
-        [% INCLUDE portctl_cell form = 'update', enabled = row.port_control, held = held %]
+        [% INCLUDE portctl_cell form = 'update', enabled = row.port_control, roles = row.portctl_roles %]
       </td>
       <td class="nd_center-cell">
         <input data-form="update" name="admin" type="checkbox" [% ' checked="checked"' IF row.admin %]>

@@ -199,7 +199,7 @@ sub users_update_cell {
   my ($cell) = $res->content =~ m{(<select [^>]*data-form="update" name="port_control".*?</select>.*?</div>\s*</div>)}s;
   my ($selected) = ($cell || '') =~ m{<option selected value="([^"]*)"};
   my @posted = ($cell || '') =~ m{name="portctl_roles" value="([^"]+)"[^>]*\bchecked\b}g;
-  return ($res->status, $selected, [sort @posted]);
+  return ($res->status, $selected, [sort @posted], $cell || '');
 }
 
 subtest 'usersRow__only_role_unlisted__does_not_select_any_port' => sub { as_admin(sub {
@@ -222,6 +222,31 @@ subtest 'usersRow__listed_and_unlisted_roles__both_kept' => sub { as_admin(sub {
   my ($status, $selected, $posted) = users_update_cell(['y', 'gone'], {});
   is $selected, '_roles_', 'By role is selected';
   is_deeply $posted, [qw/gone y/], 'a save keeps the unlisted role beside the listed one';
+}) };
+
+# A role named like a TT hash method (keys, size, exists) once read as held or
+# listed, so a save rewrote the roles; portctl_cell keys its hashes "r:<role>".
+subtest 'usersRow__role_named_like_a_template_method__kept' => sub { as_admin(sub {
+  my ($status, $selected, $posted) = users_update_cell(['size', 'keys', 'exists'], {
+    d => { type => 'host_port', maps => [ [[$IN]] ] } });
+  is $status, 200, 'users list answers';
+  is $selected, '_roles_', 'By role is selected';
+  is_deeply $posted, [qw/exists keys size/], 'every role is posted back as it is';
+}) };
+
+subtest 'usersRow__listed_role_named_keys_not_held__not_checked' => sub { as_admin(sub {
+  my ($status, $selected, $posted) = users_update_cell(['d'], {
+    d    => { type => 'host_port', maps => [ [[$IN]] ] },
+    keys => { type => 'host_port', maps => [ [[$OUT]] ] } });
+  is $selected, '_roles_', 'By role is selected';
+  is_deeply $posted, ['d'], 'a listed role the user does not hold is not posted';
+}) };
+
+subtest 'usersRow__empty_role_element__ignored' => sub { as_admin(sub {
+  my ($status, $selected, $posted, $cell) = users_update_cell(['', 'gone'], {});
+  is $selected, '_roles_', 'By role is selected';
+  is_deeply $posted, ['gone'], 'only the named role is posted back';
+  unlike $cell, qr/name="portctl_roles" value=""/, 'no empty role is rendered';
 }) };
 
 subtest 'aclManagerDelete__a_role_also_in_yaml__keeps_users_on_it' => sub { as_admin(sub {
