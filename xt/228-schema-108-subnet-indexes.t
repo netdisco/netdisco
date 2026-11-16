@@ -37,4 +37,13 @@ subtest 'schema_version__is_108' => sub {
   is($App::Netdisco::DB::VERSION, 108);
 };
 
+# an upgrader reads Changes to learn that netdisco-deploy is needed
+subtest 'changes__unreleased_block__says_schema_108_needs_deploy' => sub {
+  open my $fh, '<', 'Changes' or die "cannot read Changes: $!";
+  my $changes = do { local $/; <$fh> };
+  close $fh;
+  my ($top) = $changes =~ /\A(.*?)\n(?=\d+\.\d+ - \d{4}-)/s;
+  like($top, qr/\(database schema 108: run\s+netdisco-deploy\)/);
+};
+
 done_testing;
