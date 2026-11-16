@@ -61,4 +61,44 @@ subtest 'without_jit__code_dies__error_propagates' => sub {
   like(exception { $s->without_jit(sub { die "boom\n" }) }, qr/^boom/);
 };
 
+# The routes need a database to run, so these read their source. Node search
+# fetches its rows while the template renders (macs.next), so the wrapper
+# has to cover the render, not only the query.
+
+sub route_body {
+  my ($file, $path) = @_;
+  open my $fh, '<', $file or die "cannot read $file: $!";
+  my $source = do { local $/; <$fh> };
+  close $fh;
+  return unless $source =~ /^get '\Q$path\E' => require_login sub\s*(?=\{)/mg;
+  my ($body) = Text::Balanced::extract_bracketed(substr($source, pos($source)), '{}');
+  return $body;
+}
+
+use Text::Balanced ();
+
+my $subnets_route = route_body('lib/App/Netdisco/Web/Plugin/Report/SubnetUtilization.pm',
+  '/ajax/content/report/subnets');
+my $node_route = route_body('lib/App/Netdisco/Web/Plugin/Search/Node.pm',
+  '/ajax/content/search/node');
+
+subtest 'subnet_utilization_route__query__runs_through_without_jit' => sub {
+  ok(defined $subnets_route, 'route found') or return;
+  like($subnets_route, qr/schema\(vars->\{'tenant'\}\)->without_jit\(/);
+  like($subnets_route, qr/without_jit\(.*Virtual::SubnetUtilization.*->all/s);
+};
+
+subtest 'node_search_route__address_query__runs_through_without_jit' => sub {
+  ok(defined $node_route, 'route found') or return;
+  like($node_route, qr/schema\(vars->\{'tenant'\}\)->without_jit\(/);
+  unlike($node_route, qr/schema\('netdisco'\)/);
+};
+
+# chosen once, by an address or prefix match on q, so a hostname, MAC or
+# vendor search keeps its old path
+subtest 'node_search_route__other_queries__not_wrapped' => sub {
+  ok(defined $node_route, 'route found') or return;
+  like($node_route, qr/\$RE\{net\}\{IPv4\}\|\$RE\{net\}\{IPv6\}.*without_jit/s);
+};
+
 done_testing;
