@@ -60,17 +60,24 @@ my $lastchange = q{device.last_discover - (device.uptime - me.lastchange) / 100 
 # discover already corrects uptime for 32-bit wraps
 my $boot = q{device.last_discover - device.uptime / 100 * interval '1 second'};
 
-# Where free_since comes from. The last MAC seen when there is one. Without
-# it, a port that is down has been down since its last change, and when that
-# change is within minutes of boot it only says "at least since boot". A port
-# that is up without a MAC says nothing about being free.
+# Switches flush learned MACs when the link drops, so on a down port a MAC
+# seen after its last change is most likely a static entry, whose time_last
+# moves on at every macsuck.
+my $static_mac = qq{(me.up IS DISTINCT FROM 'up'
+  AND ($lastchange) IS NOT NULL AND ($lastchange) < last_node.time_last)};
+
+# Where free_since comes from. The last MAC seen when there is one, unless it
+# looks static. Without it, a port that is down has been down since its last
+# change, and when that change is within minutes of boot it only says "at
+# least since boot". A port that is up without a MAC says nothing about being
+# free.
 my $basis = qq{CASE
-  WHEN last_node.time_last IS NOT NULL THEN 'mac'
+  WHEN last_node.time_last IS NOT NULL AND NOT $static_mac THEN 'mac'
   WHEN me.up = 'up' OR ($lastchange) IS NULL THEN NULL
   WHEN ($lastchange) <= ($boot) + interval '10 minutes' THEN 'boot'
   ELSE 'lastchange' END};
 my $free_since = qq{CASE
-  WHEN last_node.time_last IS NOT NULL THEN last_node.time_last
+  WHEN last_node.time_last IS NOT NULL AND NOT $static_mac THEN last_node.time_last
   WHEN me.up = 'up' THEN NULL
   ELSE $lastchange END};
 
