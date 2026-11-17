@@ -159,3 +159,8 @@ device_auth:
 #  - '127.0.0.0/8'
 #  - '::1'
 
+# metrics_job_duration_per_device: last job per device and action (start
+# time, duration, status as a label), one series each, so off by default.
+#metrics_job_duration_per_device: true
+#metrics_job_duration_actions: [discover, macsuck, arpnip]
+

@@ -300,6 +300,43 @@ get $metrics_path => sub {
   }
   $output .= "\n";
 
+  # -- Last job per device (optional) ----------------------------------------
+  # One series per device and action, so off by default. The job queue only
+  # keeps expire_jobs days and can be cleared by hand; scraping this keeps
+  # each device's job history in the metrics store instead.
+  if (setting('metrics_job_duration_per_device')) {
+    my $actions = setting('metrics_job_duration_actions');
+    $actions = [qw/discover macsuck arpnip/]
+      unless ref $actions eq ref [] and scalar @$actions;
+
+    my %rows;
+    foreach my $tenant (@tenants) {
+      $rows{$tenant} = [ try {
+        schema($tenant)->resultset('Virtual::DeviceLastJobs')
+          ->search({ action => { -in => $actions } })->hri->all;
+      } catch { () } ];
+    }
+
+    foreach my $m (
+      [ netdisco_device_last_job_timestamp_seconds => 'started_epoch',
+        'Unix time the most recent finished job started, per device and action' ],
+      [ netdisco_device_last_job_duration_seconds => 'duration',
+        'Duration in seconds of the most recent finished job, per device and action' ],
+    ) {
+      my ($metric, $col, $help) = @$m;
+      $output .= _header($metric, $help);
+      foreach my $tenant (@tenants) {
+        foreach my $row (@{ $rows{$tenant} }) {
+          next unless defined $row->{$col};
+          $output .= _sample($metric, $row->{$col}, tenant => $tenant,
+            device => $row->{device}, action => $row->{action},
+            status => ($row->{status} // ''));
+        }
+      }
+      $output .= "\n";
+    }
+  }
+
   # -- SNMP connect failures (DeviceSkip table) ------------------------------
   $output .= _header('netdisco_snmp_failures_devices',
     'Number of devices with at least one SNMP connect failure');
