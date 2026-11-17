@@ -357,6 +357,61 @@ get $metrics_path => sub {
     }
   }
 
+  # -- Per-device counts (optional) ------------------------------------------
+  # Each is one series per device, so each is off by default. Next to job
+  # durations they explain them: a macsuck that takes longer as the device
+  # learns more MACs is load, one that takes longer at the same count is not.
+  my $per_device = sub {
+    my ($metric, $help, $rs_name, $cond, $col, $count) = @_;
+    $output .= _header($metric, $help);
+    foreach my $tenant (@tenants) {
+      my @rows = try {
+        schema($tenant)->resultset($rs_name)->search($cond, {
+          select   => [ "me.$col", { count => $count, -as => 'cnt' } ],
+          as       => [qw/device cnt/],
+          group_by => [ "me.$col" ],
+        })->hri->all;
+      } catch { () };
+      $output .= _sample($metric, $_->{cnt}, tenant => $tenant, device => $_->{device})
+        for grep { $device_ok->($tenant, $_->{device}) } @rows;
+    }
+    $output .= "\n";
+  };
+
+  if (setting('metrics_ports_per_device')) {
+    foreach my $m (
+      [ netdisco_device_ports_total => {},
+        'Number of ports on this device' ],
+      [ netdisco_device_ports_oper_up => { up => 'up' },
+        'Number of ports on this device that are operationally up' ],
+      [ netdisco_device_ports_oper_down => { up => { '!=' => 'up' } },
+        'Number of ports on this device that are not operationally up' ],
+      [ netdisco_device_ports_admin_down => { up_admin => { '!=' => 'up' } },
+        'Number of ports on this device that are not administratively up' ],
+    ) {
+      $per_device->($m->[0], $m->[2], 'DevicePort', $m->[1], 'ip', '*');
+    }
+  }
+
+  if (setting('metrics_macs_per_device')) {
+    $per_device->('netdisco_device_macs',
+      'Number of active MAC address entries on the ports of this device',
+      'Node', { active => 1 }, 'switch', '*');
+  }
+
+  if (setting('metrics_neighbors_per_device')) {
+    $per_device->('netdisco_device_neighbors',
+      'Number of distinct CDP/LLDP neighbors seen by this device',
+      'DevicePort', { remote_ip => { '!=' => undef } },
+      'ip', { distinct => 'me.remote_ip' });
+  }
+
+  if (setting('metrics_vlans_per_device')) {
+    $per_device->('netdisco_device_vlans',
+      'Number of VLANs on this device',
+      'DeviceVlan', {}, 'ip', '*');
+  }
+
   # -- SNMP connect failures (DeviceSkip table) ------------------------------
   $output .= _header('netdisco_snmp_failures_devices',
     'Number of devices with at least one SNMP connect failure');

@@ -171,3 +171,10 @@ device_auth:
 #metrics_per_device_no:
 #  - 'vendor:examplevendor'
 
+# per-device counts of ports (total, oper up/down, admin down), active MACs,
+# CDP/LLDP neighbors and VLANs; one series per device each, so off by default.
+#metrics_ports_per_device: true
+#metrics_macs_per_device: true
+#metrics_neighbors_per_device: true
+#metrics_vlans_per_device: true
+
