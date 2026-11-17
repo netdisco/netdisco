@@ -2,7 +2,7 @@
 
   [ENHANCEMENTS]
 
-  * #1833 Subnet Utilization uses an index; PostgreSQL 10 is now required
+  * #1837 Subnet Utilization uses an index; PostgreSQL 10 is now required
     (database schema 108: run netdisco-deploy)
 
 2.119000 - 2026-11-15
