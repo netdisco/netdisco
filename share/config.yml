@@ -192,6 +192,8 @@ health_path: ''
 metrics_path: ''
 metrics_token: ''
 metrics_allow: []
+metrics_per_device_no: []
+metrics_per_device_only: []
 metrics_job_duration_per_device: false
 metrics_job_duration_actions: [discover, macsuck, arpnip]
 netmap:

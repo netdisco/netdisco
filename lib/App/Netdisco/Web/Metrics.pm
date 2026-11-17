@@ -3,7 +3,7 @@ package App::Netdisco::Web::Metrics;
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
 
-use App::Netdisco::Util::Permission qw/acl_matches_only/;
+use App::Netdisco::Util::Permission qw/acl_matches_only permitted_by_acl/;
 use App::Netdisco::Util::Web
   qw/trusted_client_address warn_forwarded_address_ignored/;
 use POSIX 'floor';
@@ -300,6 +300,25 @@ get $metrics_path => sub {
   }
   $output .= "\n";
 
+  # -- Which devices get per-device series ----------------------------------
+  # metrics_per_device_no and _only, so a large site can keep the per-device
+  # series to the devices it alerts on. Matched against the device row, so an
+  # entry can name a property (vendor, model, ...) as well as an address; the
+  # rows are only read when one of the two is set.
+  my $device_acl = { no => setting('metrics_per_device_no'),
+                     only => setting('metrics_per_device_only') };
+  my $device_acl_set = grep { ref $_ eq ref [] ? scalar @$_ : length($_ // '') }
+                            values %$device_acl;
+  my %device_permitted;
+  my $device_ok = sub {
+    my ($tenant, $ip) = @_;
+    return 1 unless $device_acl_set;
+    $device_permitted{$tenant} //= { map { ($_->ip => 1) }
+      grep { permitted_by_acl($_, $device_acl) }
+      try { schema($tenant)->resultset('Device')->all } catch { () } };
+    return $device_permitted{$tenant}{$ip};
+  };
+
   # -- Last job per device (optional) ----------------------------------------
   # One series per device and action, so off by default. The job queue only
   # keeps expire_jobs days and can be cleared by hand; scraping this keeps
@@ -327,7 +346,8 @@ get $metrics_path => sub {
       $output .= _header($metric, $help);
       foreach my $tenant (@tenants) {
         foreach my $row (@{ $rows{$tenant} }) {
-          next unless defined $row->{$col};
+          next unless defined $row->{$col}
+            and $device_ok->($tenant, $row->{device});
           $output .= _sample($metric, $row->{$col}, tenant => $tenant,
             device => $row->{device}, action => $row->{action},
             status => ($row->{status} // ''));

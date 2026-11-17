@@ -164,3 +164,10 @@ device_auth:
 #metrics_job_duration_per_device: true
 #metrics_job_duration_actions: [discover, macsuck, arpnip]
 
+# per-device series only for some devices (Netdisco ACLs, matched on the
+# device, so addresses, ranges and properties all work)
+#metrics_per_device_only:
+#  - '192.0.2.0/24'
+#metrics_per_device_no:
+#  - 'vendor:examplevendor'
+

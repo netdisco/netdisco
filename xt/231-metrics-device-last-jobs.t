@@ -21,7 +21,9 @@ use File::Temp ();
 #     transaction);
 #   - the series are off by default, because they are one per device and
 #     action;
-#   - switched on, the endpoint emits them.
+#   - switched on, the endpoint emits them;
+#   - metrics_per_device_only and _no limit them to some devices, matched on
+#     the device row, so a property works as well as an address.
 
 my $envdir;
 BEGIN {
@@ -99,7 +101,7 @@ my $schema = eval {
 my $why = $@;
 
 SKIP: {
-  skip "no usable netdisco database: $why", 3 if not $schema;
+  skip "no usable netdisco database: $why", 7 if not $schema;
 
   # 192.0.2.0/24 is documentation space, so no real device is touched, and
   # the transaction is rolled back whatever happens.
@@ -119,6 +121,26 @@ SKIP: {
 
       $got{$_->{action}} = $_ for $schema->resultset('Virtual::DeviceLastJobs')
         ->search({ device => '192.0.2.1' })->hri->all;
+
+      # The endpoint, on the same handle so it sees these rows, under the
+      # per-device ACLs. They match the device row, which is made here too.
+      $schema->resultset('Device')->create({ ip => '192.0.2.1', vendor => 'xtvendor' });
+      my $series = qr/^netdisco_device_last_job_timestamp_seconds\{action="macsuck",device="192\.0\.2\.1",status="error",tenant="netdisco"\} \d+$/m;
+      test_psgi $app, sub {
+        my $cb = shift;
+        setting('metrics_job_duration_per_device' => 1);
+        my $acl = sub {
+          setting('metrics_per_device_only' => $_[0]);
+          setting('metrics_per_device_no' => $_[1]);
+          return $cb->(GET '/xt-metrics')->content;
+        };
+        $got{endpoint}{none}  = $acl->([], []) =~ $series;
+        $got{endpoint}{only}  = $acl->(['192.0.2.0/24'], []) =~ $series;
+        $got{endpoint}{other} = $acl->(['198.51.100.0/24'], []) =~ $series;
+        $got{endpoint}{no}    = $acl->([], ['vendor:xtvendor']) =~ $series;
+        $acl->([], []);
+        setting('metrics_job_duration_per_device' => 0);
+      };
       die "rollback\n";
     });
   };
@@ -130,6 +152,11 @@ SKIP: {
     'deviceLastJobs__rows__the_running_job_is_left_out';
   is $got{discover}{status}, 'done',
     'deviceLastJobs__rows__each_action_on_its_own';
+
+  ok $got{endpoint}{none}, 'metricsPerDeviceAcl__none_set__every_device';
+  ok $got{endpoint}{only}, 'metricsPerDeviceAcl__only_matching__kept';
+  ok !$got{endpoint}{other}, 'metricsPerDeviceAcl__only_not_matching__left_out';
+  ok !$got{endpoint}{no}, 'metricsPerDeviceAcl__no_on_a_property__left_out';
 }
 
 done_testing;
