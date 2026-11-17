@@ -48,7 +48,7 @@ often skipping several releases at once.
   columns at the end). Make data fixes conditional, so a second run
   matches nothing and changes no data Netdisco or an administrator keeps.
 - **Write for the oldest PostgreSQL sites run.** `netdisco-db-deploy`
-  refuses servers before 9.6. The startup warning in
+  refuses servers before 10. The startup warning in
   `App::Netdisco::Util::PostgresFloor` names the version a future release
   will require; until then older servers still deploy. Raising what a step
   needs is a maintainer decision, so say in the PR if yours needs a newer

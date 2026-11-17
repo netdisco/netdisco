@@ -72,6 +72,16 @@ get '/ajax/content/search/node' => require_login sub {
     return unless ($node =~ m/\w/); # need some alphanum at least
     content_type('text/html');
 
+    # JIT compiles longer than an address or prefix search takes; the
+    # template fetches the rows, so the render runs inside the transaction too
+    if ($node =~ m{^(?:$RE{net}{IPv4}|$RE{net}{IPv6})(?:/\d+)?$}i) {
+        return schema(vars->{'tenant'})->without_jit(\&_search_node);
+    }
+    return _search_node();
+};
+
+sub _search_node {
+    my $node = param('q');
     my $agenot = param('age_invert') || '0';
     my ( $start, $end ) = (param('daterange') // '') =~ m/(\d+-\d+-\d+)/gmx;
 
@@ -273,6 +283,6 @@ get '/ajax/content/search/node' => require_login sub {
       macs => $set,
       archive_filter => {@active},
     }, { layout => 'noop' };
-};
+}
 
 true;
