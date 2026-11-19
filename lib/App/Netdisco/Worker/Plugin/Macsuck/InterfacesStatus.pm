@@ -5,6 +5,12 @@ use App::Netdisco::Worker::Plugin;
 use aliased 'App::Netdisco::Worker::Status';
 use Dancer::Plugin::DBIC 'schema';
 
+register_worker({ phase => 'early',
+  title => 'prepare to keep reported port status'}, sub {
+
+  vars->{'port_status_reported'} = {};
+});
+
 register_worker({ phase => 'main', driver => 'snmp',
   title => 'gather interfaces status from snmp'}, sub {
 
@@ -29,6 +35,7 @@ register_worker({ phase => 'main', driver => 'snmp',
 
     vars->{'device_ports'}->{$port}->set_column(up => $i_up->{$iid});
     vars->{'device_ports'}->{$port}->set_column(up_admin => $i_up_admin->{$iid});
+    vars->{'port_status_reported'}->{$port} = 1 if defined $i_up->{$iid};
   }
 
   return Status->info('interfaces status from snmp complete');
@@ -40,8 +47,10 @@ register_worker({ phase => 'store',
   my ($job, $workerconf) = @_;
   my $device = $job->device;
 
-  # make sure ports are UP in netdisco (unless it's a lag master,
-  # because we can still see nodes without a functioning aggregate)
+  # a port with nodes is up, for data that carries no port status (offline
+  # submissions, ports the device did not report); the device's own status
+  # wins, as port security and self MACs leave entries on down ports. a lag
+  # master is skipped: we can still see nodes without a functioning aggregate
 
   my %port_seen = ();
   foreach my $vlan (reverse sort keys %{ vars->{'fwtable'} }) {
@@ -51,6 +60,7 @@ register_worker({ phase => 'store',
 
         next unless scalar keys %{ vars->{'fwtable'}->{$vlan}->{$port} };
         next unless exists vars->{'device_ports'}->{$port};
+        next if vars->{'port_status_reported'}->{$port};
         next if vars->{'device_ports'}->{$port}->is_master;
 
         debug sprintf ' [%s] macsuck - updating port %s status up/up due to node presence',

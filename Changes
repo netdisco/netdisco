@@ -1,3 +1,9 @@
+2.119001 - tbd
+
+  [BUG FIXES]
+
+  * #1830 macsuck keeps the port status the switch reports over SNMP
+
 2.119000 - 2026-11-15
 
   [NEW FEATURES]
