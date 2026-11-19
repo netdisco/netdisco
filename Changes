@@ -2,10 +2,7 @@
 
   [BUG FIXES]
 
-  * #1812 macsuck no longer marks a port up because the forwarding table
-    has an entry on it when the switch reports the port's status over
-    SNMP; ports with port security static entries, or with the switch's
-    own MAC, stay down
+  * #1830 macsuck keeps the port status the switch reports over SNMP
 
 2.119000 - 2026-11-15
 
