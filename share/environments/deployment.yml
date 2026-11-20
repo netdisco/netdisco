@@ -159,3 +159,22 @@ device_auth:
 #  - '127.0.0.0/8'
 #  - '::1'
 
+# metrics_job_duration_per_device: last job per device and action (start
+# time, duration, status as a label), one series each, so off by default.
+#metrics_job_duration_per_device: true
+#metrics_job_duration_actions: [discover, macsuck, arpnip]
+
+# per-device series only for some devices (Netdisco ACLs, matched on the
+# device, so addresses, ranges and properties all work)
+#metrics_per_device_only:
+#  - '192.0.2.0/24'
+#metrics_per_device_no:
+#  - 'vendor:examplevendor'
+
+# per-device counts of ports (total, oper up/down, admin down), active MACs,
+# CDP/LLDP neighbors and VLANs; one series per device each, so off by default.
+#metrics_ports_per_device: true
+#metrics_macs_per_device: true
+#metrics_neighbors_per_device: true
+#metrics_vlans_per_device: true
+
