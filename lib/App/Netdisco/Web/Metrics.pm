@@ -3,7 +3,7 @@ package App::Netdisco::Web::Metrics;
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
 
-use App::Netdisco::Util::Permission qw/acl_matches_only/;
+use App::Netdisco::Util::Permission qw/acl_matches_only permitted_by_acl/;
 use App::Netdisco::Util::Web
   qw/trusted_client_address warn_forwarded_address_ignored/;
 use POSIX 'floor';
@@ -299,6 +299,63 @@ get $metrics_path => sub {
     }
   }
   $output .= "\n";
+
+  # -- Which devices get per-device series ----------------------------------
+  # metrics_per_device_no and _only, so a large site can keep the per-device
+  # series to the devices it alerts on. Matched against the device row, so an
+  # entry can name a property (vendor, model, ...) as well as an address; the
+  # rows are only read when one of the two is set.
+  my $device_acl = { no => setting('metrics_per_device_no'),
+                     only => setting('metrics_per_device_only') };
+  my $device_acl_set = grep { ref $_ eq ref [] ? scalar @$_ : length($_ // '') }
+                            values %$device_acl;
+  my %device_permitted;
+  my $device_ok = sub {
+    my ($tenant, $ip) = @_;
+    return 1 unless $device_acl_set;
+    $device_permitted{$tenant} //= { map { ($_->ip => 1) }
+      grep { permitted_by_acl($_, $device_acl) }
+      try { schema($tenant)->resultset('Device')->all } catch { () } };
+    return $device_permitted{$tenant}{$ip};
+  };
+
+  # -- Last job per device (optional) ----------------------------------------
+  # One series per device and action, so off by default. The job queue only
+  # keeps expire_jobs days and can be cleared by hand; scraping this keeps
+  # each device's job history in the metrics store instead.
+  if (setting('metrics_job_duration_per_device')) {
+    my $actions = setting('metrics_job_duration_actions');
+    $actions = [qw/discover macsuck arpnip/]
+      unless ref $actions eq ref [] and scalar @$actions;
+
+    my %rows;
+    foreach my $tenant (@tenants) {
+      $rows{$tenant} = [ try {
+        schema($tenant)->resultset('Virtual::DeviceLastJobs')
+          ->search({ action => { -in => $actions } })->hri->all;
+      } catch { () } ];
+    }
+
+    foreach my $m (
+      [ netdisco_device_last_job_timestamp_seconds => 'started_epoch',
+        'Unix time the most recent finished job started, per device and action' ],
+      [ netdisco_device_last_job_duration_seconds => 'duration',
+        'Duration in seconds of the most recent finished job, per device and action' ],
+    ) {
+      my ($metric, $col, $help) = @$m;
+      $output .= _header($metric, $help);
+      foreach my $tenant (@tenants) {
+        foreach my $row (@{ $rows{$tenant} }) {
+          next unless defined $row->{$col}
+            and $device_ok->($tenant, $row->{device});
+          $output .= _sample($metric, $row->{$col}, tenant => $tenant,
+            device => $row->{device}, action => $row->{action},
+            status => ($row->{status} // ''));
+        }
+      }
+      $output .= "\n";
+    }
+  }
 
   # -- SNMP connect failures (DeviceSkip table) ------------------------------
   $output .= _header('netdisco_snmp_failures_devices',
