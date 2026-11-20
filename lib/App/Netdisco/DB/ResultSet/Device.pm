@@ -714,30 +714,31 @@ will add the following additional synthesized columns to the result set:
 
 sub with_layer_features {
   my ($rs, $cond, $attrs) = @_;
+  my $skip = $rs->result_source->schema->resultset('DeviceSkip');
+
+  # each running backend keeps a row for the faux device 255.255.255.255,
+  # but a row for a real device only when it holds something against it:
+  # a device no backend denies has no row at all. so count the backends,
+  # less those whose row for this device lists the action.
+  my $able = sub {
+    my $action = shift;
+    return $skip->search({
+      'b.device' => '255.255.255.255',
+      '-not' => \[ q{EXISTS (SELECT 1 FROM device_skip ds
+                              WHERE ds.device = me.ip
+                                AND ds.backend = b.backend
+                                AND ? = ANY(ds.actionset))}, $action ],
+    }, { alias => 'b' })->count_rs->as_query;
+  };
 
   return $rs
     ->search_rs($cond, $attrs)
     ->search({},
       {
         '+columns' => {
-          is_discoverable =>
-            $rs->result_source->schema->resultset('DeviceSkip')
-              ->search(
-                { 'ds.device' => { -ident => 'me.ip' }, '-not' => \q{'discover' = ANY(actionset)} },
-                { alias => 'ds' },
-              )->count_rs->as_query,
-          is_macsuckable =>
-            $rs->result_source->schema->resultset('DeviceSkip')
-              ->search(
-                { 'ds.device' => { -ident => 'me.ip' }, '-not' => \q{'macsuck' = ANY(actionset)} },
-                { alias => 'ds' },
-              )->count_rs->as_query,
-          is_arpnipable =>
-            $rs->result_source->schema->resultset('DeviceSkip')
-              ->search(
-                { 'ds.device' => { -ident => 'me.ip' }, '-not' => \q{'arpnip' = ANY(actionset)} },
-                { alias => 'ds' },
-              )->count_rs->as_query,
+          is_discoverable => $able->('discover'),
+          is_macsuckable  => $able->('macsuck'),
+          is_arpnipable   => $able->('arpnip'),
         },
       });
 }
