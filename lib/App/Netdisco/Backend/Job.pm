@@ -116,11 +116,13 @@ sub carries_config_overrides {
                      _override_fields($spec->{action});
 }
 
-# hook and custom field jobs keep their subaction as data
+# hook and custom field jobs keep their subaction as data, and so does the
+# scheduler job, whose subaction is the schedule entry it walks; its extra
+# overrides apply to the jobs it queues, not to itself
 sub _override_fields {
   my $action = shift;
   return ('port',
-    (($action and $action !~ m/^(?:hook|cf_)/) ? 'subaction' : ()));
+    (($action and $action !~ m/^(?:hook|cf_|scheduler$)/) ? 'subaction' : ()));
 }
 
 =head2 display_name
