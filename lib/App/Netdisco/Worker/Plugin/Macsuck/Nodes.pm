@@ -36,6 +36,8 @@ register_worker({ phase => 'early',
 
   # initialise the cache
   vars->{'fwtable'} = {};
+  # VLAN names the SNMP worker read, for the store phase to filter by
+  vars->{'macsuck_vlan_names'} = undef;
 
   # cache the device ports to save hitting the database for many single rows
   vars->{'device_ports'} = {map {($_->port => $_)}
@@ -161,7 +163,8 @@ register_worker({ phase => 'store',
   my $device = $job->device;
 
   # remove macs on forbidden vlans
-  my @vlans = (0, sanity_vlans($device, vars->{'fwtable'}, {}, {}));
+  my @vlans = (0, sanity_vlans($device, vars->{'fwtable'},
+                                vars->{'macsuck_vlan_names'}, {}));
   foreach my $vlan (keys %{ vars->{'fwtable'} }) {
       delete vars->{'fwtable'}->{$vlan}
         unless scalar grep {$_ eq $vlan} @vlans;
@@ -364,11 +367,20 @@ sub get_vlan_list {
       $vlan_states{$vlan} = $state;
   }
 
+  # the store phase filters the VLANs again, and needs the names for it
+  vars->{'macsuck_vlan_names'} = { %vlan_names };
+
   return sanity_vlans($device, \%vlans, \%vlan_names, \%vlan_states);
 }
 
 sub sanity_vlans {
   my ($device, $vlans, $vlan_names, $vlan_states) = @_;
+
+  # names are undef when no worker read them (CLI, offline, non-Cisco):
+  # macsuck_no_unnamed then has nothing to go on and every VLAN would look
+  # unnamed, so it is not applied
+  my $have_names = defined $vlan_names;
+  $vlan_names  ||= {};
 
   my @ok_vlans = ();
   foreach my $vlan (sort keys %$vlans) {
@@ -402,7 +414,8 @@ sub sanity_vlans {
           }
       }
 
-      if (setting('macsuck_no_unnamed') and $name eq '(unnamed)') {
+      if (setting('macsuck_no_unnamed') and $have_names
+          and $name eq '(unnamed)') {
           debug sprintf
             ' [%s] macsuck VLAN %s - skipped by macsuck_no_unnamed config',
             $device->ip, $vlan;
