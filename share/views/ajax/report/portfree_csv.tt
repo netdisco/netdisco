@@ -1,0 +1,11 @@
+[% USE CSV -%]
+[% CSV.dump([ 'Device IP' 'Device DNS' 'Device Name' 'Port' 'Port Description' 'Type' 'VLAN' 'Speed' 'Admin Status' 'Oper Status' 'Last MAC' 'Last MAC Seen' 'Days Since MAC' 'Last Change' 'Device Last Macsuck' 'Device Last Discover' 'Device Boot' 'Free Since' 'Free Since Basis' 'Days Free' ]) %]
+
+[% FOREACH row IN results %]
+  [% mylist = [] %]
+  [% FOREACH col IN [ row.ip row.dns row.device_name row.port row.name row.type row.vlan row.speed row.up_admin row.up row.last_mac row.last_mac_seen row.days_since_mac row.lastchange_stamp row.last_macsuck row.last_discover row.device_boot row.free_since row.free_since_basis row.days_free ] %]
+    [% mylist.push(col) %]
+  [% END %]
+  [% CSV.dump(mylist) %]
+
+[% END %]
