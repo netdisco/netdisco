@@ -4,6 +4,10 @@
 
   * #1830 macsuck keeps the port status the switch reports over SNMP
   * #1832 netdisco-deploy queues a stats job instead of updating statistics itself
+  * #1842 macsuck_no_unnamed: keep the named VLANs in the store phase
+  * #1844 device buttons: count backends, not skip rows
+  * #1845 scheduler: queue entries with only/no again
+  * #1846 primeskiplist: one upsert instead of a write per device
 
 2.119000 - 2026-11-15
 
