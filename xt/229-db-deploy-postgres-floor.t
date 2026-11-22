@@ -60,4 +60,16 @@ subtest 'db_deploy__message__names_10' => sub {
   like($source, qr/if \(postgres_too_old\(\$pg_ver\)\)/);
 };
 
+# the hand-rolled unpack printed 9.6.24 as 9.06.24
+subtest 'db_deploy__message__formats_version_with_postgres_version' => sub {
+  like($source, qr/you have %s\\n",\s*postgres_version\(\$pg_ver\)/);
+};
+
+# the refusal comes before any step runs, so the previous release still works
+subtest 'db_deploy__message__names_last_release_for_native_and_container' => sub {
+  like($source, qr/NETDISCO_DB_DEPLOY_CONTAINER\}\s*\?[^;]*the 2\.119001 Netdisco images/s);
+  like($source, qr/Netdisco 2\.119001, the last release/);
+  unlike($source, qr/delete and reinstall Netdisco/);
+};
+
 done_testing;

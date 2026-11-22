@@ -91,7 +91,17 @@ subtest 'subnet_utilization_route__query__runs_through_without_jit' => sub {
 subtest 'node_search_route__address_query__runs_through_without_jit' => sub {
   ok(defined $node_route, 'route found') or return;
   like($node_route, qr/schema\(vars->\{'tenant'\}\)->without_jit\(/);
-  unlike($node_route, qr/schema\('netdisco'\)/);
+};
+
+# the queries live in _search_node, outside the route body, so this reads the
+# whole file: without_jit's SET applies only to the tenant schema's handle
+subtest 'node_search__all_queries__use_tenant_schema' => sub {
+  open my $fh, '<', 'lib/App/Netdisco/Web/Plugin/Search/Node.pm' or die $!;
+  my $source = do { local $/; <$fh> };
+  close $fh;
+  like($source, qr/^sub _search_node \{.*schema\(vars->\{'tenant'\}\)->resultset/ms,
+    '_search_node queries the tenant schema');
+  unlike($source, qr/schema\('netdisco'\)/);
 };
 
 # chosen once, by an address or prefix match on q, so a hostname, MAC or
