@@ -822,6 +822,12 @@ xt/222-managed-config-web.t
 xt/223-managed-config-jobs.t
 xt/224-managed-config-manager.t
 xt/225-acl-delete-last-role.t
+xt/226-macsuck-status-override.t
+xt/227-deploy-queues-stats.t
+xt/237-macsuck-no-unnamed-store.t
+xt/238-device-layer-features.t
+xt/239-scheduler-acl-entries.t
+xt/240-primeskiplist-concurrent.t
 xt/30-backend-workers.t
 xt/31-loadmibsfromoids-guard.t
 xt/32-swagger-ui-guard.t

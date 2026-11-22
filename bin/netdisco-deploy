@@ -41,7 +41,7 @@ use App::Netdisco;
 use Dancer ':script';
 use Dancer::Plugin::DBIC 'schema';
 use Dancer::Plugin::Passphrase;
-use App::Netdisco::Util::Statistics ();
+use App::Netdisco::JobQueue 'jq_insert';
 use App::Netdisco::Util::Token 'random_token';
 
 info "App::Netdisco $App::Netdisco::VERSION loaded.";
@@ -179,17 +179,27 @@ else {
     deploy_mibs($default_mibhome) if $bool;
 }
 
+# a job, not update_stats() here: the Python version is only known to the
+# stats job's Python worklet, and the Docker images queue the job the same way
+sub queue_stats {
+  if (jq_insert({ action => 'stats' })) {
+      print color 'bold blue';
+      say 'Queued a statistics update for the backend.';
+  }
+  else {
+      print color 'bold red';
+      say 'Could not queue a statistics update; the nightly expire job will refresh them.';
+  }
+  print color 'reset';
+}
+
 sub deploy_db {
   system('netdisco-db-deploy') == 0 or die "\n";
   print color 'bold blue';
   say 'DB schema update complete.';
   print color 'reset';
 
-  print color 'bold blue';
-  print 'Updating statistics... ';
-  App::Netdisco::Util::Statistics::update_stats();
-  say 'done.';
-  print color 'reset';
+  queue_stats();
 
   if (not setting('safe_password_store')) {
       say '';
