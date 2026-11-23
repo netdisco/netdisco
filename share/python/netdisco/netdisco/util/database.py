@@ -13,7 +13,7 @@ db_connect_url = URL.create(
     username=os.environ.get('PGUSER', None),
     password=os.environ.get('PGPASSWORD', None),
     host=os.environ.get('PGHOST', None),
-    port=os.environ.get('PORT', None),
+    port=os.environ.get('PGPORT', None),
     database=os.environ.get('PGDATABASE', None),
 )
 
