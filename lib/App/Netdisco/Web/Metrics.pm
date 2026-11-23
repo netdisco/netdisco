@@ -361,19 +361,30 @@ get $metrics_path => sub {
   # Each is one series per device, so each is off by default. Next to job
   # durations they explain them: a macsuck that takes longer as the device
   # learns more MACs is load, one that takes longer at the same count is not.
+  #
+  # Every device gets a sample, 0 when there is nothing to count: a device
+  # that loses its last neighbor reads 0 rather than dropping out of the
+  # metric, so an alert on 0 fires. A tenant whose query fails gets none.
+  my %device_ips;
   my $per_device = sub {
     my ($metric, $help, $rs_name, $cond, $col, $count) = @_;
     $output .= _header($metric, $help);
     foreach my $tenant (@tenants) {
-      my @rows = try {
-        schema($tenant)->resultset($rs_name)->search($cond, {
+      my $rows = try {
+        [ schema($tenant)->resultset($rs_name)->search($cond, {
           select   => [ "me.$col", { count => $count, -as => 'cnt' } ],
           as       => [qw/device cnt/],
           group_by => [ "me.$col" ],
-        })->hri->all;
-      } catch { () };
-      $output .= _sample($metric, $_->{cnt}, tenant => $tenant, device => $_->{device})
-        for grep { $device_ok->($tenant, $_->{device}) } @rows;
+        })->hri->all ];
+      } catch { undef };
+      next unless $rows;
+      $device_ips{$tenant} //= [ try {
+        schema($tenant)->resultset('Device')->get_column('ip')->all
+      } catch { () } ];
+      my %cnt = map { ($_ => 0) } @{ $device_ips{$tenant} };
+      $cnt{ $_->{device} } = $_->{cnt} for @$rows;
+      $output .= _sample($metric, $cnt{$_}, tenant => $tenant, device => $_)
+        for grep { $device_ok->($tenant, $_) } sort keys %cnt;
     }
     $output .= "\n";
   };
@@ -384,9 +395,11 @@ get $metrics_path => sub {
         'Number of ports on this device' ],
       [ netdisco_device_ports_oper_up => { up => 'up' },
         'Number of ports on this device that are operationally up' ],
-      [ netdisco_device_ports_oper_down => { up => { '!=' => 'up' } },
+      # a port with no status is counted as not up, so up and down add up
+      # to the total
+      [ netdisco_device_ports_oper_down => { up => [ { '!=' => 'up' }, undef ] },
         'Number of ports on this device that are not operationally up' ],
-      [ netdisco_device_ports_admin_down => { up_admin => { '!=' => 'up' } },
+      [ netdisco_device_ports_admin_down => { up_admin => [ { '!=' => 'up' }, undef ] },
         'Number of ports on this device that are not administratively up' ],
     ) {
       $per_device->($m->[0], $m->[2], 'DevicePort', $m->[1], 'ip', '*');
