@@ -1,3 +1,10 @@
+2.120001 - tbd
+
+  [BUG FIXES]
+
+  * #1847 backend names its tenant netdisco, so a worker keeps one database
+    connection
+
 2.120000 - 2026-11-22
 
   [ENHANCEMENTS]
