@@ -69,7 +69,7 @@ L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
 
 =head1 Dependencies
 
-Netdisco requires Perl 5.24 or newer and PostgreSQL 9.6 or newer. Some of
+Netdisco requires Perl 5.24 or newer and PostgreSQL 10 or newer. Some of
 the libraries a new installation downloads need Perl 5.24.
 
 Most other dependencies will be automatically installed, but we require that
@@ -111,7 +111,7 @@ will take about 250MB including MIB files.
  root:~# useradd -m -p x -s /bin/bash netdisco
 
 Netdisco uses the PostgreSQL database server. Install PostgreSQL (at least
-version 9.6) and then change to the PostgreSQL superuser (usually
+version 10) and then change to the PostgreSQL superuser (usually
 C<postgres>). Create a new database and PostgreSQL user for the Netdisco
 application:
 
@@ -243,7 +243,7 @@ L<Release Notes|https://github.com/netdisco/netdisco/wiki/Release-Notes>.
 
 =head1 Upgrading from 2.x
 
-Netdisco requires PostgreSQL 9.6 or newer. An installation on a Perl older
+Netdisco requires PostgreSQL 10 or newer. An installation on a Perl older
 than 5.24 can still be upgraded, because the libraries it already has are
 kept, until a release requires a newer version of one of them. A new
 installation needs Perl 5.24 or newer.

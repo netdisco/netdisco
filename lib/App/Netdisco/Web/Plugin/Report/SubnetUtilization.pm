@@ -41,10 +41,12 @@ get '/ajax/content/report/subnets' => require_login sub {
     $start = $start . ' 00:00:00';
     $end   = $end . ' 23:59:59';
 
-    my @results = schema(vars->{'tenant'})->resultset('Virtual::SubnetUtilization')
-      ->search(undef,{
-        bind => [ $subnet, $start, $end, $start, $subnet, $start, $start ],
-      })->hri->all;
+    my @results = schema(vars->{'tenant'})->without_jit(sub {
+      schema(vars->{'tenant'})->resultset('Virtual::SubnetUtilization')
+        ->search(undef,{
+          bind => [ $subnet, $start, $end, $start, $subnet, $start, $start ],
+        })->hri->all;
+    });
 
     return unless scalar @results;
     my $multi_domain = results_span_domains(\@results);
