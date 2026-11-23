@@ -1,3 +1,9 @@
+2.120001 - tbd
+
+  [BUG FIXES]
+
+  * #1849 Python worklets connect to PGPORT, not the web server's PORT
+
 2.120000 - 2026-11-22
 
   [ENHANCEMENTS]
