@@ -25,6 +25,12 @@ use Dancer qw/:moose :script !pass/;
 # entry, as configuration overrides and emptied it, so the job ended with
 # "Missing data of Scheduler entry".
 #
+# Once queued, the entry's "only" and "no" still did not hold: the device
+# jobs went to every device. They were left to the skip list, which each
+# backend primes from the schedule in its own configuration, and
+# NETDISCO_NO_SCHEDULER (a dedicated scheduler pod) removes the schedule
+# from the workers, so nothing was ever primed for the entry.
+#
 # Seen with walks split by hostname to give far-away devices a longer SNMP
 # connect timeout through the entry's "extra".
 #
@@ -35,7 +41,9 @@ use Dancer qw/:moose :script !pass/;
 #   - the scheduler job keeps its subaction, and none of the entry lands in
 #     the configuration;
 #   - the device jobs it queues carry the entry's "extra", which applies as
-#     configuration overrides when they run.
+#     configuration overrides when they run;
+#   - the scheduler job queues only the devices its entry's "only" or "no"
+#     lets through, with no schedule in the worker's configuration.
 
 set logger => 'null';
 
@@ -89,9 +97,24 @@ ok !defined config->{'only'} && !defined config->{'extra'},
 # its main worker, with the walk and the queue replaced
 my @queued;
 {
+  package FakeDevice;
+  sub new { my ($c, %a) = @_; bless {%a}, $c }
+  sub ip { $_[0]{ip} }
+  sub name { $_[0]{name} }
+}
+{
+  package FakeDevices;
+  sub new { bless {}, shift }
+  sub all { (FakeDevice->new(ip => '192.0.2.1', name => 'far-1'),
+             FakeDevice->new(ip => '192.0.2.2', name => 'near-1'),
+             FakeDevice->new(ip => '192.0.2.3', name => 'far-2')) }
+}
+{
+  # the walk returns every device, as an unprimed skip list does; 192.0.2.3
+  # stands for a device the walk leaves out, already queued
   package FakeRS;
   sub new { bless {}, shift }
-  sub resultset { $_[0] }
+  sub resultset { $_[1] eq 'Device' ? FakeDevices->new : $_[0] }
   sub search { $_[0] }
   sub get_column { $_[0] }
   sub all { ('192.0.2.1', '192.0.2.2') }
@@ -103,15 +126,37 @@ my @queued;
 }
 my ($main) = grep { ref }
   @{ vars->{'workers'}{'scheduler'}{'main'}{'_base_'}{0} || [] };
+
+# a worker beside a dedicated scheduler, as NETDISCO_NO_SCHEDULER leaves it
+delete config->{'schedule'};
+
 $main->($job);
 
-is_deeply [ map { $_->{device} } @queued ], ['192.0.2.1', '192.0.2.2'],
-  'schedulerAcl__main__queues_a_job_per_device';
-is_deeply [ map { $_->{action} } @queued ], ['macsuck', 'macsuck'],
+is_deeply [ map { $_->{device} } @queued ], ['192.0.2.1'],
+  'schedulerAcl__main__only_queues_matching_devices';
+is_deeply [ map { $_->{action} } @queued ], ['macsuck'],
   'schedulerAcl__main__queues_the_entry_action';
 
+my $device_subaction = $queued[0]{subaction};
+
+@queued = ();
+my %no_entry = %$carried;
+$no_entry{no} = delete $no_entry{only};
+$main->(App::Netdisco::Backend::Job->new({
+  job => 0, action => 'scheduler', subaction => $coder->encode(\%no_entry) }));
+is_deeply [ map { $_->{device} } @queued ], ['192.0.2.2'],
+  'schedulerAcl__main__no_leaves_out_matching_devices';
+
+@queued = ();
+my %device_entry = (%$carried, device => '192.0.2.2/32');
+delete $device_entry{only};
+$main->(App::Netdisco::Backend::Job->new({
+  job => 0, action => 'scheduler', subaction => $coder->encode(\%device_entry) }));
+is_deeply [ map { $_->{device} } @queued ], ['192.0.2.2'],
+  'schedulerAcl__main__device_limits_the_walk';
+
 my $device_job = App::Netdisco::Backend::Job->new({
-  job => 0, action => 'macsuck', subaction => $queued[0]{subaction} });
+  job => 0, action => 'macsuck', subaction => $device_subaction });
 {
   local config->{'snmp_fast_connect_timeout'} = 500000;
   $device_job->apply_config_overrides;
