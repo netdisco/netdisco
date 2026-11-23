@@ -6,7 +6,7 @@ use App::Netdisco::Util::DeviceAuth 'get_external_credentials';
 use Path::Class 'dir';
 use File::Spec::Functions qw/splitdir catdir catfile/;
 use MIME::Base64 'decode_base64';
-use SNMP::Info;
+use SNMP::Info 3.985002;
 use JSON::PP ();
 use Scalar::Util 'refaddr';
 
@@ -309,27 +309,24 @@ sub sortable_oid {
 =head2 walk_mark( $snmp )
 
 Returns the number of incomplete walks the L<SNMP::Info> instance has
-recorded so far, for use with C<incomplete_walks>. Returns 0 when the
-instance keeps no record.
+recorded so far, for use with C<incomplete_walks>.
 
 =cut
 
 sub walk_mark {
   my $snmp = shift;
-  return 0 unless $snmp->can('walk_failures');
   return scalar @{ $snmp->walk_failures };
 }
 
 =head2 incomplete_walks( $snmp, $mark )
 
 Returns the incomplete walk outcomes recorded since C<walk_mark> returned
-C<$mark>, in order. Returns an empty list when the instance keeps no record.
+C<$mark>, in order.
 
 =cut
 
 sub incomplete_walks {
   my ($snmp, $mark) = @_;
-  return () unless $snmp->can('walk_failures');
   my $failures = $snmp->walk_failures;
   return @{$failures}[ $mark .. $#{$failures} ];
 }
@@ -396,23 +393,19 @@ re-walk is not returned. An C<absent> reason counts as incomplete although
 L<SNMP::Info> marks it complete, because it means the poller could not
 translate the object locally, such as a broken MIB checkout.
 
-Returns an empty list when C<enable_incomplete_walk_protection> is false, or
-when the instance keeps no walk record.
+Returns an empty list when C<enable_incomplete_walk_protection> is false.
 
 =cut
 
 sub incomplete_walks_for {
   my ($device, $snmp, $mark, @methods) = @_;
-  return () unless setting('enable_incomplete_walk_protection')
-    and $snmp->can('walk_failures');
+  return () unless setting('enable_incomplete_walk_protection');
 
   my @outcomes = incomplete_walks($snmp, $mark);
-  if ($snmp->can('walk_status')) {
-    foreach my $method (@methods) {
-      my $latest = $snmp->walk_status($method);
-      push @outcomes, $latest if $latest
-        and (not $latest->{complete} or ($latest->{reason} // '') eq 'absent');
-    }
+  foreach my $method (@methods) {
+    my $latest = $snmp->walk_status($method);
+    push @outcomes, $latest if $latest
+      and (not $latest->{complete} or ($latest->{reason} // '') eq 'absent');
   }
   push @outcomes, @{ vars->{'incomplete_walks'}{ $device->ip }{'interfaces'} || [] }
     if grep { $_ eq 'interfaces' } @methods;

@@ -8,7 +8,7 @@ use App::Netdisco::Util::Device 'get_device';
 use App::Netdisco::Util::Permission 'acl_matches';
 use App::Netdisco::Util::Snapshot qw/load_cache_for_device add_snmpinfo_aliases fixup_browser_from_aliases/;
 
-use SNMP::Info;
+use SNMP::Info 3.985002;
 use Try::Tiny;
 use Module::Load ();
 use NetAddr::IP::Lite ':lower';

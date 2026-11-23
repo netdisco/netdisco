@@ -49,6 +49,7 @@ sub snmp_comm { 'public' }
 sub class { 'SNMP::Info::Layer3::Fake' }
 sub session { $_[0]{session} }
 sub walk_failures { $_[0]{walk_failures} }
+sub walk_status { return undef }
 sub error { my $self = shift; my $error = $self->{error}; $self->{error} = undef; return $error }
 sub update {
   my ($self, %args) = @_;

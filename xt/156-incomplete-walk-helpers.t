@@ -5,7 +5,7 @@ use strict; use warnings;
 # SNMP::Info records every table walk that ends early in walk_failures. One
 # SNMP::Info object serves a whole job, so the list grows across workers:
 # each worker takes a mark before its reads and looks only at what came after
-# it. Objects without the record (offline snapshots, test fakes) report none.
+# it.
 
 BEGIN { $ENV{DANCER_ENVDIR} = '/dev/null'; }
 
@@ -49,13 +49,6 @@ subtest 'incomplete_walks__failures_before_mark__are_ignored' => sub {
   push @{ $snmp->walk_failures }, {%ifindex_loop};
   is_deeply [incomplete_walks($snmp, $mark)], [{%ifindex_loop}],
     'only the failure after the mark';
-};
-
-subtest 'incomplete_walks__object_without_walk_failures__returns_empty_list'
-  => sub {
-  my $snmp = bless {}, 'NoRecord';
-  is walk_mark($snmp), 0, 'mark is 0';
-  is_deeply [incomplete_walks($snmp, 0)], [], 'no failures';
 };
 
 subtest 'incomplete_walks__absent_outcome_in_walk_status_only__returns_empty_list'

@@ -729,7 +729,9 @@ subtest 'discover__switch_dies__default_context_restored' => sub {
 { package ErrorPendingSnmp;
   sub new { my ($class, $pending) = @_; return bless { error => $pending }, $class }
   sub error { my $self = shift; my $error = $self->{error}; $self->{error} = undef; return $error }
-  sub vrf_read_complete { return 0 } }
+  sub vrf_read_complete { return 0 }
+  sub walk_failures { return [] }
+  sub walk_status { return undef } }
 { package ErrorLogDevice; sub ip { '192.0.2.1' } }
 
 sub incomplete_read_log {
