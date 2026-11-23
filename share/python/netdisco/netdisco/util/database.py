@@ -6,7 +6,8 @@ Access to Netdisco database using SQLAlchemy and psycopg (v3).
 """
 
 import os
-from sqlalchemy import create_engine, URL
+
+from sqlalchemy import URL, create_engine
 
 db_connect_url = URL.create(
     drivername='postgresql+psycopg',
@@ -17,6 +18,4 @@ db_connect_url = URL.create(
     database=os.environ.get('PGDATABASE', None),
 )
 
-engine = create_engine(
-    db_connect_url, echo=False if os.environ.get('DBIC_TRACE', '0') == '0' else True
-)
+engine = create_engine(db_connect_url, echo=os.environ.get('DBIC_TRACE', '0') != '0')
