@@ -1,3 +1,9 @@
+2.120001 - tbd
+
+  [BUG FIXES]
+
+  * #1848 require SNMP::Info's Build.PL minimum when Netdisco loads it
+
 2.120000 - 2026-11-22
 
   [ENHANCEMENTS]
