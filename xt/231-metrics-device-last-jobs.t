@@ -95,7 +95,7 @@ test_psgi $app, sub {
 # here would run at compile time, before the environment file is read.
 my $schema = eval {
   my $s = Dancer::Plugin::DBIC::schema('netdisco');
-  $s->storage->dbh_do(sub { $_[1]->do('SELECT 1') });
+  $s->storage->dbh_do(sub { $_[1]->do('SELECT 1 FROM admin LIMIT 0') });
   $s;
 };
 my $why = $@;
