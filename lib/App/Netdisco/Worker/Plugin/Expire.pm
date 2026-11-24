@@ -28,9 +28,11 @@ register_worker({ phase => 'main' }, sub {
             foreach my $ip (@hostlist) {
                 next unless acl_matches_only($ip, $acl);
 
+                # port is the delete job's archive flag, as the UI and API set it
                 jq_insert([{
                   device => $ip,
                   action => 'delete',
+                  (setting('expire_devices_archive') ? (port => 1) : ()),
                 }]);
 
                 schema('netdisco')->resultset('UserLog')->create({

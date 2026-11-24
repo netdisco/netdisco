@@ -752,6 +752,7 @@ nbtstat_interval: 0.02
 nbtstat_response_timeout: 1
 node_freshness: 0
 expire_devices: 60
+expire_devices_archive: false
 expire_nodes: 90
 expire_nodes_archive: 60
 expire_jobs: 14
