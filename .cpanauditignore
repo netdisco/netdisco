@@ -17,6 +17,12 @@ CPANSA-Dancer-2026-5080
 # 0.15, the latest, is affected.
 CPANSA-Net-Ping-External-2008-7319
 
+# Does not apply: IO::Socket::SSL::PublicSuffix rewriting its own source from
+# a fetched list. Netdisco never calls update_self_from_url. No fixed release:
+# both advisories cover every version through 2.099, the latest.
+CPANSA-IO-Socket-SSL-2026-129891
+CPANSA-IO-Socket-SSL-2026-129892
+
 # Does not apply: Plack::Middleware::XSendfile, which Netdisco does not use.
 # The database also marks every Plack version, but the advisory names 1.0053
 # and earlier, and Build.PL requires 1.0057.
