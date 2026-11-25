@@ -30,22 +30,28 @@ register_worker({ phase => 'main' }, sub {
 
   my $max_workers = total_workers();
 
+  my $backend = setting('workers')->{'BACKEND'};
+
+  # one upsert in key order rather than a select-then-write per device:
+  # backends that share a BACKEND name, such as the replicas of one
+  # deployment, prime at the same time on start, and their writes raced
+  # into duplicate keys and deadlocks
   try {
     schema(vars->{'tenant'})->txn_do(sub {
-      $rs->update_or_create({
-        backend => setting('workers')->{'BACKEND'},
+      $rs->upsert([ map {{
+        backend => $backend,
         device  => $_,
         actionset => $actionset{$_},
-      }, { key => 'primary' }) for keys %actionset;
+      }} keys %actionset ]);
     });
 
     # add one faux record to allow *walk actions to see there is a backend running
-    $rs->update_or_create({
-      backend => setting('workers')->{'BACKEND'},
+    $rs->upsert([{
+      backend => $backend,
       device  => '255.255.255.255',
       last_defer => \'LOCALTIMESTAMP',
       deferrals => $max_workers,
-    }, { key => 'primary' });
+    }]);
 
     $happy = true;
   }

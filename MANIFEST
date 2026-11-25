@@ -463,6 +463,7 @@ share/schema_versions/App-Netdisco-DB-103-104-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-104-105-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-105-106-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-106-107-PostgreSQL.sql
+share/schema_versions/App-Netdisco-DB-107-108-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-11-12-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-12-13-PostgreSQL.sql
 share/schema_versions/App-Netdisco-DB-13-14-PostgreSQL.sql
@@ -822,6 +823,15 @@ xt/222-managed-config-web.t
 xt/223-managed-config-jobs.t
 xt/224-managed-config-manager.t
 xt/225-acl-delete-last-role.t
+xt/226-macsuck-status-override.t
+xt/227-deploy-queues-stats.t
+xt/228-schema-108-subnet-indexes.t
+xt/229-db-deploy-postgres-floor.t
+xt/230-without-jit.t
+xt/237-macsuck-no-unnamed-store.t
+xt/238-device-layer-features.t
+xt/239-scheduler-acl-entries.t
+xt/240-primeskiplist-concurrent.t
 xt/30-backend-workers.t
 xt/31-loadmibsfromoids-guard.t
 xt/32-swagger-ui-guard.t

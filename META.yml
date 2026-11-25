@@ -30,7 +30,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.119000'
+    version: '2.120000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -49,7 +49,7 @@ provides:
     file: lib/App/Netdisco/Configuration.pm
   App::Netdisco::DB:
     file: lib/App/Netdisco/DB.pm
-    version: '107'
+    version: '108'
   App::Netdisco::DB::Deploy:
     file: lib/App/Netdisco/DB/Deploy.pm
   App::Netdisco::DB::ExplicitLocking:
@@ -828,5 +828,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.119000'
-x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
+version: '2.120000'
+x_serialization_backend: 'CPAN::Meta::YAML version 0.020'
