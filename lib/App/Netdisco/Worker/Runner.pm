@@ -34,6 +34,12 @@ sub run {
   $job->apply_config_overrides;
   $self->job($job);
   reset_snmp_charsets_cache();
+
+  # DBICx::Sugar caches a schema under the name asked for, so a worker that
+  # asks for 'netdisco' before undef gets two connections and can wait on its
+  # own locks (#1782). Backend only: in the web a tenant changes every URL.
+  var(tenant => 'netdisco') unless vars->{'tenant'};
+
   $job->device( get_device($job->device) )
     unless scalar grep {$job->action eq $_} @{ setting('job_targets_prefix') };
   $self->load_workers();
