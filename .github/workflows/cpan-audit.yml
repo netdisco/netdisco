@@ -28,9 +28,10 @@ jobs:
 
       - name: Install CPAN::Audit
         run: |
+          sudo apt-get update -q && sudo apt-get install -y -q cpanminus
           # Build.PL loads App::Netdisco::Builder, which needs the last three
-          curl -fsSL https://cpanmin.us/ | perl - --notest --local-lib ~/audit \
-            App::cpanminus CPAN::Audit Module::Build CPAN::Changes Perl::Version Module::Metadata
+          cpanm --notest --local-lib ~/audit \
+            CPAN::Audit Module::Build CPAN::Changes Perl::Version Module::Metadata
           echo "PERL5LIB=$HOME/audit/lib/perl5" >> "$GITHUB_ENV"
           echo "$HOME/audit/bin" >> "$GITHUB_PATH"
 

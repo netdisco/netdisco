@@ -1,7 +1,13 @@
 2.120001 - tbd
 
+  [ENHANCEMENTS]
+
+  * #1856 require Convert::ASN1 0.37, Dancer 1.3400, JSON::XS 4.05 and Net::DNS 1.58
+
   [BUG FIXES]
 
+  * #1847 backend names its tenant netdisco, so a worker keeps one database
+    connection
   * #1849 Python worklets connect to PGPORT, not the web server's PORT
 
 2.120000 - 2026-11-22
