@@ -196,6 +196,10 @@ metrics_per_device_no: []
 metrics_per_device_only: []
 metrics_job_duration_per_device: false
 metrics_job_duration_actions: [discover, macsuck, arpnip]
+metrics_ports_per_device: false
+metrics_macs_per_device: false
+metrics_neighbors_per_device: false
+metrics_vlans_per_device: false
 netmap:
   max_devices: 2500
   node_label_zoom_threshold: 0.9
