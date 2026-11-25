@@ -7,8 +7,7 @@ use aliased 'App::Netdisco::Worker::Status';
 use App::Netdisco::JobQueue 'jq_insert';
 use Dancer::Plugin::DBIC 'schema';
 
-use App::Netdisco::Util::Permission qw/acl_matches acl_matches_only/;
-use NetAddr::IP;
+use App::Netdisco::Util::Device 'schedule_entry_denies';
 use JSON::PP ();
 
 register_worker({ phase => 'check' }, sub {
@@ -48,20 +47,11 @@ register_worker({ phase => 'main' }, sub {
   # the skip list behind WalkJobs is primed from the schedule each backend
   # has in its own configuration, and NETDISCO_NO_SCHEDULER removes it from
   # the workers, so the entry's device, only and no are applied here too
-  my $net = ($sched->{device} ? NetAddr::IP->new($sched->{device}) : undef);
-  undef $net if $net and ($net->num == 0 or $net->addr eq '0.0.0.0');
-
-  if ($net or $sched->{only} or $sched->{no}) {
-    my %device = map {($_->ip => $_)}
-      schema(vars->{'tenant'})->resultset('Device')->all;
-
-    @walk = grep {
-      my $d = $device{$_};
-      $d
-      and (not $net or acl_matches_only($d, $net->cidr))
-      and (not $sched->{only} or acl_matches_only($d, $sched->{only}))
-      and (not $sched->{no} or not acl_matches($d, $sched->{no}))
-    } @walk;
+  if (@walk and ($sched->{device} or $sched->{only} or $sched->{no})) {
+    @walk = map { $_->ip }
+      grep { not schedule_entry_denies($_, $sched) }
+      schema(vars->{'tenant'})->resultset('Device')
+        ->search({ ip => { -in => \@walk } })->all;
   }
 
   jq_insert([

@@ -105,7 +105,10 @@ my @queued;
 {
   package FakeDevices;
   sub new { bless {}, shift }
-  sub all { (FakeDevice->new(ip => '192.0.2.1', name => 'far-1'),
+  # honours the ip list the scheduler asks for, so 192.0.2.3 stays out
+  sub new_in { my ($c, $ips) = @_; bless { in => { map {($_ => 1)} @$ips } }, $c }
+  sub search { FakeDevices->new_in($_[1]{ip}{'-in'}) }
+  sub all { my $s = shift; grep { !$s->{in} or $s->{in}{$_->ip} } (FakeDevice->new(ip => '192.0.2.1', name => 'far-1'),
              FakeDevice->new(ip => '192.0.2.2', name => 'near-1'),
              FakeDevice->new(ip => '192.0.2.3', name => 'far-2')) }
 }
@@ -147,13 +150,22 @@ $main->(App::Netdisco::Backend::Job->new({
 is_deeply [ map { $_->{device} } @queued ], ['192.0.2.2'],
   'schedulerAcl__main__no_leaves_out_matching_devices';
 
+# an entry with device but neither only nor no is queued per host, without
+# the scheduler job, so device is tested together with only
 @queued = ();
-my %device_entry = (%$carried, device => '192.0.2.2/32');
-delete $device_entry{only};
+my %device_entry = (%$carried, device => '192.0.2.2/32', only => 'name:(?i).*-1');
 $main->(App::Netdisco::Backend::Job->new({
   job => 0, action => 'scheduler', subaction => $coder->encode(\%device_entry) }));
 is_deeply [ map { $_->{device} } @queued ], ['192.0.2.2'],
   'schedulerAcl__main__device_limits_the_walk';
+
+# a device of 0.0.0.0/0 limits nothing, but only still holds
+@queued = ();
+my %any_entry = (%$carried, device => '0.0.0.0/0');
+$main->(App::Netdisco::Backend::Job->new({
+  job => 0, action => 'scheduler', subaction => $coder->encode(\%any_entry) }));
+is_deeply [ map { $_->{device} } @queued ], ['192.0.2.1'],
+  'schedulerAcl__main__any_device_keeps_only';
 
 my $device_job = App::Netdisco::Backend::Job->new({
   job => 0, action => 'macsuck', subaction => $device_subaction });
