@@ -1,4 +1,9 @@
-2.120001 - tbd
+2.121000 - tbd
+
+  [NEW FEATURES]
+
+  * #1838 metrics: last job per device and action
+  * #1839 metrics: per-device counts of ports, MACs, neighbors and VLANs
 
   [ENHANCEMENTS]
 
