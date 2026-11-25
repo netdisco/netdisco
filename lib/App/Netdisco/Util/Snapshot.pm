@@ -11,7 +11,7 @@ use File::Slurper 'read_lines';
 use Storable 'dclone';
 use Scalar::Util 'blessed';
 use String::Util 'trim';
-use SNMP::Info 3.985002;
+use SNMP::Info;
 
 use base 'Exporter';
 our @EXPORT = ();

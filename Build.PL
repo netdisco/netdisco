@@ -4,6 +4,16 @@ use warnings;
 use lib q(./lib);
 use App::Netdisco::Builder;
 
+sub snmp_info_minimum {
+  my $file = 'lib/App/Netdisco/Util/SNMP.pm';
+  open my $fh, '<', $file or die "Build.PL: cannot read $file: $!\n";
+  while (my $line = <$fh>) {
+    return $1 if $line =~ m/^use\s+SNMP::Info\s+([\d.]+)\s*;/;
+  }
+  die "Build.PL: $file has no 'use SNMP::Info VERSION;' line. "
+    ."That line sets Netdisco's SNMP::Info minimum; restore it.\n";
+}
+
 App::Netdisco::Builder->new(
   module_name => 'App::Netdisco',
   license     => 'bsd',
@@ -112,7 +122,7 @@ App::Netdisco::Builder->new(
     'Scope::Guard' => 0,
     'Sereal' => '0',
     'Session::Storage::Secure' => '1.000',
-    'SNMP::Info' => '3.985002',
+    'SNMP::Info' => snmp_info_minimum(), # set on the use line in App::Netdisco::Util::SNMP
     'Socket' => '2.041',
     'Socket6' => '0.23',
     'SQL::Abstract' => '2.000003',

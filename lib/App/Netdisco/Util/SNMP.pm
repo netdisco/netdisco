@@ -6,7 +6,7 @@ use App::Netdisco::Util::DeviceAuth 'get_external_credentials';
 use Path::Class 'dir';
 use File::Spec::Functions qw/splitdir catdir catfile/;
 use MIME::Base64 'decode_base64';
-use SNMP::Info 3.985002;
+use SNMP::Info 3.985002; # Netdisco's minimum: Build.PL reads it from here
 use JSON::PP ();
 use Scalar::Util 'refaddr';
 
