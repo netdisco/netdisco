@@ -151,19 +151,21 @@ sub delete {
   my $nodes = $self->search(undef, { columns => 'mac' });
 
   if (exists $opts->{archive_nodes} and $opts->{archive_nodes}) {
-      foreach my $set (qw/
-        NodeIp
-        NodeNbt
-        NodeMonitor
-        Node
-      /) {
-          $schema->resultset($set)->search(
-            { mac => { '-in' => $nodes->as_query }},
-          )->update({ active => \'false' });
-      }
+      # only the rows in this set; the same MAC on another switch stays
+      $self->update({ active => \'false' });
 
-      $schema->resultset('NodeWireless')
-        ->search({ mac => { '-in' => $nodes->as_query }})->delete;
+      # a MAC's IP, NetBIOS, monitor and wireless rows belong to the host,
+      # not to one switch, so they are left alone while it is active elsewhere
+      my $host_gone = { mac => {
+        '-in'     => $nodes->as_query,
+        '-not_in' => $schema->resultset('Node')->search(
+          { mac => { '-in' => $nodes->as_query }, active => 1 },
+          { columns => 'mac' })->as_query,
+      }};
+
+      $schema->resultset($_)->search($host_gone)->update({ active => \'false' })
+        for qw/NodeIp NodeNbt NodeMonitor/;
+      $schema->resultset('NodeWireless')->search($host_gone)->delete;
 
       # avoid letting DBIC delete nodes
       return 0E0;
@@ -177,40 +179,27 @@ sub delete {
       return 0E0;
   }
   else {
-      foreach my $set (qw/
-        NodeMonitor
-        NodeWireless
-        NodeNbt
-      /) {
-          $schema->resultset($set)->search(
-            { mac => { '-in' => $nodes->as_query }},
-          )->delete;
-      }
+      # a MAC's other rows are only deleted when no node row outside this set,
+      # active or archived, still has the MAC; node rows are compared on their
+      # whole key, since the same port name exists on many switches
+      my @key_aq = @{${ $self->search(undef,
+        { columns => [qw/mac switch port vlan/] })->as_query }};
+      my $key_restrict = shift @key_aq;
 
-      # for node_ip only delete if there are no longer
-      # any nodes referencing the IP.
+      my $others = $schema->resultset('Node')->search(
+        { mac => { '-in' => $nodes->as_query } },
+        { columns => [qw/mac switch port vlan/] });
+      my @others_aq = @{${ $others->as_query }};
+      my $others_sql = shift @others_aq;
 
-      my @mac_restrict_aq     = @{${ $nodes->as_query }};
-      my @macport_restrict_aq = @{${ $nodes->search(undef, { '+columns' => 'port' })->as_query }};
-      my $mac_restrict     = shift @mac_restrict_aq;
-      my $macport_restrict = shift @macport_restrict_aq;
+      my $host_gone = { mac => {
+        '-in'     => $nodes->as_query,
+        '-not_in' => \[ "SELECT mac FROM ($others_sql EXCEPT $key_restrict) others",
+                        @others_aq, @key_aq ],
+      }};
 
-      my $deleted = $schema->storage->dbh_do(sub {
-        my ($storage, $dbh, @extra) = @_;
-        local $dbh->{TraceLevel} =
-          ($ENV{DBIC_TRACE} ? '1|SQL' : $dbh->{TraceLevel});
-        $dbh->do(<<SQL
-DELETE FROM node_ip WHERE mac IN (
-  SELECT mac FROM node_ip
-    LEFT OUTER JOIN (
-      SELECT mac, port FROM node
-      EXCEPT ($macport_restrict)) exceptions
-    USING (mac)
-   WHERE node_ip.mac IN ($mac_restrict)
-     AND exceptions.port IS NULL)
-SQL
-        , undef, (map {$_->[1]} (@macport_restrict_aq, @mac_restrict_aq)));
-      });
+      $schema->resultset($_)->search($host_gone)->delete
+        for qw/NodeIp NodeNbt NodeMonitor NodeWireless/;
 
       # now let DBIC do its thing
       return $self->next::method();
