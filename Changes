@@ -14,6 +14,8 @@
   * #1847 backend names its tenant netdisco, so a worker keeps one database
     connection
   * #1849 Python worklets connect to PGPORT, not the web server's PORT
+  * #1854 with multiple backends, a schedule entry's only/no apply on every
+    backend
 
 2.120000 - 2026-11-22
 
