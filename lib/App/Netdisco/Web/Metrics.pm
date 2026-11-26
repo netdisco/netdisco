@@ -3,7 +3,7 @@ package App::Netdisco::Web::Metrics;
 use Dancer ':syntax';
 use Dancer::Plugin::DBIC;
 
-use App::Netdisco::Util::Permission qw/acl_matches_only/;
+use App::Netdisco::Util::Permission qw/acl_matches_only permitted_by_acl/;
 use App::Netdisco::Util::Web
   qw/trusted_client_address warn_forwarded_address_ignored/;
 use POSIX 'floor';
@@ -299,6 +299,131 @@ get $metrics_path => sub {
     }
   }
   $output .= "\n";
+
+  # -- Which devices get per-device series ----------------------------------
+  # metrics_per_device_no and _only, so a large site can keep the per-device
+  # series to the devices it alerts on. Matched against the device row, so an
+  # entry can name a property (vendor, model, ...) as well as an address; the
+  # rows are only read when one of the two is set.
+  my $device_acl = { no => setting('metrics_per_device_no'),
+                     only => setting('metrics_per_device_only') };
+  my $device_acl_set = grep { ref $_ eq ref [] ? scalar @$_ : length($_ // '') }
+                            values %$device_acl;
+  my %device_permitted;
+  my $device_ok = sub {
+    my ($tenant, $ip) = @_;
+    return 1 unless $device_acl_set;
+    $device_permitted{$tenant} //= { map { ($_->ip => 1) }
+      grep { permitted_by_acl($_, $device_acl) }
+      try { schema($tenant)->resultset('Device')->all } catch { () } };
+    return $device_permitted{$tenant}{$ip};
+  };
+
+  # -- Last job per device (optional) ----------------------------------------
+  # One series per device and action, so off by default. The job queue only
+  # keeps expire_jobs days and can be cleared by hand; scraping this keeps
+  # each device's job history in the metrics store instead.
+  if (setting('metrics_job_duration_per_device')) {
+    my $actions = setting('metrics_job_duration_actions');
+    $actions = [qw/discover macsuck arpnip/]
+      unless ref $actions eq ref [] and scalar @$actions;
+
+    my %rows;
+    foreach my $tenant (@tenants) {
+      $rows{$tenant} = [ try {
+        schema($tenant)->resultset('Virtual::DeviceLastJobs')
+          ->search({ action => { -in => $actions } })->hri->all;
+      } catch { () } ];
+    }
+
+    foreach my $m (
+      [ netdisco_device_last_job_timestamp_seconds => 'started_epoch',
+        'Unix time the most recent finished job started, per device and action' ],
+      [ netdisco_device_last_job_duration_seconds => 'duration',
+        'Duration in seconds of the most recent finished job, per device and action' ],
+    ) {
+      my ($metric, $col, $help) = @$m;
+      $output .= _header($metric, $help);
+      foreach my $tenant (@tenants) {
+        foreach my $row (@{ $rows{$tenant} }) {
+          next unless defined $row->{$col}
+            and $device_ok->($tenant, $row->{device});
+          $output .= _sample($metric, $row->{$col}, tenant => $tenant,
+            device => $row->{device}, action => $row->{action},
+            status => ($row->{status} // ''));
+        }
+      }
+      $output .= "\n";
+    }
+  }
+
+  # -- Per-device counts (optional) ------------------------------------------
+  # Each is one series per device, so each is off by default. Next to job
+  # durations they explain them: a macsuck that takes longer as the device
+  # learns more MACs is load, one that takes longer at the same count is not.
+  #
+  # Every device gets a sample, 0 when there is nothing to count: a device
+  # that loses its last neighbor reads 0 rather than dropping out of the
+  # metric, so an alert on 0 fires. A tenant whose query fails gets none.
+  my %device_ips;
+  my $per_device = sub {
+    my ($metric, $help, $rs_name, $cond, $col, $count) = @_;
+    $output .= _header($metric, $help);
+    foreach my $tenant (@tenants) {
+      my $rows = try {
+        [ schema($tenant)->resultset($rs_name)->search($cond, {
+          select   => [ "me.$col", { count => $count, -as => 'cnt' } ],
+          as       => [qw/device cnt/],
+          group_by => [ "me.$col" ],
+        })->hri->all ];
+      } catch { undef };
+      next unless $rows;
+      $device_ips{$tenant} //= [ try {
+        schema($tenant)->resultset('Device')->get_column('ip')->all
+      } catch { () } ];
+      my %cnt = map { ($_ => 0) } @{ $device_ips{$tenant} };
+      $cnt{ $_->{device} } = $_->{cnt} for @$rows;
+      $output .= _sample($metric, $cnt{$_}, tenant => $tenant, device => $_)
+        for grep { $device_ok->($tenant, $_) } sort keys %cnt;
+    }
+    $output .= "\n";
+  };
+
+  if (setting('metrics_ports_per_device')) {
+    foreach my $m (
+      [ netdisco_device_ports_total => {},
+        'Number of ports on this device' ],
+      [ netdisco_device_ports_oper_up => { up => 'up' },
+        'Number of ports on this device that are operationally up' ],
+      # a port with no status is counted as not up, so up and down add up
+      # to the total
+      [ netdisco_device_ports_oper_down => { up => [ { '!=' => 'up' }, undef ] },
+        'Number of ports on this device that are not operationally up' ],
+      [ netdisco_device_ports_admin_down => { up_admin => [ { '!=' => 'up' }, undef ] },
+        'Number of ports on this device that are not administratively up' ],
+    ) {
+      $per_device->($m->[0], $m->[2], 'DevicePort', $m->[1], 'ip', '*');
+    }
+  }
+
+  if (setting('metrics_macs_per_device')) {
+    $per_device->('netdisco_device_macs',
+      'Number of active MAC address entries on the ports of this device',
+      'Node', { active => 1 }, 'switch', '*');
+  }
+
+  if (setting('metrics_neighbors_per_device')) {
+    $per_device->('netdisco_device_neighbors',
+      'Number of distinct CDP/LLDP neighbors seen by this device',
+      'DevicePort', { remote_ip => { '!=' => undef } },
+      'ip', { distinct => 'me.remote_ip' });
+  }
+
+  if (setting('metrics_vlans_per_device')) {
+    $per_device->('netdisco_device_vlans',
+      'Number of VLANs on this device',
+      'DeviceVlan', {}, 'ip', '*');
+  }
 
   # -- SNMP connect failures (DeviceSkip table) ------------------------------
   $output .= _header('netdisco_snmp_failures_devices',

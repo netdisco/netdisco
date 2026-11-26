@@ -21,6 +21,7 @@ our @EXPORT_OK = qw/
   is_arpnipable   is_arpnipable_now
   is_macsuckable  is_macsuckable_now
   get_denied_actions
+  schedule_entry_denies
 /;
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -402,19 +403,35 @@ sub get_denied_actions {
           next;
       }
 
-      my $net = NetAddr::IP->new($sched->{device});
-      next if ($sched->{device}
-        and (!$net or $net->num == 0 or $net->addr eq '0.0.0.0'));
-
       push @badactions, $pseudo_action
-        if $sched->{device} and not acl_matches_only($device, $net->cidr);
-      push @badactions, $pseudo_action
-        if $sched->{no} and acl_matches($device, $sched->{no});
-      push @badactions, $pseudo_action
-        if $sched->{only} and not acl_matches_only($device, $sched->{only});
+        if schedule_entry_denies($device, $sched);
   }
 
   return List::MoreUtils::uniq @badactions;
+}
+
+=head2 schedule_entry_denies( $device, $entry )
+
+Given a Device row and a C<schedule> entry, returns true when the entry's
+C<device>, C<only> or C<no> leave the device out.
+
+A C<device> that is not a single valid range, or is C<0.0.0.0/0>, limits
+nothing; C<only> and C<no> still apply.
+
+=cut
+
+# shared by the skip list (get_denied_actions) and the scheduler job, which
+# filters itself because a worker beside a dedicated scheduler has no schedule
+sub schedule_entry_denies {
+  my ($device, $sched) = @_;
+
+  my $net = ($sched->{device} ? NetAddr::IP->new($sched->{device}) : undef);
+  undef $net if $net and ($net->num == 0 or $net->addr eq '0.0.0.0');
+
+  return 1 if $net and not acl_matches_only($device, $net->cidr);
+  return 1 if $sched->{no} and acl_matches($device, $sched->{no});
+  return 1 if $sched->{only} and not acl_matches_only($device, $sched->{only});
+  return 0;
 }
 
 1;
