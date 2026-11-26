@@ -246,10 +246,13 @@ subtest 'vrf_instances_for__incomplete_walk__still_returns_names' => sub {
 };
 
 # 3.985002 lists FRR's VRFs (snmp-info #685)
-subtest 'build_pl__snmp_info_floor__3_985002' => sub {
-  open my $fh, '<', 'Build.PL' or die "Build.PL: $!";
+subtest 'util_snmp__snmp_info_floor__3_985002' => sub {
+  my $file = 'lib/App/Netdisco/Util/SNMP.pm';
+  open my $fh, '<', $file or die "$file: $!";
   my $text = do { local $/; <$fh> };
-  like($text, qr/'SNMP::Info'\s*=>\s*'3\.985002'/, 'floor is 3.985002');
+  my ($floor) = $text =~ m/^use\s+SNMP::Info\s+([\d.]+)\s*;/m;
+  ok(defined $floor && version->parse($floor) >= version->parse('3.985002'),
+    'floor is at least 3.985002');
 };
 
 done_testing;

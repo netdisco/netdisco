@@ -51,9 +51,6 @@ sub new { my ($class, %vals) = @_; return bless { walk_failures => [], walk_stat
 sub walk_failures { $_[0]{walk_failures} }
 sub walk_status { $_[0]{walk_status}{$_[1]} }
 
-package PlainSNMP; # an SNMP::Info with no walk record
-sub new { return bless {}, shift }
-
 package FakeSNMP;
 our $AUTOLOAD;
 sub new { my ($class, %vals) = @_; return bless {%vals}, $class; }
@@ -153,12 +150,6 @@ subtest 'incomplete_walks_for__setting_off__returns_nothing' => sub {
   local config->{'enable_incomplete_walk_protection'} = 0;
   my $snmp = RecordingSNMP->new(walk_failures => [ outcome('i_index') ]);
   is_deeply [ incomplete_walks_for($device, $snmp, 0) ], [];
-};
-
-subtest 'incomplete_walks_for__snmp_without_walk_record__returns_nothing' => sub {
-  vars->{'incomplete_walks'}{ $device->ip }{'interfaces'} = [ outcome('i_index') ];
-  is_deeply [ incomplete_walks_for($device, PlainSNMP->new, 0, 'interfaces') ], [];
-  delete vars->{'incomplete_walks'};
 };
 
 subtest 'incomplete_walks_for__absent_reason_marked_complete__returned' => sub {

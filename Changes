@@ -13,6 +13,7 @@
 
   * #1847 backend names its tenant netdisco, so a worker keeps one database
     connection
+  * #1848 require Netdisco's SNMP::Info minimum when Netdisco loads it
   * #1849 Python worklets connect to PGPORT, not the web server's PORT
   * #1854 with multiple backends, a schedule entry's only/no apply on every
     backend
