@@ -77,6 +77,7 @@ lib/App/Netdisco/DB/Result/Virtual/ApRadioChannelPower.pm
 lib/App/Netdisco/DB/Result/Virtual/CidrIps.pm
 lib/App/Netdisco/DB/Result/Virtual/CidrIpsByDomain.pm
 lib/App/Netdisco/DB/Result/Virtual/DeviceDnsMismatch.pm
+lib/App/Netdisco/DB/Result/Virtual/DeviceLastJobs.pm
 lib/App/Netdisco/DB/Result/Virtual/DeviceLinks.pm
 lib/App/Netdisco/DB/Result/Virtual/DevicePlatforms.pm
 lib/App/Netdisco/DB/Result/Virtual/DevicePoeStatus.pm
@@ -449,6 +450,7 @@ share/python/netdisco/netdisco/worklet/stats/early.py
 share/python/netdisco/pyproject.toml
 share/python/netdisco/ruff.toml
 share/python/netdisco/tests/__init__.py
+share/python/netdisco/tests/test_database.py
 share/python/netdisco/tests/test_ssh.py
 share/python/tfsm/index
 share/python/tfsm/juniper_junos_show_bgp_summary.textfsm
@@ -828,10 +830,14 @@ xt/227-deploy-queues-stats.t
 xt/228-schema-108-subnet-indexes.t
 xt/229-db-deploy-postgres-floor.t
 xt/230-without-jit.t
+xt/231-metrics-device-last-jobs.t
+xt/232-metrics-device-counts.t
 xt/237-macsuck-no-unnamed-store.t
 xt/238-device-layer-features.t
 xt/239-scheduler-acl-entries.t
 xt/240-primeskiplist-concurrent.t
+xt/241-backend-tenant-default.t
+xt/242-snmp-info-minimum.t
 xt/30-backend-workers.t
 xt/31-loadmibsfromoids-guard.t
 xt/32-swagger-ui-guard.t

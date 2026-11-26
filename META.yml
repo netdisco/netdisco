@@ -30,7 +30,7 @@ name: App-Netdisco
 provides:
   App::Netdisco:
     file: lib/App/Netdisco.pm
-    version: '2.120000'
+    version: '2.121000'
   App::Netdisco::AnyEvent::Nbtstat:
     file: lib/App/Netdisco/AnyEvent/Nbtstat.pm
   App::Netdisco::Backend::Job:
@@ -156,6 +156,8 @@ provides:
     file: lib/App/Netdisco/DB/Result/Virtual/CidrIpsByDomain.pm
   App::Netdisco::DB::Result::Virtual::DeviceDnsMismatch:
     file: lib/App/Netdisco/DB/Result/Virtual/DeviceDnsMismatch.pm
+  App::Netdisco::DB::Result::Virtual::DeviceLastJobs:
+    file: lib/App/Netdisco/DB/Result/Virtual/DeviceLastJobs.pm
   App::Netdisco::DB::Result::Virtual::DeviceLinks:
     file: lib/App/Netdisco/DB/Result/Virtual/DeviceLinks.pm
   App::Netdisco::DB::Result::Virtual::DevicePlatforms:
@@ -706,7 +708,7 @@ requires:
   Command::Runner: '0'
   Compress::Raw::Bzip2: '2.031'
   Compress::Raw::Zlib: '2.220'
-  Convert::ASN1: '0.28'
+  Convert::ASN1: '0.37'
   Crypt::CBC: '3.07'
   Crypt::SaltedHash: '0.10'
   Crypt::URandom: '0.55'
@@ -716,7 +718,7 @@ requires:
   DBIx::Class: '0.082844'
   DBIx::Class::Helpers: '2.037000'
   Daemon::Control: '0.001006'
-  Dancer: '1.3132'
+  Dancer: '1.3400'
   Dancer::Plugin::Auth::Extensible: '0.30'
   Dancer::Plugin::DBIC: '0.2001'
   Dancer::Plugin::Passphrase: v2.0.1
@@ -751,7 +753,7 @@ requires:
   IPC::Run: '20231003.0'
   JSON: '2.90'
   JSON::PP: '0'
-  JSON::XS: '4.04'
+  JSON::XS: '4.05'
   List::MoreUtils: '0.428'
   List::SomeUtils::XS: '0.59'
   List::Util: '1.70'
@@ -761,7 +763,7 @@ requires:
   Module::Load::Conditional: '0.66'
   Module::Metadata: '1.000015'
   Moo: '1.001000'
-  Net::DNS: '1.57'
+  Net::DNS: '1.58'
   Net::Domain: '1.23'
   Net::LDAP: '0'
   Net::OpenSSH: '0'
@@ -828,5 +830,5 @@ resources:
   homepage: http://netdisco.org/
   license: http://opensource.org/licenses/BSD-3-Clause
   repository: https://github.com/netdisco/netdisco
-version: '2.120000'
+version: '2.121000'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.020'
