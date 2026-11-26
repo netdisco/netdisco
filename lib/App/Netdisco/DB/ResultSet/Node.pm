@@ -156,12 +156,10 @@ sub delete {
 
       # a MAC's IP, NetBIOS, monitor and wireless rows belong to the host,
       # not to one switch, so they are left alone while it is active elsewhere
-      my $host_gone = { mac => {
-        '-in'     => $nodes->as_query,
-        '-not_in' => $schema->resultset('Node')->search(
-          { mac => { '-in' => $nodes->as_query }, active => 1 },
-          { columns => 'mac' })->as_query,
-      }};
+      my $active_elsewhere = $schema->resultset('Node')->search(
+        { mac => { '-in' => $nodes->as_query }, active => 1 },
+        { columns => 'mac' });
+      my $host_gone = { mac => { '-in' => $nodes->except($active_elsewhere)->as_query } };
 
       $schema->resultset($_)->search($host_gone)->update({ active => \'false' })
         for qw/NodeIp NodeNbt NodeMonitor/;
@@ -182,21 +180,12 @@ sub delete {
       # a MAC's other rows are only deleted when no node row outside this set,
       # active or archived, still has the MAC; node rows are compared on their
       # whole key, since the same port name exists on many switches
-      my @key_aq = @{${ $self->search(undef,
-        { columns => [qw/mac switch port vlan/] })->as_query }};
-      my $key_restrict = shift @key_aq;
-
-      my $others = $schema->resultset('Node')->search(
-        { mac => { '-in' => $nodes->as_query } },
-        { columns => [qw/mac switch port vlan/] });
-      my @others_aq = @{${ $others->as_query }};
-      my $others_sql = shift @others_aq;
-
-      my $host_gone = { mac => {
-        '-in'     => $nodes->as_query,
-        '-not_in' => \[ "SELECT mac FROM ($others_sql EXCEPT $key_restrict) others",
-                        @others_aq, @key_aq ],
-      }};
+      my $columns = [qw/mac switch port vlan/];
+      my $still_used = $schema->resultset('Node')
+        ->search({ mac => { '-in' => $nodes->as_query } }, { columns => $columns })
+        ->except($self->search_rs(undef, { columns => $columns }))
+        ->search(undef, { columns => 'mac' });
+      my $host_gone = { mac => { '-in' => $nodes->except($still_used)->as_query } };
 
       $schema->resultset($_)->search($host_gone)->delete
         for qw/NodeIp NodeNbt NodeMonitor NodeWireless/;
