@@ -1,0 +1,197 @@
+#prompt: aoscx1# 
+#--- show vrf
+VRF Configuration:
+------------------
+VRF Name   : default
+	Interfaces             Status
+	-----------------------------
+	1/1/6                    down
+	1/1/7                    down
+	1/1/8                    down
+	1/1/9                    down
+	1/1/10                   down
+	1/1/11                   down
+	1/1/12                   down
+	1/1/13                   down
+	1/1/14                   down
+	1/1/15                   down
+	1/1/16                   down
+	1/1/17                   down
+	1/1/18                   down
+	1/1/19                   down
+	1/1/20                   down
+	1/1/21                   down
+	1/1/22                   down
+	1/1/23                   down
+	1/1/24                   down
+	1/1/25                   down
+	1/1/26                   down
+	1/1/27                   down
+	1/1/28                   down
+	1/1/29                   down
+	1/1/30                   down
+	1/1/31                   down
+	1/1/32                   down
+	1/1/33                   down
+	1/1/34                   down
+	1/1/35                   down
+	1/1/36                   down
+	1/1/37                   down
+	1/1/38                   down
+	1/1/39                   down
+	1/1/40                   down
+	1/1/41                   down
+	1/1/42                   down
+	1/1/43                   down
+	1/1/44                   down
+	1/1/45                   down
+	1/1/46                   down
+	1/1/47                   down
+	1/1/48                   down
+	1/1/49                   down
+	1/1/50                   down
+	1/1/51                   down
+	1/1/52                   down
+
+VRF Name   : blue
+	Interfaces             Status
+	-----------------------------
+	1/1/2                    up
+	1/1/4                    up
+
+VRF Name   : green
+	Interfaces             Status
+	-----------------------------
+	1/1/5                    up
+
+VRF Name   : grey
+	Interfaces             Status
+	-----------------------------
+	loopback1                up
+
+VRF Name   : red
+	Interfaces             Status
+	-----------------------------
+	1/1/1                    up
+	1/1/3                    up
+#--- show arp all-vrfs
+
+IPv4 Address     MAC                Port         Physical Port                                      State      VRF                             
+-----------------------------------------------------------------------------------------------------------------------------------------
+192.0.2.2        02:00:00:00:0a:01  1/1/1        1/1/1                                             reachable  red                              
+198.51.100.2        02:00:00:00:0a:03  1/1/3        1/1/3                                             reachable  red                              
+192.0.2.2        02:00:00:00:0a:02  1/1/2        1/1/2                                             reachable  blue                             
+203.0.113.2        02:00:00:00:0a:03  1/1/4        1/1/4                                             reachable  blue                             
+
+Total Number Of ARP Entries Listed: 4.
+-----------------------------------------------------------------------------------------------------------------------------------------
+#--- show ipv6 neighbors all-vrfs
+
+IPv6 Address                                   MAC                Port         Physical Port                                      State      VRF                             
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2001:db8:95::2                                 02:00:00:00:0a:01  1/1/1        1/1/1                                             reachable  red                              
+fe80::ff:fe00:a03                              02:00:00:00:0a:03  1/1/4        1/1/4                                             reachable  blue                             
+fe80::ff:fe00:a02                              02:00:00:00:0a:02  1/1/2        1/1/2                                             reachable  blue                             
+2001:db8:97::2                                 02:00:00:00:0a:03  1/1/4        1/1/4                                             reachable  blue                             
+fe80::ff:fe00:a01                              02:00:00:00:0a:01  1/1/1        1/1/1                                             reachable  red                              
+fe80::ff:fe00:a03                              02:00:00:00:0a:03  1/1/3        1/1/3                                             reachable  red                              
+2001:db8:98::2                                 02:00:00:00:0a:04  1/1/5        1/1/5                                             reachable  green                            
+2001:db8:95::2                                 02:00:00:00:0a:02  1/1/2        1/1/2                                             reachable  blue                             
+fe80::3                                        02:00:00:00:0a:02  1/1/2        1/1/2                                             reachable  blue                             
+fe80::ff:fe00:a04                              02:00:00:00:0a:04  1/1/5        1/1/5                                             reachable  green                            
+fe80::2                                        02:00:00:00:0a:03  1/1/4        1/1/4                                             reachable  blue                             
+fe80::3                                        02:00:00:00:0a:03  1/1/3        1/1/3                                             reachable  red                              
+2001:db8:96::2                                 02:00:00:00:0a:03  1/1/3        1/1/3                                             reachable  red                              
+fe80::2                                        02:00:00:00:0a:04  1/1/5        1/1/5                                             reachable  green                            
+fe80::2                                        02:00:00:00:0a:01  1/1/1        1/1/1                                             reachable  red                              
+
+Total Number Of IPv6 Neighbors Entries Listed: 15.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#--- show ip route all-vrfs
+
+Displaying ipv4 routes selected for forwarding
+
+Origin Codes: C - connected, S - static, L - local
+              R - RIP, B - BGP, O - OSPF, D - DHCP
+              U - Unnumbered
+Type Codes:   E - External BGP, I - Internal BGP, V - VPN, EV - EVPN
+              IA - OSPF internal area, E1 - OSPF external type 1
+              E2 - OSPF external type 2   
+
+VRF: blue
+
+Prefix              Nexthop                                  Interface     VRF(egress)       Origin/   Distance/    Age
+                                                                                             Type      Metric
+--------------------------------------------------------------------------------------------------------
+192.0.2.0/24        -                                        1/1/2         -                 C         [0/0]        -            
+192.0.2.1/32        -                                        1/1/2         -                 L         [0/0]        -            
+203.0.113.0/24        -                                        1/1/4         -                 C         [0/0]        -            
+203.0.113.1/32        -                                        1/1/4         -                 L         [0/0]        -            
+
+VRF: grey
+
+Prefix              Nexthop                                  Interface     VRF(egress)       Origin/   Distance/    Age
+                                                                                             Type      Metric
+--------------------------------------------------------------------------------------------------------
+192.0.2.99/32        -                                        loopback1     -                 L         [0/0]        -            
+
+VRF: red
+
+Prefix              Nexthop                                  Interface     VRF(egress)       Origin/   Distance/    Age
+                                                                                             Type      Metric
+--------------------------------------------------------------------------------------------------------
+192.0.2.0/24        -                                        1/1/1         -                 C         [0/0]        -            
+192.0.2.1/32        -                                        1/1/1         -                 L         [0/0]        -            
+198.51.100.0/24        -                                        1/1/3         -                 C         [0/0]        -            
+198.51.100.1/32        -                                        1/1/3         -                 L         [0/0]        -            
+
+Total Route Count : 9
+#--- show ipv6 route all-vrfs
+
+Displaying ipv6 routes selected for forwarding
+
+Origin Codes: C - connected, S - static, L - local
+              R - RIP, B - BGP, O - OSPF, D - DHCP
+              U - Unnumbered
+Type Codes:   E - External BGP, I - Internal BGP, V - VPN, EV - EVPN
+              IA - OSPF internal area, E1 - OSPF external type 1
+              E2 - OSPF external type 2   
+
+VRF: blue
+
+Prefix                                       Nexthop                                  Interface     VRF(egress)       Origin/   Distance/    Age
+                                                                                                                      Type      Metric
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+2001:db8:95::/64                             -                                        1/1/2         -                 C         [0/0]        -            
+2001:db8:95::1/128                           -                                        1/1/2         -                 L         [0/0]        -            
+2001:db8:97::/64                             -                                        1/1/4         -                 C         [0/0]        -            
+2001:db8:97::1/128                           -                                        1/1/4         -                 L         [0/0]        -            
+
+VRF: green
+
+Prefix                                       Nexthop                                  Interface     VRF(egress)       Origin/   Distance/    Age
+                                                                                                                      Type      Metric
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+2001:db8:98::/64                             -                                        1/1/5         -                 C         [0/0]        -            
+2001:db8:98::1/128                           -                                        1/1/5         -                 L         [0/0]        -            
+
+VRF: grey
+
+Prefix                                       Nexthop                                  Interface     VRF(egress)       Origin/   Distance/    Age
+                                                                                                                      Type      Metric
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+2001:db8:99::1/128                           -                                        loopback1     -                 L         [0/0]        -            
+
+VRF: red
+
+Prefix                                       Nexthop                                  Interface     VRF(egress)       Origin/   Distance/    Age
+                                                                                                                      Type      Metric
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+2001:db8:95::/64                             -                                        1/1/1         -                 C         [0/0]        -            
+2001:db8:95::1/128                           -                                        1/1/1         -                 L         [0/0]        -            
+2001:db8:96::/64                             -                                        1/1/3         -                 C         [0/0]        -            
+2001:db8:96::1/128                           -                                        1/1/3         -                 L         [0/0]        -            
+
+Total Route Count : 11
+#--- no page
+#--- exit

@@ -1,0 +1,152 @@
+#prompt: 
+#--- show vrf
+VRF Configuration:
+------------------
+VRF Name   : default
+	Interfaces             Status
+	-----------------------------
+	1/1/1                    up
+	1/1/6                    down
+	1/1/7                    down
+	1/1/8                    down
+	1/1/9                    down
+	1/1/10                   down
+	1/1/11                   down
+	1/1/12                   down
+	1/1/13                   down
+	1/1/14                   down
+	1/1/15                   down
+	1/1/16                   down
+	1/1/17                   down
+	1/1/18                   down
+	1/1/19                   down
+	1/1/20                   down
+	1/1/21                   down
+	1/1/22                   down
+	1/1/23                   down
+	1/1/24                   down
+	1/1/25                   down
+	1/1/26                   down
+	1/1/27                   down
+	1/1/28                   down
+	1/1/29                   down
+	1/1/30                   down
+	1/1/31                   down
+	1/1/32                   down
+	1/1/33                   down
+	1/1/34                   down
+	1/1/35                   down
+	1/1/36                   down
+	1/1/37                   down
+	1/1/38                   down
+	1/1/39                   down
+	1/1/40                   down
+	1/1/41                   down
+	1/1/42                   down
+	1/1/43                   down
+	1/1/44                   down
+	1/1/45                   down
+	1/1/46                   down
+	1/1/47                   down
+	1/1/48                   down
+	1/1/49                   down
+	1/1/50                   down
+	1/1/51                   down
+	1/1/52                   down
+	loopback0                up
+	loopback1                up
+	vlan4000                 up
+
+VRF Name   : KA
+	Interfaces             Status
+	-----------------------------
+	1/1/3                    up
+
+VRF Name   : blue
+	Interfaces             Status
+	-----------------------------
+	vlan50                   up
+
+VRF Name   : red
+	Interfaces             Status
+	-----------------------------
+	vlan10                   up
+#--- show arp all-vrfs
+
+IPv4 Address     MAC                Port         Physical Port                                      State      VRF                             
+-----------------------------------------------------------------------------------------------------------------------------------------
+198.51.100.24     02:00:cb:15:00:71  vlan50       vxlan1(192.0.2.4)                                permanent  blue                             
+198.51.100.23     02:00:cb:15:00:51  vlan50       vxlan1(192.0.2.3)                                permanent  blue                             
+198.51.100.23     02:00:cb:15:00:41  vlan10       vxlan1(192.0.2.3)                                permanent  red                              
+198.51.100.24     02:00:cb:15:00:61  vlan10       vxlan1(192.0.2.4)                                permanent  red                              
+203.0.113.7       02:00:00:0b:c8:26  1/1/3        1/1/3                                             reachable  KA                               
+203.0.113.5       02:00:00:0b:c8:26  vlan4000     lag256                                            reachable  default                          
+203.0.113.1       02:00:00:0b:3f:e4  1/1/1        1/1/1                                             reachable  default                          
+198.51.100.22     02:00:cb:15:00:31  vlan10       1/1/5                                             reachable  red                              
+
+Total Number Of ARP Entries Listed: 8.
+-----------------------------------------------------------------------------------------------------------------------------------------
+#--- show ipv6 neighbors all-vrfs
+
+IPv6 Address                                   MAC                Port         Physical Port                                      State      VRF                             
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Total Number Of IPv6 Neighbors Entries Listed: 0.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#--- show ip route all-vrfs
+
+Displaying ipv4 routes selected for forwarding
+
+Origin Codes: C - connected, S - static, L - local
+              R - RIP, B - BGP, O - OSPF, D - DHCP
+              U - Unnumbered
+Type Codes:   E - External BGP, I - Internal BGP, V - VPN, EV - EVPN
+              IA - OSPF internal area, E1 - OSPF external type 1
+              E2 - OSPF external type 2   
+
+VRF: KA
+
+Prefix              Nexthop                                  Interface     VRF(egress)       Origin/   Distance/    Age
+                                                                                             Type      Metric
+--------------------------------------------------------------------------------------------------------
+203.0.113.6/31       -                                        1/1/3         -                 C         [0/0]        -            
+203.0.113.6/32       -                                        1/1/3         -                 L         [0/0]        -            
+
+VRF: blue
+
+Prefix              Nexthop                                  Interface     VRF(egress)       Origin/   Distance/    Age
+                                                                                             Type      Metric
+--------------------------------------------------------------------------------------------------------
+198.51.100.0/24      -                                        vlan50        -                 C         [0/0]        -            
+198.51.100.1/32      -                                        vlan50        -                 L         [0/0]        -            
+
+VRF: default
+
+Prefix              Nexthop                                  Interface     VRF(egress)       Origin/   Distance/    Age
+                                                                                             Type      Metric
+--------------------------------------------------------------------------------------------------------
+192.0.2.3/32       203.0.113.1                               1/1/1         -                 O         [110/100]    00h:12m:50s  
+192.0.2.4/32       203.0.113.1                               1/1/1         -                 O         [110/200]    00h:12m:50s  
+192.0.2.12/32      -                                        loopback1     -                 L         [0/0]        -            
+192.0.2.101/32       -                                        loopback0     -                 L         [0/0]        -            
+192.0.2.102/32       203.0.113.5                               vlan4000      -                 O         [110/100]    00h:12m:48s  
+192.0.2.103/32       203.0.113.1                               1/1/1         -                 O         [110/100]    00h:12m:50s  
+192.0.2.104/32       203.0.113.1                               1/1/1         -                 O         [110/200]    00h:12m:50s  
+203.0.113.0/31       -                                        1/1/1         -                 C         [0/0]        -            
+203.0.113.0/32       -                                        1/1/1         -                 L         [0/0]        -            
+203.0.113.2/31       203.0.113.1                               1/1/1         -                 O         [110/200]    00h:12m:48s  
+                    203.0.113.5                               vlan4000      -                           [110/200]    00h:12m:48s  
+203.0.113.4/31       -                                        vlan4000      -                 C         [0/0]        -            
+203.0.113.4/32       -                                        vlan4000      -                 L         [0/0]        -            
+203.0.113.8/31       203.0.113.1                               1/1/1         -                 O         [110/200]    00h:12m:50s  
+
+VRF: red
+
+Prefix              Nexthop                                  Interface     VRF(egress)       Origin/   Distance/    Age
+                                                                                             Type      Metric
+--------------------------------------------------------------------------------------------------------
+198.51.100.0/24      -                                        vlan10        -                 C         [0/0]        -            
+198.51.100.1/32      -                                        vlan10        -                 L         [0/0]        -            
+192.0.2.244/32       192.0.2.4                               -             -                 B/EV      [200/0]      00h:06m:47s  
+
+Total Route Count : 20
