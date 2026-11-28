@@ -1,0 +1,10 @@
+#--- show vrf
+Invalid input: vrf
+#--- show arp all-vrfs
+Invalid input: arp
+#--- show ipv6 neighbors all-vrfs
+Invalid input: ipv6
+#--- show ip route all-vrfs
+Invalid input: ip
+#--- show ipv6 route all-vrfs
+Invalid input: ipv6
