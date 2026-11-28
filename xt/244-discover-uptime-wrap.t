@@ -240,6 +240,16 @@ subtest 'uptime_wrap__engine_lags_sysuptime_across_a_wrap__counts_the_wrap' => s
   is $device->uptime, $uptime + $WRAP, 'uptime wrapped once though engine time has not';
 };
 
+subtest 'uptime_wrap__no_engine_time_placeholder_row__placeholder_does_not_vote' => sub {
+  my $uptime = 110604316;
+  my $ports = catalyst_ports($uptime, 2, 858993459);
+  my ($job, $device) = run_discover(uptime => $uptime, ports => $ports);
+  is $device->uptime, $uptime, 'uptime is not wrapped';
+  my $lastchange = stored_lastchange();
+  is $lastchange->{"Port$_"}, $uptime - $DAY, "Port$_ keeps its last change" for 1, 10, 100, 200;
+  is $lastchange->{2}, 0, 'placeholder row stored with last change 0';
+};
+
 subtest 'uptime_wrap__no_engine_time_real_port_ahead__wrap_applied_to_every_port' => sub {
   my $uptime = 50000000;
   my $ports = [
@@ -272,6 +282,27 @@ subtest 'uptime_wrap__engine_time_disagrees__falls_back_to_lastchange_check' => 
   my ($job, $device) = run_discover(uptime => $uptime, engine => 5, ports => $ports);
   is $device->uptime, $uptime + $WRAP, 'uptime wrapped by the lastchange check';
   is stored_lastchange()->{Port1}, $uptime - $DAY + $WRAP, 'port corrected';
+};
+
+subtest 'uptime_wrap__row_with_type_but_no_descr__still_votes' => sub {
+  my $uptime = 50000000;
+  my $ports = [
+    [ 1, 'Port1', 'ethernetCsmacd', $uptime - $DAY ],
+    [ 2, undef, 'ethernetCsmacd', 4000000000 ],
+  ];
+  my ($job, $device) = run_discover(uptime => $uptime, ports => $ports);
+  is $device->uptime, $uptime + $WRAP, 'uptime wrapped by the row with a type';
+  is stored_lastchange()->{2}, 4000000000, 'its last change kept';
+};
+
+subtest 'uptime_wrap__short_descr_walk_no_engine_time__every_row_votes' => sub {
+  my $uptime = 110604316;
+  my $ports = catalyst_ports($uptime, 2, 858993459);
+  my ($job, $device) = run_discover(uptime => $uptime, ports => $ports,
+    fail_on_read => { i_description => { method => 'i_description', leaf => 'MIB::i_description',
+      reason => 'timeout', rows => 1, walk => 'bulkwalk', complete => 0 } });
+  is $device->uptime, $uptime + $WRAP, 'a row missing its descr after a short walk still votes';
+  is scalar(grep { $_->[0] eq 'DevicePort' } @upserts), 0, 'stored ports kept';
 };
 
 done_testing;

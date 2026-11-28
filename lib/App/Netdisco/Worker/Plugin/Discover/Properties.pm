@@ -877,8 +877,16 @@ register_worker({ phase => 'early', driver => 'snmp',
   my @uptime_entries = grep { exists $deviceports{ $interfaces->{$_} // '' } }
                        sort keys %$interfaces;
 
+  # a short walk can leave a real port without its descr or type
+  my %placeholder;
+  if (not incomplete_walks_for($device, $snmp, $walk_mark, qw/i_description i_type/)) {
+      %placeholder = map { ($_ => 1) }
+        grep { _is_placeholder_row($i_descr->{$_}, $i_type->{$_}) } @uptime_entries;
+  }
+
   my $dev_uptime_wrapped = $engine_wraps // _lastchange_wrap_guess(
-    $device, $dev_uptime, $i_lastchange, $interfaces, \@uptime_entries);
+    $device, $dev_uptime, $i_lastchange, $interfaces,
+    [ grep { not $placeholder{$_} } @uptime_entries ]);
 
   if ($dev_uptime_wrapped > 0) {
       debug sprintf ' [%s] interfaces - device uptime wrapped %d times - correcting',
@@ -888,8 +896,9 @@ register_worker({ phase => 'early', driver => 'snmp',
 
   foreach my $entry (@uptime_entries) {
       my $port = $interfaces->{$entry};
-      $deviceports{$port}->{lastchange} = _wrapped_lastchange(($i_lastchange->{$entry} || 0),
-        $dev_uptime, $dev_uptime_wrapped, defined $engine_wraps);
+      $deviceports{$port}->{lastchange} = $placeholder{$entry} ? 0
+        : _wrapped_lastchange(($i_lastchange->{$entry} || 0),
+            $dev_uptime, $dev_uptime_wrapped, defined $engine_wraps);
   }
 
   # must do this after building %deviceports so that we can set is_master
@@ -1043,6 +1052,13 @@ sub _engine_time_wraps {
   my $wraps = int( $ahead / 2**32 + 0.5 );
   return if abs($ahead - $wraps * 2**32) > ENGINE_TIME_SKEW;
   return $wraps;
+}
+
+# a row with neither ifDescr nor ifType is not a conforming interface, and some
+# agents give it a garbage ifLastChange
+sub _is_placeholder_row {
+  my ($descr, $type) = @_;
+  return (($descr // '') !~ m/\S/ and ($type // '') !~ m/\S/);
 }
 
 # without engine time, a port changed after sysUpTime is taken as one wrap;
