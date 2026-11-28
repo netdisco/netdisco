@@ -27,6 +27,9 @@ use JSON::PP ();
 use Path::Class qw/file dir/;
 use Encode;
 
+# allowed difference between snmpEngineTime and sysUpTime, in TimeTicks
+use constant ENGINE_TIME_SKEW => 100 * 86400;
+
 register_worker({ phase => 'early', driver => 'snmp',
     title => 'basic device details (and creation)'}, sub {
   my ($job, $workerconf) = @_;
@@ -733,19 +736,8 @@ register_worker({ phase => 'early', driver => 'snmp',
         $device->ip);
   }
 
-  # used to track how many times the device uptime wrapped
-  my $dev_uptime_wrapped = 0;
-
-  # use SNMP-FRAMEWORK-MIB::snmpEngineTime if available to
-  # fix device uptime if wrapped
-  if (defined $snmp->snmpEngineTime) {
-      $dev_uptime_wrapped = int( $snmp->snmpEngineTime * 100 / 2**32 );
-      if ($dev_uptime_wrapped > 0) {
-          debug sprintf ' [%s] interfaces - device uptime wrapped %d times - correcting',
-            $device->ip, $dev_uptime_wrapped;
-          $device->uptime( $dev_uptime + $dev_uptime_wrapped * 2**32 );
-      }
-  }
+  # undef unless snmpEngineTime is present and agrees with sysUpTime
+  my $engine_wraps = _engine_time_wraps($dev_uptime, $snmp->snmpEngineTime);
 
   # build device interfaces suitable for DBIC
   my %deviceports;
@@ -882,37 +874,31 @@ register_worker({ phase => 'early', driver => 'snmp',
   }
 
   # 981 must do this after filtering %deviceports to avoid weird data
-  UPTIME: foreach my $entry (sort keys %$interfaces) {
+  my @uptime_entries = grep { exists $deviceports{ $interfaces->{$_} // '' } }
+                       sort keys %$interfaces;
+
+  # a short walk can leave a real port without its descr or type
+  my %placeholder;
+  if (not incomplete_walks_for($device, $snmp, $walk_mark, qw/i_description i_type/)) {
+      %placeholder = map { ($_ => 1) }
+        grep { _is_placeholder_row($i_descr->{$_}, $i_type->{$_}) } @uptime_entries;
+  }
+
+  my $dev_uptime_wrapped = $engine_wraps // _lastchange_wrap_guess(
+    $device, $dev_uptime, $i_lastchange, $interfaces,
+    [ grep { not $placeholder{$_} } @uptime_entries ]);
+
+  if ($dev_uptime_wrapped > 0) {
+      debug sprintf ' [%s] interfaces - device uptime wrapped %d times - correcting',
+        $device->ip, $dev_uptime_wrapped;
+      $device->uptime( $dev_uptime + $dev_uptime_wrapped * 2**32 );
+  }
+
+  foreach my $entry (@uptime_entries) {
       my $port = $interfaces->{$entry};
-      next unless exists $deviceports{$port};
-      my $lc = $i_lastchange->{$entry} || 0;
-
-      # allow three minutes skew during boot, in case lc is larger than uptime
-      # because of different counters starting at different times
-      if (not $dev_uptime_wrapped and $lc > ($dev_uptime + 18000)) {
-          debug sprintf ' [%s] interfaces - device uptime wrapped (%s) - correcting',
-            $device->ip, $port;
-          $device->uptime( $dev_uptime + 2**32 );
-          $dev_uptime_wrapped = 1;
-      }
-
-      if ($device->is_column_changed('uptime') and $lc and $lc < $dev_uptime) {
-          # ambiguous: lastchange could be sysUptime before or after wrap
-          if ($dev_uptime > 30000 and $lc < 30000) {
-              # uptime wrap more than 5min ago but lastchange within 5min
-              # assume lastchange was directly after boot -> no action
-          }
-          else {
-              # uptime wrap less than 5min ago or lastchange > 5min ago
-              # to be on safe side, assume lastchange after counter wrap
-              debug sprintf
-                ' [%s] interfaces - correcting LastChange for %s, assuming sysUptime wrap',
-                $device->ip, $port;
-              $lc += $dev_uptime_wrapped * 2**32;
-          }
-      }
-
-      $deviceports{$port}->{lastchange} = $lc;
+      $deviceports{$port}->{lastchange} = $placeholder{$entry} ? 0
+        : _wrapped_lastchange(($i_lastchange->{$entry} || 0),
+            $dev_uptime, $dev_uptime_wrapped, defined $engine_wraps);
   }
 
   # must do this after building %deviceports so that we can set is_master
@@ -1052,6 +1038,58 @@ sub _configured_custom_fields {
         ? decode_text_with($fields->{$field}, []) : undef;
   }
   return $coder->encode(\%configured);
+}
+
+# snmpEngineTime counts seconds and does not wrap within a device's life, so
+# when it agrees with sysUpTime it says how often sysUpTime has wrapped. Some
+# agents start the two clocks minutes apart, so the agreement allowed is a day,
+# and the count is rounded because engine time can lag just behind a wrap.
+sub _engine_time_wraps {
+  my ($dev_uptime, $engine_time) = @_;
+  return unless defined $engine_time and $engine_time =~ m/^\d+$/;
+
+  my $ahead = $engine_time * 100 - $dev_uptime;
+  my $wraps = int( $ahead / 2**32 + 0.5 );
+  return if abs($ahead - $wraps * 2**32) > ENGINE_TIME_SKEW;
+  return $wraps;
+}
+
+# a row with neither ifDescr nor ifType is not a conforming interface, and some
+# agents give it a garbage ifLastChange
+sub _is_placeholder_row {
+  my ($descr, $type) = @_;
+  return (($descr // '') !~ m/\S/ and ($type // '') !~ m/\S/);
+}
+
+# without engine time, a port changed after sysUpTime is taken as one wrap;
+# allow three minutes skew during boot because the counters start apart
+sub _lastchange_wrap_guess {
+  my ($device, $dev_uptime, $i_lastchange, $interfaces, $entries) = @_;
+  foreach my $entry (@$entries) {
+      next unless ($i_lastchange->{$entry} || 0) > ($dev_uptime + 18000);
+      debug sprintf ' [%s] interfaces - device uptime wrapped (%s) - correcting',
+        $device->ip, $interfaces->{$entry};
+      return 1;
+  }
+  return 0;
+}
+
+sub _wrapped_lastchange {
+  my ($lc, $dev_uptime, $wraps, $engine_trusted) = @_;
+  return $lc unless $lc;
+
+  if ($lc > $dev_uptime) {
+      # RFC 2863 gives 0 for a change before the agent started
+      return 0 if $engine_trusted and not $wraps;
+      # a change before the latest wrap
+      return $lc + ($wraps ? $wraps - 1 : 0) * 2**32;
+  }
+
+  return $lc unless $wraps;
+  # ambiguous: uptime wrapped more than 5min ago but lastchange is within
+  # 5min, so assume lastchange was directly after boot
+  return $lc if $dev_uptime > 30000 and $lc < 30000;
+  return $lc + $wraps * 2**32;
 }
 
 # a walk that was cut short must not look like vanished ports, so the stored
