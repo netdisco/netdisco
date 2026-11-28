@@ -1,4 +1,3 @@
-#prompt: aoscx1# 
 #--- show vrf
 Invalid input: vrf
 #--- show arp all-vrfs

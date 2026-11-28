@@ -15,7 +15,7 @@ use Test::Netdisco::FakeSSH;
 
 use Dancer qw/:moose :script !pass/;
 
-# ArubaCX arpnip_by_vrf and subnets_by_vrf against AOS-CX 10.16
+# ArubaCX arpnip, arpnip_by_vrf and subnets_by_vrf against AOS-CX 10.16
 # captures: aoscx1 has four user VRFs with overlapping addresses and an empty
 # default table, leaf1 an EVPN leaf with default-table rows and an empty IPv6
 # table printed without its VRF column. Every row names its VRF and every
@@ -115,13 +115,13 @@ subtest 'arubacx_arpnip_by_vrf__line_that_is_not_a_row__family_unread' => sub {
 };
 
 subtest 'arubacx_arpnip_by_vrf__empty_output__family_unread' => sub {
-  (my $text = fixture_text('aoscx1')) =~ s/^(#--- show arp all-vrfs\n).*?(?=^#--- )/$1/ms;
+  (my $text = fixture_text('aoscx1')) =~ s/^(#--- show arp all-vrfs\n).*?(?=^#--- |\z)/$1/ms;
   my $result = $CX->arpnip_by_vrf('aoscx1', Test::Netdisco::FakeSSH->new(text => $text), {});
   is_deeply $result->{families}, [6], 'no output is not an empty table';
 };
 
 subtest 'arubacx_arpnip_by_vrf__empty_vrf_list__list_not_complete' => sub {
-  (my $text = fixture_text('aoscx1')) =~ s/^(#--- show vrf\n).*?(?=^#--- )/$1/ms;
+  (my $text = fixture_text('aoscx1')) =~ s/^(#--- show vrf\n).*?(?=^#--- |\z)/$1/ms;
   my $result = $CX->arpnip_by_vrf('aoscx1', Test::Netdisco::FakeSSH->new(text => $text), {});
   is $result->{vrf_list_complete}, 0, 'empty output is not an empty list';
 };
@@ -193,7 +193,7 @@ subtest 'arubacx_subnets_by_vrf__line_that_is_not_a_route__family_contributes_no
 };
 
 subtest 'arubacx_subnets_by_vrf__empty_output__family_contributes_nothing' => sub {
-  (my $text = fixture_text('aoscx1')) =~ s/^(#--- show ipv6 route all-vrfs\n).*?(?=^#--- )/$1/ms;
+  (my $text = fixture_text('aoscx1')) =~ s/^(#--- show ipv6 route all-vrfs\n).*?(?=^#--- |\z)/$1/ms;
   my $ssh = Test::Netdisco::FakeSSH->new(text => $text);
   my @logged;
   no warnings 'redefine';
@@ -207,15 +207,45 @@ subtest 'arubacx_subnets_by_vrf__both_tables_fail__returns_undef' => sub {
   is $CX->subnets_by_vrf('aoscx1', fake_ssh('aoscx1-auditors'), {}), undef, 'nothing read';
 };
 
-subtest 'arubacx_arpnip__lab_capture__unchanged_from_today' => sub {
+subtest 'arubacx_arpnip__lab_capture__both_families_without_vrf' => sub {
   my $ssh = fake_ssh('aoscx1');
-  my $guard = $ssh->install_expect;
   my @rows = $CX->arpnip('aoscx1', $ssh, {});
-  is_deeply [$ssh->commands], ['no page', $ARP, 'exit'], 'the pty commands';
-  is_deeply [ sort map { "$_->{ip} $_->{mac}" } @rows ], [
+  is_deeply [$ssh->commands], [$ARP, $ND], 'the two all-vrfs tables, no VRF list';
+  is scalar(@rows), 19, 'four ARP rows and fifteen neighbors';
+  is_deeply [ sort map { "$_->{ip} $_->{mac}" } grep { $_->{ip} !~ m/:/ } @rows ], [
     '192.0.2.2 02:00:00:00:0a:01', '192.0.2.2 02:00:00:00:0a:02',
     '198.51.100.2 02:00:00:00:0a:03', '203.0.113.2 02:00:00:00:0a:03',
-  ], 'IPv4 rows without their VRF';
+  ], 'IPv4 rows';
+  is_deeply [ sort keys %{ $rows[0] } ], [qw/ip mac/], 'no VRF in a row';
+};
+
+subtest 'arubacx_arpnip__short_ipv6_table__rows_read_still_returned' => sub {
+  my @rows = $CX->arpnip('aoscx1', fake_ssh('aoscx1', $ND), {});
+  is scalar(@rows), 4, 'the ARP rows';
+  @rows = $CX->arpnip('aoscx1', fake_ssh('aoscx1-truncated'), {});
+  is scalar(grep { $_->{ip} !~ m/:/ } @rows), 2, 'ARP rows before the cut';
+};
+
+# test input, not a capture: ARP rows without the VRF column, as in the
+# show arp example the original arpnip was written from
+sub without_vrf_column {
+  (my $text = fixture_text('aoscx1')) =~ s/^(\d+\.\d+\.\d+\.\d+\s.*?reachable)\s+\S+\s*$/$1/mg;
+  return Test::Netdisco::FakeSSH->new(text => $text);
+}
+
+subtest 'arubacx_arpnip__rows_without_vrf_column__still_returned' => sub {
+  my @rows = $CX->arpnip('aoscx1', without_vrf_column(), {});
+  is scalar(grep { $_->{ip} !~ m/:/ } @rows), 4, 'the ARP rows';
+};
+
+subtest 'arubacx_arpnip_by_vrf__rows_without_vrf_column__family_unread' => sub {
+  my $result = $CX->arpnip_by_vrf('aoscx1', without_vrf_column(), {});
+  is_deeply $result->{families}, [6], 'ARP not vouched';
+  is scalar(grep { $_->{ip} !~ m/:/ } @{ $result->{entries} }), 0, 'no ARP entry without its VRF';
+};
+
+subtest 'arubacx_arpnip__both_tables_fail__returns_empty_list' => sub {
+  is_deeply [ $CX->arpnip('aoscx1', fake_ssh('aoscx1-auditors'), {}) ], [], 'nothing';
 };
 
 done_testing;

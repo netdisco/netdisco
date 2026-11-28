@@ -9,6 +9,9 @@ App::Netdisco::SSHCollector::Platform::ArubaCX
 Collect ARP entries and IPv6 neighbors from ArubaCX devices, by VRF when
 C<store_vrfs> is on, and connected subnets by VRF.
 
+Every command is parsed as text: the AOS-CX CLI offers no structured form
+(C<show running-config json> answers C<Invalid input: json>).
+
  device_auth:
    - tag: ssharubacx
      driver: cli
@@ -23,7 +26,6 @@ use strict;
 use warnings;
 
 use Dancer ':script';
-use Expect;
 use Moo;
 use NetAddr::MAC qw/mac_as_ieee/;
 
@@ -35,8 +37,11 @@ use App::Netdisco::Util::VRF qw/netdisco_vrf/;
 
 =item B<arpnip($host, $ssh)>
 
-Retrieve ARP entries from device. C<$host> is the hostname or IP address
-of the device. C<$ssh> is a Net::OpenSSH connection to the device.
+Retrieve ARP entries and IPv6 neighbors from every VRF. C<$host> is the
+hostname or IP address of the device. C<$ssh> is a Net::OpenSSH connection to
+the device. Runs C<show arp all-vrfs> and C<show ipv6 neighbors all-vrfs>,
+each on its own exec channel, and returns the rows read from each, whole or
+not.
 
 Returns a list of hashrefs in the format C<{ mac =E<gt> MACADDR, ip =E<gt> IPADDR }>.
 
@@ -61,7 +66,9 @@ table was read whole.
 
 Written against AOS-CX 10.16, where an account in the
 C<operators> group can run all three commands and one in C<auditors> cannot.
-No row with an empty MAC was captured, so a table holding one is not whole.
+No row with an empty MAC was captured, so a table holding one is not whole. A
+table whose rows have no VRF column is not whole either, and those rows are
+returned only by C<arpnip>.
 
 =item B<subnets_by_vrf($host, $ssh, $args)>
 
@@ -79,61 +86,6 @@ maps to an empty list.
 
 =cut
 
-sub arpnip {
-
-    my ($self, $hostlabel, $ssh, $args) = @_;
-
-    debug "$hostlabel $$ arpnip()";
-
-    my ($pty, $pid) = $ssh->open2pty;
-    unless ($pty) {
-        debug "unable to run remote command [$hostlabel] " . $ssh->error;
-        return ();
-    }
-    my $expect = Expect->init($pty);
-
-    my ($pos, $error, $match, $before, $after);
-
-    my $prompt = qr/#/;
-    ($pos, $error, $match, $before, $after) = $expect->expect(10, -re, $prompt);
-
-    $expect->send("no page\n");
-    ($pos, $error, $match, $before, $after) = $expect->expect(10, -re, $prompt);
-
-    $expect->send("show arp all-vrfs\n");
-    ($pos, $error, $match, $before, $after) = $expect->expect(10, -re, $prompt);
-    my @lines= split(m/\n/,$before);
-
-    $expect->send("exit\n");
-    $expect->soft_close();
-
-    my @arpentries = ();
-
-    # Example output from 'show arp':
-    #
-    # IPv4 Address     MAC                Port         Physical Port                                      State
-    # -------------------------------------------------------------------------------------------------------------
-    # a.b.c.d          aa:bb:cc:dd:ee:ff  vlanNN       1/1/1                                              reachable
-    # ...
-    #
-    # Total Number Of ARP Entries Listed: 573.
-    # -------------------------------------------------------------------------------------------------------------
-
-    # pattern of the lines we are interested in:
-    my $ip_patt = qr/(?:\d+\.\d+\.\d+\.\d+)/x;
-    my $mac_patt = qr/(?:[0-9a-f]{2}:){5}[0-9a-f]{2}/x;
-    my $linereg = qr/($ip_patt)\s+($mac_patt)\s+\S+\s+\S+/x;
-
-    foreach my $line (@lines) {
-        if ($line =~ $linereg) {
-            my ($ip, $mac) = ($1, $2);
-            push @arpentries, { mac => $mac, ip => $ip };
-        }
-    }
-
-    return @arpentries;
-}
-
 my $MAC = qr/(?:[0-9a-f]{2}:){5}[0-9a-f]{2}/i;
 my $RULE = qr/^-+\s*$/;
 
@@ -148,6 +100,20 @@ my @NEIGHBOR_TABLES = (
 
 my @ROUTE_COMMANDS = ('show ip route all-vrfs', 'show ipv6 route all-vrfs');
 
+sub arpnip {
+    my ($self, $hostlabel, $ssh, $args) = @_;
+    debug "$hostlabel $$ arpnip()";
+
+    my @arpentries;
+    foreach my $table (@NEIGHBOR_TABLES) {
+        my ($rows, $whole, $error) = _neighbor_table($ssh, $table);
+        info "$hostlabel $$ $error" unless $whole;
+        push @arpentries, map { +{ ip => $_->{ip}, mac => $_->{mac} } } @$rows;
+    }
+
+    return @arpentries;
+}
+
 sub arpnip_by_vrf {
     my ($self, $hostlabel, $ssh, $args) = @_;
     debug "$hostlabel $$ arpnip_by_vrf()";
@@ -159,7 +125,7 @@ sub arpnip_by_vrf {
     my (@entries, @families);
     foreach my $table (@NEIGHBOR_TABLES) {
         my ($rows, $whole, $error) = _neighbor_table($ssh, $table);
-        push @entries, @$rows;
+        push @entries, grep { defined $_->{vrf} } @$rows;
         if ($whole) { push @families, $table->{family} }
         else { info "$hostlabel $$ $error, so no VRF is vouched for IPv$table->{family}" }
     }
@@ -225,18 +191,20 @@ sub _neighbor_table {
     }
 
     my $command = $table->{command};
+    my $unnamed = scalar grep { not defined $_->{vrf} } @rows;
     return (\@rows, 0, "$command printed $unparsed lines that are not rows") if $unparsed;
+    return (\@rows, 0, "$command printed $unnamed rows without a VRF") if $unnamed;
     return (\@rows, 0, "$command printed no entry count") unless defined $count;
     return (\@rows, 0, sprintf '%s listed %d of %d entries', $command, scalar @rows, $count)
       unless $count == scalar @rows;
     return (\@rows, 1);
 }
 
-# IP, MAC, port, physical port, state, VRF
+# IP, MAC, port, physical port, state, and VRF where the table has the column
 sub _neighbor_row {
     my ($line) = @_;
-    return unless $line =~ m/^([0-9a-f.:]+)\s+($MAC)\s+\S+\s+\S+\s+\S+\s+(\S+)\s*$/i;
-    return { ip => lc $1, mac => mac_as_ieee($2), vrf => netdisco_vrf($3) };
+    return unless $line =~ m/^([0-9a-f.:]+)\s+($MAC)\s+\S+\s+\S+\s+\S+(?:\s+(\S+))?\s*$/i;
+    return { ip => lc $1, mac => mac_as_ieee($2), (defined $3 ? (vrf => netdisco_vrf($3)) : ()) };
 }
 
 # returns { VRF => [ { prefix, len } ] } of connected routes, or undef and why

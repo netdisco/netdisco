@@ -1,4 +1,3 @@
-#prompt: 
 #--- show vrf
 VRF Configuration:
 ------------------
